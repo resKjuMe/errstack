@@ -3,8 +3,18 @@ import React from 'react';
 // Flash-Meldungen: Erfolg (status), Fehler (error) und Validierungsfehler
 // (errors). Die Werte kommen als Shared-Props von Inertia (Session-Flash bzw.
 // $page.props.errors).
+//
+// Benutzt eine Seite Fehler-Bags (mehrere Formulare, s. Profil), liefert Inertia
+// `errors` nach Bag verschachtelt — deshalb eine Ebene auflösen, statt ein Objekt
+// als Meldung zu rendern.
+function messagesOf(errors) {
+    return Object.values(errors ?? {}).flatMap((value) =>
+        typeof value === 'string' ? [value] : Object.values(value ?? {})
+    );
+}
+
 export default function Flash({ status, error, errors }) {
-    const errorList = errors ? Object.values(errors) : [];
+    const errorList = messagesOf(errors);
 
     return (
         <>

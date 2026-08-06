@@ -1,5 +1,6 @@
 {
     "$schema": "https://www.schemastore.org/package.json",
+    "name": "errstack",
     "private": true,
     "type": "module",
     "scripts": {
@@ -9,6 +10,7 @@
         "format:check": "prettier --check ."
     },
     "devDependencies": {
+        "@tailwindcss/forms": "^0.5.11",
         "@tailwindcss/vite": "^4.0.0",
         "@vitejs/plugin-react": "^6.0.5",
         "concurrently": "^9.0.1",
