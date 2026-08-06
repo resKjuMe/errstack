@@ -8,7 +8,10 @@ import React from 'react';
 
 export function InputLabel({ htmlFor, value, className = '', children }) {
     return (
-        <label htmlFor={htmlFor} className={`block text-sm font-medium text-gray-700 dark:text-gray-300 ${className}`}>
+        <label
+            htmlFor={htmlFor}
+            className={`block text-sm font-medium text-gray-700 dark:text-gray-300 ${className}`}
+        >
             {value ?? children}
         </label>
     );
@@ -43,11 +46,15 @@ export function InputError({ message, className = '' }) {
     return <p className={`text-sm text-red-600 dark:text-red-400 ${className}`}>{message}</p>;
 }
 
-const buttonBase = 'inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-50';
+const buttonBase =
+    'inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-50';
 
 export function PrimaryButton({ className = '', children, ...props }) {
     return (
-        <button {...props} className={`${buttonBase} bg-indigo-600 text-white hover:bg-indigo-500 ${className}`}>
+        <button
+            {...props}
+            className={`${buttonBase} bg-indigo-600 text-white hover:bg-indigo-500 ${className}`}
+        >
             {children}
         </button>
     );
@@ -66,11 +73,15 @@ export function SecondaryButton({ className = '', children, ...props }) {
 
 export function DangerButton({ className = '', children, ...props }) {
     return (
-        <button {...props} className={`${buttonBase} bg-red-600 text-white hover:bg-red-500 ${className}`}>
+        <button
+            {...props}
+            className={`${buttonBase} bg-red-600 text-white hover:bg-red-500 ${className}`}
+        >
             {children}
         </button>
     );
 }
 
 // Textlink innerhalb eines Formulars (Nebenwege wie „Passwort vergessen?").
-export const formLinkClass = 'text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100';
+export const formLinkClass =
+    'text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100';

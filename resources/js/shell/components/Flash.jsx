@@ -8,7 +8,9 @@ import React from 'react';
 // `errors` nach Bag verschachtelt — deshalb eine Ebene auflösen, statt ein Objekt
 // als Meldung zu rendern.
 function messagesOf(errors) {
-    return Object.values(errors ?? {}).flatMap((value) => (typeof value === 'string' ? [value] : Object.values(value ?? {})));
+    return Object.values(errors ?? {}).flatMap((value) =>
+        typeof value === 'string' ? [value] : Object.values(value ?? {})
+    );
 }
 
 export default function Flash({ status, error, errors }) {

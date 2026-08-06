@@ -1,7 +1,13 @@
 import React from 'react';
 import { Link, useForm } from '@inertiajs/react';
 import GuestShell from '../../GuestShell.jsx';
-import { InputError, InputLabel, PrimaryButton, TextInput, formLinkClass } from '../../components/Form.jsx';
+import {
+    InputError,
+    InputLabel,
+    PrimaryButton,
+    TextInput,
+    formLinkClass,
+} from '../../components/Form.jsx';
 
 export default function ForgotPassword({ status = null }) {
     const { data, setData, post, processing, errors } = useForm({ email: '' });
@@ -14,10 +20,15 @@ export default function ForgotPassword({ status = null }) {
     return (
         <>
             <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                E-Mail-Adresse eintragen — danach kommt ein Link, über den ein neues Passwort gesetzt werden kann.
+                E-Mail-Adresse eintragen — danach kommt ein Link, über den ein neues Passwort
+                gesetzt werden kann.
             </div>
 
-            {status && <div className="mb-4 text-sm font-medium text-green-600 dark:text-green-400">{status}</div>}
+            {status && (
+                <div className="mb-4 text-sm font-medium text-green-600 dark:text-green-400">
+                    {status}
+                </div>
+            )}
 
             <form onSubmit={submit}>
                 <div>

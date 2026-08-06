@@ -1,7 +1,14 @@
 import React from 'react';
 import { Link, useForm } from '@inertiajs/react';
 import GuestShell from '../../GuestShell.jsx';
-import { Checkbox, InputError, InputLabel, PrimaryButton, TextInput, formLinkClass } from '../../components/Form.jsx';
+import {
+    Checkbox,
+    InputError,
+    InputLabel,
+    PrimaryButton,
+    TextInput,
+    formLinkClass,
+} from '../../components/Form.jsx';
 
 export default function Login({ canResetPassword = true, status = null }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -17,7 +24,11 @@ export default function Login({ canResetPassword = true, status = null }) {
 
     return (
         <>
-            {status && <div className="mb-4 text-sm font-medium text-green-600 dark:text-green-400">{status}</div>}
+            {status && (
+                <div className="mb-4 text-sm font-medium text-green-600 dark:text-green-400">
+                    {status}
+                </div>
+            )}
 
             <form onSubmit={submit}>
                 <div>
@@ -53,8 +64,15 @@ export default function Login({ canResetPassword = true, status = null }) {
 
                 <div className="mt-4 block">
                     <label htmlFor="remember" className="inline-flex items-center">
-                        <Checkbox id="remember" name="remember" checked={data.remember} onChange={(e) => setData('remember', e.target.checked)} />
-                        <span className="ms-2 text-sm text-gray-600 dark:text-gray-400">Angemeldet bleiben</span>
+                        <Checkbox
+                            id="remember"
+                            name="remember"
+                            checked={data.remember}
+                            onChange={(e) => setData('remember', e.target.checked)}
+                        />
+                        <span className="ms-2 text-sm text-gray-600 dark:text-gray-400">
+                            Angemeldet bleiben
+                        </span>
                     </label>
                 </div>
 

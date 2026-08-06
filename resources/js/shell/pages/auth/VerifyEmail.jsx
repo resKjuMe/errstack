@@ -14,8 +14,8 @@ export default function VerifyEmail({ status = null }) {
     return (
         <>
             <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                Zum Abschluss noch die E-Mail-Adresse bestätigen: dazu den Link in der zugeschickten Mail anklicken. Keine Mail erhalten? Wir
-                schicken gern eine neue.
+                Zum Abschluss noch die E-Mail-Adresse bestätigen: dazu den Link in der zugeschickten
+                Mail anklicken. Keine Mail erhalten? Wir schicken gern eine neue.
             </div>
 
             {status === 'verification-link-sent' && (
@@ -37,7 +37,13 @@ export default function VerifyEmail({ status = null }) {
                     <Link href="/profile" className={formLinkClass}>
                         Adresse ändern
                     </Link>
-                    <Link href="/logout" method="post" as="button" type="button" className={formLinkClass}>
+                    <Link
+                        href="/logout"
+                        method="post"
+                        as="button"
+                        type="button"
+                        className={formLinkClass}
+                    >
                         Abmelden
                     </Link>
                 </div>

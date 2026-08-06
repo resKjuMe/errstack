@@ -20,7 +20,12 @@ export default function GuestShell({ title, children }) {
 
             <div>
                 <Link href="/">
-                    <LogoIcon appName={appName} className="gap-3" markClassName="h-16 w-16 p-3" nameClassName="text-3xl" />
+                    <LogoIcon
+                        appName={appName}
+                        className="gap-3"
+                        markClassName="h-16 w-16 p-3"
+                        nameClassName="text-3xl"
+                    />
                 </Link>
             </div>
 

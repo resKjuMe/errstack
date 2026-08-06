@@ -6,7 +6,12 @@ import React from 'react';
 // Errstack-Logo: Bildmarke (Blitz im abgerundeten Quadrat) + Wortmarke. Der
 // Schriftzug ist hell/dunkel-adaptiv. Größe über markClassName/nameClassName —
 // die Gast-Seiten zeigen das Logo größer als die Kopfzeile.
-export function LogoIcon({ appName = 'Errstack', className = '', markClassName = 'h-8 w-8 p-1.5', nameClassName = 'text-xl' }) {
+export function LogoIcon({
+    appName = 'Errstack',
+    className = '',
+    markClassName = 'h-8 w-8 p-1.5',
+    nameClassName = 'text-xl',
+}) {
     return (
         <span className={`inline-flex items-center gap-2 ${className}`}>
             <svg
@@ -21,7 +26,11 @@ export function LogoIcon({ appName = 'Errstack', className = '', markClassName =
             >
                 <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" />
             </svg>
-            <span className={`font-semibold tracking-tight text-gray-800 dark:text-gray-100 ${nameClassName}`}>{appName}</span>
+            <span
+                className={`font-semibold tracking-tight text-gray-800 dark:text-gray-100 ${nameClassName}`}
+            >
+                {appName}
+            </span>
         </span>
     );
 }

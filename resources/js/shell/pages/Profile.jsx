@@ -1,7 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
 import PageHead from '../components/PageHead.jsx';
-import { DangerButton, InputError, InputLabel, PrimaryButton, SecondaryButton, TextInput } from '../components/Form.jsx';
+import {
+    DangerButton,
+    InputError,
+    InputLabel,
+    PrimaryButton,
+    SecondaryButton,
+    TextInput,
+} from '../components/Form.jsx';
 
 // Eigenes Konto verwalten: drei unabhängige Formulare (Stammdaten, Passwort,
 // Konto löschen) in je einer Karte — Aufbau wie die Profilseite in Planstack.
@@ -128,14 +135,23 @@ function ResendVerification() {
     const [sent, setSent] = useState(false);
 
     if (sent) {
-        return <span className="font-medium text-green-600 dark:text-green-400">Bestätigungslink verschickt.</span>;
+        return (
+            <span className="font-medium text-green-600 dark:text-green-400">
+                Bestätigungslink verschickt.
+            </span>
+        );
     }
 
     return (
         <button
             type="button"
             disabled={processing}
-            onClick={() => post('/email/verification-notification', { preserveScroll: true, onSuccess: () => setSent(true) })}
+            onClick={() =>
+                post('/email/verification-notification', {
+                    preserveScroll: true,
+                    onSuccess: () => setSent(true),
+                })
+            }
             className="text-sm text-gray-600 underline hover:text-gray-900 disabled:opacity-50 dark:text-gray-400 dark:hover:text-gray-100"
         >
             Bestätigungslink erneut senden
@@ -179,7 +195,10 @@ function UpdatePassword() {
 
     return (
         <section>
-            <SectionHeader title="Passwort ändern" hint="Ein langes, zufälliges Passwort schützt das Konto am besten." />
+            <SectionHeader
+                title="Passwort ändern"
+                hint="Ein langes, zufälliges Passwort schützt das Konto am besten."
+            />
 
             <form onSubmit={submit} className="mt-6 space-y-6">
                 <div>
@@ -213,7 +232,10 @@ function UpdatePassword() {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="new_password_confirmation" value="Neues Passwort wiederholen" />
+                    <InputLabel
+                        htmlFor="new_password_confirmation"
+                        value="Neues Passwort wiederholen"
+                    />
                     <TextInput
                         id="new_password_confirmation"
                         type="password"
@@ -241,7 +263,15 @@ function UpdatePassword() {
 function DeleteAccount() {
     const [open, setOpen] = useState(false);
     const passwordRef = useRef(null);
-    const { data, setData, delete: destroy, processing, errors, reset, clearErrors } = useForm({ password: '' });
+    const {
+        data,
+        setData,
+        delete: destroy,
+        processing,
+        errors,
+        reset,
+        clearErrors,
+    } = useForm({ password: '' });
 
     // Bei einem Validierungsfehler (falsches Passwort) bleibt der Dialog offen.
     useEffect(() => {
@@ -265,7 +295,10 @@ function DeleteAccount() {
 
     return (
         <section className="space-y-6">
-            <SectionHeader title="Konto löschen" hint="Mit dem Konto verschwinden alle daran hängenden Daten — unwiderruflich." />
+            <SectionHeader
+                title="Konto löschen"
+                hint="Mit dem Konto verschwinden alle daran hängenden Daten — unwiderruflich."
+            />
 
             <DangerButton type="button" onClick={() => setOpen(true)}>
                 Konto löschen
@@ -273,17 +306,27 @@ function DeleteAccount() {
 
             {open && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="fixed inset-0 bg-gray-500/75 dark:bg-gray-900/75" onClick={close}></div>
+                    <div
+                        className="fixed inset-0 bg-gray-500/75 dark:bg-gray-900/75"
+                        onClick={close}
+                    ></div>
 
                     <div className="relative w-full max-w-lg rounded-lg bg-white shadow-xl dark:bg-gray-800">
                         <form onSubmit={submit} className="p-6">
-                            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Konto wirklich löschen?</h2>
+                            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                Konto wirklich löschen?
+                            </h2>
                             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                Zur Bestätigung bitte das Passwort eingeben. Danach ist das Konto endgültig gelöscht.
+                                Zur Bestätigung bitte das Passwort eingeben. Danach ist das Konto
+                                endgültig gelöscht.
                             </p>
 
                             <div className="mt-6">
-                                <InputLabel htmlFor="delete_password" value="Passwort" className="sr-only" />
+                                <InputLabel
+                                    htmlFor="delete_password"
+                                    value="Passwort"
+                                    className="sr-only"
+                                />
                                 <TextInput
                                     id="delete_password"
                                     ref={passwordRef}

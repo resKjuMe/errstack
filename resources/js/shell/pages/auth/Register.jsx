@@ -1,7 +1,13 @@
 import React from 'react';
 import { Link, useForm } from '@inertiajs/react';
 import GuestShell from '../../GuestShell.jsx';
-import { InputError, InputLabel, PrimaryButton, TextInput, formLinkClass } from '../../components/Form.jsx';
+import {
+    InputError,
+    InputLabel,
+    PrimaryButton,
+    TextInput,
+    formLinkClass,
+} from '../../components/Form.jsx';
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
