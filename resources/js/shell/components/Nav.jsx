@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from '@inertiajs/react';
 import { LogoIcon, HamburgerIcon } from '../icons.jsx';
 import ThemeToggle from './ThemeToggle.jsx';
 import UserMenu from './UserMenu.jsx';
@@ -20,22 +21,22 @@ export default function Nav({ shell }) {
                     <div className="flex">
                         {/* Logo */}
                         <div className="flex shrink-0 items-center">
-                            <a href={shell.logoHref}>
+                            <Link href={shell.logoHref}>
                                 <LogoIcon appName={shell.appName} />
-                            </a>
+                            </Link>
                         </div>
 
                         {/* Primärlinks */}
                         <div className="hidden sm:-my-px sm:ms-10 sm:flex sm:space-x-8">
                             {shell.links.map((link) => (
-                                <a
+                                <Link
                                     key={link.href}
                                     href={link.href}
                                     aria-current={link.active ? 'page' : undefined}
                                     className={`${navLinkBase} ${link.active ? navLinkActive : navLinkInactive}`}
                                 >
                                     {link.label}
-                                </a>
+                                </Link>
                             ))}
                         </div>
                     </div>

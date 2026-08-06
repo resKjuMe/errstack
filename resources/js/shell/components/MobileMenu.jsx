@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from '@inertiajs/react';
 import ThemeToggle from './ThemeToggle.jsx';
 
 // Aufklappbares Menü für schmale Viewports (< sm): Primärlinks, dann ein Block
@@ -12,9 +13,9 @@ const linkInactive =
 
 function ResponsiveLink({ href, active, children }) {
     return (
-        <a href={href} className={`${linkBase} ${active ? linkActive : linkInactive}`}>
+        <Link href={href} className={`${linkBase} ${active ? linkActive : linkInactive}`}>
             {children}
-        </a>
+        </Link>
     );
 }
 
