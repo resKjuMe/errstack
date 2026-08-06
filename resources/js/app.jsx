@@ -9,6 +9,7 @@ import OrganizationsIndex from './shell/pages/organizations/Index.jsx';
 import OrganizationsShow from './shell/pages/organizations/Show.jsx';
 import TeamsShow from './shell/pages/teams/Show.jsx';
 import InvitationsAccept from './shell/pages/invitations/Accept.jsx';
+import ApiTokensIndex from './shell/pages/api-tokens/Index.jsx';
 import Login from './shell/pages/auth/Login.jsx';
 import Register from './shell/pages/auth/Register.jsx';
 import ForgotPassword from './shell/pages/auth/ForgotPassword.jsx';
@@ -28,6 +29,7 @@ const pages = {
     'organizations/Show': OrganizationsShow,
     'teams/Show': TeamsShow,
     'invitations/Accept': InvitationsAccept,
+    'api-tokens/Index': ApiTokensIndex,
     'auth/Login': Login,
     'auth/Register': Register,
     'auth/ForgotPassword': ForgotPassword,

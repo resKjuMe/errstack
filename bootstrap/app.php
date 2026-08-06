@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Middleware\EnsureApiOrganization;
+use App\Http\Middleware\EnsureApiScope;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\ResolveApiToken;
+use App\Support\Api\ApiErrors;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,9 +21,26 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleInertiaRequests::class,
         ]);
+
+        // Kurznamen für die Routen der öffentlichen Schnittstelle:
+        // `api.token` legt Token, Organisation und Konto an der Anfrage ab,
+        // `api.organization` hält den Slug in der Adresse an der Organisation des
+        // Tokens fest, `scope:…` prüft den nötigen Geltungsbereich.
+        $middleware->alias([
+            'api.token' => ResolveApiToken::class,
+            'api.organization' => EnsureApiOrganization::class,
+            'scope' => EnsureApiScope::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
+        );
+
+        // Alle Fehler der Schnittstelle in derselben Form. Für die Weboberfläche
+        // liefert ApiErrors null, dort bleibt es bei Weiterleitungen und
+        // Fehlerseiten.
+        $exceptions->render(
+            fn (Throwable $e, Request $request) => ApiErrors::render($e, $request),
         );
     })->create();

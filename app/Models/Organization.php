@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * Oberste Klammer der Mandantenfähigkeit: alle fachlichen Daten hängen an
@@ -21,8 +22,14 @@ use Illuminate\Support\Str;
 #[Fillable(['name'])]
 class Organization extends Model
 {
-    /** @use HasFactory<OrganizationFactory> */
-    use HasFactory;
+    /**
+     * `HasApiTokens` macht die Organisation selbst zum Träger von Tokens — das
+     * sind die organisationsweiten, die keinem Konto gehören.
+     *
+     * @use HasFactory<OrganizationFactory>
+     * @use HasApiTokens<ApiToken>
+     */
+    use HasApiTokens, HasFactory;
 
     /**
      * In der Adresszeile steht der Slug, nicht die laufende Nummer.
@@ -89,6 +96,19 @@ class Organization extends Model
     public function invitations(): HasMany
     {
         return $this->hasMany(OrganizationInvitation::class);
+    }
+
+    /**
+     * Alle API-Tokens, die für diese Organisation gelten — persönliche wie
+     * organisationsweite. Nicht zu verwechseln mit `tokens()` aus HasApiTokens:
+     * das sind nur die organisationsweiten, deren Träger die Organisation selbst
+     * ist.
+     *
+     * @return HasMany<ApiToken, $this>
+     */
+    public function apiTokens(): HasMany
+    {
+        return $this->hasMany(ApiToken::class);
     }
 
     /**

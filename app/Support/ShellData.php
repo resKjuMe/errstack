@@ -122,6 +122,12 @@ final class ShellData
                 'icon' => 'profile',
             ],
             [
+                'label' => 'Zugriffstoken',
+                'route' => 'api-tokens.index',
+                'activePattern' => 'api-tokens.*',
+                'icon' => 'key',
+            ],
+            [
                 'label' => 'Bausteine',
                 'route' => 'components',
                 'activePattern' => 'components',
