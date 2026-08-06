@@ -4,7 +4,9 @@ Selbstgehosteter Error-Tracker: Fehler aus Anwendungen entgegennehmen, zu
 Issues gruppieren, durchsuchbar machen und alarmieren.
 
 Dieses Repository enthält bislang **nur das Grundgerüst** — Laravel 13 auf
-PHP 8.3, PHPUnit 12, Pint. Fachlogik folgt in den nächsten Phasen.
+PHP 8.3, PHPUnit 12, Pint sowie die Oberfläche (Inertia 3, React 19, Tailwind 4)
+mit Navigation, Dunkelmodus und wiederverwendbaren Bausteinen unter
+`resources/js/shell`. Fachlogik folgt in den nächsten Phasen.
 
 ## Installation
 
