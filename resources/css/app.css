@@ -1,5 +1,10 @@
 @import 'tailwindcss';
 
+/* Formular-Grundstil wie in Planstack: Rahmen, Innenabstand und Fokusring für
+   Eingabefelder, Auswahlfelder und Kästchen kommen aus diesem Plugin — ohne es
+   trügen die Felder nur das Aussehen des Browsers. */
+@plugin '@tailwindcss/forms';
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 

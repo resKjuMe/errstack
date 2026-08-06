@@ -4,12 +4,13 @@ import React from 'react';
 // currentColor vom umgebenden Text.
 
 // Errstack-Logo: Bildmarke (Blitz im abgerundeten Quadrat) + Wortmarke. Der
-// Schriftzug ist hell/dunkel-adaptiv.
-export function LogoIcon({ appName = 'Errstack', className = '' }) {
+// Schriftzug ist hell/dunkel-adaptiv. Größe über markClassName/nameClassName —
+// die Gast-Seiten zeigen das Logo größer als die Kopfzeile.
+export function LogoIcon({ appName = 'Errstack', className = '', markClassName = 'h-8 w-8 p-1.5', nameClassName = 'text-xl' }) {
     return (
         <span className={`inline-flex items-center gap-2 ${className}`}>
             <svg
-                className="h-8 w-8 shrink-0 rounded-md bg-rose-600 p-1.5 text-white"
+                className={`shrink-0 rounded-md bg-rose-600 text-white ${markClassName}`}
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -20,9 +21,7 @@ export function LogoIcon({ appName = 'Errstack', className = '' }) {
             >
                 <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" />
             </svg>
-            <span className="text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-100">
-                {appName}
-            </span>
+            <span className={`font-semibold tracking-tight text-gray-800 dark:text-gray-100 ${nameClassName}`}>{appName}</span>
         </span>
     );
 }

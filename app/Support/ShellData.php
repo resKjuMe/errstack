@@ -10,9 +10,10 @@ use Illuminate\Support\Facades\Route;
  * Nutzer-Menü, Labels. Wird als Inertia-Shared-Data bei jedem Aufruf frisch
  * berechnet, damit die aktiven Links pro Navigation stimmen.
  *
- * Anmeldung gibt es noch nicht (Task F3). Bis dahin liefert `user` null und die
- * Shell zeigt einen Gast-Zustand; Menü-Einträge auf noch fehlende Routen werden
- * herausgefiltert, statt auf tote Links zu zeigen.
+ * Ohne Anmeldung — auf den Gast-Seiten (Anmelden, Registrieren, Passwort
+ * zurücksetzen) — liefert `user` null und die Shell zeigt einen Gast-Zustand;
+ * Menü-Einträge auf noch fehlende Routen werden herausgefiltert, statt auf tote
+ * Links zu zeigen.
  */
 final class ShellData
 {

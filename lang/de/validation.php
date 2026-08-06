@@ -1,0 +1,61 @@
+<?php
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validation Language Lines
+    |--------------------------------------------------------------------------
+    |
+    | Übersetzt sind die Regeln, die in den Formularen der Anwendung vorkommen.
+    | Alles Übrige fällt Schlüssel für Schlüssel auf `fallback_locale` (en)
+    | zurück, sodass diese Datei nicht vollständig sein muss.
+    |
+    */
+
+    'confirmed' => ':attribute stimmt nicht mit der Wiederholung überein.',
+    'current_password' => 'Das Passwort ist falsch.',
+    'email' => ':attribute muss eine gültige E-Mail-Adresse sein.',
+    'lowercase' => ':attribute darf nur Kleinbuchstaben enthalten.',
+    'max' => [
+        'array' => ':attribute darf höchstens :max Einträge haben.',
+        'file' => ':attribute darf höchstens :max Kilobyte groß sein.',
+        'numeric' => ':attribute darf höchstens :max sein.',
+        'string' => ':attribute darf höchstens :max Zeichen lang sein.',
+    ],
+    'min' => [
+        'array' => ':attribute muss mindestens :min Einträge haben.',
+        'file' => ':attribute muss mindestens :min Kilobyte groß sein.',
+        'numeric' => ':attribute muss mindestens :min sein.',
+        'string' => ':attribute muss mindestens :min Zeichen lang sein.',
+    ],
+    'password' => [
+        'letters' => ':attribute muss mindestens einen Buchstaben enthalten.',
+        'mixed' => ':attribute muss Groß- und Kleinbuchstaben enthalten.',
+        'numbers' => ':attribute muss mindestens eine Zahl enthalten.',
+        'symbols' => ':attribute muss mindestens ein Sonderzeichen enthalten.',
+        'uncompromised' => ':attribute kommt in einem Datenleck vor. Bitte ein anderes wählen.',
+    ],
+    'required' => ':attribute ist erforderlich.',
+    'string' => ':attribute muss Text sein.',
+    'unique' => ':attribute wird bereits verwendet.',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom Validation Attributes
+    |--------------------------------------------------------------------------
+    |
+    | Ersetzt :attribute durch einen lesbaren Namen — ohne das stünde in der
+    | Meldung der Feldname aus dem Formular („password_confirmation").
+    |
+    */
+
+    'attributes' => [
+        'current_password' => 'Das aktuelle Passwort',
+        'email' => 'Die E-Mail-Adresse',
+        'name' => 'Der Name',
+        'password' => 'Das Passwort',
+        'password_confirmation' => 'Die Passwort-Wiederholung',
+    ],
+
+];

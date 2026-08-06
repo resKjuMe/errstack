@@ -4,13 +4,28 @@ import { createInertiaApp } from '@inertiajs/react';
 import AppShell from './shell/AppShell.jsx';
 import Dashboard from './shell/pages/Dashboard.jsx';
 import Components from './shell/pages/Components.jsx';
+import Profile from './shell/pages/Profile.jsx';
+import Login from './shell/pages/auth/Login.jsx';
+import Register from './shell/pages/auth/Register.jsx';
+import ForgotPassword from './shell/pages/auth/ForgotPassword.jsx';
+import ResetPassword from './shell/pages/auth/ResetPassword.jsx';
+import ConfirmPassword from './shell/pages/auth/ConfirmPassword.jsx';
+import VerifyEmail from './shell/pages/auth/VerifyEmail.jsx';
 
 // Seiten-Registry: Inertia löst den vom Server gelieferten Seitennamen hier
 // auf. Jede Seite wird in die AppShell gehängt (gemeinsames Layout), sofern sie
-// nicht selbst ein Layout mitbringt.
+// nicht selbst ein Layout mitbringt — die Anmeldeseiten bringen mit der
+// GuestShell ihr eigenes mit.
 const pages = {
     Dashboard,
     Components,
+    Profile,
+    'auth/Login': Login,
+    'auth/Register': Register,
+    'auth/ForgotPassword': ForgotPassword,
+    'auth/ResetPassword': ResetPassword,
+    'auth/ConfirmPassword': ConfirmPassword,
+    'auth/VerifyEmail': VerifyEmail,
 };
 
 createInertiaApp({
