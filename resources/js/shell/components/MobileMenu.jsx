@@ -67,7 +67,9 @@ export default function MobileMenu({ shell, open }) {
                     )}
 
                     {!shell.user && shell.loginHref && (
-                        <ResponsiveLink href={shell.loginHref}>{shell.labels.signIn}</ResponsiveLink>
+                        <ResponsiveLink href={shell.loginHref}>
+                            {shell.labels.signIn}
+                        </ResponsiveLink>
                     )}
                 </div>
             </div>

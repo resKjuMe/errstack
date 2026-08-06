@@ -2,6 +2,7 @@ import React from 'react';
 import { usePage } from '@inertiajs/react';
 import PageHead from '../components/PageHead.jsx';
 import Card from '../components/Card.jsx';
+import LiveDemo from '../components/LiveDemo.jsx';
 
 // Beispielseite des Grundgerüsts: zeigt, dass eine Seite nichts weiter tun muss,
 // als ihren Inhalt zu liefern — Rahmen, Navigation und Theme kommen von der
@@ -17,7 +18,9 @@ export default function Dashboard() {
                 help={
                     <ul className="list-disc space-y-1 ps-4">
                         <li>Diese Seite ist eine Beispielseite des Oberflächen-Grundgerüsts.</li>
-                        <li>Alle Seiten liegen im gemeinsamen Rahmen mit Navigation und Dunkelmodus.</li>
+                        <li>
+                            Alle Seiten liegen im gemeinsamen Rahmen mit Navigation und Dunkelmodus.
+                        </li>
                         <li>Die wiederverwendbaren Bausteine zeigt die Seite „Bausteine".</li>
                     </ul>
                 }
@@ -36,6 +39,10 @@ export default function Dashboard() {
                     title="Nächste Schritte"
                     description="Fachseiten (Anmeldung, Projekte, Issues) ersetzen diese Beispielseite Schritt für Schritt."
                 />
+            </div>
+
+            <div className="mt-4">
+                <LiveDemo />
             </div>
         </>
     );

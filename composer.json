@@ -9,10 +9,13 @@
         "php": "^8.3",
         "inertiajs/inertia-laravel": "^3.0",
         "laravel/framework": "^13.8",
-        "laravel/tinker": "^3.0"
+        "laravel/reverb": "^1.11",
+        "laravel/tinker": "^3.0",
+        "pusher/pusher-php-server": "^7.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.0",
         "laravel/pail": "^1.2.5",
         "laravel/pao": "^1.0.6",
         "laravel/pint": "^1.27",
@@ -44,11 +47,25 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"npm run dev\" --names=server,queue,vite --kill-others"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74,#a3e635\" \"php artisan serve\" \"php artisan queue:listen --queue=ingest,notifications,default --tries=3 --timeout=0\" \"php artisan reverb:start\" \"php artisan schedule:work\" \"npm run dev\" --names=server,queue,reverb,schedule,vite --kill-others"
         ],
         "test": [
             "@php artisan config:clear --ansi @no_additional_args",
             "@php artisan test"
+        ],
+        "format": [
+            "@php vendor/bin/pint"
+        ],
+        "lint": [
+            "@php vendor/bin/pint --test"
+        ],
+        "analyse": [
+            "@php vendor/bin/phpstan analyse --memory-limit=512M"
+        ],
+        "check": [
+            "@lint",
+            "@analyse",
+            "@test"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

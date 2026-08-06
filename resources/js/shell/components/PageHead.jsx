@@ -5,7 +5,13 @@ import { QuestionIcon } from '../icons.jsx';
 // Einheitlicher Seitenkopf: H1 links, optional Meta-Inhalt und ein „?"-Button
 // rechts, dessen Infobox darunter aufklappt. Setzt zugleich den Titel des
 // Browser-Tabs („<Titel> · <App>"), sofern nicht per documentTitle abgeschaltet.
-export default function PageHead({ title, documentTitle = true, help = null, meta = null, appName = null }) {
+export default function PageHead({
+    title,
+    documentTitle = true,
+    help = null,
+    meta = null,
+    appName = null,
+}) {
     const [open, setOpen] = useState(false);
 
     return (

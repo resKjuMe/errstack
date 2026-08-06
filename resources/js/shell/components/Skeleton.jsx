@@ -10,7 +10,10 @@ const bar = 'rounded bg-gray-200 dark:bg-gray-700';
 // Reihe von Kennzahl-Kacheln.
 export function KpiTilesSkeleton({ count = 4 }) {
     return (
-        <div className="grid animate-pulse grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-hidden="true">
+        <div
+            className="grid animate-pulse grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+            aria-hidden="true"
+        >
             {Array.from({ length: count }).map((_, i) => (
                 <div key={i} className="rounded-lg bg-white p-5 shadow dark:bg-gray-800">
                     <div className={`h-3 w-24 ${bar}`} />
@@ -25,7 +28,10 @@ export function KpiTilesSkeleton({ count = 4 }) {
 // Karte mit mehreren Textzeilen.
 export function LinesCardSkeleton({ rows = 3 }) {
     return (
-        <div className="animate-pulse rounded-lg bg-white p-6 shadow dark:bg-gray-800" aria-hidden="true">
+        <div
+            className="animate-pulse rounded-lg bg-white p-6 shadow dark:bg-gray-800"
+            aria-hidden="true"
+        >
             <div className={`h-3 w-32 ${bar}`} />
             <div className="mt-4 space-y-4">
                 {Array.from({ length: rows }).map((_, i) => (
@@ -46,7 +52,8 @@ export function LinesCardSkeleton({ rows = 3 }) {
 // Textzeilen im Kartenkörper (0 = nur die Kopfzeile).
 export function CardsSkeleton({ count = 3, cols = 3, lines = 2 }) {
     const grid =
-        { 1: '', 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-2 lg:grid-cols-3' }[cols] ?? 'sm:grid-cols-2 lg:grid-cols-3';
+        { 1: '', 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-2 lg:grid-cols-3' }[cols] ??
+        'sm:grid-cols-2 lg:grid-cols-3';
 
     return (
         <div className={`grid animate-pulse grid-cols-1 gap-4 ${grid}`} aria-hidden="true">
@@ -56,7 +63,10 @@ export function CardsSkeleton({ count = 3, cols = 3, lines = 2 }) {
                     {lines > 0 && (
                         <div className="mt-4 space-y-2">
                             {Array.from({ length: lines }).map((__, j) => (
-                                <div key={j} className={`h-3 ${j === lines - 1 ? 'w-2/3' : 'w-full'} ${bar}`} />
+                                <div
+                                    key={j}
+                                    className={`h-3 ${j === lines - 1 ? 'w-2/3' : 'w-full'} ${bar}`}
+                                />
                             ))}
                         </div>
                     )}
@@ -69,7 +79,10 @@ export function CardsSkeleton({ count = 3, cols = 3, lines = 2 }) {
 // Tabellen-Platzhalter (Kopfzeile + Datenzeilen).
 export function TableSkeleton({ rows = 5, cols = 4 }) {
     return (
-        <div className="animate-pulse overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800" aria-hidden="true">
+        <div
+            className="animate-pulse overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800"
+            aria-hidden="true"
+        >
             <div className="flex gap-4 border-b border-gray-100 px-5 py-3 dark:border-gray-700">
                 {Array.from({ length: cols }).map((_, i) => (
                     <div key={i} className={`h-3 flex-1 ${bar}`} />

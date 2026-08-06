@@ -1,4 +1,12 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 
 // Toast-Meldungen: kurzlebige Rückmeldungen rechts unten, unabhängig vom
 // Seiteninhalt. Die AppShell hängt den Provider einmal um die ganze App; Seiten

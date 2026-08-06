@@ -51,7 +51,10 @@ export default function UserMenu({ shell }) {
             </button>
 
             {open && (
-                <div className="absolute end-0 z-50 mt-2 w-56 rounded-md shadow-lg" onClick={() => setOpen(false)}>
+                <div
+                    className="absolute end-0 z-50 mt-2 w-56 rounded-md shadow-lg"
+                    onClick={() => setOpen(false)}
+                >
                     <div className="rounded-md bg-white py-1 ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/10">
                         {shell.menu.map((item) => (
                             <Link
@@ -59,7 +62,10 @@ export default function UserMenu({ shell }) {
                                 href={item.href}
                                 className="flex w-full items-center gap-2 whitespace-nowrap px-4 py-2 text-start text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:bg-gray-700"
                             >
-                                <MenuIcon name={item.icon} className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" />
+                                <MenuIcon
+                                    name={item.icon}
+                                    className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500"
+                                />
                                 {item.label}
                             </Link>
                         ))}
@@ -69,13 +75,20 @@ export default function UserMenu({ shell }) {
                                Dropdown-Wrappers (setOpen(false)) durchblubbern — sonst
                                unmountet React das Formular noch VOR dem nativen Submit
                                und der Logout-POST wird verworfen. */
-                            <form method="POST" action={shell.logoutHref} onClick={(e) => e.stopPropagation()}>
+                            <form
+                                method="POST"
+                                action={shell.logoutHref}
+                                onClick={(e) => e.stopPropagation()}
+                            >
                                 <input type="hidden" name="_token" value={shell.csrf} />
                                 <button
                                     type="submit"
                                     className="flex w-full items-center gap-2 px-4 py-2 text-start text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:bg-gray-700"
                                 >
-                                    <MenuIcon name="logout" className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" />
+                                    <MenuIcon
+                                        name="logout"
+                                        className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500"
+                                    />
                                     {shell.labels.signOut}
                                 </button>
                             </form>
@@ -86,7 +99,10 @@ export default function UserMenu({ shell }) {
                                 href={shell.loginHref}
                                 className="flex w-full items-center gap-2 px-4 py-2 text-start text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:bg-gray-700"
                             >
-                                <MenuIcon name="login" className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" />
+                                <MenuIcon
+                                    name="login"
+                                    className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500"
+                                />
                                 {shell.labels.signIn}
                             </Link>
                         )}
