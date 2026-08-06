@@ -8,6 +8,7 @@ use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
@@ -66,6 +67,113 @@ class InvitationTest extends TestCase
 
         $this->assertDatabaseCount('organization_invitations', 0);
         Mail::assertNothingQueued();
+    }
+
+    public function test_administration_may_not_invite_someone_as_owner(): void
+    {
+        // Sonst führte der Umweg über eine Einladung an die eigene Zweitadresse
+        // zur Besitzer-Rolle, die sich direkt nicht vergeben lässt.
+        $admin = User::factory()->create();
+        $organization = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
+
+        $this->actingAs($admin)
+            ->post("/organisationen/{$organization->slug}/einladungen", [
+                'email' => 'chef@example.com',
+                'role' => OrganizationRole::Owner->value,
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('organization_invitations', 0);
+
+        $owner = User::factory()->create();
+        $organization->setRole($owner, OrganizationRole::Owner);
+
+        $this->actingAs($owner)
+            ->post("/organisationen/{$organization->slug}/einladungen", [
+                'email' => 'chef@example.com',
+                'role' => OrganizationRole::Owner->value,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseCount('organization_invitations', 1);
+    }
+
+    public function test_the_role_of_an_open_invitation_can_be_changed(): void
+    {
+        $owner = User::factory()->create();
+        $organization = Organization::factory()->withMember($owner)->create();
+        $invitation = $organization->invitations()->create([
+            'email' => 'wechsel@example.com',
+            'role' => OrganizationRole::Member,
+        ]);
+        $token = $invitation->token;
+
+        $this->actingAs($owner)
+            ->patch("/einladungen/{$invitation->id}", ['role' => OrganizationRole::Admin->value])
+            ->assertSessionHasNoErrors();
+
+        $invitation->refresh();
+
+        $this->assertSame(OrganizationRole::Admin, $invitation->role);
+        // Der Link aus der bereits verschickten Mail bleibt gültig.
+        $this->assertSame($token, $invitation->token);
+    }
+
+    public function test_administration_may_not_raise_an_invitation_to_owner(): void
+    {
+        $admin = User::factory()->create();
+        $organization = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
+        $invitation = $organization->invitations()->create([
+            'email' => 'bleibt@example.com',
+            'role' => OrganizationRole::Member,
+        ]);
+
+        $this->actingAs($admin)
+            ->patch("/einladungen/{$invitation->id}", ['role' => OrganizationRole::Owner->value])
+            ->assertForbidden();
+
+        $this->assertSame(OrganizationRole::Member, $invitation->refresh()->role);
+    }
+
+    public function test_an_invitation_never_lowers_the_role_of_an_existing_member(): void
+    {
+        $admin = User::factory()->create(['email' => 'ada@example.com']);
+        $organization = Organization::factory()->create();
+        $organization->setRole($admin, OrganizationRole::Admin);
+
+        // Einladung von früher, inzwischen ist die Person längst Verwaltung.
+        $invitation = $organization->invitations()->create([
+            'email' => 'ada@example.com',
+            'role' => OrganizationRole::Viewer,
+        ]);
+
+        $this->actingAs($admin)
+            ->post("/einladung/{$invitation->token}")
+            ->assertRedirect("/organisationen/{$organization->slug}");
+
+        $this->assertSame(OrganizationRole::Admin, $organization->roleFor($admin));
+        $this->assertDatabaseMissing('organization_invitations', ['id' => $invitation->id]);
+    }
+
+    public function test_the_invite_form_offers_the_owner_role_only_to_owners(): void
+    {
+        $admin = User::factory()->create();
+        $organization = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
+
+        $this->actingAs($admin)
+            ->get("/organisationen/{$organization->slug}")
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('invitableRoles', fn (Collection $roles) => $roles->pluck('value')->all() === ['admin', 'member', 'viewer'])
+            );
+
+        $owner = User::factory()->create();
+        $organization->setRole($owner, OrganizationRole::Owner);
+
+        $this->actingAs($owner)
+            ->get("/organisationen/{$organization->slug}")
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('invitableRoles', fn (Collection $roles) => $roles->pluck('value')->all() === ['owner', 'admin', 'member', 'viewer'])
+            );
     }
 
     public function test_the_same_address_is_not_invited_twice(): void

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, router, useForm, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
@@ -20,7 +20,7 @@ export default function Show({
     members,
     invitations,
     teams,
-    roleOptions,
+    invitableRoles,
 }) {
     const { shell } = usePage().props;
 
@@ -49,17 +49,13 @@ export default function Show({
             <div className="space-y-4">
                 {permissions.update && <GeneralSettings organization={organization} />}
 
-                <Members
-                    members={members}
-                    roleOptions={roleOptions}
-                    canInvite={permissions.invite}
-                />
+                <Members members={members} canInvite={permissions.invite} />
 
                 {permissions.invite && (
                     <Invitations
                         organization={organization}
                         invitations={invitations}
-                        roleOptions={roleOptions}
+                        invitableRoles={invitableRoles}
                     />
                 )}
 
@@ -107,7 +103,7 @@ function GeneralSettings({ organization }) {
     );
 }
 
-function Members({ members, roleOptions, canInvite }) {
+function Members({ members, canInvite }) {
     return (
         <Card
             title="Mitglieder"
@@ -138,11 +134,24 @@ function Members({ members, roleOptions, canInvite }) {
                         </div>
 
                         <div className="flex items-center gap-3">
-                            {member.canUpdateRole ? (
-                                <RoleSelect member={member} roleOptions={roleOptions} />
+                            {member.assignableRoles.length > 0 ? (
+                                <RoleSelect
+                                    url={`/mitgliedschaften/${member.id}`}
+                                    label={`Rolle von ${member.name}`}
+                                    role={member.role}
+                                    options={member.assignableRoles}
+                                />
                             ) : (
-                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                <span
+                                    className="text-sm text-gray-600 dark:text-gray-400"
+                                    title={member.roleHint ?? undefined}
+                                >
                                     {member.roleLabel}
+                                    {member.roleHint && (
+                                        <span className="block text-xs text-gray-400 dark:text-gray-500">
+                                            {member.roleHint}
+                                        </span>
+                                    )}
                                 </span>
                             )}
 
@@ -155,22 +164,18 @@ function Members({ members, roleOptions, canInvite }) {
     );
 }
 
-function RoleSelect({ member, roleOptions }) {
-    const [role, setRole] = useState(member.role);
-
-    const change = (next) => {
-        setRole(next);
-        router.patch(`/mitgliedschaften/${member.id}`, { role: next }, { preserveScroll: true });
-    };
-
+// Die Auswahl zeigt immer den Stand vom Server: schlägt der Wechsel fehl,
+// springt sie von selbst zurück, statt eine Rolle vorzugaukeln, die gar nicht
+// gespeichert wurde.
+function RoleSelect({ url, label, role, options }) {
     return (
         <select
             value={role}
-            aria-label={`Rolle von ${member.name}`}
-            onChange={(e) => change(e.target.value)}
+            aria-label={label}
+            onChange={(e) => router.patch(url, { role: e.target.value }, { preserveScroll: true })}
             className="rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
         >
-            {roleOptions.map((option) => (
+            {options.map((option) => (
                 <option key={option.value} value={option.value}>
                     {option.label}
                 </option>
@@ -193,7 +198,7 @@ function RemoveMember({ member }) {
     );
 }
 
-function Invitations({ organization, invitations, roleOptions }) {
+function Invitations({ organization, invitations, invitableRoles }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         role: 'member',
@@ -235,7 +240,7 @@ function Invitations({ organization, invitations, roleOptions }) {
                         onChange={(e) => setData('role', e.target.value)}
                         className="mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
                     >
-                        {roleOptions.map((option) => (
+                        {invitableRoles.map((option) => (
                             <option key={option.value} value={option.value}>
                                 {option.label}
                             </option>
@@ -261,14 +266,28 @@ function Invitations({ organization, invitations, roleOptions }) {
                                     {invitation.email}
                                 </p>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    {invitation.roleLabel} ·{' '}
                                     {invitation.isExpired
                                         ? 'abgelaufen'
                                         : `gültig bis ${invitation.expiresAt}`}
                                 </p>
                             </div>
 
-                            <WithdrawInvitation invitation={invitation} />
+                            <div className="flex items-center gap-3">
+                                {invitation.assignableRoles.length > 0 ? (
+                                    <RoleSelect
+                                        url={`/einladungen/${invitation.id}`}
+                                        label={`Rolle der Einladung an ${invitation.email}`}
+                                        role={invitation.role}
+                                        options={invitation.assignableRoles}
+                                    />
+                                ) : (
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                        {invitation.roleLabel}
+                                    </span>
+                                )}
+
+                                <WithdrawInvitation invitation={invitation} />
+                            </div>
                         </li>
                     ))}
                 </ul>

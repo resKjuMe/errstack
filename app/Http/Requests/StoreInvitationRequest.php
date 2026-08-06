@@ -67,17 +67,6 @@ class StoreInvitationRequest extends FormRequest
         ];
     }
 
-    /**
-     * @return array<string, string>
-     */
-    public function attributes(): array
-    {
-        return [
-            'email' => 'E-Mail-Adresse',
-            'role' => 'Rolle',
-        ];
-    }
-
     private function organization(): Organization
     {
         $organization = $this->route('organization');

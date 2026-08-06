@@ -46,11 +46,19 @@ class OrganizationPolicy
     }
 
     /**
-     * Mitglieder einladen und Einladungen zurückziehen.
+     * Mitglieder einladen und Einladungen zurückziehen. Mit `$role` wird
+     * zugleich geprüft, ob diese Rolle vergeben werden darf: die Besitzer-Rolle
+     * vergibt nur ein Besitzer — sonst könnte sich eine Verwaltung über eine
+     * Einladung an sich selbst zum Besitzer machen.
      */
-    public function invite(User $user, Organization $organization): bool
+    public function invite(User $user, Organization $organization, ?OrganizationRole $role = null): bool
     {
-        return $this->atLeast($user, $organization, OrganizationRole::Admin);
+        if (! $this->atLeast($user, $organization, OrganizationRole::Admin)) {
+            return false;
+        }
+
+        return $role !== OrganizationRole::Owner
+            || $organization->roleFor($user) === OrganizationRole::Owner;
     }
 
     /**

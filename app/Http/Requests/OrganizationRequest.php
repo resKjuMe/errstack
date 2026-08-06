@@ -20,14 +20,4 @@ class OrganizationRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
         ];
     }
-
-    /**
-     * @return array<string, string>
-     */
-    public function attributes(): array
-    {
-        return [
-            'name' => 'Name',
-        ];
-    }
 }

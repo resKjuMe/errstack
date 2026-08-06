@@ -45,14 +45,4 @@ class TeamRequest extends FormRequest
             'name.unique' => 'Ein Team dieses Namens gibt es hier bereits.',
         ];
     }
-
-    /**
-     * @return array<string, string>
-     */
-    public function attributes(): array
-    {
-        return [
-            'name' => 'Name',
-        ];
-    }
 }

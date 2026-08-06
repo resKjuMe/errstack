@@ -36,6 +36,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('organisationen/{organization}/einladungen', [OrganizationInvitationController::class, 'store'])
         ->name('organizations.invitations.store');
+    Route::patch('einladungen/{invitation}', [OrganizationInvitationController::class, 'update'])
+        ->name('invitations.update');
     Route::delete('einladungen/{invitation}', [OrganizationInvitationController::class, 'destroy'])
         ->name('invitations.destroy');
 

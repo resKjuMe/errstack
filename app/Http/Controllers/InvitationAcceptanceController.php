@@ -52,9 +52,13 @@ class InvitationAcceptanceController extends Controller
         $organization = $invitation->organization;
 
         // Beitritt und Verbrauch der Einladung gehören zusammen — sonst bliebe
-        // eine bereits genutzte Einladung offen stehen.
+        // eine bereits genutzte Einladung offen stehen. Wer schon Mitglied ist,
+        // behält seine Rolle: eine ältere Einladung darf niemanden herabstufen.
         DB::transaction(function () use ($invitation, $organization, $user): void {
-            $organization->setRole($user, $invitation->role);
+            if (! $organization->hasMember($user)) {
+                $organization->setRole($user, $invitation->role);
+            }
+
             $invitation->delete();
         });
 
