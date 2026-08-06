@@ -18,7 +18,9 @@ export default function Dashboard() {
                 help={
                     <ul className="list-disc space-y-1 ps-4">
                         <li>Diese Seite ist eine Beispielseite des Oberflächen-Grundgerüsts.</li>
-                        <li>Alle Seiten liegen im gemeinsamen Rahmen mit Navigation und Dunkelmodus.</li>
+                        <li>
+                            Alle Seiten liegen im gemeinsamen Rahmen mit Navigation und Dunkelmodus.
+                        </li>
                         <li>Die wiederverwendbaren Bausteine zeigt die Seite „Bausteine".</li>
                     </ul>
                 }

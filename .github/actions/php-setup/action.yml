@@ -1,0 +1,41 @@
+name: PHP-Umgebung
+description: PHP einrichten, den Composer-Zwischenspeicher anbinden und die Abhängigkeiten installieren.
+
+inputs:
+  php-version:
+    description: PHP-Version für diesen Job.
+    required: false
+    default: '8.3'
+  install:
+    description: Abhängigkeiten installieren (für reine Lock-Prüfungen auf "false" setzen).
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: PHP einrichten
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.php-version }}
+        extensions: bcmath, intl, mbstring, pdo_sqlite, sqlite3
+        coverage: none
+        tools: composer:v2
+
+    - name: Composer-Zwischenspeicher finden
+      id: composer-cache
+      shell: bash
+      run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+    - name: Composer-Zwischenspeicher
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: composer-${{ runner.os }}-php${{ inputs.php-version }}-${{ hashFiles('composer.lock') }}
+        restore-keys: |
+          composer-${{ runner.os }}-php${{ inputs.php-version }}-
+
+    - name: Abhängigkeiten installieren
+      if: inputs.install == 'true'
+      shell: bash
+      run: composer install --no-interaction --no-progress --prefer-dist

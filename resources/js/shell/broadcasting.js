@@ -53,7 +53,9 @@ export function subscribe(config, channelName, eventName, handler) {
     } else if (clientConfig?.key !== config.key) {
         // Sollte nicht vorkommen (die Config kommt vom Server), wäre aber ein
         // stiller Fehler: die alte Verbindung würde weiterlaufen.
-        console.warn('[broadcast] Abweichende Verbindungsdaten — die bestehende Verbindung bleibt bestehen.');
+        console.warn(
+            '[broadcast] Abweichende Verbindungsdaten — die bestehende Verbindung bleibt bestehen.'
+        );
     }
 
     const channel = client.subscribe(channelName);

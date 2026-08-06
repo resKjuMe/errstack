@@ -4,7 +4,12 @@ import PageHead from '../components/PageHead.jsx';
 import Card from '../components/Card.jsx';
 import Flash from '../components/Flash.jsx';
 import { useToast } from '../components/Toast.jsx';
-import { KpiTilesSkeleton, LinesCardSkeleton, CardsSkeleton, TableSkeleton } from '../components/Skeleton.jsx';
+import {
+    KpiTilesSkeleton,
+    LinesCardSkeleton,
+    CardsSkeleton,
+    TableSkeleton,
+} from '../components/Skeleton.jsx';
 
 // Musterseite: zeigt jeden wiederverwendbaren Baustein einmal, damit sich
 // Aussehen und Verhalten in Hell und Dunkel prüfen lassen, ohne eine Fachseite
@@ -22,20 +27,33 @@ export default function Components() {
             <PageHead
                 title="Bausteine"
                 appName={shell.appName}
-                meta={<span className="text-sm text-gray-500 dark:text-gray-400">resources/js/shell/components</span>}
+                meta={
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                        resources/js/shell/components
+                    </span>
+                }
                 help="Jeder Baustein einmal in Aktion — zum Prüfen von Hell-/Dunkelmodus und Verhalten."
             />
 
             <div className="space-y-6">
-                <Card title="Meldungen (Flash)" description="Werden aus der Session gelesen und oben im Inhalt gezeigt.">
+                <Card
+                    title="Meldungen (Flash)"
+                    description="Werden aus der Session gelesen und oben im Inhalt gezeigt."
+                >
                     <Flash
                         status="Die Änderungen wurden gespeichert."
                         error="Der Vorgang konnte nicht abgeschlossen werden."
-                        errors={{ name: 'Der Name ist erforderlich.', email: 'Die E-Mail-Adresse ist ungültig.' }}
+                        errors={{
+                            name: 'Der Name ist erforderlich.',
+                            email: 'Die E-Mail-Adresse ist ungültig.',
+                        }}
                     />
                 </Card>
 
-                <Card title="Toasts" description="Kurzlebige Rückmeldungen rechts unten, unabhängig vom Seiteninhalt.">
+                <Card
+                    title="Toasts"
+                    description="Kurzlebige Rückmeldungen rechts unten, unabhängig vom Seiteninhalt."
+                >
                     <div className="flex flex-wrap gap-2">
                         <button
                             type="button"

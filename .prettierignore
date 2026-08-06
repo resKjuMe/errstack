@@ -1,0 +1,18 @@
+# Erzeugt oder von Dritten verwaltet
+/node_modules
+/vendor
+/public/build
+/public/hot
+/storage
+/bootstrap/cache
+composer.lock
+package-lock.json
+
+# Von Composer selbst geschrieben — Prettier wuerde dagegen anformatieren
+composer.json
+
+# PHP formatiert Pint, nicht Prettier
+*.php
+
+# Fliesstext bleibt handformatiert
+*.md

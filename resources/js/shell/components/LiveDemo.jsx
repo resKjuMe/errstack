@@ -23,7 +23,7 @@ export default function LiveDemo() {
             {
                 preserveScroll: true,
                 onError: () => toast.error('Der Job konnte nicht eingereiht werden.'),
-            },
+            }
         );
     };
 
@@ -51,8 +51,9 @@ export default function LiveDemo() {
 
             {!enabled && (
                 <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                    Live-Aktualisierung ist aus: <code>BROADCAST_CONNECTION</code> und die Verbindungsdaten sind nicht
-                    gesetzt. Der Job läuft trotzdem — sichtbar in der Worker-Ausgabe.
+                    Live-Aktualisierung ist aus: <code>BROADCAST_CONNECTION</code> und die
+                    Verbindungsdaten sind nicht gesetzt. Der Job läuft trotzdem — sichtbar in der
+                    Worker-Ausgabe.
                 </p>
             )}
 
@@ -60,7 +61,8 @@ export default function LiveDemo() {
                 <ul className="mt-4 space-y-2 text-sm">
                     {events.length === 0 && (
                         <li className="text-gray-500 dark:text-gray-400">
-                            Noch nichts eingegangen — Worker läuft? <code>php artisan queue:work</code>
+                            Noch nichts eingegangen — Worker läuft?{' '}
+                            <code>php artisan queue:work</code>
                         </li>
                     )}
                     {events.map((event) => (
@@ -68,7 +70,9 @@ export default function LiveDemo() {
                             key={`${event.reference}-${event.processedAt}`}
                             className="flex items-center justify-between gap-3 rounded-md bg-gray-50 px-3 py-2 dark:bg-gray-900/50"
                         >
-                            <span className="text-gray-700 dark:text-gray-300">{event.message}</span>
+                            <span className="text-gray-700 dark:text-gray-300">
+                                {event.message}
+                            </span>
                             <span className="shrink-0 font-mono text-xs text-gray-500 dark:text-gray-400">
                                 {event.processedAt}
                             </span>

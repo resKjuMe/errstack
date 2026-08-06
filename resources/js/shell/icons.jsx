@@ -30,7 +30,13 @@ export function LogoIcon({ appName = 'Errstack', className = '' }) {
 // Hamburger: geschlossen drei Striche, offen ein Kreuz (wie in der Blade-Navi).
 export function HamburgerIcon({ open = false, className = '' }) {
     return (
-        <svg className={className} stroke="currentColor" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+        <svg
+            className={className}
+            stroke="currentColor"
+            fill="none"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+        >
             <path
                 className={open ? 'hidden' : 'inline-flex'}
                 strokeLinecap="round"
@@ -63,7 +69,16 @@ export function ChevronDownIcon({ className = '' }) {
 
 export function SunIcon({ className = '' }) {
     return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg
+            className={className}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+        >
             <circle cx="12" cy="12" r="4" />
             <path d="M12 2v2" />
             <path d="M12 20v2" />
@@ -79,7 +94,16 @@ export function SunIcon({ className = '' }) {
 
 export function MoonIcon({ className = '' }) {
     return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg
+            className={className}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+        >
             <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
         </svg>
     );
@@ -87,7 +111,16 @@ export function MoonIcon({ className = '' }) {
 
 export function MonitorIcon({ className = '' }) {
     return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg
+            className={className}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+        >
             <rect x="2" y="3" width="20" height="14" rx="2" />
             <path d="M8 21h8" />
             <path d="M12 17v4" />
@@ -97,7 +130,16 @@ export function MonitorIcon({ className = '' }) {
 
 export function QuestionIcon({ className = '' }) {
     return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg
+            className={className}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+        >
             <circle cx="12" cy="12" r="10" />
             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
             <path d="M12 17h.01" />
@@ -146,7 +188,16 @@ export function MenuIcon({ name, className = '' }) {
     }
 
     return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg
+            className={className}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+        >
             {paths}
         </svg>
     );
