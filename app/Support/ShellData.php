@@ -30,6 +30,7 @@ final class ShellData
             'logoutHref' => Route::has('logout') ? route('logout') : null,
             'loginHref' => Route::has('login') ? route('login') : null,
             'csrf' => csrf_token(),
+            'broadcast' => self::broadcast(),
             'links' => self::links(),
             'menu' => self::menu(),
             'labels' => [
@@ -44,6 +45,34 @@ final class ShellData
                     'system' => 'Design des Systems',
                 ],
             ],
+        ];
+    }
+
+    /**
+     * Verbindungsdaten für den Websocket-Client (pusher-js). Der Schlüssel ist
+     * öffentlich; Secret und App-ID bleiben serverseitig. Ist nichts
+     * konfiguriert, liefert `enabled` false und der Client verbindet gar nicht.
+     *
+     * Lokal zeigt das auf den selbst gehosteten Reverb, in der Produktion auf
+     * Pusher Cloud — dieselbe Verbindung, nur andere Werte.
+     *
+     * @return array{enabled: bool, key: string|null, cluster: string|null, host: string|null, port: int|null, scheme: string|null, channel: string}
+     */
+    private static function broadcast(): array
+    {
+        $connection = config('broadcasting.default');
+        $options = config("broadcasting.connections.{$connection}.options", []);
+        $key = config("broadcasting.connections.{$connection}.key");
+        $scheme = $options['scheme'] ?? 'https';
+
+        return [
+            'enabled' => in_array($connection, ['reverb', 'pusher'], true) && filled($key),
+            'key' => $key,
+            'cluster' => $options['cluster'] ?? null,
+            'host' => $options['host'] ?? null,
+            'port' => isset($options['port']) ? (int) $options['port'] : null,
+            'scheme' => $scheme,
+            'channel' => 'demo',
         ];
     }
 
