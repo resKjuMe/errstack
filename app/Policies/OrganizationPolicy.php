@@ -61,6 +61,14 @@ class OrganizationPolicy
         return $this->atLeast($user, $organization, OrganizationRole::Admin);
     }
 
+    /**
+     * Projekte anlegen, einstellen und löschen.
+     */
+    public function manageProjects(User $user, Organization $organization): bool
+    {
+        return $this->atLeast($user, $organization, OrganizationRole::Admin);
+    }
+
     private function atLeast(User $user, Organization $organization, OrganizationRole $minimum): bool
     {
         return $organization->roleFor($user)?->atLeast($minimum) === true;

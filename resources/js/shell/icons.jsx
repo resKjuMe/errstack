@@ -155,6 +155,39 @@ export function QuestionIcon({ className = '' }) {
     );
 }
 
+// Farbe der Plattform-Kachel. Unbekannte Plattformen bekommen den grauen
+// Standard, damit ein neuer Enum-Wert nichts kaputt macht.
+const PLATFORM_COLORS = {
+    php: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
+    javascript: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+    python: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300',
+    node: 'bg-lime-100 text-lime-700 dark:bg-lime-900/40 dark:text-lime-300',
+    java: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+    go: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300',
+    ruby: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+    dotnet: 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
+};
+
+const PLATFORM_FALLBACK = 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
+
+// Symbol einer Plattform: farbige Kachel mit dem Kürzel aus dem PHP-Enum.
+// Bewusst keine Marken-Logos — die wären lizenzbehaftet und müssten für jede
+// neue Plattform gepflegt werden.
+export function PlatformIcon({ platform, short, label, className = '' }) {
+    return (
+        <span
+            title={label}
+            aria-label={label}
+            role="img"
+            className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-[0.625rem] font-bold uppercase ${
+                PLATFORM_COLORS[platform] ?? PLATFORM_FALLBACK
+            } ${className}`}
+        >
+            {short}
+        </span>
+    );
+}
+
 // Icons der Menü-Einträge (Nutzer-Menü, Primärlinks). Unbekannte Namen liefern
 // nichts, damit ein neuer Eintrag ohne Icon kein Loch reißt.
 const MENU_ICONS = {

@@ -54,16 +54,18 @@ class ShellTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('shell.links.0.label', 'Übersicht')
                 ->where('shell.links.0.active', true)
-                ->where('shell.links.1.label', 'Organisationen')
+                ->where('shell.links.1.label', 'Projekte')
                 ->where('shell.links.1.active', false)
-                ->where('shell.links.2.label', 'Bausteine')
+                ->where('shell.links.2.label', 'Organisationen')
                 ->where('shell.links.2.active', false)
+                ->where('shell.links.3.label', 'Bausteine')
+                ->where('shell.links.3.active', false)
             );
 
         $this->get('/bausteine')
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('shell.links.0.active', false)
-                ->where('shell.links.2.active', true)
+                ->where('shell.links.3.active', true)
             );
     }
 

@@ -8,6 +8,8 @@ import Profile from './shell/pages/Profile.jsx';
 import OrganizationsIndex from './shell/pages/organizations/Index.jsx';
 import OrganizationsShow from './shell/pages/organizations/Show.jsx';
 import TeamsShow from './shell/pages/teams/Show.jsx';
+import ProjectsIndex from './shell/pages/projects/Index.jsx';
+import ProjectsShow from './shell/pages/projects/Show.jsx';
 import InvitationsAccept from './shell/pages/invitations/Accept.jsx';
 import Login from './shell/pages/auth/Login.jsx';
 import Register from './shell/pages/auth/Register.jsx';
@@ -27,6 +29,8 @@ const pages = {
     'organizations/Index': OrganizationsIndex,
     'organizations/Show': OrganizationsShow,
     'teams/Show': TeamsShow,
+    'projects/Index': ProjectsIndex,
+    'projects/Show': ProjectsShow,
     'invitations/Accept': InvitationsAccept,
     'auth/Login': Login,
     'auth/Register': Register,
