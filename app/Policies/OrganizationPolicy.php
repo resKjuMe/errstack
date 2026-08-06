@@ -69,6 +69,16 @@ class OrganizationPolicy
         return $this->atLeast($user, $organization, OrganizationRole::Admin);
     }
 
+    /**
+     * Benachrichtigungswege einrichten, ändern, testen und löschen. Ab der
+     * Verwaltung: in den Kanälen stecken Zugangsdaten, und wer sie ändert,
+     * bestimmt, wohin künftig jede Meldung geht.
+     */
+    public function manageNotifications(User $user, Organization $organization): bool
+    {
+        return $this->atLeast($user, $organization, OrganizationRole::Admin);
+    }
+
     private function atLeast(User $user, Organization $organization, OrganizationRole $minimum): bool
     {
         return $organization->roleFor($user)?->atLeast($minimum) === true;

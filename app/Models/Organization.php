@@ -92,6 +92,18 @@ class Organization extends Model
     }
 
     /**
+     * Eingerichtete Benachrichtigungswege. Sie hängen an der Organisation und
+     * nicht am einzelnen Projekt: dieselbe Bereitschaft will nicht je Projekt
+     * neu eingetragen werden.
+     *
+     * @return HasMany<NotificationChannel, $this>
+     */
+    public function notificationChannels(): HasMany
+    {
+        return $this->hasMany(NotificationChannel::class);
+    }
+
+    /**
      * Mitgliedschaft dieses Nutzers — oder null, wenn er der Organisation nicht
      * angehört. Ist die Beziehung bereits geladen (Listen, Detailseite), wird
      * sie genutzt, statt erneut zu fragen.

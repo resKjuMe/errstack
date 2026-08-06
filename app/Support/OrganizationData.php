@@ -40,6 +40,7 @@ final class OrganizationData
                 'slug' => $organization->slug,
                 'name' => $organization->name,
                 'href' => route('organizations.show', $organization),
+                'notificationsHref' => route('notifications.index', $organization),
             ],
             'viewer' => [
                 'id' => $viewer->id,
