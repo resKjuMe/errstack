@@ -1,0 +1,180 @@
+import React, { useState } from 'react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
+import PageHead from '../../components/PageHead.jsx';
+import Card from '../../components/Card.jsx';
+import {
+    DangerButton,
+    InputError,
+    InputLabel,
+    PrimaryButton,
+    TextInput,
+} from '../../components/Form.jsx';
+
+// Ein Team der Organisation: umbenennen, Mitglieder zuordnen und herausnehmen.
+// Zur Auswahl stehen nur Mitglieder der Organisation.
+export default function Show({ team, organization, permissions, members, candidates }) {
+    const { shell } = usePage().props;
+
+    return (
+        <>
+            <PageHead
+                title={team.name}
+                appName={shell.appName}
+                help="Teams bündeln Mitglieder innerhalb einer Organisation. Rechte hängen weiterhin an der Rolle in der Organisation, nicht am Team."
+                meta={
+                    <Link
+                        href={organization.href}
+                        className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                    >
+                        {organization.name}
+                    </Link>
+                }
+            />
+
+            <div className="space-y-4">
+                {permissions.manage && <TeamSettings team={team} />}
+
+                <Card title="Mitglieder" description="Wer zu diesem Team gehört.">
+                    {members.length === 0 && (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Noch niemand zugeordnet.
+                        </p>
+                    )}
+
+                    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {members.map((member) => (
+                            <li
+                                key={member.id}
+                                className="flex flex-wrap items-center justify-between gap-3 py-3"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        {member.name}
+                                    </p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        {member.email}
+                                    </p>
+                                </div>
+
+                                {permissions.manage && (
+                                    <DangerButton
+                                        type="button"
+                                        onClick={() =>
+                                            router.delete(
+                                                `/teams/${team.id}/mitglieder/${member.id}`,
+                                                { preserveScroll: true }
+                                            )
+                                        }
+                                    >
+                                        Entfernen
+                                    </DangerButton>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+
+                    {permissions.manage && <AddMember team={team} candidates={candidates} />}
+                </Card>
+
+                {permissions.manage && <DeleteTeam team={team} />}
+            </div>
+        </>
+    );
+}
+
+function TeamSettings({ team }) {
+    const { data, setData, patch, processing, errors } = useForm({ name: team.name });
+
+    const submit = (e) => {
+        e.preventDefault();
+        patch(`/teams/${team.id}`, { preserveScroll: true });
+    };
+
+    return (
+        <Card title="Stammdaten" description="Der Name des Teams.">
+            <form onSubmit={submit} className="max-w-xl space-y-4">
+                <div>
+                    <InputLabel htmlFor="team_name" value="Name" />
+                    <TextInput
+                        id="team_name"
+                        name="name"
+                        value={data.name}
+                        required
+                        className="mt-1"
+                        onChange={(e) => setData('name', e.target.value)}
+                    />
+                    <InputError message={errors.name} className="mt-2" />
+                </div>
+
+                <PrimaryButton type="submit" disabled={processing}>
+                    Speichern
+                </PrimaryButton>
+            </form>
+        </Card>
+    );
+}
+
+function AddMember({ team, candidates }) {
+    const [userId, setUserId] = useState('');
+
+    if (candidates.length === 0) {
+        return (
+            <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                Alle Mitglieder der Organisation gehören bereits zu diesem Team.
+            </p>
+        );
+    }
+
+    const submit = (e) => {
+        e.preventDefault();
+
+        if (userId) {
+            router.post(
+                `/teams/${team.id}/mitglieder`,
+                { user_id: userId },
+                { preserveScroll: true, onSuccess: () => setUserId('') }
+            );
+        }
+    };
+
+    return (
+        <form onSubmit={submit} className="mt-4 flex flex-wrap items-end gap-3">
+            <div>
+                <InputLabel htmlFor="team_member" value="Mitglied hinzufügen" />
+                <select
+                    id="team_member"
+                    value={userId}
+                    onChange={(e) => setUserId(e.target.value)}
+                    className="mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                >
+                    <option value="">Bitte wählen</option>
+                    {candidates.map((candidate) => (
+                        <option key={candidate.id} value={candidate.id}>
+                            {candidate.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            <PrimaryButton type="submit" disabled={!userId}>
+                Hinzufügen
+            </PrimaryButton>
+        </form>
+    );
+}
+
+function DeleteTeam({ team }) {
+    const { delete: destroy, processing } = useForm({});
+
+    return (
+        <Card title="Team löschen" description="Die Mitglieder bleiben in der Organisation.">
+            <DangerButton
+                type="button"
+                disabled={processing}
+                onClick={() => destroy(`/teams/${team.id}`)}
+            >
+                Team löschen
+            </DangerButton>
+        </Card>
+    );
+}

@@ -48,6 +48,8 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // `intended`, damit ein Einladungslink die Registrierung übersteht: wer
+        // ohne Konto auf /einladung/… klickt, landet danach wieder dort.
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 }

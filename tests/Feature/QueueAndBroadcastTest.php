@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Enums\QueueName;
 use App\Events\DemoIngestProcessed;
 use App\Jobs\ProcessDemoIngest;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schedule;
@@ -13,6 +15,8 @@ use Tests\TestCase;
 
 class QueueAndBroadcastTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_ingest_runs_before_notifications(): void
     {
         $this->assertSame('ingest,notifications,default', QueueName::priority());
@@ -77,6 +81,9 @@ class QueueAndBroadcastTest extends TestCase
 
     public function test_the_shell_only_offers_live_updates_when_broadcasting_is_configured(): void
     {
+        // Die Übersicht ist seit der Anmeldung (F3) nur angemeldet zu erreichen.
+        $this->actingAs(User::factory()->create());
+
         config()->set('broadcasting.default', 'null');
 
         $this->get('/')->assertInertia(fn ($page) => $page->where('shell.broadcast.enabled', false));

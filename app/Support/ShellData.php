@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Route;
  */
 final class ShellData
 {
+    /**
+     * @return array<string, mixed>
+     */
     public static function build(): array
     {
         $user = Auth::user();
@@ -89,6 +92,11 @@ final class ShellData
                 'label' => 'Übersicht',
                 'route' => 'dashboard',
                 'activePattern' => 'dashboard',
+            ],
+            [
+                'label' => 'Organisationen',
+                'route' => 'organizations.index',
+                'activePattern' => 'organizations.*',
             ],
             [
                 'label' => 'Bausteine',

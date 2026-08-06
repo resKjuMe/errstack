@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Enums\OrganizationRole;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -17,9 +19,17 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
+        $user = User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Ohne Organisation liefe die lokale Installation ins Leere — alle
+        // fachlichen Daten hängen an einer.
+        $organization = Organization::createNamed('Beispiel GmbH');
+        $organization->setRole($user, OrganizationRole::Owner);
+        $organization->teams()->create(['name' => 'Plattform']);
+
+        $user->switchOrganization($organization);
     }
 }
