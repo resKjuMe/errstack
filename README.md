@@ -42,6 +42,14 @@ Danach läuft die Anwendung auf http://localhost:8000.
 Datenbank ist standardmäßig SQLite (`database/database.sqlite`); für eine andere
 Datenbank `DB_CONNECTION` in der `.env` umstellen.
 
+Die Oberfläche ist deutsch, deshalb gehört `APP_LOCALE=de` in die `.env`
+(`APP_FALLBACK_LOCALE` bleibt `en`, damit Schlüssel ohne deutsche Übersetzung
+weiterhin greifen). Wer die `.env` vor der Anmeldung (F3) angelegt hat, hat dort
+noch `APP_LOCALE=en` stehen — die `.env` ist nicht versioniert und wird von
+`composer setup` nicht nachgezogen. Die Anwendung sieht dann fast deutsch aus,
+nur die Meldungen aus dem Framework kommen englisch heraus („The password field
+is required." statt „Das Passwort ist erforderlich.").
+
 `composer dev` startet neben Server und Vite auch den Queue-Worker, den
 Websocket-Server (Reverb) und den Zeitplan.
 
