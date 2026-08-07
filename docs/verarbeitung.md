@@ -17,6 +17,7 @@ POST /api/{projekt}/envelope/     ─┴─▶ ingest_payloads (Rohdaten)
                                      ├ Eingangsfilter (I8)
                                      ├ Stichprobe     (I9)
                                      ├ Scrubbing      (I7)
+                                     ├ Antwortzeiten  (PF1) → docs/antwortzeiten.md
                                      ├ Normalisierung (I4)
                                      ├ Grouping       (I5)
                                      └ Aggregation    (I6)
