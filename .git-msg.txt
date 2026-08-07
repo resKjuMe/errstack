@@ -1,0 +1,5 @@
+ERRSTACK-A5: CI-Befunde beheben (Menü-Test, überflüssiges ?->)
+
+Der Menü-Test kennt den neuen Eintrag „Benachrichtigungen" noch nicht, und
+`?->` links von `??` ist doppelt gemoppelt: das Null-Coalescing fängt den
+Zugriff auf null bereits ab.

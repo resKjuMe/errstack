@@ -72,7 +72,7 @@ final readonly class PreferenceScope
             $chain[] = "project:{$project->id}";
         }
 
-        $organizationId = $project?->organization_id ?? $organization?->id;
+        $organizationId = $project->organization_id ?? $organization?->id;
 
         if ($organizationId !== null) {
             $chain[] = "organization:{$organizationId}";

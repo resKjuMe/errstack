@@ -66,8 +66,10 @@ class DeliverPersonalNotification implements ShouldQueue
      */
     private function origin(): string
     {
-        return $this->project?->name
-            ?? $this->organization?->name
+        // Ohne `?->`: `??` fängt den Zugriff auf null bereits ab, und PHPStan
+        // besteht zu Recht darauf, dass beides zusammen nur Rauschen ist.
+        return $this->project->name
+            ?? $this->organization->name
             ?? (string) config('app.name', 'Errstack');
     }
 }
