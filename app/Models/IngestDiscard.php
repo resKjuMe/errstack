@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\DiscardOrigin;
 use App\Enums\DiscardReason;
-use Carbon\CarbonInterface;
 use Database\Factories\IngestDiscardFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -95,17 +94,15 @@ class IngestDiscard extends Model
             return;
         }
 
-        $attributes = [
-            'project_id' => $key->project_id,
-            'project_key_id' => $key->id,
-            'origin' => $origin->value,
-            'reason' => $reason,
-            'bucket' => self::bucket(),
-        ];
+        $bucket = self::bucket();
 
         $existing = self::query()
-            ->where($attributes)
-            // Getrennt, weil `where(['category' => null])` zu `category = null`
+            ->where('project_id', $key->project_id)
+            ->where('project_key_id', $key->id)
+            ->where('origin', $origin->value)
+            ->where('reason', $reason)
+            ->where('bucket', $bucket)
+            // Getrennt, weil `where('category', null)` zu `category = null`
             // wird und das nie zutrifft.
             ->when($category === null, fn ($query) => $query->whereNull('category'))
             ->when($category !== null, fn ($query) => $query->where('category', $category))
@@ -119,10 +116,13 @@ class IngestDiscard extends Model
 
         $entry = new self;
 
-        foreach ($attributes + ['category' => $category, 'quantity' => $quantity] as $column => $value) {
-            $entry->{$column} = $value;
-        }
-
+        $entry->project_id = $key->project_id;
+        $entry->project_key_id = $key->id;
+        $entry->origin = $origin;
+        $entry->reason = $reason;
+        $entry->category = $category;
+        $entry->bucket = $bucket;
+        $entry->quantity = $quantity;
         $entry->save();
     }
 
@@ -130,7 +130,7 @@ class IngestDiscard extends Model
      * Die Stunde, in der gezählt wird. Feiner wäre für die Auskunft ohne
      * Nutzen und würde die Tabelle unnötig füllen.
      */
-    public static function bucket(): CarbonInterface
+    public static function bucket(): Carbon
     {
         return Carbon::now()->startOfHour();
     }

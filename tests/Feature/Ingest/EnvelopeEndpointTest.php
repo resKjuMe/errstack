@@ -185,7 +185,7 @@ class EnvelopeEndpointTest extends TestCase
      */
     public function test_a_broken_item_is_dropped_alone_and_logged(): void
     {
-        Log::spy();
+        $log = Log::spy();
 
         $key = $this->key();
 
@@ -200,7 +200,7 @@ class EnvelopeEndpointTest extends TestCase
         $this->assertSame(1, IngestPayload::query()->count());
         $this->assertSame(DiscardReason::Unreadable->value, IngestDiscard::query()->sole()->reason);
 
-        Log::shouldHaveReceived('warning')->once();
+        $log->shouldHaveReceived('warning')->once();
     }
 
     /**
