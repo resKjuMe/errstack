@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Enums\Platform;
 use App\Enums\ResolutionBehavior;
+use App\Models\Environment;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Team;
@@ -73,7 +74,7 @@ final class ProjectData
      */
     public static function detail(Project $project, User $viewer): array
     {
-        $project->load(['organization', 'teams']);
+        $project->load(['organization', 'teams', 'environments']);
         $organization = $project->organization;
 
         $mayManage = Gate::forUser($viewer)->allows('update', $project);
@@ -113,6 +114,16 @@ final class ProjectData
                     'name' => $team->name,
                     'assigned' => $project->teams->contains($team),
                     'href' => route('teams.show', $team),
+                ])->all(),
+            'environments' => $project->environments
+                ->sortBy(fn (Environment $environment): string => (string) $environment->name)
+                ->values()
+                ->map(fn (Environment $environment): array => [
+                    'id' => $environment->id,
+                    'name' => $environment->name,
+                    'hidden' => $environment->is_hidden,
+                    'lastSeenAt' => $environment->last_seen_at?->format('d.m.Y H:i'),
+                    'href' => route('projects.environments.update', [$organization, $project, $environment]),
                 ])->all(),
             'platformOptions' => Platform::options(),
             'resolutionOptions' => ResolutionBehavior::options(),

@@ -28,12 +28,15 @@ export function TextInput({ className = '', ...props }) {
 
 // Auswahlfeld. `options` sind die Paare aus value und label, wie sie die
 // PHP-Enums über ihre options()-Methode liefern.
-export function SelectInput({ options = [], className = '', ...props }) {
+// `placeholder` ist der Eintrag für „keine Einschränkung": ein Wert von leerem
+// Text, der vor den Optionen steht. Ohne ihn ist das Feld eine Pflichtauswahl.
+export function SelectInput({ options = [], placeholder = null, className = '', ...props }) {
     return (
         <select
             {...props}
             className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 ${className}`}
         >
+            {placeholder !== null && <option value="">{placeholder}</option>}
             {options.map((option) => (
                 <option key={option.value} value={option.value}>
                     {option.label}
