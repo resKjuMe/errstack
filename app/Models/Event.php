@@ -44,6 +44,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $server_name
  * @property Carbon $occurred_at
  * @property Carbon $received_at
+ * @property Carbon|null $counted_at
  * @property array<string, mixed>|null $message
  * @property list<array<string, mixed>>|null $exceptions
  * @property list<array<string, mixed>>|null $threads
@@ -107,6 +108,42 @@ class Event extends Model
                 'notes' => $event->notes,
             ],
         );
+    }
+
+    /**
+     * Sichert den Anspruch, dieses Ereignis zu zählen.
+     *
+     * Gezählt wird jede Meldung genau einmal — auch die, die ein zweites Mal
+     * durch die Kette läuft. Das ist kein Sonderfall, sondern eingeplant: nach
+     * einem Fehlschlag läuft der Job erneut, und nach einer Verbesserung an
+     * einem Schritt sollen sich alte Meldungen neu auswerten lassen. Der
+     * ausgewertete Datensatz wird dann ersetzt ({@see self::store()}); ein
+     * Zähler dagegen ließe sich nicht ersetzen, er würde nur wachsen.
+     *
+     * Entschieden wird über die Bedingung in der Anweisung selbst und nicht über
+     * ein vorheriges `counted_at === null`: zwei Arbeiter würden dort beide
+     * „noch nicht" lesen. Die Anweisung trifft dagegen nur eine Zeile, in der
+     * der Vermerk noch fehlt — und wer sie trifft, zählt.
+     *
+     * @return bool `true`, wenn dieses Ereignis jetzt zu zählen ist.
+     */
+    public function claimForCounting(): bool
+    {
+        $now = Carbon::now();
+
+        $claimed = self::query()
+            ->whereKey($this->getKey())
+            ->whereNull('counted_at')
+            ->update(['counted_at' => $now]);
+
+        if ($claimed !== 1) {
+            return false;
+        }
+
+        $this->counted_at = $now;
+        $this->syncOriginalAttribute('counted_at');
+
+        return true;
     }
 
     /**
@@ -245,6 +282,7 @@ class Event extends Model
             'level' => EventLevel::class,
             'occurred_at' => 'datetime',
             'received_at' => 'datetime',
+            'counted_at' => 'datetime',
             'message' => 'array',
             'exceptions' => 'array',
             'threads' => 'array',
