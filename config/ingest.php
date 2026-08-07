@@ -4,6 +4,7 @@ use App\Support\Ingest\Processing\Steps\DecodePayload;
 use App\Support\Ingest\Processing\Steps\GroupEvent;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
+use App\Support\Ingest\Processing\Steps\ScrubEvent;
 
 return [
 
@@ -113,6 +114,13 @@ return [
     | Sentry-Schema arbeitet und nicht mit unserem Fehler-Modell — mit dem hat
     | eine Transaktion nichts zu tun.
     |
+    | Das Scrubbing steht vor allem, was schreibt — und zwar auch vor den beiden
+    | Schritten, die noch fehlen (Eingangsfilter, Stichprobe): die sortieren aus,
+    | sie speichern nicht. Käme es hinter ihnen, würde eine aussortierte Meldung
+    | zwar nie gespeichert, eine behaltene aber erst nach zwei weiteren Schritten
+    | bereinigt — und jeder davon wäre eine Stelle, an der versehentlich etwas
+    | abgelegt wird.
+    |
     | Solange die davorstehenden Schritte fehlen, ist die Liste kürzer als der
     | Plan: sie werden **vor** den bestehenden eingefügt, nicht dahinter.
     |
@@ -125,6 +133,7 @@ return [
 
         'steps' => [
             DecodePayload::class,
+            ScrubEvent::class,
             RecordTransaction::class,
             NormalizeEvent::class,
             GroupEvent::class,

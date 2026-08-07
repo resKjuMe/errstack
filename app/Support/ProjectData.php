@@ -102,6 +102,9 @@ final class ProjectData
                 // erklären, warum die Fehlerliste so aussieht, wie sie aussieht
                 // — und diese Frage stellt sich nicht nur die Verwaltung.
                 'groupingHref' => route('projects.grouping.index', [$organization, $project]),
+                // Ebenso ohne Bedingung: was von einer Meldung gespeichert wird,
+                // geht jeden an, der mit den Daten arbeitet.
+                'privacyHref' => route('projects.privacy.index', [$organization, $project]),
             ],
             'organization' => [
                 'slug' => $organization->slug,

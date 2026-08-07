@@ -143,6 +143,21 @@ class Organization extends Model
     }
 
     /**
+     * Organisationsweite Datenschutz-Regeln: die, die für alle Projekte gelten.
+     *
+     * Die Bedingung auf `project_id` gehört in die Beziehung und nicht an jeden
+     * Aufruf: dieselbe Tabelle trägt auch die Regeln der einzelnen Projekte, und
+     * ohne sie käme hier alles zusammen — samt der Möglichkeit, über diese
+     * Beziehung versehentlich eine Projekt-Regel zu ändern.
+     *
+     * @return HasMany<ScrubRule, $this>
+     */
+    public function scrubRules(): HasMany
+    {
+        return $this->hasMany(ScrubRule::class)->whereNull('project_id');
+    }
+
+    /**
      * Mitgliedschaft dieses Nutzers — oder null, wenn er der Organisation nicht
      * angehört. Ist die Beziehung bereits geladen (Listen, Detailseite), wird
      * sie genutzt, statt erneut zu fragen.

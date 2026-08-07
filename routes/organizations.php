@@ -16,6 +16,8 @@ use App\Http\Controllers\InvitationAcceptanceController;
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationInvitationController;
+use App\Http\Controllers\OrganizationPrivacyController;
+use App\Http\Controllers\ScrubRuleController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamMemberController;
 use Illuminate\Support\Facades\Route;
@@ -42,6 +44,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('organizations.audit-log.index');
     Route::get('organisationen/{organization}/protokoll/export', [AuditLogController::class, 'export'])
         ->name('organizations.audit-log.export');
+
+    // Organisationsweiter Datenschutz: Regeln, die für alle Projekte gelten.
+    // Geändert und gelöscht werden sie über `scrub-rules.*` weiter unten — die
+    // Regel weiß selbst, zu welcher Ebene sie gehört.
+    Route::get('organisationen/{organization}/datenschutz', [OrganizationPrivacyController::class, 'index'])
+        ->name('organizations.privacy.index');
+    Route::post('organisationen/{organization}/datenschutz/regeln', [ScrubRuleController::class, 'store'])
+        ->name('organizations.privacy.rules.store');
+
+    // Eine Regel ändern und löschen, ohne die Ebene erneut in der Adresse zu
+    // nennen — wie bei Einladungen und Mitgliedschaften.
+    Route::patch('datenschutz-regeln/{scrub_rule}', [ScrubRuleController::class, 'update'])
+        ->name('scrub-rules.update');
+    Route::delete('datenschutz-regeln/{scrub_rule}', [ScrubRuleController::class, 'destroy'])
+        ->name('scrub-rules.destroy');
 
     Route::post('organisationen/{organization}/einladungen', [OrganizationInvitationController::class, 'store'])
         ->name('organizations.invitations.store');

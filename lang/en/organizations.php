@@ -26,6 +26,7 @@ return [
         'help' => 'Roles decide who may do what: owner everything, administration the organization including members and teams, member the daily work, read-only just looking.',
         'own_role' => 'Your role:',
         'audit_log' => 'Audit log',
+        'privacy' => 'Privacy',
         'all_organizations' => 'All organizations',
     ],
 

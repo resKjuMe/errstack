@@ -119,6 +119,7 @@ return [
         'too_large' => 'too large',
         'too_many_items' => 'too many items',
         'duplicate' => 'duplicate delivery',
+        'scrubbed' => 'not stored for privacy reasons',
     ],
 
     'event_level' => [
@@ -214,6 +215,11 @@ return [
         'ruby' => 'Ruby',
         'dotnet' => '.NET',
         'other' => 'Other',
+    ],
+
+    'scrub_rule_type' => [
+        'field' => 'Field name',
+        'pattern' => 'Pattern in the value',
     ],
 
     'resolution_behavior' => [
