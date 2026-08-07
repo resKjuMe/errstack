@@ -6,6 +6,7 @@ use App\Models\ApiToken;
 use App\Notifications\ChannelRegistry;
 use App\Notifications\Contracts\ChannelDriver;
 use App\Notifications\NotificationPreferences;
+use App\Support\Ingest\Grouping\Grouper;
 use App\Support\Ingest\Processing\ProcessingPipeline;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
@@ -45,6 +46,15 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             ProcessingPipeline::class,
             static fn (): ProcessingPipeline => ProcessingPipeline::fromConfig(),
+        );
+
+        // Die Gruppierung liest ihre Grenzen aus der Konfiguration. Ebenfalls
+        // `bind` und nicht `singleton`, aus demselben Grund wie oben — und
+        // weil ein Test, der eine andere Grenze setzt, sonst gegen eine
+        // festgehaltene Instanz aus einem vorherigen Test liefe.
+        $this->app->bind(
+            Grouper::class,
+            static fn (): Grouper => Grouper::fromConfig(),
         );
     }
 

@@ -78,6 +78,8 @@ export default function Show({
 
                 <CronMonitors project={project} />
 
+                <Grouping project={project} />
+
                 {permissions.delete && <DeleteProject project={project} />}
             </div>
         </>
@@ -361,6 +363,21 @@ function CronMonitors({ project }) {
         <Card title={t('projects.crons.title')} description={t('projects.crons.description')}>
             <Link href={project.cronsHref}>
                 <SecondaryButton type="button">{t('projects.crons.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zu den Fingerprint-Regeln. Ebenfalls ohne Bedingung: sie erklären, warum
+// gleichartige Meldungen zu einem Eintrag werden — das ist eine Frage der
+// Fehlersuche und keine der Verwaltung.
+function Grouping({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.grouping.title')} description={t('projects.grouping.description')}>
+            <Link href={project.groupingHref}>
+                <SecondaryButton type="button">{t('projects.grouping.manage')}</SecondaryButton>
             </Link>
         </Card>
     );

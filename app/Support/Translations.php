@@ -28,6 +28,7 @@ final class Translations
         'crons',
         'dashboard',
         'filters',
+        'grouping',
         'invitations',
         'nav',
         'notifications',

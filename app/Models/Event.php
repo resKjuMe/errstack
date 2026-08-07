@@ -28,8 +28,10 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property int $project_id
+ * @property int|null $event_group_id
  * @property int $ingest_payload_id
  * @property string $event_id
+ * @property string|null $fingerprint
  * @property EventLevel $level
  * @property string $platform
  * @property string|null $title
@@ -55,6 +57,7 @@ use Illuminate\Support\Carbon;
  * @property array<string, string>|null $modules
  * @property array<string, mixed>|null $unknown
  * @property array{truncated?: list<string>, invalid?: list<string>}|null $notes
+ * @property array{source: string, values: list<string>, components: list<array{name: string, value: string}>, rule_id: int|null}|null $grouping
  */
 class Event extends Model
 {
@@ -167,6 +170,20 @@ class Event extends Model
     }
 
     /**
+     * Die Gruppe, in der diese Meldung mit ihresgleichen liegt.
+     *
+     * `null`, solange die Gruppierung nicht gelaufen ist — bei einer Meldung,
+     * die vor dieser Aufgabe ausgewertet wurde, und bei jeder, deren Kette vor
+     * dem Gruppieren abgebrochen ist.
+     *
+     * @return BelongsTo<EventGroup, $this>
+     */
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(EventGroup::class, 'event_group_id');
+    }
+
+    /**
      * @return BelongsTo<IngestPayload, $this>
      */
     public function payload(): BelongsTo
@@ -187,7 +204,10 @@ class Event extends Model
      */
     protected $fillable = [
         'project_id',
+        'event_group_id',
         'ingest_payload_id',
+        'fingerprint',
+        'grouping',
         'event_id',
         'level',
         'platform',
@@ -238,6 +258,7 @@ class Event extends Model
             'modules' => 'array',
             'unknown' => 'array',
             'notes' => 'array',
+            'grouping' => 'array',
         ];
     }
 }

@@ -16,6 +16,7 @@ import ProjectsIndex from './shell/pages/projects/Index.jsx';
 import ProjectsShow from './shell/pages/projects/Show.jsx';
 import ProjectsKeys from './shell/pages/projects/Keys.jsx';
 import ProjectsCrons from './shell/pages/projects/Crons.jsx';
+import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
 import InvitationsAccept from './shell/pages/invitations/Accept.jsx';
 import ApiTokensIndex from './shell/pages/api-tokens/Index.jsx';
 import Login from './shell/pages/auth/Login.jsx';
@@ -44,6 +45,7 @@ const pages = {
     'projects/Show': ProjectsShow,
     'projects/Keys': ProjectsKeys,
     'projects/Crons': ProjectsCrons,
+    'projects/Grouping': ProjectsGrouping,
     'invitations/Accept': InvitationsAccept,
     'api-tokens/Index': ApiTokensIndex,
     'auth/Login': Login,

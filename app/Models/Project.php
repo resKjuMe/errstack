@@ -135,6 +135,26 @@ class Project extends Model
     }
 
     /**
+     * Die Fehlergruppen dieses Projekts — je Fingerabdruck eine.
+     *
+     * @return HasMany<EventGroup, $this>
+     */
+    public function eventGroups(): HasMany
+    {
+        return $this->hasMany(EventGroup::class);
+    }
+
+    /**
+     * Die projektweiten Regeln, mit denen das Grouping korrigiert wird (I5).
+     *
+     * @return HasMany<FingerprintRule, $this>
+     */
+    public function fingerprintRules(): HasMany
+    {
+        return $this->hasMany(FingerprintRule::class);
+    }
+
+    /**
      * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo

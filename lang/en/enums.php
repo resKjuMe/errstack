@@ -4,6 +4,16 @@
 // stored value so the reference stays readable in exports as well.
 return [
 
+    'grouping_source' => [
+        'rule' => 'Project rule',
+        'custom' => 'Fingerprint sent by the SDK',
+        'stacktrace' => 'Stack trace',
+        'exception' => 'Exception',
+        'message' => 'Message',
+        'fallback' => 'Title and culprit',
+        'empty' => 'Nothing to tell them apart',
+    ],
+
     'api_scope' => [
         'org:read' => 'Read organization',
         'org:write' => 'Change organization',
