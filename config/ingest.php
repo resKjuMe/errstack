@@ -1,6 +1,7 @@
 <?php
 
 use App\Support\Ingest\Processing\Steps\DecodePayload;
+use App\Support\Ingest\Processing\Steps\NormalizeEvent;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
 
 return [
@@ -124,6 +125,57 @@ return [
         'steps' => [
             DecodePayload::class,
             RecordTransaction::class,
+            NormalizeEvent::class,
+        ],
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Normalisierung
+    |--------------------------------------------------------------------------
+    |
+    | Die Aufnahme kennt nur eine Grenze: wie groß eine Meldung im Ganzen sein
+    | darf. Das genügt hier nicht. Eine Meldung von knapp einem Megabyte ist
+    | erlaubt — sie darf aber nicht aus einem einzigen Fehlertext von einem
+    | Megabyte bestehen, denn der wird in Listen, Suchergebnissen, E-Mails und
+    | Chat-Nachrichten wieder ausgepackt, und dort kostet er jedes Mal erneut.
+    | Die Werte hier verteilen das erlaubte Gesamtgewicht auf die Abschnitte.
+    |
+    | Gekürzt wird sichtbar: jede Kürzung steht danach unter `notes.truncated`
+    | am Datensatz. Ein abgeschnittener Stacktrace, der aussieht wie ein kurzer,
+    | schickt den Suchenden an die falsche Stelle — das ist teurer als der
+    | Speicher, den die Grenze spart.
+    |
+    |   string_chars       — Zeichen je Textfeld (Fehlertext, Dateiname …).
+    |   source_line_chars  — Zeichen je Zeile Quelltext. Deutlich enger: eine
+    |                        gebündelte JavaScript-Datei besteht aus wenigen
+    |                        Zeilen von je hunderten Kilobyte.
+    |   exceptions         — verschachtelte Ursachen („caused by") je Meldung.
+    |   frames             — Stapelrahmen je Stacktrace.
+    |   context_lines      — Quelltextzeilen vor und nach der Fehlerstelle.
+    |   threads            — Ausführungsstränge je Meldung.
+    |   breadcrumbs        — Spuren je Meldung; gekappt wird das Älteste.
+    |   entries            — Einträge je Schlüssel-Wert-Abschnitt (Marken,
+    |                        Kopfzeilen, Umgebungsvariablen …).
+    |   depth              — Verschachtelungstiefe in frei geformten
+    |                        Abschnitten. Ohne diese Grenze genügte ein tief
+    |                        gebauter Feld-Baum, um die Auswertung anzuhalten.
+    |
+    */
+
+    'normalization' => [
+
+        'limits' => [
+            'string_chars' => (int) env('INGEST_NORMALIZE_STRING_CHARS', 8192),
+            'source_line_chars' => (int) env('INGEST_NORMALIZE_SOURCE_LINE_CHARS', 512),
+            'exceptions' => (int) env('INGEST_NORMALIZE_MAX_EXCEPTIONS', 25),
+            'frames' => (int) env('INGEST_NORMALIZE_MAX_FRAMES', 250),
+            'context_lines' => (int) env('INGEST_NORMALIZE_MAX_CONTEXT_LINES', 10),
+            'threads' => (int) env('INGEST_NORMALIZE_MAX_THREADS', 25),
+            'breadcrumbs' => (int) env('INGEST_NORMALIZE_MAX_BREADCRUMBS', 100),
+            'entries' => (int) env('INGEST_NORMALIZE_MAX_ENTRIES', 100),
+            'depth' => (int) env('INGEST_NORMALIZE_MAX_DEPTH', 5),
         ],
 
     ],

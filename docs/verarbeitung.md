@@ -17,11 +17,17 @@ POST /api/{projekt}/envelope/     ─┴─▶ ingest_payloads (Rohdaten)
                                      ├ Eingangsfilter (I8)
                                      ├ Stichprobe     (I9)
                                      ├ Scrubbing      (I7)
-                                     ├ Antwortzeiten  (PF1) → docs/antwortzeiten.md
-                                     ├ Normalisierung (I4)
+                                     ├ Antwortzeiten  (PF1) ─▶ transactions
+                                     ├ Normalisierung (I4)  ─▶ events
                                      ├ Grouping       (I5)
                                      └ Aggregation    (I6)
 ```
+
+Was die Normalisierung aus einer Meldung macht — und warum sie nichts
+aussortiert —, steht in [normalisierung.md](normalisierung.md). Wie
+Transaktionen und ihre Einzelschritte abgelegt werden, steht in
+[antwortzeiten.md](antwortzeiten.md); die beiden Schritte fassen verschiedene
+Meldungsarten an und kommen sich nicht in die Quere.
 
 ## Der Rahmen
 
