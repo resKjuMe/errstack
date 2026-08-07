@@ -228,4 +228,21 @@ return [
         'after_month' => 'After 30 days without a new occurrence',
     ],
 
+    'issue_status' => [
+        'unresolved' => 'Unresolved',
+        'resolved' => 'Resolved',
+        'ignored' => 'Ignored',
+    ],
+
+    'issue_priority' => [
+        'high' => 'High',
+        'medium' => 'Medium',
+        'low' => 'Low',
+    ],
+
+    'count_period' => [
+        'hour' => 'Hourly',
+        'day' => 'Daily',
+    ],
+
 ];

@@ -228,4 +228,21 @@ return [
         'after_month' => 'Nach 30 Tagen ohne neues Auftreten',
     ],
 
+    'issue_status' => [
+        'unresolved' => 'Offen',
+        'resolved' => 'Erledigt',
+        'ignored' => 'Stummgeschaltet',
+    ],
+
+    'issue_priority' => [
+        'high' => 'Hoch',
+        'medium' => 'Mittel',
+        'low' => 'Niedrig',
+    ],
+
+    'count_period' => [
+        'hour' => 'Stündlich',
+        'day' => 'Täglich',
+    ],
+
 ];

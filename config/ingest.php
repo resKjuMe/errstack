@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\Ingest\Processing\Steps\AggregateIssue;
 use App\Support\Ingest\Processing\Steps\DecodePayload;
 use App\Support\Ingest\Processing\Steps\GroupEvent;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
@@ -137,6 +138,7 @@ return [
             RecordTransaction::class,
             NormalizeEvent::class,
             GroupEvent::class,
+            AggregateIssue::class,
         ],
 
     ],
