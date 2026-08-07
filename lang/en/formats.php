@@ -16,4 +16,11 @@ return [
     'decimal_separator' => '.',
     'thousands_separator' => ',',
 
+    // Run times (App\Support\Formats::duration). The unit follows the order of
+    // magnitude — nobody reads "7380 s" as a little over two hours.
+    'duration_milliseconds' => ':value ms',
+    'duration_seconds' => ':value s',
+    'duration_minutes' => ':value min',
+    'duration_hours' => ':value h',
+
 ];

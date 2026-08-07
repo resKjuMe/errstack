@@ -20,6 +20,7 @@
 |
 */
 
+use App\Http\Controllers\Ingest\CheckInController;
 use App\Http\Controllers\Ingest\EnvelopeController;
 use App\Http\Controllers\Ingest\StoreController;
 use Illuminate\Support\Facades\Route;
@@ -38,3 +39,14 @@ Route::post('{project}/envelope', [EnvelopeController::class, 'store'])
     ->whereNumber('project')
     ->middleware('ingest.key')
     ->name('ingest.envelope');
+
+// Lebenszeichen eines überwachten Cronjobs, ohne SDK: der Schlüssel steht hier
+// in der Adresse statt in einer Kopfzeile (siehe App\Support\Ingest\IngestAuth),
+// damit ein `curl` am Ende eines Shell-Skripts genügt. `GET` ist zugelassen,
+// weil die Gegenstelle oft nur Adressen aufrufen kann.
+Route::match(['get', 'post'], '{project}/cron/{monitor}/{key}', [CheckInController::class, 'store'])
+    ->whereNumber('project')
+    ->where('monitor', '[A-Za-z0-9._-]{1,64}')
+    ->where('key', '[A-Za-z0-9]{1,64}')
+    ->middleware('ingest.key')
+    ->name('ingest.cron');

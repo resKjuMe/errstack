@@ -66,6 +66,12 @@ return [
         'manage' => 'Client-Schlüssel verwalten',
     ],
 
+    'crons' => [
+        'title' => 'Cronjobs',
+        'description' => 'Überwachte Cronjobs melden sich bei jedem Lauf. Bleibt die Meldung aus, kommt eine Nachricht — statt dass es erst auffällt, wenn Daten fehlen.',
+        'manage' => 'Cronjobs ansehen',
+    ],
+
     'delete' => [
         'title' => 'Projekt löschen',
         'description' => 'Mit dem Projekt verschwinden seine Einstellungen, die Team-Zuordnung und alle daran hängenden Daten — unwiderruflich.',

@@ -60,6 +60,38 @@ return [
         'team_member_removed' => 'Mitglied aus Team entfernt',
     ],
 
+    'cron_schedule_type' => [
+        'crontab' => 'Cron-Ausdruck',
+        'interval' => 'Abstand',
+    ],
+
+    'cron_interval_unit' => [
+        'minute' => 'Minuten',
+        'hour' => 'Stunden',
+        'day' => 'Tage',
+        'week' => 'Wochen',
+        'month' => 'Monate',
+        'year' => 'Jahre',
+    ],
+
+    'cron_check_in_status' => [
+        'in_progress' => 'läuft',
+        'ok' => 'durchgelaufen',
+        'error' => 'gescheitert',
+        'missed' => 'verpasst',
+        'timeout' => 'zu lange gelaufen',
+    ],
+
+    'cron_monitor_status' => [
+        'unknown' => 'noch keine Ausführung',
+        'ok' => 'in Ordnung',
+        'running' => 'läuft',
+        'missed' => 'verpasst',
+        'timeout' => 'zu lange gelaufen',
+        'error' => 'gescheitert',
+        'disabled' => 'abgeschaltet',
+    ],
+
     'delivery_status' => [
         'pending' => 'unterwegs',
         'sent' => 'zugestellt',
