@@ -45,6 +45,31 @@ class IngestPayloadFactory extends Factory
     }
 
     /**
+     * Meldung mit einem selbst gewählten Rumpf.
+     *
+     * Nötig für alles, was die Verarbeitung prüft: dort ist der Rumpf nicht
+     * Beiwerk, sondern der Gegenstand. Die Nummer wird aus ihm übernommen, damit
+     * Spalte und Rumpf dieselbe nennen — auseinanderlaufen würden sie sonst
+     * genau dort, wo die Doppelerkennung hinsieht.
+     *
+     * @param  array<string, mixed>  $body
+     */
+    public function body(array $body, IngestType $type = IngestType::Event): static
+    {
+        return $this->state(function () use ($body, $type): array {
+            $payload = (string) json_encode($body);
+
+            return [
+                'event_id' => IngestPayload::normalizeEventId($body['event_id'] ?? null)
+                    ?? IngestPayload::freshEventId(),
+                'type' => $type,
+                'payload' => $payload,
+                'size_bytes' => strlen($payload),
+            ];
+        });
+    }
+
+    /**
      * Meldung, die über einen bestimmten Schlüssel hereinkam — wie im Betrieb,
      * wo jede Meldung ihre DSN mitbringt.
      */
