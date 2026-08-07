@@ -198,9 +198,14 @@ class EnvelopeEndpointTest extends TestCase
         ]))->assertStatus(200);
 
         $this->assertSame(1, IngestPayload::query()->count());
-        $this->assertSame(DiscardReason::Unreadable->value, IngestDiscard::query()->sole()->reason);
 
-        $log->shouldHaveReceived('warning')->once();
+        $discard = IngestDiscard::query()->sole();
+        $this->assertSame(DiscardReason::Unreadable->value, $discard->reason);
+        $this->assertSame(1, $discard->quantity);
+
+        // Gezählt allein genügt nicht: die Zahl sagt, wie oft es passiert, die
+        // Protokollzeile sagt, was genau.
+        $log->shouldHaveReceived('warning');
     }
 
     /**
