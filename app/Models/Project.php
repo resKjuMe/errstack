@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
@@ -60,18 +61,22 @@ class Project extends Model
      */
     public static function createFor(Organization $organization, string $name, Platform $platform, array $attributes = []): self
     {
-        $project = new self(array_merge($attributes, [
-            'name' => $name,
-            'platform' => $platform,
-        ]));
+        // Projekt und erster Schlüssel gehören zusammen: ein Projekt ohne
+        // Schlüssel hätte keine Adresse, an die gemeldet werden könnte.
+        return DB::transaction(function () use ($organization, $name, $platform, $attributes): self {
+            $project = new self(array_merge($attributes, [
+                'name' => $name,
+                'platform' => $platform,
+            ]));
 
-        $project->organization_id = $organization->id;
-        $project->slug = self::uniqueSlug($organization, $name);
-        $project->save();
+            $project->organization_id = $organization->id;
+            $project->slug = self::uniqueSlug($organization, $name);
+            $project->save();
 
-        ProjectKey::createFor($project, self::FIRST_KEY_NAME);
+            ProjectKey::createFor($project, self::FIRST_KEY_NAME);
 
-        return $project;
+            return $project;
+        });
     }
 
     /**
