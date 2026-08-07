@@ -34,7 +34,6 @@ export default function useIssueSelection(ids) {
     return {
         selected,
         allMatching,
-        count: allMatching ? null : selected.size,
         isSelected: (id) => allMatching || selected.has(id),
         allOnPage: allMatching || allOnPage,
 
