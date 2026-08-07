@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use App\Enums\IngestType;
+use App\Enums\ProcessingState;
 use Database\Factories\IngestPayloadFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -27,6 +30,12 @@ use Illuminate\Support\Str;
  * @property string $payload
  * @property string|null $payload_encoding
  * @property int $size_bytes
+ * @property ProcessingState $processing_state
+ * @property Carbon|null $processed_at
+ * @property int|null $duration_ms
+ * @property int $attempts
+ * @property string|null $failure
+ * @property Carbon $created_at
  */
 class IngestPayload extends Model
 {
@@ -67,6 +76,12 @@ class IngestPayload extends Model
         $entry->item_headers = $itemHeaders;
         $entry->sdk = $sdk;
         $entry->size_bytes = strlen($payload);
+
+        // Ausdrücklich gesetzt, obwohl die Spalte denselben Vorgabewert hat:
+        // der Vorgabewert wirkt nur in der Datenbank, und der Aufrufer bekommt
+        // diesen Datensatz zurück — mit `null` im Zustand wäre er nicht
+        // benutzbar, ohne ihn vorher neu zu laden.
+        $entry->processing_state = ProcessingState::Pending;
 
         // Die Größe ist die der **Nutzdaten**, nicht die der Spalte: sie wird
         // oben aus dem Original genommen, bevor eine mögliche Verpackung
@@ -130,6 +145,83 @@ class IngestPayload extends Model
     public static function freshEventId(): string
     {
         return str_replace('-', '', Str::uuid()->toString());
+    }
+
+    /**
+     * Trägt diese Meldung eine Nummer, unter der sich ein Doppel erkennen
+     * lässt?
+     *
+     * Nur bei Fehlern, Transaktionen und Aufzeichnungs-Kopfdaten stammt die
+     * Nummer aus der Meldung selbst. Alles andere hat sie geerbt oder von uns
+     * bekommen — für einen Anhang wäre sie also keine Kennung des Anhangs,
+     * sondern die der Meldung, zu der er gehört, und zwei Screenshots derselben
+     * Meldung hätten dieselbe.
+     */
+    public function isDeduplicable(): bool
+    {
+        return $this->type->carriesOwnEventId();
+    }
+
+    /**
+     * Hält den Ausgang eines Durchlaufs fest.
+     *
+     * Ein Aufruf für alle Ausgänge, weil sie dieselben Fragen beantworten
+     * müssen: wann war die Meldung durch, wie lange hat es gedauert, im
+     * wievielten Anlauf. Ein eigener Weg je Ausgang würde beim nächsten Ausgang
+     * einen weiteren brauchen — und einer von ihnen vergäße die Dauer.
+     *
+     * @param  int  $durationMs  Reine Rechenzeit der Kette, ohne Wartezeit.
+     * @param  string|null  $failure  Grund, sofern der Ausgang einen hat.
+     */
+    public function finishProcessing(
+        ProcessingState $state,
+        int $durationMs,
+        int $attempts,
+        ?string $failure = null,
+    ): void {
+        $this->processing_state = $state;
+        $this->processed_at = now();
+        $this->duration_ms = $durationMs;
+        $this->attempts = $attempts;
+        $this->failure = $failure;
+
+        $this->save();
+    }
+
+    /**
+     * Stellt die Meldung zurück in den Rückstand.
+     *
+     * Der Grund des letzten Fehlschlags bleibt stehen: er ist die Auskunft
+     * darüber, warum überhaupt erneut gestartet wird, und wäre nach einem
+     * zweiten Fehlschlag ohnehin überschrieben.
+     */
+    public function resetProcessing(): void
+    {
+        $this->processing_state = ProcessingState::Pending;
+        $this->processed_at = null;
+        $this->duration_ms = null;
+
+        $this->save();
+    }
+
+    /**
+     * Meldungen, die noch auf ihre Auswertung warten — der Rückstand.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeAwaitingProcessing(Builder $query): void
+    {
+        $query->where('processing_state', ProcessingState::Pending);
+    }
+
+    /**
+     * Meldungen, deren Auswertung endgültig gescheitert ist.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeFailedProcessing(Builder $query): void
+    {
+        $query->where('processing_state', ProcessingState::Failed);
     }
 
     /**
@@ -212,6 +304,10 @@ class IngestPayload extends Model
             // Eingangs — hier darf umformatiert werden, anders als beim Rumpf.
             'item_headers' => 'array',
             'size_bytes' => 'integer',
+            'processing_state' => ProcessingState::class,
+            'processed_at' => 'datetime',
+            'duration_ms' => 'integer',
+            'attempts' => 'integer',
         ];
     }
 }

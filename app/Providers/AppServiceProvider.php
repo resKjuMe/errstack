@@ -6,6 +6,7 @@ use App\Models\ApiToken;
 use App\Notifications\ChannelRegistry;
 use App\Notifications\Contracts\ChannelDriver;
 use App\Notifications\NotificationPreferences;
+use App\Support\Ingest\Processing\ProcessingPipeline;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
@@ -35,6 +36,16 @@ class AppServiceProvider extends ServiceProvider
         // merken sich die einmal geladenen Entscheidungen. Als frische Instanz
         // je Auflösung wäre der Zwischenspeicher wirkungslos.
         $this->app->singleton(NotificationPreferences::class);
+
+        // Die Verarbeitungskette wird bei jeder Auflösung neu gebaut, nicht
+        // einmal: ein Arbeiter läuft stundenlang, und eine festgehaltene Kette
+        // hielte auch den Zustand ihrer Schritte fest — Projekteinstellungen
+        // und Regelwerke, die die späteren Schritte laden. Der Aufbau selbst
+        // kostet nichts.
+        $this->app->bind(
+            ProcessingPipeline::class,
+            static fn (): ProcessingPipeline => ProcessingPipeline::fromConfig(),
+        );
     }
 
     /**

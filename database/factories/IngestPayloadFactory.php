@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\IngestType;
+use App\Enums\ProcessingState;
 use App\Models\IngestPayload;
 use App\Models\Project;
 use App\Models\ProjectKey;
@@ -35,6 +36,11 @@ class IngestPayloadFactory extends Factory
             'sdk' => 'sentry.php/4.0.0',
             'payload' => $payload,
             'size_bytes' => strlen($payload),
+
+            // Eine erzeugte Meldung ist eine angenommene: sie wartet auf ihre
+            // Auswertung, wie jede über den Endpunkt.
+            'processing_state' => ProcessingState::Pending,
+            'attempts' => 0,
         ];
     }
 

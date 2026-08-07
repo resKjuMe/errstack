@@ -76,6 +76,7 @@ return [
         'unreadable' => 'nicht lesbar',
         'too_large' => 'zu groß',
         'too_many_items' => 'zu viele Elemente',
+        'duplicate' => 'doppelte Zustellung',
     ],
 
     'filter_period' => [
@@ -100,6 +101,14 @@ return [
         'profile' => 'Laufzeitmessung',
         'client_report' => 'Verworfen-Meldung des SDK',
         'user_report' => 'Nutzer-Rückmeldung',
+    ],
+
+    'processing_state' => [
+        'pending' => 'wartet auf Auswertung',
+        'processed' => 'ausgewertet',
+        'duplicate' => 'doppelt',
+        'dropped' => 'aussortiert',
+        'failed' => 'fehlgeschlagen',
     ],
 
     'notification_event' => [
