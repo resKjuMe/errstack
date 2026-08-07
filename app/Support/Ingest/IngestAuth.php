@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
  *
  * Der öffentliche Schlüssel steht darin im Klartext — er ist kein Geheimnis,
  * sondern die Adresse. Wie ein SDK ihn überträgt, hat sich über die Jahre
- * dreimal geändert, und alle drei Wege sind noch im Umlauf:
+ * mehrfach geändert, und alle Wege sind noch im Umlauf:
  *
  *   1. Kopfzeile `X-Sentry-Auth: Sentry sentry_version=7, sentry_key=…`
  *      — der Regelfall bei Servern.
@@ -21,8 +21,12 @@ use Illuminate\Http\Request;
  *      eigene Kopfzeile würde dort eine Vorab-Anfrage (OPTIONS) erzwingen.
  *   3. Kopfzeile `Authorization` — mit demselben `Sentry …`-Inhalt wie (1)
  *      oder als schlichtes `Bearer <public_key>`.
+ *   4. Als Abschnitt der Adresse (`{key}`) — der Weg der Cronjob-Lebenszeichen
+ *      (`/api/1/cron/nightly-import/<public_key>/`). Dort steht kein SDK
+ *      dahinter, sondern eine Zeile am Ende eines Shell-Skripts, und die soll
+ *      mit einem nackten `curl` ohne Kopfzeilen auskommen.
  *
- * Wir nehmen alle drei an, in dieser Reihenfolge. Ein SDK auszuschließen, weil
+ * Wir nehmen alle vier an, in dieser Reihenfolge. Ein SDK auszuschließen, weil
  * es den älteren Weg nimmt, wäre genau das, was diese Nachbildung vermeiden
  * soll.
  */
@@ -45,7 +49,15 @@ final class IngestAuth
             return $fromQuery;
         }
 
-        return self::fromAuthorization($request->header('Authorization'));
+        $fromHeaders = self::fromAuthorization($request->header('Authorization'));
+
+        if ($fromHeaders !== null) {
+            return $fromHeaders;
+        }
+
+        $fromRoute = $request->route('key');
+
+        return is_string($fromRoute) && $fromRoute !== '' ? $fromRoute : null;
     }
 
     /**

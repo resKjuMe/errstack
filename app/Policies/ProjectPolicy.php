@@ -43,4 +43,17 @@ class ProjectPolicy
     {
         return $user->can('manageProjects', $project->organization);
     }
+
+    /**
+     * Überwachte Cronjobs anlegen, ändern und löschen.
+     *
+     * Getrennt vom Ansehen: den Zustand der Jobs soll jedes Mitglied sehen —
+     * er ist der Grund, warum jemand nachschaut. Ein Toleranzfenster zu
+     * verstellen heißt dagegen, die Überwachung leiser zu drehen, und das ist
+     * eine Verwaltungsentscheidung.
+     */
+    public function manageCrons(User $user, Project $project): bool
+    {
+        return $user->can('manageProjects', $project->organization);
+    }
 }

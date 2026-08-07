@@ -14,6 +14,7 @@
 |
 */
 
+use App\Http\Controllers\CronMonitorController;
 use App\Http\Controllers\EnvironmentController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectKeyController;
@@ -61,5 +62,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('projects.keys.rotate');
             Route::delete('{project}/schluessel/{key}', [ProjectKeyController::class, 'destroy'])
                 ->name('projects.keys.destroy');
+
+            // Überwachte Cronjobs. Der Parametername ist `cron_monitor` und
+            // nicht `cronjob`, weil `scopeBindings` daraus die Beziehung am
+            // Projekt ableitet (`cronMonitors()`) — mit einem freieren Namen
+            // fände es sie nicht und der Monitor wäre über jedes Projekt
+            // erreichbar.
+            Route::get('{project}/cronjobs', [CronMonitorController::class, 'index'])
+                ->name('projects.crons.index');
+            Route::post('{project}/cronjobs', [CronMonitorController::class, 'store'])
+                ->name('projects.crons.store');
+            Route::patch('{project}/cronjobs/{cron_monitor}', [CronMonitorController::class, 'update'])
+                ->name('projects.crons.update');
+            Route::post('{project}/cronjobs/{cron_monitor}/zustand', [CronMonitorController::class, 'toggle'])
+                ->name('projects.crons.toggle');
+            Route::delete('{project}/cronjobs/{cron_monitor}', [CronMonitorController::class, 'destroy'])
+                ->name('projects.crons.destroy');
         });
 });

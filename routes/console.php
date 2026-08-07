@@ -23,3 +23,12 @@ Artisan::command('inspire', function () {
 // Tabellen nicht unbegrenzt wachsen.
 Schedule::command('queue:prune-batches --hours=48')->daily();
 Schedule::command('queue:prune-failed --hours=168')->daily();
+
+// Verpasste und hängende Cronjob-Ausführungen feststellen (M1).
+//
+// Das ist die einzige Stelle, an der ein *ausgebliebener* Job überhaupt
+// auffallen kann — alles andere geschieht, weil sich jemand meldet. Läuft der
+// Zeitplan nicht, meldet die Überwachung still nichts mehr. `withoutOverlapping`,
+// damit ein langsamer Durchlauf den nächsten nicht überholt und derselbe Termin
+// zweimal als verpasst gilt.
+Schedule::command('crons:sweep')->everyMinute()->withoutOverlapping();

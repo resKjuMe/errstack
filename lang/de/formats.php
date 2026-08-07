@@ -16,4 +16,11 @@ return [
     'decimal_separator' => ',',
     'thousands_separator' => '.',
 
+    // Laufzeiten (App\Support\Formats::duration). Die Einheit wechselt mit der
+    // Größenordnung — „7380 s" liest niemand als gut zwei Stunden.
+    'duration_milliseconds' => ':value ms',
+    'duration_seconds' => ':value s',
+    'duration_minutes' => ':value min',
+    'duration_hours' => ':value h',
+
 ];
