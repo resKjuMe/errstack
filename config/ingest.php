@@ -5,6 +5,7 @@ use App\Support\Ingest\Processing\Steps\DecodePayload;
 use App\Support\Ingest\Processing\Steps\GroupEvent;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
+use App\Support\Ingest\Processing\Steps\SampleTransaction;
 use App\Support\Ingest\Processing\Steps\ScrubEvent;
 
 return [
@@ -100,9 +101,9 @@ return [
     | mitbringt:
     |
     |   1. Entpacken     — Rohdaten zu Feld-Baum (Rahmen, hier)
-    |   2. Eingangsfilter — uninteressante Meldungen aussortieren (I8)
-    |   3. Stichprobe    — Sampling für Performance-Daten (I9)
-    |   4. Scrubbing     — personenbezogene Daten entfernen (I7)
+    |   2. Scrubbing     — personenbezogene Daten entfernen (I7)
+    |   3. Eingangsfilter — uninteressante Meldungen aussortieren (I8)
+    |   4. Stichprobe    — Sampling für Performance-Daten (I9)
     |   5. Antwortzeiten — Transaktionen und ihre Schritte ablegen (PF1)
     |   6. Normalisierung — Sentry-Schema in unser Modell (I4)
     |   7. Grouping      — Fingerabdruck und Gruppe bestimmen (I5)
@@ -116,14 +117,21 @@ return [
     | eine Transaktion nichts zu tun.
     |
     | Das Scrubbing steht vor allem, was schreibt — und zwar auch vor den beiden
-    | Schritten, die noch fehlen (Eingangsfilter, Stichprobe): die sortieren aus,
-    | sie speichern nicht. Käme es hinter ihnen, würde eine aussortierte Meldung
-    | zwar nie gespeichert, eine behaltene aber erst nach zwei weiteren Schritten
-    | bereinigt — und jeder davon wäre eine Stelle, an der versehentlich etwas
-    | abgelegt wird.
+    | Schritten, die bloß aussortieren (Eingangsfilter, Stichprobe). Käme es
+    | hinter ihnen, würde eine aussortierte Meldung zwar nie gespeichert, eine
+    | behaltene aber erst nach zwei weiteren Schritten bereinigt — und jeder davon
+    | wäre eine Stelle, an der versehentlich etwas abgelegt wird.
     |
-    | Solange die davorstehenden Schritte fehlen, ist die Liste kürzer als der
-    | Plan: sie werden **vor** den bestehenden eingefügt, nicht dahinter.
+    | Der zweite, schwerer wiegende Grund für diese Reihenfolge: das Scrubbing
+    | schreibt die bereinigte Fassung über die Rohdaten in der Eingangsablage
+    | zurück. Stünde die Stichprobe davor, blöbe der Rumpf einer ausgesiebten
+    | Messung dauerhaft **unbereinigt** liegen — die Kette endet an einem `drop()`,
+    | und das Scrubbing käme nie an sie heran. Deshalb siebt die Stichprobe erst
+    | aus, nachdem bereinigt ist; die zwei gesparten Regelwerk-Durchläufe je
+    | verworfener Messung sind der Preis dafür, und er ist der richtige.
+    |
+    | Solange ein Schritt fehlt (derzeit der Eingangsfilter), ist die Liste kürzer
+    | als der Plan: er wird an seiner Stelle eingefügt, nicht angehängt.
     |
     | Ein neuer Schritt ist eine neue Klasse und eine neue Zeile. Ein
     | bestehender Schritt wird dafür nicht angefasst — auch nicht der Rahmen.
@@ -135,11 +143,55 @@ return [
         'steps' => [
             DecodePayload::class,
             ScrubEvent::class,
+            SampleTransaction::class,
             RecordTransaction::class,
             NormalizeEvent::class,
             GroupEvent::class,
             AggregateIssue::class,
         ],
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Stichproben
+    |--------------------------------------------------------------------------
+    |
+    | Von den gemeldeten Antwortzeiten wird nur ein Anteil gespeichert und in den
+    | Auswertungen wieder hochgerechnet. Die Rechnung dahinter: eine Anwendung mit
+    | hundert Aufrufen je Sekunde meldet im Monat 260 Millionen Transaktionen.
+    | Gebraucht wird davon nicht jeder Aufruf, sondern die Verteilung — und die
+    | steht in einer Stichprobe genauso.
+    |
+    | **Welcher Anteil, entscheiden die Regeln je Projekt** (Tabelle
+    | `sampling_rules`) und nicht diese Datei: die Quote für `GET /health` ist eine
+    | Frage an die, die die Antwortzeiten ansehen, und keine an die, die die
+    | Anwendung ausliefern. Hier stehen nur die beiden Werte, die gelten, wenn
+    | **keine** Regel zutrifft.
+    |
+    |   default_rate       — der Anteil ohne passende Regel. Eins: eine
+    |                        Stichprobe ist eine Entscheidung und darf keine
+    |                        Voreinstellung sein. Ein Betreiber, der pauschal
+    |                        aussieben will, setzt den Wert — dann ist es seine
+    |                        Entscheidung und nicht unsere.
+    |   minimum_per_window — wie viele Meldungen eines Vorgangs je Zeitfenster
+    |                        immer behalten werden. Greift nur bei einer Quote
+    |                        unter eins. Einer, weil ein Vorgang, der einmal je
+    |                        Fenster vorkommt, bei 1 % Quote mit 99 %
+    |                        Wahrscheinlichkeit ganz verschwindet — und der
+    |                        nächtliche Import ist genau so ein Vorgang.
+    |
+    | Fehler sind hiervon **nicht** betroffen. Die Stichprobe greift
+    | ausschließlich an Transaktionen; ein Absturz ist ein Einzelfall, und ein
+    | Einzelfall lässt sich nicht hochrechnen.
+    |
+    */
+
+    'sampling' => [
+
+        'default_rate' => (float) env('INGEST_SAMPLING_DEFAULT_RATE', 1.0),
+
+        'minimum_per_window' => (int) env('INGEST_SAMPLING_MINIMUM_PER_WINDOW', 1),
 
     ],
 

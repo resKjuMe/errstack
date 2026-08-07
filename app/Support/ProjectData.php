@@ -102,6 +102,10 @@ final class ProjectData
                 // erklären, warum die Fehlerliste so aussieht, wie sie aussieht
                 // — und diese Frage stellt sich nicht nur die Verwaltung.
                 'groupingHref' => route('projects.grouping.index', [$organization, $project]),
+                // Die Stichproben aus demselben Grund ohne Bedingung: sie
+                // erklären, warum in der Performance-Übersicht mehr Aufrufe
+                // stehen, als Messungen gespeichert sind.
+                'samplingHref' => route('projects.sampling.index', [$organization, $project]),
                 // Ebenso ohne Bedingung: was von einer Meldung gespeichert wird,
                 // geht jeden an, der mit den Daten arbeitet.
                 'privacyHref' => route('projects.privacy.index', [$organization, $project]),

@@ -21,6 +21,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectKeyController;
 use App\Http\Controllers\ProjectPrivacyController;
 use App\Http\Controllers\ProjectTeamController;
+use App\Http\Controllers\SamplingRuleController;
 use App\Http\Controllers\ScrubRuleController;
 use Illuminate\Support\Facades\Route;
 
@@ -98,6 +99,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('{project}/gruppierung/{fingerprint_rule}', [FingerprintRuleController::class, 'destroy'])
                 ->name('projects.grouping.destroy');
 
+            // Stichproben-Regeln der Antwortzeiten. Der Parametername ist
+            // `sampling_rule` — aus demselben Grund wie bei den
+            // Fingerprint-Regeln: `scopeBindings` leitet daraus die Beziehung am
+            // Projekt ab (`samplingRules()`).
+            Route::get('{project}/stichproben', [SamplingRuleController::class, 'index'])
+                ->name('projects.sampling.index');
+            Route::post('{project}/stichproben', [SamplingRuleController::class, 'store'])
+                ->name('projects.sampling.store');
+            Route::patch('{project}/stichproben/{sampling_rule}', [SamplingRuleController::class, 'update'])
+                ->name('projects.sampling.update');
+            Route::post('{project}/stichproben/{sampling_rule}/zustand', [SamplingRuleController::class, 'toggle'])
+                ->name('projects.sampling.toggle');
+            Route::delete('{project}/stichproben/{sampling_rule}', [SamplingRuleController::class, 'destroy'])
+                ->name('projects.sampling.destroy');
             // Datenschutz. Die Seite darf jedes Mitglied ansehen — was von einer
             // Meldung übrig bleibt, muss jeder wissen, der mit den Daten
             // arbeitet; geändert wird sie von der Verwaltung.

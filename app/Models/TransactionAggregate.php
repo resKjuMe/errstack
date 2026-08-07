@@ -24,6 +24,14 @@ use Illuminate\Support\Facades\DB;
  * jedes weitere Merkmal vervielfacht die Zeilen. Deshalb Name, Operation und
  * Umgebung — und nicht Version oder Nutzer.
  *
+ * **Zwei Anzahlen, weil die Stichprobe zwei Fragen offen lässt.**
+ * `transaction_count` zählt die gespeicherten Messungen und sagt damit, worauf
+ * die Verteilung dieses Fensters beruht; `extrapolated_count` ist die daraus
+ * geschätzte Zahl der **tatsächlichen** Aufrufe (I9). Ohne Stichprobe laufen
+ * beide gleich. Antwortzeiten und Fehlerrate werden dagegen **nicht**
+ * hochgerechnet — Verteilungen und Anteile lassen sich aus einer Stichprobe
+ * unverzerrt schätzen, Anzahlen nicht.
+ *
  * @property int $id
  * @property int $project_id
  * @property string $environment
@@ -31,6 +39,7 @@ use Illuminate\Support\Facades\DB;
  * @property string $op
  * @property CarbonImmutable $window_start
  * @property int $transaction_count
+ * @property float $extrapolated_count
  * @property int $failure_count
  * @property int $duration_sum_us
  * @property int|null $duration_min_us
@@ -87,7 +96,7 @@ class TransactionAggregate extends Model
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            $aggregate->add($transaction->duration_us, $transaction->failed());
+            $aggregate->add($transaction->duration_us, $transaction->failed(), $transaction->sampleWeight());
             $aggregate->save();
 
             return $aggregate;
@@ -100,10 +109,21 @@ class TransactionAggregate extends Model
      * Getrennt von {@see record()}, damit sich das Fortschreiben ohne Datenbank
      * prüfen lässt — die Rechnung ist der Teil, an dem sich Fehler verstecken,
      * nicht das Sperren.
+     *
+     * @param  float  $weight  Für wie viele Aufrufe die Messung steht
+     *                         ({@see Transaction::sampleWeight()}). Ohne
+     *                         Stichprobe 1 — dann laufen tatsächliche und
+     *                         hochgerechnete Anzahl gleich.
      */
-    public function add(int $durationUs, bool $failed): void
+    public function add(int $durationUs, bool $failed, float $weight = 1.0): void
     {
         $this->transaction_count = $this->transaction_count + 1;
+        // Die hochgerechnete Anzahl **neben** der tatsächlichen und nicht an
+        // ihrer Stelle: an der tatsächlichen hängt die Aussagekraft der
+        // Verteilung. Eine p95 aus drei Messungen ist eine andere Auskunft als
+        // eine aus dreitausend, und diese Unterscheidung wäre verloren, wenn hier
+        // nur noch eine Zahl stünde.
+        $this->extrapolated_count = $this->extrapolated_count + $weight;
         $this->failure_count = $this->failure_count + ($failed ? 1 : 0);
         $this->duration_sum_us = $this->duration_sum_us + $durationUs;
 
@@ -165,6 +185,11 @@ class TransactionAggregate extends Model
         return [
             'window_start' => 'immutable_datetime',
             'transaction_count' => 'integer',
+            // `float` und nicht `decimal:4`: die Zahl wird summiert und
+            // fortgeschrieben, `decimal` liefert eine Zeichenkette. Die Spalte
+            // bleibt `decimal`, damit sich die Summen mehrerer Fenster ohne
+            // wachsenden Rundungsfehler bilden lassen.
+            'extrapolated_count' => 'float',
             'failure_count' => 'integer',
             'duration_sum_us' => 'integer',
             'duration_min_us' => 'integer',

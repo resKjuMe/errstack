@@ -40,6 +40,18 @@ enum DiscardReason: string
     case Duplicate = 'duplicate';
 
     /**
+     * Die Stichprobe hat die Messung nicht behalten (I9).
+     *
+     * Kein Mangel an der Meldung: sie war vollständig und in Ordnung, sie wurde
+     * nur nicht gebraucht. Der Grund steht deshalb ausdrücklich als eigener da
+     * und nicht bei den übrigen — eine Statistik, in der ausgesiebte
+     * Antwortzeiten neben unlesbaren Nutzdaten stehen, würde jeden Betreiber zu
+     * Recht beunruhigen. Betroffen sind nur Transaktionen; Fehler werden
+     * vollständig behalten.
+     */
+    case Sampled = 'sampled';
+
+    /**
      * Die Datenschutz-Einstellungen des Projekts verbieten das Speichern. Fällt
      * nur bei Anhängen und Aufzeichnungen an: an einem Feld-Baum wird geschwärzt,
      * eine Datei ist entweder erlaubt oder nicht.
