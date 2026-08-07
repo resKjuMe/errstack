@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Support\Performance\TransactionEvent;
+use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\Performance\TransactionPayload;
 
@@ -74,6 +75,40 @@ class TransactionEventTest extends TestCase
 
         $this->assertNotNull($event);
         $this->assertSame(0, $event->durationUs);
+    }
+
+    public function test_a_timestamp_in_milliseconds_is_rejected_instead_of_stored_as_year_58026(): void
+    {
+        // Der häufigste Uhrenfehler überhaupt: ein SDK schickt Millisekunden
+        // statt Sekunden. Ungeprüft bräche daran die Einfügung ab, und aus einer
+        // erklärbaren Verwerfung würde ein Fehlschlag mit Wiederholungen.
+        $this->assertNull($this->read(TransactionPayload::make([
+            'start_timestamp' => 1_770_000_000_000,
+            'timestamp' => 1_770_000_001_500,
+        ])));
+    }
+
+    public function test_a_clock_far_in_the_future_is_rejected(): void
+    {
+        $this->assertNull($this->read(TransactionPayload::make([
+            'start_timestamp' => '2099-01-01T00:00:00+00:00',
+            'timestamp' => '2099-01-01T00:00:01+00:00',
+        ])));
+    }
+
+    public function test_a_clock_slightly_ahead_keeps_its_measurement(): void
+    {
+        // Uhren laufen auseinander; wer um Minuten vorgeht, soll seine Messungen
+        // nicht verlieren.
+        $startedAt = CarbonImmutable::now()->addMinutes(5);
+
+        $event = $this->read(TransactionPayload::make([
+            'start_timestamp' => $startedAt->toIso8601String(),
+            'timestamp' => $startedAt->addSecond()->toIso8601String(),
+        ]));
+
+        $this->assertNotNull($event);
+        $this->assertSame(1_000_000, $event->durationUs);
     }
 
     public function test_a_nameless_transaction_keeps_its_measurement(): void

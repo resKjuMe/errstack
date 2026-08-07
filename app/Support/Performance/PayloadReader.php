@@ -24,6 +24,28 @@ use Throwable;
 final class PayloadReader
 {
     /**
+     * Frühestes Jahr, das als Zeitpunkt einer Messung durchgeht.
+     *
+     * Der häufigste Fall dahinter ist kein böser Wille, sondern ein SDK, das
+     * Millisekunden statt Sekunden schickt: 1770000000000 ist das Jahr 58026.
+     * Ohne diese Schranke bräche die Einfügung an der Spalte ab, der Job liefe in
+     * seine Wiederholungen und die Meldung wäre am Ende ein Fehlschlag statt
+     * einer erklärbaren Verwerfung.
+     */
+    public const EARLIEST_YEAR = 2000;
+
+    /**
+     * Wie weit ein Zeitpunkt in der Zukunft liegen darf, in Sekunden.
+     *
+     * Ein Tag Spielraum: die Uhren der überwachten Anwendungen laufen
+     * auseinander, und eine um Minuten oder Stunden vorlaufende soll ihre
+     * Messungen nicht verlieren. Was weiter vorne liegt, ist keine Messung mehr,
+     * die man in eine Zeitreihe eintragen kann — sie würde jede Übersicht
+     * verzerren, in der sie auftaucht.
+     */
+    public const FUTURE_TOLERANCE_SECONDS = 86400;
+
+    /**
      * Ein Zeitpunkt, wie SDKs ihn schicken: als Unix-Zeit mit Bruchteilen
      * (`1700000000.123456`) oder als Text nach ISO 8601.
      *
@@ -40,7 +62,7 @@ final class PayloadReader
                 return null;
             }
 
-            return CarbonImmutable::createFromTimestamp((float) $value)->utc();
+            return self::plausible(CarbonImmutable::createFromTimestamp((float) $value)->utc());
         }
 
         if (! is_string($value) || trim($value) === '') {
@@ -52,10 +74,30 @@ final class PayloadReader
             // wird in einer. Ohne diese Umrechnung stünde derselbe Augenblick je
             // Absender an einer anderen Stelle der Zeitreihe, und ein Ausschlag
             // erschiene mehrfach über den Tag verteilt.
-            return CarbonImmutable::parse($value)->utc();
+            return self::plausible(CarbonImmutable::parse($value)->utc());
         } catch (Throwable) {
             return null;
         }
+    }
+
+    /**
+     * Lässt nur Zeitpunkte durch, die als Messung in Frage kommen.
+     *
+     * Die Zeitangaben kommen aus der überwachten Anwendung — aus einem Browser
+     * mit falsch gestellter Uhr, aus einem Gerät ohne Zeitabgleich, aus einem SDK
+     * mit einer Einheit zu viel. Verworfen wird solch ein Zeitpunkt lieber
+     * (gezählt und protokolliert), als dass er in die Zeitreihen gelangt: dort
+     * wäre er nicht mehr von einer echten Messung zu unterscheiden.
+     */
+    private static function plausible(CarbonImmutable $at): ?CarbonImmutable
+    {
+        if ($at->year < self::EARLIEST_YEAR) {
+            return null;
+        }
+
+        return $at->getTimestamp() > CarbonImmutable::now()->getTimestamp() + self::FUTURE_TOLERANCE_SECONDS
+            ? null
+            : $at;
     }
 
     /**

@@ -102,6 +102,7 @@ der Aufnahme (O12).
 | Einzelschritte je Transaktion | `INGEST_MAX_SPANS`, Vorgabe 1000 | Eine Anwendung mit einer N+1-Abfrage meldet Zehntausende gleichartige Schritte für **einen** Aufruf. |
 | Messwerte je Transaktion | 50 | Die Spalte ist begrenzt, das Schema nicht. |
 | Länge einer Beschreibung | 8192 Zeichen | Dort steht das SQL einer Abfrage; bei 255 Zeichen wäre es nicht mehr das Problem, das es benennt. |
+| Zeitpunkte | ab Jahr 2000, höchstens einen Tag in der Zukunft | Die Uhr gehört der überwachten Anwendung. Der häufigste Fehler ist ein SDK, das Millisekunden statt Sekunden schickt — `1770000000000` ist das Jahr 58026, und ungeprüft bräche daran die Einfügung ab. Ein Tag Spielraum, damit eine leicht vorlaufende Uhr ihre Messungen behält. |
 
 Was über eine Grenze hinausgeht, wird **gezählt** (`ingest_discards`) und
 protokolliert. Ohne diese Zahlen wäre ein abgeschnittener Ablauf in der

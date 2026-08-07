@@ -14,6 +14,9 @@ use App\Models\ProjectKey;
 use App\Models\Transaction;
 use App\Models\TransactionAggregate;
 use App\Models\TransactionSpan;
+use App\Support\Ingest\Processing\ProcessingContext;
+use App\Support\Ingest\Processing\ProcessingPipeline;
+use App\Support\Ingest\Processing\Steps\RecordTransaction;
 use App\Support\Performance\DurationHistogram;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -302,6 +305,26 @@ class TransactionIngestTest extends TestCase
         // nur nichts darin zu messen. Ein Wiederholen käme zum selben Schluss.
         $this->assertSame(ProcessingState::Processed, $payload->processing_state);
         $this->assertSame(1, IngestDiscard::query()->where('reason', DiscardReason::Unreadable->value)->count());
+    }
+
+    public function test_the_stored_transaction_is_handed_on_within_the_chain(): void
+    {
+        // Die abgelegte Messung liegt im Kontext, damit ein folgender Schritt
+        // (etwa das automatische Erkennen von Problemen, PF6) mit ihr arbeiten
+        // kann, ohne die Ablage erneut zu befragen.
+        $payload = IngestPayload::factory()
+            ->viaKey($this->key())
+            ->body(TransactionPayload::make(), IngestType::Transaction)
+            ->create();
+
+        $context = new ProcessingContext($payload);
+
+        app(ProcessingPipeline::class)->process($context);
+
+        $transaction = $context->get(RecordTransaction::RESULT);
+
+        $this->assertInstanceOf(Transaction::class, $transaction);
+        $this->assertSame($payload->event_id, $transaction->event_id);
     }
 
     public function test_an_error_report_produces_no_transaction(): void
