@@ -31,6 +31,14 @@ enum DiscardReason: string
     /** Der Envelope enthielt mehr Elemente, als wir annehmen. */
     case TooManyItems = 'too_many_items';
 
+    /**
+     * Dieselbe Meldung war schon ausgewertet. Anders als die Gründe darüber
+     * fällt dieser nicht bei der Annahme an, sondern erst in der Verarbeitung:
+     * eine wiederholte Zustellung wird angenommen wie jede andere, sonst müsste
+     * der Endpunkt vor seiner Antwort nachsehen.
+     */
+    case Duplicate = 'duplicate';
+
     public function label(): string
     {
         return __('enums.discard_reason.'.$this->value);

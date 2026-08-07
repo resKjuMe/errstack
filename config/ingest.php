@@ -1,5 +1,7 @@
 <?php
 
+use App\Support\Ingest\Processing\Steps\DecodePayload;
+
 return [
 
     /*
@@ -66,6 +68,50 @@ return [
         'max_item_bytes' => (int) env('INGEST_ENVELOPE_MAX_ITEM_BYTES', 1024 * 1024),
 
         'max_attachment_bytes' => (int) env('INGEST_ENVELOPE_MAX_ATTACHMENT_BYTES', 20 * 1024 * 1024),
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Verarbeitungskette
+    |--------------------------------------------------------------------------
+    |
+    | Die Schritte, die eine angenommene Meldung im Hintergrund durchläuft — in
+    | genau dieser Reihenfolge. Jeder Eintrag ist eine Klasse, die
+    | App\Support\Ingest\Processing\ProcessingStep umsetzt; erzeugt werden sie
+    | über den Dienstbehälter, dürfen also Abhängigkeiten verlangen.
+    |
+    | Die Reihenfolge ist die eigentliche Aussage dieser Liste, und sie folgt
+    | nicht dem Bauchgefühl, sondern zwei Zwängen:
+    |
+    |   Sparen  — was wegfällt, soll früh wegfallen. Ein Eingangsfilter kostet
+    |             einen Vergleich, das Gruppieren kostet einen Fingerabdruck
+    |             über den halben Stacktrace. Erst filtern, dann rechnen.
+    |   Schutz  — was nie in der Datenbank landen darf, muss entfernt sein,
+    |             bevor irgendetwas gespeichert wird. Scrubbing steht deshalb
+    |             vor allem, was schreibt, und nicht danach.
+    |
+    | Die vorgesehene Reihenfolge, mit der Aufgabe, die den jeweiligen Schritt
+    | mitbringt:
+    |
+    |   1. Entpacken     — Rohdaten zu Feld-Baum (Rahmen, hier)
+    |   2. Eingangsfilter — uninteressante Meldungen aussortieren (I8)
+    |   3. Stichprobe    — Sampling für Performance-Daten (I9)
+    |   4. Scrubbing     — personenbezogene Daten entfernen (I7)
+    |   5. Normalisierung — Sentry-Schema in unser Modell (I4)
+    |   6. Grouping      — Fingerabdruck und Gruppe bestimmen (I5)
+    |   7. Aggregation   — Zähler und Issue fortschreiben (I6)
+    |
+    | Ein neuer Schritt ist eine neue Klasse und eine neue Zeile. Ein
+    | bestehender Schritt wird dafür nicht angefasst — auch nicht der Rahmen.
+    |
+    */
+
+    'processing' => [
+
+        'steps' => [
+            DecodePayload::class,
+        ],
 
     ],
 

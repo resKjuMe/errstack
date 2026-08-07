@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Ingest;
 
 use App\Exceptions\IngestRejection;
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessIngestPayload;
 use App\Models\IngestPayload;
 use App\Support\Ingest\IngestBody;
 use App\Support\Ingest\IngestContext;
@@ -47,12 +48,17 @@ class StoreController extends Controller
         $eventId = IngestPayload::normalizeEventId($event->event_id ?? null)
             ?? IngestPayload::freshEventId();
 
-        IngestPayload::accept(
+        $accepted = IngestPayload::accept(
             key: IngestContext::key($request),
             eventId: $eventId,
             payload: $payload,
             sdk: IngestContext::client($request),
         );
+
+        // Die Auswertung läuft im Hintergrund. Eingereiht wird erst nach dem
+        // Ablegen: ein Arbeiter kann schneller sein als der Rest dieser Anfrage,
+        // und er braucht die Zeile.
+        ProcessIngestPayload::dispatch($accepted);
 
         return IngestResponse::accepted($eventId);
     }

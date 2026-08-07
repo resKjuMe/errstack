@@ -4,6 +4,7 @@ namespace App\Support\Ingest;
 
 use App\Enums\DiscardReason;
 use App\Enums\IngestType;
+use App\Jobs\ProcessIngestPayload;
 use App\Models\IngestDiscard;
 use App\Models\IngestPayload;
 use App\Models\ProjectKey;
@@ -121,7 +122,7 @@ final class EnvelopeIntake
             return;
         }
 
-        IngestPayload::accept(
+        $accepted = IngestPayload::accept(
             key: $key,
             eventId: $this->eventIdFor($item, $envelopeEventId),
             payload: $item->payload,
@@ -129,6 +130,12 @@ final class EnvelopeIntake
             sdk: $sdk,
             itemHeaders: $item->header,
         );
+
+        // Je Element ein eigener Job, nicht einer für den ganzen Envelope: die
+        // Elemente sind voneinander unabhängig, und ein Anhang, dessen
+        // Auswertung scheitert, darf die Fehlermeldung nicht mitreißen, mit der
+        // er zusammen gesendet wurde.
+        ProcessIngestPayload::dispatch($accepted);
 
         if ($type === IngestType::ClientReport) {
             $this->countClientReport($item, $key);

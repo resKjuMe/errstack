@@ -76,6 +76,7 @@ return [
         'unreadable' => 'unreadable',
         'too_large' => 'too large',
         'too_many_items' => 'too many items',
+        'duplicate' => 'duplicate delivery',
     ],
 
     'filter_period' => [
@@ -100,6 +101,14 @@ return [
         'profile' => 'Profile',
         'client_report' => 'Client report of the SDK',
         'user_report' => 'User feedback',
+    ],
+
+    'processing_state' => [
+        'pending' => 'awaiting processing',
+        'processed' => 'processed',
+        'duplicate' => 'duplicate',
+        'dropped' => 'dropped',
+        'failed' => 'failed',
     ],
 
     'notification_event' => [
