@@ -74,6 +74,8 @@ export default function Show({
                     canManage={permissions.manageTeams}
                 />
 
+                <Notifications organization={organization} />
+
                 {permissions.delete && <DeleteOrganization organization={organization} />}
             </div>
         </>
@@ -301,6 +303,24 @@ function Invitations({ organization, invitations, invitableRoles }) {
                     ))}
                 </ul>
             )}
+        </Card>
+    );
+}
+
+// Die Benachrichtigungswege haben eine eigene Seite — hier steht nur der Weg
+// dorthin, damit die Detailseite nicht zur Sammelstelle wird.
+function Notifications({ organization }) {
+    return (
+        <Card
+            title="Benachrichtigungen"
+            description="Wohin Errstack meldet: E-Mail, Slack, Discord, Teams oder ein eigener Webhook."
+        >
+            <Link
+                href={organization.notificationsHref}
+                className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+            >
+                Kanäle und Zustellprotokoll
+            </Link>
         </Card>
     );
 }

@@ -9,6 +9,7 @@ import OrganizationsIndex from './shell/pages/organizations/Index.jsx';
 import OrganizationsShow from './shell/pages/organizations/Show.jsx';
 import OrganizationsAuditLog from './shell/pages/organizations/AuditLog.jsx';
 import TeamsShow from './shell/pages/teams/Show.jsx';
+import NotificationsIndex from './shell/pages/notifications/Index.jsx';
 import ProjectsIndex from './shell/pages/projects/Index.jsx';
 import ProjectsShow from './shell/pages/projects/Show.jsx';
 import ProjectsKeys from './shell/pages/projects/Keys.jsx';
@@ -33,6 +34,7 @@ const pages = {
     'organizations/Show': OrganizationsShow,
     'organizations/AuditLog': OrganizationsAuditLog,
     'teams/Show': TeamsShow,
+    'notifications/Index': NotificationsIndex,
     'projects/Index': ProjectsIndex,
     'projects/Show': ProjectsShow,
     'projects/Keys': ProjectsKeys,

@@ -70,6 +70,16 @@ class OrganizationPolicy
     }
 
     /**
+     * Benachrichtigungswege einrichten, ändern, testen und löschen. Ab der
+     * Verwaltung: in den Kanälen stecken Zugangsdaten, und wer sie ändert,
+     * bestimmt, wohin künftig jede Meldung geht.
+     */
+    public function manageNotifications(User $user, Organization $organization): bool
+    {
+        return $this->atLeast($user, $organization, OrganizationRole::Admin);
+    }
+
+    /**
      * Projekte anlegen, einstellen und löschen.
      */
     public function manageProjects(User $user, Organization $organization): bool

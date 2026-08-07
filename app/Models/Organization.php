@@ -107,6 +107,18 @@ class Organization extends Model
     }
 
     /**
+     * Eingerichtete Benachrichtigungswege. Sie hängen an der Organisation und
+     * nicht am einzelnen Projekt: dieselbe Bereitschaft will nicht je Projekt
+     * neu eingetragen werden.
+     *
+     * @return HasMany<NotificationChannel, $this>
+     */
+    public function notificationChannels(): HasMany
+    {
+        return $this->hasMany(NotificationChannel::class);
+    }
+
+    /**
      * Alle API-Tokens, die für diese Organisation gelten — persönliche wie
      * organisationsweite. Nicht zu verwechseln mit `tokens()` aus HasApiTokens:
      * das sind nur die organisationsweiten, deren Träger die Organisation selbst
