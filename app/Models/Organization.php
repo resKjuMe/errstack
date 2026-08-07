@@ -92,6 +92,17 @@ class Organization extends Model
     }
 
     /**
+     * Änderungsprotokoll dieser Organisation. Geschrieben wird ausschließlich
+     * über App\Support\AuditLog.
+     *
+     * @return HasMany<AuditLogEntry, $this>
+     */
+    public function auditLogEntries(): HasMany
+    {
+        return $this->hasMany(AuditLogEntry::class);
+    }
+
+    /**
      * Mitgliedschaft dieses Nutzers — oder null, wenn er der Organisation nicht
      * angehört. Ist die Beziehung bereits geladen (Listen, Detailseite), wird
      * sie genutzt, statt erneut zu fragen.

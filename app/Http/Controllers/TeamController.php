@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AuditAction;
 use App\Http\Requests\TeamRequest;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\Team;
 use App\Models\User;
+use App\Support\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -23,6 +25,14 @@ class TeamController extends Controller
         Gate::authorize('manageTeams', $organization);
 
         $team = $organization->teams()->create($request->validated());
+
+        AuditLog::record(
+            AuditAction::TeamCreated,
+            $organization,
+            subject: $team,
+            subjectLabel: $team->name,
+            changes: AuditLog::change('Name', null, $team->name),
+        );
 
         return redirect()
             ->route('teams.show', $team)
@@ -78,7 +88,19 @@ class TeamController extends Controller
     {
         Gate::authorize('update', $team);
 
+        $before = $team->name;
+
         $team->update($request->validated());
+
+        if ($team->name !== $before) {
+            AuditLog::record(
+                AuditAction::TeamUpdated,
+                $team->organization,
+                subject: $team,
+                subjectLabel: $team->name,
+                changes: AuditLog::change('Name', $before, $team->name),
+            );
+        }
 
         return back()->with('status', 'Team gespeichert.');
     }
@@ -90,6 +112,13 @@ class TeamController extends Controller
         $organization = $team->organization;
         $name = $team->name;
         $team->delete();
+
+        AuditLog::record(
+            AuditAction::TeamDeleted,
+            $organization,
+            subjectLabel: $name,
+            changes: AuditLog::change('Name', $name, null),
+        );
 
         return redirect()
             ->route('organizations.show', $organization)

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AuditAction;
 use App\Models\Team;
 use App\Models\User;
+use App\Support\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -29,6 +31,14 @@ class TeamMemberController extends Controller
 
         $team->members()->syncWithoutDetaching([$user->id]);
 
+        AuditLog::record(
+            AuditAction::TeamMemberAdded,
+            $team->organization,
+            subject: $team,
+            subjectLabel: $team->name,
+            changes: AuditLog::change('Mitglied', null, $user->name),
+        );
+
         return back()->with('status', "{$user->name} gehört jetzt zu „{$team->name}“.");
     }
 
@@ -37,6 +47,14 @@ class TeamMemberController extends Controller
         Gate::authorize('manageMembers', $team);
 
         $team->members()->detach($user->id);
+
+        AuditLog::record(
+            AuditAction::TeamMemberRemoved,
+            $team->organization,
+            subject: $team,
+            subjectLabel: $team->name,
+            changes: AuditLog::change('Mitglied', $user->name, null),
+        );
 
         return back()->with('status', "{$user->name} wurde aus „{$team->name}“ entfernt.");
     }

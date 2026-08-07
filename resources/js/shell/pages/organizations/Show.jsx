@@ -21,6 +21,7 @@ export default function Show({
     invitations,
     teams,
     invitableRoles,
+    auditLogHref,
 }) {
     const { shell } = usePage().props;
 
@@ -36,6 +37,14 @@ export default function Show({
                             Eigene Rolle:{' '}
                             {members.find((member) => member.userId === viewer.id)?.roleLabel}
                         </span>
+                        {permissions.viewAuditLog && (
+                            <Link
+                                href={auditLogHref}
+                                className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                            >
+                                Änderungsprotokoll
+                            </Link>
+                        )}
                         <Link
                             href="/organisationen"
                             className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
