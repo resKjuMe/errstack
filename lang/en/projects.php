@@ -72,6 +72,12 @@ return [
         'manage' => 'View cron jobs',
     ],
 
+    'grouping' => [
+        'title' => 'Grouping',
+        'description' => 'Similar reports are folded into a single entry. Where that turns out too coarse or too fine, project rules correct it.',
+        'manage' => 'View rules',
+    ],
+
     'privacy' => [
         'title' => 'Privacy',
         'description' => 'Passwords, credentials and card numbers are removed from every report before anything is stored. Whatever should disappear on top of that has its own page.',

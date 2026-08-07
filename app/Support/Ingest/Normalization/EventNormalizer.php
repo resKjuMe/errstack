@@ -173,7 +173,47 @@ final class EventNormalizer
             modules: $this->sanitizer->entries($data['modules'] ?? null, 'modules'),
             unknown: $this->unknown($data),
             notes: $notes->toArray(),
+            fingerprint: $this->fingerprint($data['fingerprint'] ?? null),
         );
+    }
+
+    /**
+     * Die eigene Gruppierungs-Angabe des SDK.
+     *
+     * Die einzige Anweisung, die eine Meldung überhaupt mitbringen kann:
+     * „fasse mich so zusammen und nicht nach dem üblichen Verfahren".
+     * Ausgewertet wird sie in der Gruppierung (I5) — hier wird sie nur in eine
+     * Liste von Texten gebracht.
+     *
+     * Eine einzelne Zeichenkette gilt als einelementige Liste: manche SDKs
+     * schreiben `"fingerprint": "abrechnung"` statt der Liste, und daran eine
+     * ausdrückliche Anweisung scheitern zu lassen wäre die Art Fehler, die
+     * niemand findet.
+     *
+     * @return list<string>|null
+     */
+    private function fingerprint(mixed $fingerprint): ?array
+    {
+        if (is_string($fingerprint) || is_int($fingerprint) || is_float($fingerprint)) {
+            $fingerprint = [$fingerprint];
+        }
+
+        // `items` und nicht `valueList`: der Fingerabdruck ist die nackte Liste
+        // und trägt keinen `values`-Umschlag. Ihn hier zu erlauben hieße, ein
+        // Feld namens `values` in einem Regelwerk stillschweigend auszupacken.
+        $raw = $this->sanitizer->items($fingerprint, 'fingerprint', $this->sanitizer->limits()->entries);
+
+        $values = [];
+
+        foreach ($raw as $index => $value) {
+            $text = $this->sanitizer->text($value, 'fingerprint.'.$index, 400);
+
+            if ($text !== null) {
+                $values[] = $text;
+            }
+        }
+
+        return $values === [] ? null : $values;
     }
 
     /**

@@ -16,6 +16,7 @@
 
 use App\Http\Controllers\CronMonitorController;
 use App\Http\Controllers\EnvironmentController;
+use App\Http\Controllers\FingerprintRuleController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectKeyController;
 use App\Http\Controllers\ProjectPrivacyController;
@@ -80,6 +81,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('projects.crons.toggle');
             Route::delete('{project}/cronjobs/{cron_monitor}', [CronMonitorController::class, 'destroy'])
                 ->name('projects.crons.destroy');
+
+            // Fingerprint-Regeln der Gruppierung. Der Parametername ist
+            // `fingerprint_rule` und nicht `regel`, weil `scopeBindings` daraus
+            // die Beziehung am Projekt ableitet (`fingerprintRules()`) — mit
+            // einem freieren Namen fände es sie nicht, und eine Regel wäre über
+            // jedes Projekt erreichbar.
+            Route::get('{project}/gruppierung', [FingerprintRuleController::class, 'index'])
+                ->name('projects.grouping.index');
+            Route::post('{project}/gruppierung', [FingerprintRuleController::class, 'store'])
+                ->name('projects.grouping.store');
+            Route::patch('{project}/gruppierung/{fingerprint_rule}', [FingerprintRuleController::class, 'update'])
+                ->name('projects.grouping.update');
+            Route::post('{project}/gruppierung/{fingerprint_rule}/zustand', [FingerprintRuleController::class, 'toggle'])
+                ->name('projects.grouping.toggle');
+            Route::delete('{project}/gruppierung/{fingerprint_rule}', [FingerprintRuleController::class, 'destroy'])
+                ->name('projects.grouping.destroy');
 
             // Datenschutz. Die Seite darf jedes Mitglied ansehen — was von einer
             // Meldung übrig bleibt, muss jeder wissen, der mit den Daten

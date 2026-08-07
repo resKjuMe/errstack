@@ -72,6 +72,12 @@ return [
         'manage' => 'Cronjobs ansehen',
     ],
 
+    'grouping' => [
+        'title' => 'Gruppierung',
+        'description' => 'Gleichartige Meldungen werden zu einem Eintrag zusammengefasst. Greift das im Einzelfall zu grob oder zu fein, korrigieren projektweite Regeln es.',
+        'manage' => 'Regeln ansehen',
+    ],
+
     'privacy' => [
         'title' => 'Datenschutz',
         'description' => 'Passwörter, Nachweise und Kartennummern werden bei jeder Meldung entfernt, bevor etwas gespeichert wird. Was darüber hinaus verschwinden soll, steht auf einer eigenen Seite.',

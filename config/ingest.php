@@ -1,6 +1,7 @@
 <?php
 
 use App\Support\Ingest\Processing\Steps\DecodePayload;
+use App\Support\Ingest\Processing\Steps\GroupEvent;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
 use App\Support\Ingest\Processing\Steps\ScrubEvent;
@@ -135,7 +136,43 @@ return [
             ScrubEvent::class,
             RecordTransaction::class,
             NormalizeEvent::class,
+            GroupEvent::class,
         ],
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gruppierung
+    |--------------------------------------------------------------------------
+    |
+    | Gleichartige Meldungen bekommen denselben Fingerabdruck und landen damit in
+    | einer Gruppe. Wonach gruppiert wird, steht nicht hier, sondern in
+    | App\Support\Ingest\Grouping — es ist ein Verfahren und keine Einstellung.
+    | Wer im Einzelfall etwas anderes braucht, schreibt eine projektweite
+    | Fingerprint-Regel; die stehen in der Datenbank und nicht in dieser Datei,
+    | weil sie je Projekt verschieden sind.
+    |
+    |   max_frames — wie viele Stapelrahmen in den Fingerabdruck eingehen.
+    |
+    | Der Wert ist eine Abwägung und keine Sparmaßnahme. Zu wenige Rahmen: zwei
+    | verschiedene Fehler, die über dieselbe Hilfsfunktion laufen, fallen
+    | zusammen. Zu viele: ein Fehler, der aus zwei verschiedenen Tiefen desselben
+    | Rahmenwerks kommt, fällt auseinander. Dreißig deckt den eigenen Code
+    | üblicher Anwendungen ab — und nur der geht ein, solange das SDK `in_app`
+    | setzt.
+    |
+    | **Wird dieser Wert geändert, ändern sich Fingerabdrücke.** Laufende Fehler
+    | bekommen dann eine zweite Gruppe, ihre Zählung beginnt bei eins, und
+    | Alarmregeln melden einen neuen Fehler. Eine Änderung gehört deshalb
+    | zusammen mit einer erneuten Auswertung der betroffenen Zeiträume — nicht
+    | zwischendurch.
+    |
+    */
+
+    'grouping' => [
+
+        'max_frames' => (int) env('INGEST_GROUPING_MAX_FRAMES', 30),
 
     ],
 
