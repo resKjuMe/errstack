@@ -17,10 +17,13 @@ POST /api/{projekt}/envelope/     ─┴─▶ ingest_payloads (Rohdaten)
                                      ├ Eingangsfilter (I8)
                                      ├ Stichprobe     (I9)
                                      ├ Scrubbing      (I7)
-                                     ├ Normalisierung (I4)
+                                     ├ Normalisierung (I4)  ─▶ events
                                      ├ Grouping       (I5)
                                      └ Aggregation    (I6)
 ```
+
+Was die Normalisierung aus einer Meldung macht — und warum sie nichts
+aussortiert —, steht in [normalisierung.md](normalisierung.md).
 
 ## Der Rahmen
 

@@ -111,6 +111,14 @@ return [
         'duplicate' => 'doppelte Zustellung',
     ],
 
+    'event_level' => [
+        'fatal' => 'Kritisch',
+        'error' => 'Fehler',
+        'warning' => 'Warnung',
+        'info' => 'Hinweis',
+        'debug' => 'Debug',
+    ],
+
     'filter_period' => [
         '1h' => 'Letzte Stunde',
         '24h' => 'Letzte 24 Stunden',
