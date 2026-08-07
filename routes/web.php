@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Jobs\ProcessDemoIngest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -13,7 +14,9 @@ use Inertia\Inertia;
 // Die Anwendung ist nicht öffentlich: ohne Anmeldung (und ohne bestätigte
 // E-Mail-Adresse) führt jeder Aufruf zur Anmeldung bzw. zum Bestätigungshinweis.
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/', fn () => Inertia::render('Dashboard'))->name('dashboard');
+    // Die Übersicht ist die erste Seite mit der globalen Filterleiste; ihr
+    // Zustand steht in der Adresszeile und wird serverseitig aufgelöst.
+    Route::get('/', DashboardController::class)->name('dashboard');
     Route::get('/bausteine', fn () => Inertia::render('Components'))->name('components');
 });
 

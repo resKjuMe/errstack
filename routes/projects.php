@@ -14,6 +14,7 @@
 |
 */
 
+use App\Http\Controllers\EnvironmentController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectKeyController;
 use App\Http\Controllers\ProjectTeamController;
@@ -39,6 +40,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::put('{project}/teams', [ProjectTeamController::class, 'update'])
                 ->name('projects.teams.update');
+
+            // Umgebungen. Nur die Sichtbarkeit ist einstellbar — die Einträge
+            // selbst entstehen aus den eingehenden Meldungen.
+            Route::patch('{project}/umgebungen/{environment}', [EnvironmentController::class, 'update'])
+                ->name('projects.environments.update');
 
             // Client-Schlüssel. Sie hängen am Projekt, weshalb `scopeBindings`
             // auch hier greift: ein Schlüssel ist nur über sein eigenes

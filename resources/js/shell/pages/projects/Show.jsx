@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
 import { PlatformIcon } from '../../icons.jsx';
@@ -22,6 +22,7 @@ export default function Show({
     organization,
     permissions,
     teams,
+    environments,
     platformOptions,
     resolutionOptions,
 }) {
@@ -68,6 +69,8 @@ export default function Show({
                 )}
 
                 <Teams project={project} teams={teams} canManage={permissions.manageTeams} />
+
+                <Environments environments={environments} canManage={permissions.update} />
 
                 {project.keysHref && <ClientKeys project={project} />}
 
@@ -253,6 +256,61 @@ function Teams({ project, teams, canManage }) {
                         </PrimaryButton>
                     )}
                 </form>
+            )}
+        </Card>
+    );
+}
+
+// Umgebungen entstehen aus den eingehenden Meldungen — deshalb gibt es hier kein
+// Anlegen, nur den Schalter, ob eine Umgebung in der Filterleiste angeboten wird.
+// Versteckt heißt nicht gelöscht: die Daten der Umgebung bleiben in den
+// Auswertungen enthalten.
+function Environments({ environments, canManage }) {
+    // Kein useForm: der Schalter schickt nur einen Wert und gehört zur jeweiligen
+    // Zeile, nicht zu einem Formular über die ganze Liste.
+    const toggle = (environment) =>
+        router.patch(environment.href, { hidden: !environment.hidden }, { preserveScroll: true });
+
+    return (
+        <Card
+            title="Umgebungen"
+            description="Werden beim ersten Eintreffen einer Meldung erfasst. Ausgeblendete Umgebungen erscheinen nicht mehr in der Filterleiste."
+        >
+            {environments.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Für dieses Projekt ist noch keine Meldung eingegangen.
+                </p>
+            ) : (
+                <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {environments.map((environment) => (
+                        <li
+                            key={environment.id}
+                            className="flex flex-wrap items-center justify-between gap-3 py-2"
+                        >
+                            <div>
+                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    {environment.name}
+                                    {environment.hidden && (
+                                        <span className="ms-2 text-xs font-normal text-gray-500 dark:text-gray-400">
+                                            ausgeblendet
+                                        </span>
+                                    )}
+                                </p>
+                                {environment.lastSeenAt && (
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Zuletzt gemeldet: {environment.lastSeenAt}
+                                    </p>
+                                )}
+                            </div>
+
+                            {canManage && (
+                                <SecondaryButton type="button" onClick={() => toggle(environment)}>
+                                    {environment.hidden ? 'Wieder anbieten' : 'Ausblenden'}
+                                </SecondaryButton>
+                            )}
+                        </li>
+                    ))}
+                </ul>
             )}
         </Card>
     );

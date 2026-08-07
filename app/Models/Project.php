@@ -113,6 +113,17 @@ class Project extends Model
     }
 
     /**
+     * Umgebungen dieses Projekts. Sie entstehen aus den eingehenden Meldungen
+     * (Environment::record()) und werden hier nicht angelegt.
+     *
+     * @return HasMany<Environment, $this>
+     */
+    public function environments(): HasMany
+    {
+        return $this->hasMany(Environment::class);
+    }
+
+    /**
      * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
