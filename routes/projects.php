@@ -15,8 +15,8 @@
 */
 
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectKeyController;
 use App\Http\Controllers\ProjectTeamController;
-use App\Http\Controllers\ProjectTokenController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -39,7 +39,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::put('{project}/teams', [ProjectTeamController::class, 'update'])
                 ->name('projects.teams.update');
-            Route::post('{project}/token', [ProjectTokenController::class, 'update'])
-                ->name('projects.token.update');
+
+            // Client-Schlüssel. Sie hängen am Projekt, weshalb `scopeBindings`
+            // auch hier greift: ein Schlüssel ist nur über sein eigenes
+            // Projekt erreichbar.
+            Route::get('{project}/schluessel', [ProjectKeyController::class, 'index'])
+                ->name('projects.keys.index');
+            Route::post('{project}/schluessel', [ProjectKeyController::class, 'store'])
+                ->name('projects.keys.store');
+            Route::patch('{project}/schluessel/{key}', [ProjectKeyController::class, 'update'])
+                ->name('projects.keys.update');
+            Route::post('{project}/schluessel/{key}/zustand', [ProjectKeyController::class, 'toggle'])
+                ->name('projects.keys.toggle');
+            Route::post('{project}/schluessel/{key}/rotation', [ProjectKeyController::class, 'rotate'])
+                ->name('projects.keys.rotate');
+            Route::delete('{project}/schluessel/{key}', [ProjectKeyController::class, 'destroy'])
+                ->name('projects.keys.destroy');
         });
 });

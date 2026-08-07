@@ -69,7 +69,8 @@ class ProjectTest extends TestCase
         // Standardwerte, damit ein frisches Projekt sofort brauchbar ist.
         $this->assertSame('production', $project->default_environment);
         $this->assertSame(30, $project->retention_days);
-        $this->assertSame(32, strlen($project->token));
+        // Ohne Schlüssel wüsste keine Anwendung, wohin sie melden soll.
+        $this->assertSame(32, strlen($project->keys()->sole()->public_key));
     }
 
     public function test_members_may_not_create_a_project(): void

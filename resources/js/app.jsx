@@ -11,6 +11,7 @@ import OrganizationsAuditLog from './shell/pages/organizations/AuditLog.jsx';
 import TeamsShow from './shell/pages/teams/Show.jsx';
 import ProjectsIndex from './shell/pages/projects/Index.jsx';
 import ProjectsShow from './shell/pages/projects/Show.jsx';
+import ProjectsKeys from './shell/pages/projects/Keys.jsx';
 import InvitationsAccept from './shell/pages/invitations/Accept.jsx';
 import Login from './shell/pages/auth/Login.jsx';
 import Register from './shell/pages/auth/Register.jsx';
@@ -33,6 +34,7 @@ const pages = {
     'teams/Show': TeamsShow,
     'projects/Index': ProjectsIndex,
     'projects/Show': ProjectsShow,
+    'projects/Keys': ProjectsKeys,
     'invitations/Accept': InvitationsAccept,
     'auth/Login': Login,
     'auth/Register': Register,

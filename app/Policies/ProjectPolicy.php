@@ -35,10 +35,11 @@ class ProjectPolicy
     }
 
     /**
-     * Den Sicherheits-Token neu ziehen. Danach werden Meldungen mit dem alten
-     * abgewiesen, deshalb dasselbe Recht wie für die übrigen Einstellungen.
+     * Client-Schlüssel anlegen, abschalten, neu ziehen und löschen. Wer das
+     * darf, bekommt auch die DSN im Klartext zu sehen — sie ist der Zugang zur
+     * Datenaufnahme, deshalb dasselbe Recht wie für die übrigen Einstellungen.
      */
-    public function rotateToken(User $user, Project $project): bool
+    public function manageKeys(User $user, Project $project): bool
     {
         return $user->can('manageProjects', $project->organization);
     }
