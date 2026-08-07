@@ -11,6 +11,7 @@
 |
 */
 
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\InvitationAcceptanceController;
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\OrganizationController;
@@ -33,6 +34,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('organizations.destroy');
     Route::post('organisationen/{organization}/wechseln', [OrganizationController::class, 'switch'])
         ->name('organizations.switch');
+
+    // Änderungsprotokoll. Der Export hängt an einer eigenen Route statt an
+    // einem Parameter der Ansicht, damit er sich verlinken lässt — er nimmt
+    // dieselben Filter entgegen und gibt genau die angezeigte Auswahl aus.
+    Route::get('organisationen/{organization}/protokoll', [AuditLogController::class, 'index'])
+        ->name('organizations.audit-log.index');
+    Route::get('organisationen/{organization}/protokoll/export', [AuditLogController::class, 'export'])
+        ->name('organizations.audit-log.export');
 
     Route::post('organisationen/{organization}/einladungen', [OrganizationInvitationController::class, 'store'])
         ->name('organizations.invitations.store');

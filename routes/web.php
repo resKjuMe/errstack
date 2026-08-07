@@ -30,3 +30,5 @@ Route::post('/demo/ingest', function (Request $request) {
 require __DIR__.'/auth.php';
 require __DIR__.'/organizations.php';
 require __DIR__.'/notifications.php';
+require __DIR__.'/projects.php';
+require __DIR__.'/api-tokens.php';

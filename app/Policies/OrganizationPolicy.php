@@ -79,6 +79,24 @@ class OrganizationPolicy
         return $this->atLeast($user, $organization, OrganizationRole::Admin);
     }
 
+    /**
+     * Projekte anlegen, einstellen und löschen.
+     */
+    public function manageProjects(User $user, Organization $organization): bool
+    {
+        return $this->atLeast($user, $organization, OrganizationRole::Admin);
+    }
+
+    /**
+     * Das Änderungsprotokoll einsehen und ausgeben. Es zeigt, wer wann was
+     * getan hat, samt IP-Adresse — das geht nur die Verwaltung etwas an, nicht
+     * jedes Mitglied.
+     */
+    public function viewAuditLog(User $user, Organization $organization): bool
+    {
+        return $this->atLeast($user, $organization, OrganizationRole::Admin);
+    }
+
     private function atLeast(User $user, Organization $organization, OrganizationRole $minimum): bool
     {
         return $organization->roleFor($user)?->atLeast($minimum) === true;

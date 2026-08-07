@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * Oberste Klammer der Mandantenfähigkeit: alle fachlichen Daten hängen an
@@ -21,8 +22,14 @@ use Illuminate\Support\Str;
 #[Fillable(['name'])]
 class Organization extends Model
 {
-    /** @use HasFactory<OrganizationFactory> */
-    use HasFactory;
+    /**
+     * `HasApiTokens` macht die Organisation selbst zum Träger von Tokens — das
+     * sind die organisationsweiten, die keinem Konto gehören.
+     *
+     * @use HasFactory<OrganizationFactory>
+     * @use HasApiTokens<ApiToken>
+     */
+    use HasApiTokens, HasFactory;
 
     /**
      * In der Adresszeile steht der Slug, nicht die laufende Nummer.
@@ -84,6 +91,14 @@ class Organization extends Model
     }
 
     /**
+     * @return HasMany<Project, $this>
+     */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
+
+    /**
      * @return HasMany<OrganizationInvitation, $this>
      */
     public function invitations(): HasMany
@@ -101,6 +116,30 @@ class Organization extends Model
     public function notificationChannels(): HasMany
     {
         return $this->hasMany(NotificationChannel::class);
+    }
+
+    /**
+     * Alle API-Tokens, die für diese Organisation gelten — persönliche wie
+     * organisationsweite. Nicht zu verwechseln mit `tokens()` aus HasApiTokens:
+     * das sind nur die organisationsweiten, deren Träger die Organisation selbst
+     * ist.
+     *
+     * @return HasMany<ApiToken, $this>
+     */
+    public function apiTokens(): HasMany
+    {
+        return $this->hasMany(ApiToken::class);
+    }
+
+    /**
+     * Änderungsprotokoll dieser Organisation. Geschrieben wird ausschließlich
+     * über App\Support\AuditLog.
+     *
+     * @return HasMany<AuditLogEntry, $this>
+     */
+    public function auditLogEntries(): HasMany
+    {
+        return $this->hasMany(AuditLogEntry::class);
     }
 
     /**

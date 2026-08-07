@@ -94,6 +94,11 @@ final class ShellData
                 'activePattern' => 'dashboard',
             ],
             [
+                'label' => 'Projekte',
+                'route' => 'projects.index',
+                'activePattern' => 'projects.*',
+            ],
+            [
                 'label' => 'Organisationen',
                 'route' => 'organizations.index',
                 'activePattern' => 'organizations.*',
@@ -120,6 +125,12 @@ final class ShellData
                 'route' => 'profile.edit',
                 'activePattern' => 'profile.*',
                 'icon' => 'profile',
+            ],
+            [
+                'label' => 'Zugriffstoken',
+                'route' => 'api-tokens.index',
+                'activePattern' => 'api-tokens.*',
+                'icon' => 'key',
             ],
             [
                 'label' => 'Bausteine',
