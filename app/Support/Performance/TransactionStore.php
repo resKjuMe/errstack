@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\Transaction;
 use App\Models\TransactionAggregate;
 use App\Models\TransactionSpan;
+use App\Support\Ingest\Sampling\SamplingDecision;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -27,17 +28,25 @@ use Illuminate\Support\Facades\DB;
 final class TransactionStore
 {
     /**
+     * @param  SamplingDecision|null  $decision  Was die Stichprobe entschieden hat
+     *                                           (I9). Ohne Angabe gilt die Messung
+     *                                           als ungesiebt und steht für genau
+     *                                           einen Aufruf.
      * @return Transaction Die abgelegte Messung.
      */
-    public function store(TransactionEvent $event, Project $project, ?IngestPayload $payload = null): Transaction
-    {
+    public function store(
+        TransactionEvent $event,
+        Project $project,
+        ?IngestPayload $payload = null,
+        ?SamplingDecision $decision = null,
+    ): Transaction {
         // Die Umgebung wird außerhalb der Datenbank-Transaktion erfasst: sie ist
         // projektweiter Bestand und keine Messung. Läge sie mit drin, würde ein
         // Abbruch beim Ablegen der Schritte eine bereits gesehene Umgebung wieder
         // aus der Filterleiste entfernen.
         $environment = Environment::record($project, $event->environment, $event->startedAt);
 
-        return DB::transaction(function () use ($event, $project, $payload, $environment): Transaction {
+        return DB::transaction(function () use ($event, $project, $payload, $environment, $decision): Transaction {
             $existing = Transaction::query()
                 ->where('project_id', $project->id)
                 ->where('event_id', $event->eventId)
@@ -63,6 +72,13 @@ final class TransactionStore
             $transaction->finished_at = $event->finishedAt;
             $transaction->duration_us = $event->durationUs;
             $transaction->span_count = count($event->spans);
+            // Die Quoten, mit denen diese Messung durchgekommen ist. Sie stehen
+            // an der Zeile und nicht nur in der Vorberechnung, weil die Frage
+            // „warum weist die Übersicht den hundertfachen Durchsatz aus?“ sonst
+            // nicht zu beantworten wäre — und weil eine erneute Auswertung der
+            // Rohdaten dieselbe Hochrechnung ergeben soll.
+            $transaction->client_sample_rate = $decision?->clientRate;
+            $transaction->server_sample_rate = $decision?->serverRate;
             $transaction->measurements = $event->measurements;
             $transaction->save();
 

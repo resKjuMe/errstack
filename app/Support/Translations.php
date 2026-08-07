@@ -36,6 +36,7 @@ final class Translations
         'profile',
         'project_keys',
         'projects',
+        'sampling',
         'teams',
     ];
 

@@ -41,6 +41,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property CarbonImmutable $finished_at
  * @property int $duration_us
  * @property int $span_count
+ * @property float|null $client_sample_rate
+ * @property float|null $server_sample_rate
  * @property array<string, mixed>|null $measurements
  */
 class Transaction extends Model
@@ -117,6 +119,42 @@ class Transaction extends Model
     }
 
     /**
+     * Für wie viele Aufrufe diese eine Messung steht.
+     *
+     * Der Kehrwert der Quoten, mit denen sie durchgekommen ist. Beide zählen und
+     * beide multiplizieren sich: hat das SDK 10 % gesendet und haben unsere
+     * Regeln davon 10 % behalten, steht die gespeicherte Messung für hundert
+     * Aufrufe. Ohne diese Zahl wäre der ausgewiesene Durchsatz einer Anwendung
+     * mit Stichprobe schlicht falsch — und zwar unauffällig falsch, denn an den
+     * gespeicherten Messungen fehlt nichts.
+     *
+     * Auf Antwortzeiten wirkt das Gewicht **nicht**: Mittelwert, Grenzwerte und
+     * Perzentile sind aus einer Stichprobe unverzerrt zu schätzen, ebenso die
+     * Fehlerrate als Anteil. Hochgerechnet werden Anzahlen, nicht Verteilungen.
+     *
+     * Fehlt eine Quote, gilt sie als 1 — der Regelfall ohne Stichprobe. Eine
+     * unmögliche Quote (0 oder größer als 1, denkbar aus einem alten
+     * Datenbestand) wird ebenso behandelt: ein Gewicht von 1 ist zu wenig, eine
+     * Division durch Null ist keine Zahl.
+     */
+    public function sampleWeight(): float
+    {
+        return 1.0 / (self::factor($this->client_sample_rate) * self::factor($this->server_sample_rate));
+    }
+
+    /**
+     * Eine Quote, auf den brauchbaren Bereich gebracht.
+     */
+    private static function factor(?float $rate): float
+    {
+        if ($rate === null || ! is_finite($rate) || $rate <= 0.0 || $rate > 1.0) {
+            return 1.0;
+        }
+
+        return $rate;
+    }
+
+    /**
      * Zählt diese Transaktion in die Fehlerrate?
      */
     public function failed(): bool
@@ -162,6 +200,12 @@ class Transaction extends Model
             'finished_at' => 'immutable_datetime',
             'duration_us' => 'integer',
             'span_count' => 'integer',
+            // `float` und nicht `decimal:8`: aus den Quoten wird gerechnet
+            // ({@see sampleWeight()}), und `decimal` liefert eine Zeichenkette.
+            // Die Spalte bleibt `decimal`, damit dort genau die eingestellte
+            // Quote steht und nicht deren Annäherung.
+            'client_sample_rate' => 'float',
+            'server_sample_rate' => 'float',
             'measurements' => 'array',
         ];
     }

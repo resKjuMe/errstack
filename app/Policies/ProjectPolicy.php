@@ -70,4 +70,18 @@ class ProjectPolicy
     {
         return $user->can('manageProjects', $project->organization);
     }
+
+    /**
+     * Stichproben-Regeln anlegen, ändern und löschen.
+     *
+     * Dasselbe Recht wie für die übrigen Einstellungen, und hier wöge eine
+     * Lockerung schwerer als beim Grouping: eine Regel entscheidet, welche
+     * Messungen es künftig **nicht** geben wird. Eine zu niedrig gesetzte Quote
+     * lässt sich nicht zurücknehmen — die Daten dieses Zeitraums sind dann
+     * nirgends mehr, auch nicht in den Rohdaten.
+     */
+    public function manageSampling(User $user, Project $project): bool
+    {
+        return $user->can('manageProjects', $project->organization);
+    }
 }

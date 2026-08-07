@@ -119,6 +119,7 @@ return [
         'too_large' => 'zu groß',
         'too_many_items' => 'zu viele Elemente',
         'duplicate' => 'doppelte Zustellung',
+        'sampled' => 'nicht in die Stichprobe gefallen',
     ],
 
     'event_level' => [

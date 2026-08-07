@@ -4,6 +4,7 @@ use App\Support\Ingest\Processing\Steps\DecodePayload;
 use App\Support\Ingest\Processing\Steps\GroupEvent;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
+use App\Support\Ingest\Processing\Steps\SampleTransaction;
 
 return [
 
@@ -125,10 +126,54 @@ return [
 
         'steps' => [
             DecodePayload::class,
+            SampleTransaction::class,
             RecordTransaction::class,
             NormalizeEvent::class,
             GroupEvent::class,
         ],
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Stichproben
+    |--------------------------------------------------------------------------
+    |
+    | Von den gemeldeten Antwortzeiten wird nur ein Anteil gespeichert und in den
+    | Auswertungen wieder hochgerechnet. Die Rechnung dahinter: eine Anwendung mit
+    | hundert Aufrufen je Sekunde meldet im Monat 260 Millionen Transaktionen.
+    | Gebraucht wird davon nicht jeder Aufruf, sondern die Verteilung — und die
+    | steht in einer Stichprobe genauso.
+    |
+    | **Welcher Anteil, entscheiden die Regeln je Projekt** (Tabelle
+    | `sampling_rules`) und nicht diese Datei: die Quote für `GET /health` ist eine
+    | Frage an die, die die Antwortzeiten ansehen, und keine an die, die die
+    | Anwendung ausliefern. Hier stehen nur die beiden Werte, die gelten, wenn
+    | **keine** Regel zutrifft.
+    |
+    |   default_rate       — der Anteil ohne passende Regel. Eins: eine
+    |                        Stichprobe ist eine Entscheidung und darf keine
+    |                        Voreinstellung sein. Ein Betreiber, der pauschal
+    |                        aussieben will, setzt den Wert — dann ist es seine
+    |                        Entscheidung und nicht unsere.
+    |   minimum_per_window — wie viele Meldungen eines Vorgangs je Zeitfenster
+    |                        immer behalten werden. Greift nur bei einer Quote
+    |                        unter eins. Einer, weil ein Vorgang, der einmal je
+    |                        Fenster vorkommt, bei 1 % Quote mit 99 %
+    |                        Wahrscheinlichkeit ganz verschwindet — und der
+    |                        nächtliche Import ist genau so ein Vorgang.
+    |
+    | Fehler sind hiervon **nicht** betroffen. Die Stichprobe greift
+    | ausschließlich an Transaktionen; ein Absturz ist ein Einzelfall, und ein
+    | Einzelfall lässt sich nicht hochrechnen.
+    |
+    */
+
+    'sampling' => [
+
+        'default_rate' => (float) env('INGEST_SAMPLING_DEFAULT_RATE', 1.0),
+
+        'minimum_per_window' => (int) env('INGEST_SAMPLING_MINIMUM_PER_WINDOW', 1),
 
     ],
 

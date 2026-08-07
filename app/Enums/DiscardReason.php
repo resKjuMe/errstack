@@ -39,6 +39,18 @@ enum DiscardReason: string
      */
     case Duplicate = 'duplicate';
 
+    /**
+     * Die Stichprobe hat die Messung nicht behalten (I9).
+     *
+     * Kein Mangel an der Meldung: sie war vollständig und in Ordnung, sie wurde
+     * nur nicht gebraucht. Der Grund steht deshalb ausdrücklich als eigener da
+     * und nicht bei den übrigen — eine Statistik, in der ausgesiebte
+     * Antwortzeiten neben unlesbaren Nutzdaten stehen, würde jeden Betreiber zu
+     * Recht beunruhigen. Betroffen sind nur Transaktionen; Fehler werden
+     * vollständig behalten.
+     */
+    case Sampled = 'sampled';
+
     public function label(): string
     {
         return __('enums.discard_reason.'.$this->value);

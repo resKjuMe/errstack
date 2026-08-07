@@ -72,6 +72,12 @@ return [
         'manage' => 'View cron jobs',
     ],
 
+    'sampling' => [
+        'title' => 'Sampling',
+        'description' => 'Only a configurable share of the response times is stored; the evaluations scale it back up. Error reports are untouched by this.',
+        'manage' => 'View rules',
+    ],
+
     'grouping' => [
         'title' => 'Grouping',
         'description' => 'Similar reports are folded into a single entry. Where that turns out too coarse or too fine, project rules correct it.',

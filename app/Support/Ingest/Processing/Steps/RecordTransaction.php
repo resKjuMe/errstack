@@ -10,6 +10,7 @@ use App\Models\ProjectKey;
 use App\Models\Transaction;
 use App\Support\Ingest\Processing\ProcessingContext;
 use App\Support\Ingest\Processing\ProcessingStep;
+use App\Support\Ingest\Sampling\SamplingDecision;
 use App\Support\Performance\TransactionEvent;
 use App\Support\Performance\TransactionStore;
 use Closure;
@@ -54,7 +55,18 @@ final class RecordTransaction implements ProcessingStep
             return;
         }
 
-        $transaction = $this->record($payload, $context->data);
+        // Die Entscheidung der Stichprobe (I9), falls dieser Schritt in der Kette
+        // vor uns steht. Sie wird nicht neu gefällt und auch nicht ersetzt: eine
+        // Messung ist hier entweder schon ausgesondert — dann läuft die Kette
+        // gar nicht bis hierher — oder sie bringt die Quoten mit, mit denen sie
+        // später hochzurechnen ist.
+        $decision = $context->get(SamplingDecision::CONTEXT_KEY);
+
+        $transaction = $this->record(
+            $payload,
+            $context->data,
+            $decision instanceof SamplingDecision ? $decision : null,
+        );
 
         if ($transaction !== null) {
             $context->with(self::RESULT, $transaction);
@@ -66,7 +78,7 @@ final class RecordTransaction implements ProcessingStep
     /**
      * @param  array<mixed>|null  $data
      */
-    private function record(IngestPayload $payload, ?array $data): ?Transaction
+    private function record(IngestPayload $payload, ?array $data, ?SamplingDecision $decision): ?Transaction
     {
         $project = $payload->project;
 
@@ -105,7 +117,7 @@ final class RecordTransaction implements ProcessingStep
             ]);
         }
 
-        return $this->store->store($event, $project, $payload);
+        return $this->store->store($event, $project, $payload, $decision);
     }
 
     /**
