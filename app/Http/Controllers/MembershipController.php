@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AuditAction;
 use App\Enums\OrganizationRole;
 use App\Models\Membership;
+use App\Support\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -26,7 +28,19 @@ class MembershipController extends Controller
 
         Gate::authorize('updateRole', [$membership, $role]);
 
+        $before = $membership->role;
+
         $membership->update(['role' => $role]);
+
+        if ($role !== $before) {
+            AuditLog::record(
+                AuditAction::MembershipRoleChanged,
+                $membership->organization,
+                subject: $membership,
+                subjectLabel: $membership->user->name,
+                changes: AuditLog::change('Rolle', $before->label(), $role->label()),
+            );
+        }
 
         return back()->with('status', "Rolle von {$membership->user->name} auf {$role->label()} gesetzt.");
     }
@@ -38,8 +52,18 @@ class MembershipController extends Controller
         $user = $membership->user;
         $organization = $membership->organization;
         $isSelf = $membership->user_id === $request->user()->id;
+        $role = $membership->role;
 
         $membership->delete();
+
+        // Wer selbst geht, steht anders im Protokoll als wer entfernt wurde —
+        // beim Nachlesen ist genau das der Unterschied, der zählt.
+        AuditLog::record(
+            $isSelf ? AuditAction::MembershipLeft : AuditAction::MembershipRemoved,
+            $organization,
+            subjectLabel: $user->name,
+            changes: AuditLog::change('Rolle', $role->label(), null),
+        );
 
         // Wer die Organisation verlassen hat, darf sie auch nicht mehr als
         // aktive Organisation behalten — dasselbe gilt für die entfernte Person

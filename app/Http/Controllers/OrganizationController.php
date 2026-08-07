@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AuditAction;
 use App\Enums\OrganizationRole;
 use App\Http\Requests\OrganizationRequest;
 use App\Models\Membership;
 use App\Models\Organization;
+use App\Support\AuditLog;
 use App\Support\OrganizationData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -57,6 +59,14 @@ class OrganizationController extends Controller
             $organization = Organization::createNamed((string) $request->validated('name'));
             $organization->setRole($user, OrganizationRole::Owner);
 
+            AuditLog::record(
+                AuditAction::OrganizationCreated,
+                $organization,
+                subject: $organization,
+                subjectLabel: $organization->name,
+                changes: AuditLog::change('Name', null, $organization->name),
+            );
+
             return $organization;
         });
 
@@ -78,7 +88,21 @@ class OrganizationController extends Controller
     {
         Gate::authorize('update', $organization);
 
+        $before = $organization->name;
+
         $organization->update($request->validated());
+
+        // Nur protokollieren, wenn sich wirklich etwas geändert hat — ein
+        // erneutes Speichern desselben Namens ist keine Änderung.
+        if ($organization->name !== $before) {
+            AuditLog::record(
+                AuditAction::OrganizationUpdated,
+                $organization,
+                subject: $organization,
+                subjectLabel: $organization->name,
+                changes: AuditLog::change('Name', $before, $organization->name),
+            );
+        }
 
         return back()->with('status', 'Organisation gespeichert.');
     }
@@ -88,6 +112,11 @@ class OrganizationController extends Controller
         Gate::authorize('delete', $organization);
 
         $name = $organization->name;
+
+        // Hier entsteht bewusst kein Protokolleintrag: das Protokoll gehört der
+        // Organisation und verschwindet mit ihr. Ein Eintrag wäre im selben
+        // Aufruf wieder weg — wer das Löschen einer ganzen Organisation
+        // nachhalten will, braucht ein Protokoll oberhalb der Organisation.
         $organization->delete();
 
         // Danach steht die Wahl der Organisation neu an.

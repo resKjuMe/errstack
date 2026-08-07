@@ -16,6 +16,9 @@ return [
     'confirmed' => ':attribute stimmt nicht mit der Wiederholung überein.',
     'current_password' => 'Das Passwort ist falsch.',
     'email' => ':attribute muss eine gültige E-Mail-Adresse sein.',
+    'enum' => ':attribute ist keine gültige Auswahl.',
+    'exists' => ':attribute ist unbekannt.',
+    'integer' => ':attribute muss eine Zahl sein.',
     'lowercase' => ':attribute darf nur Kleinbuchstaben enthalten.',
     'max' => [
         'array' => ':attribute darf höchstens :max Einträge haben.',
@@ -56,6 +59,8 @@ return [
         'name' => 'Der Name',
         'password' => 'Das Passwort',
         'password_confirmation' => 'Die Passwort-Wiederholung',
+        'role' => 'Die Rolle',
+        'user_id' => 'Das Mitglied',
     ],
 
 ];

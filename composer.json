@@ -6,7 +6,7 @@
     "keywords": ["laravel", "error-tracking", "monitoring"],
     "license": "proprietary",
     "require": {
-        "php": "^8.3",
+        "php": "^8.4",
         "inertiajs/inertia-laravel": "^3.0",
         "laravel/framework": "^13.8",
         "laravel/reverb": "^1.11",

@@ -46,11 +46,19 @@ class OrganizationPolicy
     }
 
     /**
-     * Mitglieder einladen und Einladungen zurückziehen.
+     * Mitglieder einladen und Einladungen zurückziehen. Mit `$role` wird
+     * zugleich geprüft, ob diese Rolle vergeben werden darf: die Besitzer-Rolle
+     * vergibt nur ein Besitzer — sonst könnte sich eine Verwaltung über eine
+     * Einladung an sich selbst zum Besitzer machen.
      */
-    public function invite(User $user, Organization $organization): bool
+    public function invite(User $user, Organization $organization, ?OrganizationRole $role = null): bool
     {
-        return $this->atLeast($user, $organization, OrganizationRole::Admin);
+        if (! $this->atLeast($user, $organization, OrganizationRole::Admin)) {
+            return false;
+        }
+
+        return $role !== OrganizationRole::Owner
+            || $organization->roleFor($user) === OrganizationRole::Owner;
     }
 
     /**
@@ -65,6 +73,16 @@ class OrganizationPolicy
      * Projekte anlegen, einstellen und löschen.
      */
     public function manageProjects(User $user, Organization $organization): bool
+    {
+        return $this->atLeast($user, $organization, OrganizationRole::Admin);
+    }
+
+    /**
+     * Das Änderungsprotokoll einsehen und ausgeben. Es zeigt, wer wann was
+     * getan hat, samt IP-Adresse — das geht nur die Verwaltung etwas an, nicht
+     * jedes Mitglied.
+     */
+    public function viewAuditLog(User $user, Organization $organization): bool
     {
         return $this->atLeast($user, $organization, OrganizationRole::Admin);
     }

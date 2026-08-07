@@ -49,18 +49,4 @@ enum OrganizationRole: string
     {
         return $this->rank() >= $role->rank();
     }
-
-    /**
-     * Rollen, die sich einladen bzw. zuweisen lassen — mit Beschriftung, wie sie
-     * die Oberfläche in den Auswahlfeldern anzeigt.
-     *
-     * @return list<array{value: string, label: string}>
-     */
-    public static function options(): array
-    {
-        return array_map(
-            fn (self $role) => ['value' => $role->value, 'label' => $role->label()],
-            self::cases(),
-        );
-    }
 }

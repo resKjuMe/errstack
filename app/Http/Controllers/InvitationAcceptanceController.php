@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AuditAction;
 use App\Models\OrganizationInvitation;
+use App\Support\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -52,9 +54,24 @@ class InvitationAcceptanceController extends Controller
         $organization = $invitation->organization;
 
         // Beitritt und Verbrauch der Einladung gehören zusammen — sonst bliebe
-        // eine bereits genutzte Einladung offen stehen.
+        // eine bereits genutzte Einladung offen stehen. Wer schon Mitglied ist,
+        // behält seine Rolle: eine ältere Einladung darf niemanden herabstufen.
         DB::transaction(function () use ($invitation, $organization, $user): void {
-            $organization->setRole($user, $invitation->role);
+            $joined = ! $organization->hasMember($user);
+
+            if ($joined) {
+                $organization->setRole($user, $invitation->role);
+            }
+
+            AuditLog::record(
+                AuditAction::InvitationAccepted,
+                $organization,
+                subjectLabel: $user->name,
+                // Wer schon Mitglied war, behält seine Rolle — dann gibt es
+                // auch nichts an Vorher/Nachher zu berichten.
+                changes: $joined ? AuditLog::change('Rolle', null, $invitation->role->label()) : [],
+            );
+
             $invitation->delete();
         });
 

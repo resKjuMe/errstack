@@ -7,6 +7,8 @@ use App\Models\Organization;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class MembershipTest extends TestCase
@@ -157,6 +159,53 @@ class MembershipTest extends TestCase
             ->assertRedirect('/organisationen');
 
         $this->assertFalse($organization->hasMember($member));
+    }
+
+    public function test_the_page_offers_only_roles_that_are_actually_allowed(): void
+    {
+        $admin = User::factory()->create();
+        $member = User::factory()->create();
+        $owner = User::factory()->create();
+        $organization = Organization::factory()->create();
+        $organization->setRole($owner, OrganizationRole::Owner);
+        $organization->setRole($admin, OrganizationRole::Admin);
+        $organization->setRole($member, OrganizationRole::Member);
+
+        $this->actingAs($admin)
+            ->get("/organisationen/{$organization->slug}")
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                // Die Verwaltung darf niemanden zum Besitzer machen …
+                ->where('members', fn (Collection $members) => $members
+                    ->firstWhere('userId', $member->id)['assignableRoles'] === [
+                        ['value' => 'admin', 'label' => 'Verwaltung'],
+                        ['value' => 'member', 'label' => 'Mitglied'],
+                        ['value' => 'viewer', 'label' => 'Lesend'],
+                    ])
+                // … den Besitzer gar nicht anfassen, mit Begründung …
+                ->where('members', fn (Collection $members) => $members
+                    ->firstWhere('userId', $owner->id)['assignableRoles'] === []
+                    && $members->firstWhere('userId', $owner->id)['roleHint'] === 'Einen Besitzer ändert nur ein Besitzer.')
+                // … und die eigene Rolle nicht ändern.
+                ->where('members', fn (Collection $members) => $members
+                    ->firstWhere('userId', $admin->id)['assignableRoles'] === []
+                    && $members->firstWhere('userId', $admin->id)['roleHint'] === 'Die eigene Rolle ändert man nicht selbst.')
+            );
+    }
+
+    public function test_one_owner_may_change_another_owners_role(): void
+    {
+        $owner = User::factory()->create();
+        $second = User::factory()->create();
+        $organization = Organization::factory()->withMember($owner, OrganizationRole::Owner)->create();
+        $organization->setRole($second, OrganizationRole::Owner);
+
+        $this->actingAs($second)
+            ->get("/organisationen/{$organization->slug}")
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('members', fn (Collection $members) => $members
+                    ->firstWhere('userId', $owner->id)['assignableRoles'] !== []
+                    && $members->firstWhere('userId', $owner->id)['roleHint'] === null)
+            );
     }
 
     public function test_outsiders_may_not_touch_memberships(): void
