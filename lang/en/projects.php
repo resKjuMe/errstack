@@ -66,6 +66,12 @@ return [
         'manage' => 'Manage client keys',
     ],
 
+    'crons' => [
+        'title' => 'Cron jobs',
+        'description' => 'Monitored cron jobs check in on every run. If the check-in fails to arrive, a message goes out — instead of the gap only showing up as missing data.',
+        'manage' => 'View cron jobs',
+    ],
+
     'delete' => [
         'title' => 'Delete project',
         'description' => 'Deleting the project removes its settings, the team assignment and all attached data — irreversibly.',

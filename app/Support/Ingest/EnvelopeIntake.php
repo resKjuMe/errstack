@@ -8,6 +8,8 @@ use App\Jobs\ProcessIngestPayload;
 use App\Models\IngestDiscard;
 use App\Models\IngestPayload;
 use App\Models\ProjectKey;
+use App\Support\Crons\CheckInIntake;
+use App\Support\Crons\CheckInPayload;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -25,6 +27,13 @@ use Illuminate\Support\Facades\Log;
  * Ausgewertet wird nichts. Jedes Element landet als Rohdaten in derselben
  * Eingangsablage wie eine Meldung von `/store/`, nur mit seinem eigenen Typ;
  * was daraus wird, entscheidet die Verarbeitung (I3) und das jeweilige Feature.
+ *
+ * Eine Ausnahme gibt es: das Lebenszeichen eines Cronjobs (`check_in`) wird
+ * zusätzlich sofort verarbeitet. Sein Wert ist ausschließlich zeitlicher Natur —
+ * „hat sich gemeldet" ist eine Aussage über **jetzt**, und ein Ausfall, der
+ * erst nach dem nächsten Durchlauf der Verarbeitung auffällt, ist eine
+ * Meldung, die zu spät kommt. Abgelegt wird er trotzdem, wie alle anderen: die
+ * Rohdaten bleiben die Grundlage, falls sich an der Auswertung etwas ändert.
  */
 final class EnvelopeIntake
 {
@@ -32,11 +41,13 @@ final class EnvelopeIntake
      * @param  int  $maxItems  Wie viele Elemente ein Envelope enthalten darf.
      * @param  int  $maxItemBytes  Obergrenze für ein JSON-Element.
      * @param  int  $maxAttachmentBytes  Obergrenze für Anhänge und Aufzeichnungen.
+     * @param  CheckInIntake  $checkIns  Verarbeitung der Cronjob-Lebenszeichen.
      */
     public function __construct(
         private readonly int $maxItems,
         private readonly int $maxItemBytes,
         private readonly int $maxAttachmentBytes,
+        private readonly CheckInIntake $checkIns,
     ) {}
 
     public static function fromConfig(): self
@@ -45,6 +56,7 @@ final class EnvelopeIntake
             maxItems: (int) config('ingest.envelope.max_items'),
             maxItemBytes: (int) config('ingest.envelope.max_item_bytes'),
             maxAttachmentBytes: (int) config('ingest.envelope.max_attachment_bytes'),
+            checkIns: app(CheckInIntake::class),
         );
     }
 
@@ -140,6 +152,36 @@ final class EnvelopeIntake
         if ($type === IngestType::ClientReport) {
             $this->countClientReport($item, $key);
         }
+
+        if ($type === IngestType::CheckIn) {
+            $this->acceptCheckIn($item, $key);
+        }
+    }
+
+    /**
+     * Reicht ein Lebenszeichen an die Cronjob-Überwachung weiter.
+     *
+     * Fehler dabei bleiben hier: ein Check-in kommt aus einem Job, der gerade
+     * läuft, und steckt fast immer in einem Envelope mit weiteren Elementen. Ein
+     * unbekannter Monitor darf weder die Fehlermeldung daneben verhindern noch
+     * die Antwort verderben — die Meldung ins Protokoll übernimmt die
+     * Verarbeitung selbst.
+     */
+    private function acceptCheckIn(EnvelopeItem $item, ProjectKey $key): void
+    {
+        $decoded = $item->decoded();
+
+        if ($decoded === null) {
+            return;
+        }
+
+        $key->loadMissing('project');
+
+        if ($key->project === null) {
+            return;
+        }
+
+        $this->checkIns->accept($key->project, CheckInPayload::fromArray($decoded));
     }
 
     /**

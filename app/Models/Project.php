@@ -124,6 +124,17 @@ class Project extends Model
     }
 
     /**
+     * Überwachte Cronjobs dieses Projekts. Sie entstehen in der Oberfläche oder
+     * beim ersten Check-in, der seinen Zeitplan mitbringt (M1).
+     *
+     * @return HasMany<CronMonitor, $this>
+     */
+    public function cronMonitors(): HasMany
+    {
+        return $this->hasMany(CronMonitor::class);
+    }
+
+    /**
      * Gemessene Antwortzeiten dieses Projekts.
      *
      * Ausdrücklich getrennt von den Fehlermeldungen: eine Transaktion ist keine,

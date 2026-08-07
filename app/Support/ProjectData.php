@@ -94,6 +94,10 @@ final class ProjectData
                 // Die DSN steht auf der Schlüssel-Seite; hier verweist nur der
                 // Link darauf, und auch der nur für die Verwaltung.
                 'keysHref' => $mayManageKeys ? route('projects.keys.index', [$organization, $project]) : null,
+                // Die Cronjob-Überwachung darf jedes Mitglied ansehen — der
+                // Link steht deshalb ohne Bedingung da, anders als der zu den
+                // Schlüsseln.
+                'cronsHref' => route('projects.crons.index', [$organization, $project]),
             ],
             'organization' => [
                 'slug' => $organization->slug,
@@ -105,6 +109,7 @@ final class ProjectData
                 'delete' => Gate::forUser($viewer)->allows('delete', $project),
                 'manageTeams' => Gate::forUser($viewer)->allows('manageTeams', $project),
                 'manageKeys' => $mayManageKeys,
+                'manageCrons' => Gate::forUser($viewer)->allows('manageCrons', $project),
             ],
             'teams' => $organization->teams()
                 ->orderBy('name')

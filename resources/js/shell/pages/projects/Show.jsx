@@ -76,6 +76,8 @@ export default function Show({
 
                 {project.keysHref && <ClientKeys project={project} />}
 
+                <CronMonitors project={project} />
+
                 {permissions.delete && <DeleteProject project={project} />}
             </div>
         </>
@@ -345,6 +347,20 @@ function ClientKeys({ project }) {
         <Card title={t('projects.keys.title')} description={t('projects.keys.description')}>
             <Link href={project.keysHref}>
                 <SecondaryButton type="button">{t('projects.keys.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zur Cronjob-Überwachung. Ohne Bedingung: den Zustand der überwachten
+// Jobs darf jedes Mitglied ansehen — er ist der Grund, warum jemand nachschaut.
+function CronMonitors({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.crons.title')} description={t('projects.crons.description')}>
+            <Link href={project.cronsHref}>
+                <SecondaryButton type="button">{t('projects.crons.manage')}</SecondaryButton>
             </Link>
         </Card>
     );

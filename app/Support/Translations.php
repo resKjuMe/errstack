@@ -25,6 +25,7 @@ final class Translations
         'auth_ui',
         'common',
         'components',
+        'crons',
         'dashboard',
         'filters',
         'invitations',
