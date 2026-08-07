@@ -1,0 +1,119 @@
+<?php
+
+namespace App\Support;
+
+use App\Enums\Platform;
+use App\Enums\ResolutionBehavior;
+use App\Models\Organization;
+use App\Models\Project;
+use App\Models\Team;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
+
+/**
+ * Nutzlast der Projekt-Seiten. Was der Betrachter tun darf, entscheiden auch
+ * hier die Policies — die Oberfläche blendet nur aus, was ohnehin abgewiesen
+ * würde.
+ */
+final class ProjectData
+{
+    /**
+     * Projektliste einer Organisation.
+     *
+     * @return array<string, mixed>
+     */
+    public static function index(?Organization $organization, User $viewer): array
+    {
+        if ($organization === null) {
+            return [
+                'organization' => null,
+                'permissions' => ['create' => false],
+                'projects' => [],
+                'platformOptions' => Platform::options(),
+            ];
+        }
+
+        $projects = $organization->projects()->with('teams')->get();
+
+        return [
+            'organization' => [
+                'slug' => $organization->slug,
+                'name' => $organization->name,
+                'href' => route('organizations.show', $organization),
+            ],
+            'permissions' => [
+                'create' => Gate::forUser($viewer)->allows('manageProjects', $organization),
+            ],
+            'projects' => $projects
+                ->sortBy(fn (Project $project): string => (string) $project->name)
+                ->values()
+                ->map(fn (Project $project): array => [
+                    'slug' => $project->slug,
+                    'name' => $project->name,
+                    'platform' => $project->platform->value,
+                    'platformLabel' => $project->platform->label(),
+                    'platformShort' => $project->platform->shortLabel(),
+                    'environment' => $project->default_environment,
+                    'href' => route('projects.show', [$organization, $project]),
+                    'teams' => $project->teams
+                        ->sortBy(fn (Team $team): string => (string) $team->name)
+                        ->pluck('name')
+                        ->values()
+                        ->all(),
+                ])->all(),
+            'platformOptions' => Platform::options(),
+        ];
+    }
+
+    /**
+     * Einstellungsseite eines Projekts: Stammdaten, Verhalten, zuständige
+     * Teams und der Sicherheits-Token.
+     *
+     * @return array<string, mixed>
+     */
+    public static function detail(Project $project, User $viewer): array
+    {
+        $project->load(['organization', 'teams']);
+        $organization = $project->organization;
+
+        $mayManage = Gate::forUser($viewer)->allows('update', $project);
+
+        return [
+            'project' => [
+                'slug' => $project->slug,
+                'name' => $project->name,
+                'platform' => $project->platform->value,
+                'platformLabel' => $project->platform->label(),
+                'platformShort' => $project->platform->shortLabel(),
+                'defaultEnvironment' => $project->default_environment,
+                'resolutionBehavior' => $project->resolution_behavior->value,
+                'retentionDays' => $project->retention_days,
+                // Der Token steht nur denen offen, die ihn auch neu ziehen
+                // dürfen — für alle anderen wäre er ein Mitleseschlüssel.
+                'token' => $mayManage ? $project->token : null,
+                'href' => route('projects.show', [$organization, $project]),
+            ],
+            'organization' => [
+                'slug' => $organization->slug,
+                'name' => $organization->name,
+                'href' => route('organizations.show', $organization),
+            ],
+            'permissions' => [
+                'update' => $mayManage,
+                'delete' => Gate::forUser($viewer)->allows('delete', $project),
+                'manageTeams' => Gate::forUser($viewer)->allows('manageTeams', $project),
+            ],
+            'teams' => $organization->teams()
+                ->orderBy('name')
+                ->get()
+                ->map(fn (Team $team): array => [
+                    'id' => $team->id,
+                    'name' => $team->name,
+                    'assigned' => $project->teams->contains($team),
+                    'href' => route('teams.show', $team),
+                ])->all(),
+            'platformOptions' => Platform::options(),
+            'resolutionOptions' => ResolutionBehavior::options(),
+        ];
+    }
+}

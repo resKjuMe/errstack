@@ -26,6 +26,23 @@ export function TextInput({ className = '', ...props }) {
     );
 }
 
+// Auswahlfeld. `options` sind die Paare aus value und label, wie sie die
+// PHP-Enums über ihre options()-Methode liefern.
+export function SelectInput({ options = [], className = '', ...props }) {
+    return (
+        <select
+            {...props}
+            className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 ${className}`}
+        >
+            {options.map((option) => (
+                <option key={option.value} value={option.value}>
+                    {option.label}
+                </option>
+            ))}
+        </select>
+    );
+}
+
 export function Checkbox({ className = '', ...props }) {
     return (
         <input
