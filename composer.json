@@ -10,6 +10,7 @@
         "inertiajs/inertia-laravel": "^3.0",
         "laravel/framework": "^13.8",
         "laravel/reverb": "^1.11",
+        "laravel/sanctum": "^4.3",
         "laravel/tinker": "^3.0",
         "pusher/pusher-php-server": "^7.2"
     },

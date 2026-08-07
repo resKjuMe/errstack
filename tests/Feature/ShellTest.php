@@ -78,7 +78,7 @@ class ShellTest extends TestCase
                 ->where('shell.user.name', $user->name)
                 ->where('shell.user.email', $user->email)
                 ->where('shell.logoutHref', route('logout'))
-                ->where('shell.menu', fn (Collection $menu) => $menu->pluck('label')->all() === ['Profil', 'Bausteine'])
+                ->where('shell.menu', fn (Collection $menu) => $menu->pluck('label')->all() === ['Profil', 'Zugriffstoken', 'Bausteine'])
             );
     }
 
