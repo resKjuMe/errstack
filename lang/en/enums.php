@@ -246,4 +246,12 @@ return [
         'day' => 'Daily',
     ],
 
+    'trend_direction' => [
+        'new' => 'New — not measured in the previous period',
+        'unknown' => 'Too few measurements to compare',
+        'flat' => 'Unchanged',
+        'better' => 'Got faster',
+        'worse' => 'Got slower',
+    ],
+
 ];

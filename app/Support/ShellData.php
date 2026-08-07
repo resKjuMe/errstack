@@ -94,6 +94,11 @@ final class ShellData
                 'activePattern' => 'dashboard',
             ],
             [
+                'label' => __('nav.links.performance'),
+                'route' => 'performance.index',
+                'activePattern' => 'performance.*',
+            ],
+            [
                 'label' => __('nav.links.projects'),
                 'route' => 'projects.index',
                 'activePattern' => 'projects.*',

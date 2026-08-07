@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\Transaction;
 use App\Models\TransactionAggregate;
 use App\Models\TransactionSpan;
+use App\Models\TransactionUserAggregate;
 use App\Support\Ingest\Sampling\SamplingDecision;
 use Illuminate\Support\Facades\DB;
 
@@ -90,6 +91,13 @@ final class TransactionStore
                 // Übersicht, die eine wiederholte Verarbeitung als doppelten
                 // Verkehr ausweist, führt in die Irre.
                 TransactionAggregate::record($transaction);
+
+                // Die zweite Vorberechnung, unmittelbar daneben: was hier
+                // auseinanderfiele, fiele in der Übersicht auseinander. Eine
+                // Messung ohne ihre Nutzer-Zeile hieße eine Transaktion mit
+                // Verkehr, aber ohne Betroffene — und niemand käme darauf, dass
+                // die Zahl fehlt statt null zu sein.
+                TransactionUserAggregate::record($transaction, $transaction->miserable());
             }
 
             return $transaction;

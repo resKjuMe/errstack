@@ -44,10 +44,10 @@ export default function useGlobalFilter(filter) {
         visit(next);
     };
 
-    // Ohne Parameter setzt der Server seine Voreinstellungen ein; die Felder
-    // ziehen mit seiner Antwort nach.
-    const reset = () =>
-        router.get(window.location.pathname, {}, { preserveState: true, preserveScroll: true });
+    // Ohne Filter-Parameter setzt der Server seine Voreinstellungen ein; die
+    // Felder ziehen mit seiner Antwort nach. Zurückgesetzt wird die **Leiste**
+    // und nicht die Seite — Sortierung und Suche bleiben stehen.
+    const reset = () => go(carryOver(new URLSearchParams()));
 
     return {
         form,
@@ -91,11 +91,36 @@ export function filterQuery(form) {
     return query;
 }
 
+// Die Parameter, die der Leiste gehören. Alles andere in der Adresszeile gehört
+// der Seite.
+const OWNED = new Set(['projects[]', 'projects', 'environment', 'period', 'from', 'to', 'tz']);
+
+// Übernimmt die Parameter der Seite in eine neue Adresszeile.
+//
+// Sortierung und Suche einer Auswertungsseite sollen das Umstellen des Zeitraums
+// überleben — wer nach p95 sortiert hat und auf „letzte 7 Tage" wechselt, will
+// dieselbe Frage über einen anderen Zeitraum und nicht von vorn anfangen. Die
+// Seitenzahl allerdings nicht: ein anderer Zeitraum hat andere Zeilen, und
+// „Seite 7" von etwas anderem gibt es nicht.
+function carryOver(query) {
+    currentQuery().forEach((value, key) => {
+        if (!OWNED.has(key) && key !== 'page') {
+            query.append(key, value);
+        }
+    });
+
+    return query;
+}
+
 function visit(form, options = {}) {
-    const query = filterQuery(form).toString();
+    go(carryOver(filterQuery(form)), options);
+}
+
+function go(query, options = {}) {
+    const search = query.toString();
 
     router.get(
-        query ? `${window.location.pathname}?${query}` : window.location.pathname,
+        search ? `${window.location.pathname}?${search}` : window.location.pathname,
         {},
         {
             preserveState: true,

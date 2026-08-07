@@ -33,6 +33,7 @@ final class Translations
         'nav',
         'notifications',
         'organizations',
+        'performance',
         'privacy',
         'profile',
         'project_keys',
