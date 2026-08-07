@@ -39,6 +39,8 @@ class CronSweepTest extends TestCase
     /**
      * Ein Monitor, dessen Termin um 02:00 lag und dessen Toleranz abgelaufen
      * ist.
+     *
+     * @param  array<string, mixed>  $attributes
      */
     private function overdueMonitor(array $attributes = []): CronMonitor
     {

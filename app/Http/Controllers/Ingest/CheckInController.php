@@ -43,9 +43,14 @@ class CheckInController extends Controller
             $payload,
         );
 
+        // `??` fängt hier auch den Fall ab, dass gar kein Check-in entstanden
+        // ist: es unterdrückt den Zugriff auf `null` mit — ein `?->` davor wäre
+        // doppelt gemoppelt. Dann geht das zurück, was gemeldet wurde.
+        $status = $checkIn->status ?? $payload->status;
+
         return new JsonResponse([
-            'id' => $checkIn?->check_in_id ?? $payload->checkInId,
-            'status' => ($checkIn?->status ?? $payload->status)?->value,
+            'id' => $checkIn->check_in_id ?? $payload->checkInId,
+            'status' => $status?->value,
             // Ob der Check-in tatsächlich einem Monitor zugeordnet werden
             // konnte. Ohne diese Auskunft sähe ein Tippfehler in der Kennung
             // von außen genauso aus wie ein angekommener Lebenszeichen-Aufruf.

@@ -42,6 +42,7 @@ class CronMonitorTest extends TestCase
     }
 
     /**
+     * @param  array<string, mixed>  $overrides
      * @return array<string, mixed>
      */
     private function attributes(array $overrides = []): array

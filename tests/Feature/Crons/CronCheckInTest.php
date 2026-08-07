@@ -42,6 +42,9 @@ class CronCheckInTest extends TestCase
         return Project::factory()->create()->keys()->firstOrFail();
     }
 
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
     private function monitor(ProjectKey $key, array $attributes = []): CronMonitor
     {
         return CronMonitor::factory()->create([
