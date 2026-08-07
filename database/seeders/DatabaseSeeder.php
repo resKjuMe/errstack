@@ -3,7 +3,9 @@
 namespace Database\Seeders;
 
 use App\Enums\OrganizationRole;
+use App\Enums\Platform;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -28,7 +30,14 @@ class DatabaseSeeder extends Seeder
         // fachlichen Daten hängen an einer.
         $organization = Organization::createNamed('Beispiel GmbH');
         $organization->setRole($user, OrganizationRole::Owner);
-        $organization->teams()->create(['name' => 'Plattform']);
+        $team = $organization->teams()->create(['name' => 'Plattform']);
+
+        // Ein Projekt je überwachter Anwendung. Zwei genügen, um Liste und
+        // Team-Zuordnung lokal zu sehen.
+        $shop = Project::createFor($organization, 'Webshop', Platform::Php);
+        $shop->teams()->attach($team);
+
+        Project::createFor($organization, 'Kundenportal', Platform::JavaScript);
 
         $user->switchOrganization($organization);
     }

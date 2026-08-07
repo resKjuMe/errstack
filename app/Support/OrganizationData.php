@@ -50,7 +50,9 @@ final class OrganizationData
                 'delete' => Gate::forUser($viewer)->allows('delete', $organization),
                 'invite' => Gate::forUser($viewer)->allows('invite', $organization),
                 'manageTeams' => Gate::forUser($viewer)->allows('manageTeams', $organization),
+                'viewAuditLog' => Gate::forUser($viewer)->allows('viewAuditLog', $organization),
             ],
+            'auditLogHref' => route('organizations.audit-log.index', $organization),
             'members' => $organization->memberships
                 ->sortBy(fn (Membership $membership): string => (string) $membership->user->name)
                 ->values()

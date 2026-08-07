@@ -4,14 +4,16 @@ Selbstgehosteter Error-Tracker: Fehler aus Anwendungen entgegennehmen, zu
 Issues gruppieren, durchsuchbar machen und alarmieren.
 
 Dieses Repository enthält bislang **nur das Grundgerüst** — Laravel 13 auf
-PHP 8.3, PHPUnit 12, Pint, PHPStan und Prettier sowie die Oberfläche
+PHP 8.4, PHPUnit 12, Pint, PHPStan und Prettier sowie die Oberfläche
 (Inertia 3, React 19, Tailwind 4) mit Navigation, Dunkelmodus und
 wiederverwendbaren Bausteinen unter `resources/js/shell`. Fachlogik folgt in
 den nächsten Phasen.
 
 ## Installation
 
-Voraussetzungen: PHP 8.3+ mit `pdo_sqlite`, Composer, Node 20+.
+Voraussetzungen: PHP 8.4+ mit `pdo_sqlite`, Composer, Node 20+.
+(Laravel 13 zieht Symfony 8 nach, das PHP 8.4.1 voraussetzt — auf 8.3 bricht
+schon `composer install` ab.)
 
 ```bash
 git clone git@github.com:resKjuMe/errstack.git
@@ -42,6 +44,14 @@ Danach läuft die Anwendung auf http://localhost:8000.
 Datenbank ist standardmäßig SQLite (`database/database.sqlite`); für eine andere
 Datenbank `DB_CONNECTION` in der `.env` umstellen.
 
+Die Oberfläche ist deutsch, deshalb gehört `APP_LOCALE=de` in die `.env`
+(`APP_FALLBACK_LOCALE` bleibt `en`, damit Schlüssel ohne deutsche Übersetzung
+weiterhin greifen). Wer die `.env` vor der Anmeldung (F3) angelegt hat, hat dort
+noch `APP_LOCALE=en` stehen — die `.env` ist nicht versioniert und wird von
+`composer setup` nicht nachgezogen. Die Anwendung sieht dann fast deutsch aus,
+nur die Meldungen aus dem Framework kommen englisch heraus („The password field
+is required." statt „Das Passwort ist erforderlich.").
+
 `composer dev` startet neben Server und Vite auch den Queue-Worker, den
 Websocket-Server (Reverb) und den Zeitplan.
 
@@ -55,7 +65,7 @@ gibt keine Sonderpfade, die es nur in der Pipeline gäbe:
 | --- | --- |
 | Format PHP (Pint) | `composer lint` |
 | Statische Analyse (PHPStan) | `composer analyse` |
-| Tests (PHP 8.3 und 8.4) | `php artisan migrate --force`, `composer test` |
+| Tests (PHP 8.4) | `php artisan migrate --force`, `composer test` |
 | Frontend (Format & Build) | `npm ci`, `npm run format:check`, `npm run build` |
 | Abhängigkeits-Audit | `composer audit --locked`, `npm audit --audit-level=high` |
 
@@ -74,6 +84,13 @@ ein vollständiger Lauf bleibt dadurch deutlich unter zehn Minuten.
 
 Erledigt Prettier die JavaScript-Formatierung, bleiben PHP (Pint), Markdown und
 `composer.json` bewusst außen vor — siehe `.prettierignore`.
+
+`package-lock.json` ist **für Linux** aufgelöst (`npm install --package-lock-only
+--os=linux --cpu=x64 --libc=glibc`), weil `npm ci` in der Pipeline auf Linux
+läuft und ein unter Windows erzeugtes Lockfile dort mit „Missing …" abbricht —
+die optionalen wasm-Pakete von Tailwind lösen sich je Plattform anders auf.
+Lokal deshalb `npm install` benutzen (macht `composer setup` ohnehin) und ein
+dabei umgeschriebenes Lockfile **nicht** mitcommitten.
 
 ## Hintergrund-Verarbeitung
 

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AuditAction;
 use App\Enums\OrganizationRole;
 use App\Http\Requests\StoreInvitationRequest;
 use App\Mail\OrganizationInvitationMail;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
+use App\Support\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -30,6 +32,14 @@ class OrganizationInvitationController extends Controller
             'invited_by_id' => $request->user()->id,
         ]);
 
+        AuditLog::record(
+            AuditAction::InvitationSent,
+            $organization,
+            subject: $invitation,
+            subjectLabel: $invitation->email,
+            changes: AuditLog::change('Rolle', null, $role->label()),
+        );
+
         // Die Adresse gehört noch zu keinem Konto — die Mail geht deshalb an die
         // Adresse selbst, nicht an einen Nutzer.
         Mail::to($invitation->email)->send(new OrganizationInvitationMail($invitation));
@@ -51,7 +61,19 @@ class OrganizationInvitationController extends Controller
 
         Gate::authorize('update', [$invitation, $role]);
 
+        $before = $invitation->role;
+
         $invitation->update(['role' => $role]);
+
+        if ($role !== $before) {
+            AuditLog::record(
+                AuditAction::InvitationRoleChanged,
+                $invitation->organization,
+                subject: $invitation,
+                subjectLabel: $invitation->email,
+                changes: AuditLog::change('Rolle', $before->label(), $role->label()),
+            );
+        }
 
         return back()->with('status', "Einladung an {$invitation->email}: Rolle auf {$role->label()} gesetzt.");
     }
@@ -61,7 +83,17 @@ class OrganizationInvitationController extends Controller
         Gate::authorize('delete', $invitation);
 
         $email = $invitation->email;
+        $role = $invitation->role;
+        $organization = $invitation->organization;
+
         $invitation->delete();
+
+        AuditLog::record(
+            AuditAction::InvitationRevoked,
+            $organization,
+            subjectLabel: $email,
+            changes: AuditLog::change('Rolle', $role->label(), null),
+        );
 
         return back()->with('status', "Einladung an {$email} zurückgezogen.");
     }

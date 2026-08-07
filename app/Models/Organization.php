@@ -91,6 +91,14 @@ class Organization extends Model
     }
 
     /**
+     * @return HasMany<Project, $this>
+     */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
+
+    /**
      * @return HasMany<OrganizationInvitation, $this>
      */
     public function invitations(): HasMany
@@ -109,6 +117,17 @@ class Organization extends Model
     public function apiTokens(): HasMany
     {
         return $this->hasMany(ApiToken::class);
+    }
+
+    /**
+     * Änderungsprotokoll dieser Organisation. Geschrieben wird ausschließlich
+     * über App\Support\AuditLog.
+     *
+     * @return HasMany<AuditLogEntry, $this>
+     */
+    public function auditLogEntries(): HasMany
+    {
+        return $this->hasMany(AuditLogEntry::class);
     }
 
     /**
