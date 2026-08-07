@@ -23,6 +23,7 @@
 */
 
 use App\Http\Controllers\Api\V0\OrganizationController;
+use App\Http\Controllers\Api\V0\ProjectController;
 use App\Http\Controllers\Api\V0\RootController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,4 +46,23 @@ Route::prefix((string) config('api.version'))
         Route::patch('organizations/{organization}', [OrganizationController::class, 'update'])
             ->middleware('scope:org:write')
             ->name('organizations.update');
+
+        // `scopeBindings`: der Projekt-Slug ist nur innerhalb der Organisation
+        // eindeutig, ein Projekt darf also nur über seine eigene aufgelöst werden.
+        Route::prefix('organizations/{organization}/projects')
+            ->name('projects.')
+            ->scopeBindings()
+            ->group(function () {
+                Route::get('/', [ProjectController::class, 'index'])
+                    ->middleware('scope:project:read')
+                    ->name('index');
+
+                Route::get('{project}', [ProjectController::class, 'show'])
+                    ->middleware('scope:project:read')
+                    ->name('show');
+
+                Route::patch('{project}', [ProjectController::class, 'update'])
+                    ->middleware('scope:project:write')
+                    ->name('update');
+            });
     });

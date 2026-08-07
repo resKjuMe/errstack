@@ -6,6 +6,7 @@ use App\Enums\ApiScope;
 use App\Enums\OrganizationRole;
 use App\Models\ApiToken;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -252,6 +253,50 @@ class ApiFrameworkTest extends TestCase
         $this->getJson('/api/0/gibt-es-nicht')
             ->assertStatus(404)
             ->assertJsonStructure(['message', 'errors']);
+    }
+
+    public function test_a_project_read_token_reads_the_project_list(): void
+    {
+        $user = User::factory()->create();
+        $organization = Organization::factory()->withMember($user, OrganizationRole::Viewer)->create();
+        Project::factory()->for($organization)->create(['name' => 'Kasse', 'slug' => 'kasse']);
+        $bearer = $this->bearer($organization, [ApiScope::ProjectRead], $user);
+
+        $this->withToken($bearer)
+            ->getJson('/api/0/organizations/'.$organization->slug.'/projects')
+            ->assertOk()
+            ->assertJsonPath('data.0.slug', 'kasse')
+            ->assertJsonPath('data.0.name', 'Kasse')
+            ->assertJsonPath('meta.total', 1);
+    }
+
+    public function test_a_project_read_token_may_not_change_a_project(): void
+    {
+        $user = User::factory()->create();
+        $organization = Organization::factory()->withMember($user)->create();
+        $project = Project::factory()->for($organization)->create(['name' => 'Kasse', 'slug' => 'kasse']);
+        $bearer = $this->bearer($organization, [ApiScope::ProjectRead], $user);
+
+        $this->withToken($bearer)
+            ->patchJson('/api/0/organizations/'.$organization->slug.'/projects/kasse', ['name' => 'Neu'])
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'Dem Token fehlt der Geltungsbereich „project:write“.');
+
+        $this->assertSame('Kasse', $project->refresh()->name);
+    }
+
+    public function test_a_project_token_does_not_reach_a_project_of_another_organization(): void
+    {
+        $organization = Organization::factory()->create();
+        $foreign = Organization::factory()->create();
+        Project::factory()->for($foreign)->create(['slug' => 'fremd']);
+        $bearer = $this->bearer($organization, [ApiScope::ProjectRead]);
+
+        // Der Slug ist nur je Organisation eindeutig — ohne die Bindung an die
+        // eigene Organisation wäre er ein Weg in fremde Projekte.
+        $this->withToken($bearer)
+            ->getJson('/api/0/organizations/'.$organization->slug.'/projects/fremd')
+            ->assertStatus(404);
     }
 
     public function test_the_rate_limit_answers_429_with_retry_after(): void
