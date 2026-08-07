@@ -246,18 +246,24 @@ class DeliveryTest extends TestCase
     }
 
     /**
-     * Legt einen Protokolleintrag an, ohne ihn einzureihen — die Tests führen
-     * den Job selbst aus.
+     * Legt einen Protokolleintrag an, ohne ihn tatsächlich zustellen zu lassen —
+     * die Tests führen den Job selbst aus.
      */
     private function pending(NotificationChannel $channel): NotificationDelivery
     {
         Queue::fake();
 
-        return app(NotificationDispatcher::class)->sendTo(
+        $delivery = app(NotificationDispatcher::class)->sendTo(
             $channel,
             NotificationMessage::test($channel->organization->name),
             isTest: true,
         );
+
+        // Der Aufbau reiht selbst ein. Die Warteschlange danach erneut fälschen,
+        // damit dieser Push nicht als Push des Tests durchgeht.
+        Queue::fake();
+
+        return $delivery;
     }
 
     /**

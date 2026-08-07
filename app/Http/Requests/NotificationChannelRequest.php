@@ -108,7 +108,8 @@ class NotificationChannelRequest extends FormRequest
     {
         /** @var array<string, mixed> $config */
         $config = $this->validated('config', []);
-        $existing = $this->channel()?->config ?? [];
+        $channel = $this->channel();
+        $existing = $channel === null ? [] : $channel->config;
 
         foreach ($this->fields() as $field) {
             if ($field->secret && ! array_key_exists($field->key, $config) && array_key_exists($field->key, $existing)) {
@@ -121,7 +122,8 @@ class NotificationChannelRequest extends FormRequest
 
     public function organization(): Organization
     {
-        $organization = $this->channel()?->organization ?? $this->route('organization');
+        $channel = $this->channel();
+        $organization = $channel === null ? $this->route('organization') : $channel->organization;
 
         assert($organization instanceof Organization);
 
@@ -130,7 +132,9 @@ class NotificationChannelRequest extends FormRequest
 
     public function type(): string
     {
-        return $this->channel()?->type ?? (string) $this->input('type');
+        $channel = $this->channel();
+
+        return $channel === null ? (string) $this->input('type') : $channel->type;
     }
 
     /**
@@ -153,7 +157,10 @@ class NotificationChannelRequest extends FormRequest
                 )));
             }
 
-            if ($field->secret && is_string($value) && trim($value) === '') {
+            // Auch `null` zählt als „leer gelassen": das Formular schickt ein
+            // leeres Feld als leere Zeichenkette, und die kommt hier dank
+            // ConvertEmptyStringsToNull schon als null an.
+            if ($field->secret && ($value === null || (is_string($value) && trim($value) === ''))) {
                 unset($config[$field->key]);
             }
         }
