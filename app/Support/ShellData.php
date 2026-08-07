@@ -60,7 +60,12 @@ final class ShellData
      * Lokal zeigt das auf den selbst gehosteten Reverb, in der Produktion auf
      * Pusher Cloud — dieselbe Verbindung, nur andere Werte.
      *
-     * @return array{enabled: bool, key: string|null, cluster: string|null, host: string|null, port: int|null, scheme: string|null, channel: string}
+     * `authEndpoint` und `csrf` braucht der Client nur für **private** Kanäle:
+     * dort holt er sich vor dem Abo eine Unterschrift bei der Anwendung, und
+     * routes/channels.php entscheidet. Die Adresse steht hier und nicht in der
+     * Oberfläche, damit es eine Stelle bleibt, wenn sie sich einmal ändert.
+     *
+     * @return array{enabled: bool, key: string|null, cluster: string|null, host: string|null, port: int|null, scheme: string|null, channel: string, authEndpoint: string, csrf: string}
      */
     private static function broadcast(): array
     {
@@ -77,6 +82,8 @@ final class ShellData
             'port' => isset($options['port']) ? (int) $options['port'] : null,
             'scheme' => $scheme,
             'channel' => 'demo',
+            'authEndpoint' => '/broadcasting/auth',
+            'csrf' => csrf_token(),
         ];
     }
 
@@ -92,6 +99,11 @@ final class ShellData
                 'label' => __('nav.links.dashboard'),
                 'route' => 'dashboard',
                 'activePattern' => 'dashboard',
+            ],
+            [
+                'label' => __('nav.links.issues'),
+                'route' => 'issues.index',
+                'activePattern' => 'issues.*',
             ],
             [
                 'label' => __('nav.links.projects'),

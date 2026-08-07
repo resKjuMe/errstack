@@ -123,6 +123,44 @@ final class GlobalFilter
     }
 
     /**
+     * Schränkt eine Abfrage auf die gewählten Projekte und auf alles ein, dessen
+     * **Zeitspanne** den gewählten Zeitraum berührt.
+     *
+     * Der Unterschied zu {@see apply()} ist nicht die Schreibweise, sondern die
+     * Frage. Ein Ereignis hat einen Zeitpunkt und liegt im Zeitraum oder nicht;
+     * ein Fehler-Eintrag hat eine Spanne — erstes bis letztes Auftreten — und
+     * gefragt ist, ob er in diesem Zeitraum aufgetreten ist. Mit
+     * `whereBetween(last_seen, …)` fiele ein Fehler, den es letzte Woche gab und
+     * heute wieder gibt, aus der Auswahl „letzte Woche" heraus, obwohl er genau
+     * dorthin gehört.
+     *
+     * Die Bedingung ist die übliche Überschneidung zweier Spannen: der Anfang
+     * liegt vor dem Ende des Zeitraums, das Ende danach. Sie kommt ohne die
+     * Einzelereignisse aus und bleibt damit eine Abfrage auf den Zählern.
+     *
+     * Die Umgebung fehlt hier bewusst: eine Zeitspanne gehört zu einem Eintrag,
+     * und der ist über alle Umgebungen hinweg gezählt. Sie ließe sich nur über
+     * die Einzelereignisse einschränken — und die sind für diese Abfragen tabu.
+     *
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
+    public function overlapping(
+        Builder $query,
+        string $startColumn = 'first_seen',
+        string $endColumn = 'last_seen',
+        string $projectColumn = 'project_id',
+    ): Builder {
+        $query->whereIn($projectColumn, $this->projectIds());
+
+        return $query
+            ->where($endColumn, '>=', $this->fromUtc())
+            ->where($startColumn, '<=', $this->toUtc());
+    }
+
+    /**
      * @return list<int>
      */
     public function projectIds(): array

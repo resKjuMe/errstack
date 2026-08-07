@@ -11,6 +11,7 @@ return [
 
     'links' => [
         'dashboard' => 'Overview',
+        'issues' => 'Issues',
         'projects' => 'Projects',
         'organizations' => 'Organizations',
         'components' => 'Components',
