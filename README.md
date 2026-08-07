@@ -133,6 +133,54 @@ Ohne Verbindungsdaten bleibt die Live-Aktualisierung einfach aus (`shell.broadca
 = false); Jobs laufen trotzdem. Zum Ausprobieren die Übersicht in zwei Fenstern
 öffnen und „Ingest einreihen" drücken.
 
+## Datenaufnahme
+
+Fehlermeldungen kommen unter Sentrys eigener Adresse herein, damit unveränderte
+Sentry-SDKs hierher melden können:
+
+```
+POST /api/<projekt-id>/store/
+```
+
+Die Zugangsdaten sind der **Client-Schlüssel** aus der DSN des Projekts
+(`https://<schlüssel>@host/<projekt-id>`, in der Oberfläche unter
+*Projekt → Client-Schlüssel*). Er darf auf drei Wegen mitkommen — alle drei sind
+in SDKs im Umlauf und werden angenommen:
+
+| Weg | Beispiel |
+| --- | --- |
+| Kopfzeile `X-Sentry-Auth` | `Sentry sentry_version=7, sentry_key=<schlüssel>` |
+| Abfrageteil (JS-SDK, spart die Vorab-Anfrage) | `?sentry_key=<schlüssel>` |
+| Kopfzeile `Authorization` | `Bearer <schlüssel>` |
+
+Der Rumpf ist die Meldung als JSON, wahlweise mit `Content-Encoding: gzip` oder
+`deflate` gepackt; ältere SDKs schicken Base64 über einem deflate-Strom. Alles
+davon wird entpackt, auch ohne passende Kopfzeile.
+
+Zum Ausprobieren genügt `curl`:
+
+```bash
+curl -i -X POST http://localhost:8000/api/1/store/ \
+  -H 'X-Sentry-Auth: Sentry sentry_version=7, sentry_key=<schlüssel>' \
+  -H 'Content-Type: application/json' \
+  -d '{"message":"Kaputt","level":"error","platform":"php"}'
+```
+
+| Antwort | Bedeutung |
+| --- | --- |
+| `200 {"id":"<event_id>"}` | angenommen und abgelegt (Tabelle `ingest_payloads`) |
+| `400` | Rumpf leer, nicht entpackbar oder kein JSON-Objekt |
+| `401` | Schlüssel unbekannt, abgeschaltet oder aus einem anderen Projekt |
+| `413` | Meldung größer als `INGEST_MAX_REQUEST_BYTES` / `INGEST_MAX_PAYLOAD_BYTES` |
+
+Der Grund einer Abweisung steht zusätzlich in der Kopfzeile `X-Sentry-Error` —
+dort lesen ihn die SDKs, im Rumpf nicht.
+
+Die Aufnahme **wertet nicht aus**: sie legt die Rohdaten ab und antwortet. Damit
+hängt die Antwortzeit der überwachten Anwendung nicht an unserer Verarbeitung,
+und eine Meldung geht auch dann nicht verloren, wenn die Auswertung scheitert.
+Die läuft anschließend im Hintergrund über die Warteschlange `ingest`.
+
 ## Aufbau
 
 Verzeichnisse und Konventionen sind absichtlich identisch zu
