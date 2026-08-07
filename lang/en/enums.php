@@ -120,6 +120,7 @@ return [
         'too_many_items' => 'too many items',
         'duplicate' => 'duplicate delivery',
         'sampled' => 'not part of the sample',
+        'scrubbed' => 'not stored for privacy reasons',
     ],
 
     'event_level' => [
@@ -217,10 +218,32 @@ return [
         'other' => 'Other',
     ],
 
+    'scrub_rule_type' => [
+        'field' => 'Field name',
+        'pattern' => 'Pattern in the value',
+    ],
+
     'resolution_behavior' => [
         'manual' => 'Resolve manually only',
         'after_week' => 'After 7 days without a new occurrence',
         'after_month' => 'After 30 days without a new occurrence',
+    ],
+
+    'issue_status' => [
+        'unresolved' => 'Unresolved',
+        'resolved' => 'Resolved',
+        'ignored' => 'Ignored',
+    ],
+
+    'issue_priority' => [
+        'high' => 'High',
+        'medium' => 'Medium',
+        'low' => 'Low',
+    ],
+
+    'count_period' => [
+        'hour' => 'Hourly',
+        'day' => 'Daily',
     ],
 
 ];

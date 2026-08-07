@@ -28,6 +28,14 @@ use Closure;
  * normalisiert, gruppiert oder abgelegt werden. Stünde er hinter der Ablage,
  * wäre er ein Aufräumen, und ein Aufräumen spart nichts.
  *
+ * **Aber hinter dem Scrubbing** ({@see ScrubEvent}), und das ist keine Frage der
+ * Ersparnis. Das Scrubbing schreibt die bereinigte Fassung über die Rohdaten in
+ * der Eingangsablage zurück. Stünde die Stichprobe davor, würde sie mit einem
+ * `drop()` die Kette beenden — der Rumpf einer ausgesiebten Messung bliebe
+ * dauerhaft unbereinigt liegen, und das Scrubbing käme nie an ihn heran. Zwei
+ * gesparte Regelwerk-Durchläufe je verworfener Messung wären dafür ein
+ * schlechter Handel.
+ *
  * **Er sortiert aus, statt durchzureichen.** Anders als {@see RecordTransaction},
  * das eine unlesbare Transaktion zählt und weiterlaufen lässt, ist ein
  * `drop()` hier richtig: die Meldung ist vollständig und in Ordnung, sie wird

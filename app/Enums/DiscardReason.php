@@ -51,6 +51,13 @@ enum DiscardReason: string
      */
     case Sampled = 'sampled';
 
+    /**
+     * Die Datenschutz-Einstellungen des Projekts verbieten das Speichern. Fällt
+     * nur bei Anhängen und Aufzeichnungen an: an einem Feld-Baum wird geschwärzt,
+     * eine Datei ist entweder erlaubt oder nicht.
+     */
+    case Scrubbed = 'scrubbed';
+
     public function label(): string
     {
         return __('enums.discard_reason.'.$this->value);

@@ -26,6 +26,7 @@ return [
         'help' => 'Rollen bestimmen, wer was darf: Besitzer alles, Verwaltung die Organisation samt Mitgliedern und Teams, Mitglied die tägliche Arbeit, Lesend nur schauen.',
         'own_role' => 'Eigene Rolle:',
         'audit_log' => 'Änderungsprotokoll',
+        'privacy' => 'Datenschutz',
         'all_organizations' => 'Alle Organisationen',
     ],
 

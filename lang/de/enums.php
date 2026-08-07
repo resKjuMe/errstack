@@ -120,6 +120,7 @@ return [
         'too_many_items' => 'zu viele Elemente',
         'duplicate' => 'doppelte Zustellung',
         'sampled' => 'nicht in die Stichprobe gefallen',
+        'scrubbed' => 'aus Datenschutzgründen nicht gespeichert',
     ],
 
     'event_level' => [
@@ -217,10 +218,32 @@ return [
         'other' => 'Sonstige',
     ],
 
+    'scrub_rule_type' => [
+        'field' => 'Feldname',
+        'pattern' => 'Muster im Wert',
+    ],
+
     'resolution_behavior' => [
         'manual' => 'Nur von Hand auflösen',
         'after_week' => 'Nach 7 Tagen ohne neues Auftreten',
         'after_month' => 'Nach 30 Tagen ohne neues Auftreten',
+    ],
+
+    'issue_status' => [
+        'unresolved' => 'Offen',
+        'resolved' => 'Erledigt',
+        'ignored' => 'Stummgeschaltet',
+    ],
+
+    'issue_priority' => [
+        'high' => 'Hoch',
+        'medium' => 'Mittel',
+        'low' => 'Niedrig',
+    ],
+
+    'count_period' => [
+        'hour' => 'Stündlich',
+        'day' => 'Täglich',
     ],
 
 ];

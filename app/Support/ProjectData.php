@@ -106,6 +106,9 @@ final class ProjectData
                 // erklären, warum in der Performance-Übersicht mehr Aufrufe
                 // stehen, als Messungen gespeichert sind.
                 'samplingHref' => route('projects.sampling.index', [$organization, $project]),
+                // Ebenso ohne Bedingung: was von einer Meldung gespeichert wird,
+                // geht jeden an, der mit den Daten arbeitet.
+                'privacyHref' => route('projects.privacy.index', [$organization, $project]),
             ],
             'organization' => [
                 'slug' => $organization->slug,

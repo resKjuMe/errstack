@@ -19,8 +19,10 @@ use App\Http\Controllers\EnvironmentController;
 use App\Http\Controllers\FingerprintRuleController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectKeyController;
+use App\Http\Controllers\ProjectPrivacyController;
 use App\Http\Controllers\ProjectTeamController;
 use App\Http\Controllers\SamplingRuleController;
+use App\Http\Controllers\ScrubRuleController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -111,5 +113,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('projects.sampling.toggle');
             Route::delete('{project}/stichproben/{sampling_rule}', [SamplingRuleController::class, 'destroy'])
                 ->name('projects.sampling.destroy');
+            // Datenschutz. Die Seite darf jedes Mitglied ansehen — was von einer
+            // Meldung übrig bleibt, muss jeder wissen, der mit den Daten
+            // arbeitet; geändert wird sie von der Verwaltung.
+            Route::get('{project}/datenschutz', [ProjectPrivacyController::class, 'index'])
+                ->name('projects.privacy.index');
+            Route::patch('{project}/datenschutz', [ProjectPrivacyController::class, 'update'])
+                ->name('projects.privacy.update');
+
+            // Die Vorschau ändert nichts, ist aber ein POST: das Beispielereignis
+            // ist ein ganzer JSON-Rumpf und hat in einer Adresszeile nichts zu
+            // suchen.
+            Route::post('{project}/datenschutz/vorschau', [ProjectPrivacyController::class, 'preview'])
+                ->name('projects.privacy.preview');
+
+            // Angelegt wird die Regel hier, geändert und gelöscht über
+            // `scrub-rules.*` — siehe ScrubRuleController.
+            Route::post('{project}/datenschutz/regeln', [ScrubRuleController::class, 'storeForProject'])
+                ->name('projects.privacy.rules.store');
         });
 });

@@ -54,6 +54,10 @@ final class OrganizationData
                 'viewAuditLog' => Gate::forUser($viewer)->allows('viewAuditLog', $organization),
             ],
             'auditLogHref' => route('organizations.audit-log.index', $organization),
+            // Die Datenschutz-Regeln darf jedes Mitglied ansehen — anders als das
+            // Änderungsprotokoll enthalten sie keine Angaben über Personen,
+            // sondern nur, welche Angaben nicht gespeichert werden.
+            'privacyHref' => route('organizations.privacy.index', $organization),
             'members' => $organization->memberships
                 ->sortBy(fn (Membership $membership): string => (string) $membership->user->name)
                 ->values()

@@ -3,6 +3,7 @@
 namespace App\Support\Ingest\Normalization\Sections;
 
 use App\Support\Ingest\Normalization\Sanitizer;
+use App\Support\Ingest\Scrubbing\Scrubber;
 
 /**
  * Wen der Fehler getroffen hat.
@@ -91,7 +92,12 @@ final class User
     {
         $text = $this->sanitizer->text($value, $path, 45);
 
-        if ($text === null || $text === '{{auto}}') {
+        // Der Vermerk des Scrubbings gehört zu denselben Fällen: er ist keine
+        // Adresse, aber auch keine kaputte Angabe — hier stand eine, und sie
+        // durfte nicht bleiben. Ohne ihn stünde bei jeder Meldung eines Projekts
+        // ohne IP-Speicherung ein „ungültig"-Vermerk an einem Feld, an dem alles
+        // richtig gelaufen ist.
+        if ($text === null || $text === '{{auto}}' || $text === Scrubber::FILTERED) {
             return null;
         }
 
