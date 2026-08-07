@@ -389,7 +389,10 @@ class TransactionSamplingTest extends TestCase
             'environment' => 'staging',
             'sample_rate' => 0.25,
         ]);
-        SamplingRule::factory()->for($project)->at(2)->create([
+        // Ohne Mindestquote: sonst wäre die erste Messung des Fensters garantiert
+        // behalten, und die geprüfte Quote wäre die der Garantie (1) statt die der
+        // Regel.
+        SamplingRule::factory()->for($project)->at(2)->withoutMinimum()->create([
             'name' => 'greift',
             'transaction_name' => 'GET /*',
             'environment' => 'production',

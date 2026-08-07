@@ -83,7 +83,7 @@ final class Sampler
         }
 
         $seen = $this->counter->reserve($project, $target);
-        $minimum = $rule?->minimum_per_window ?? $this->defaultMinimum();
+        $minimum = $rule !== null ? $rule->minimum_per_window : $this->defaultMinimum();
 
         if ($seen <= $minimum) {
             return SamplingDecision::guaranteed($target->clientSampleRate, $rule);
@@ -122,7 +122,9 @@ final class Sampler
      */
     private function rate(?SamplingRule $rule): float
     {
-        $rate = $rule?->sample_rate ?? (float) config('ingest.sampling.default_rate', 1.0);
+        $rate = $rule !== null
+            ? $rule->sample_rate
+            : (float) config('ingest.sampling.default_rate', 1.0);
 
         if (! is_finite($rate) || $rate >= 1.0) {
             return 1.0;
