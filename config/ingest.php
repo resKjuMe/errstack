@@ -3,6 +3,7 @@
 use App\Support\Ingest\Processing\Steps\DecodePayload;
 use App\Support\Ingest\Processing\Steps\GroupEvent;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
+use App\Support\Ingest\Processing\Steps\RecordTransaction;
 
 return [
 
@@ -100,9 +101,20 @@ return [
     |   2. Eingangsfilter — uninteressante Meldungen aussortieren (I8)
     |   3. Stichprobe    — Sampling für Performance-Daten (I9)
     |   4. Scrubbing     — personenbezogene Daten entfernen (I7)
-    |   5. Normalisierung — Sentry-Schema in unser Modell (I4)
-    |   6. Grouping      — Fingerabdruck und Gruppe bestimmen (I5)
-    |   7. Aggregation   — Zähler und Issue fortschreiben (I6)
+    |   5. Antwortzeiten — Transaktionen und ihre Schritte ablegen (PF1)
+    |   6. Normalisierung — Sentry-Schema in unser Modell (I4)
+    |   7. Grouping      — Fingerabdruck und Gruppe bestimmen (I5)
+    |   8. Aggregation   — Zähler und Issue fortschreiben (I6)
+    |
+    | Die Antwortzeiten stehen deshalb an fünfter Stelle und nicht früher: der
+    | Schritt **schreibt**, und was er schreibt, darf keine personenbezogenen
+    | Daten mehr enthalten und keine Messung sein, die die Stichprobe gar nicht
+    | behalten wollte. Vor der Normalisierung steht er, weil er mit dem
+    | Sentry-Schema arbeitet und nicht mit unserem Fehler-Modell — mit dem hat
+    | eine Transaktion nichts zu tun.
+    |
+    | Solange die davorstehenden Schritte fehlen, ist die Liste kürzer als der
+    | Plan: sie werden **vor** den bestehenden eingefügt, nicht dahinter.
     |
     | Ein neuer Schritt ist eine neue Klasse und eine neue Zeile. Ein
     | bestehender Schritt wird dafür nicht angefasst — auch nicht der Rahmen.
@@ -113,6 +125,7 @@ return [
 
         'steps' => [
             DecodePayload::class,
+            RecordTransaction::class,
             NormalizeEvent::class,
             GroupEvent::class,
         ],
@@ -201,6 +214,31 @@ return [
             'entries' => (int) env('INGEST_NORMALIZE_MAX_ENTRIES', 100),
             'depth' => (int) env('INGEST_NORMALIZE_MAX_DEPTH', 5),
         ],
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Antwortzeiten
+    |--------------------------------------------------------------------------
+    |
+    | Wie viele Einzelschritte (Spans) je Transaktion abgelegt werden. Die
+    | Grenze schützt nicht vor Angreifern — dafür sorgt die Größe des Elements
+    | weiter oben —, sondern vor dem Regelfall: eine Anwendung mit einer
+    | N+1-Abfrage meldet für einen einzigen Seitenaufruf Zehntausende
+    | gleichartige Schritte.
+    |
+    | Tausend, wie bei Sentry: das Problem ist an den ersten hundert schon zu
+    | erkennen, und für den Ablauf eines verschachtelten Aufrufs über mehrere
+    | Dienste sind hundert manchmal zu wenig. Was darüber hinausgeht, wird
+    | gezählt und protokolliert, damit ein abgeschnittener Ablauf als solcher
+    | erkennbar bleibt.
+    |
+    */
+
+    'performance' => [
+
+        'max_spans' => (int) env('INGEST_MAX_SPANS', 1000),
 
     ],
 

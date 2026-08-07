@@ -135,6 +135,19 @@ class Project extends Model
     }
 
     /**
+     * Gemessene Antwortzeiten dieses Projekts.
+     *
+     * Ausdrücklich getrennt von den Fehlermeldungen: eine Transaktion ist keine,
+     * und keine Auswertung der einen soll die andere mitlesen.
+     *
+     * @return HasMany<Transaction, $this>
+     */
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    /**
      * Die Fehlergruppen dieses Projekts — je Fingerabdruck eine.
      *
      * @return HasMany<EventGroup, $this>

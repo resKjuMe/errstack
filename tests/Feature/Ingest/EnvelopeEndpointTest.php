@@ -130,7 +130,15 @@ class EnvelopeEndpointTest extends TestCase
             $this->assertDatabaseHas('ingest_payloads', ['type' => $type]);
         }
 
-        $this->assertSame(0, IngestDiscard::query()->count());
+        // Auf den unbekannten Typ eingegrenzt, denn das ist die Frage hier. Die
+        // Rümpfe sind Platzhalter, keine echten Meldungen — was die Verarbeitung
+        // daran später vermisst (eine Transaktion ohne Zeitangaben etwa), zählt
+        // sie zu Recht, und mit ihr würde diese Zeile mitwachsen, ohne über die
+        // Typ-Erkennung etwas zu sagen.
+        $this->assertSame(
+            0,
+            IngestDiscard::query()->where('reason', DiscardReason::UnknownType->value)->count(),
+        );
     }
 
     /**
