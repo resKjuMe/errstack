@@ -51,7 +51,7 @@ class StoreInvitationRequest extends FormRequest
                 $invited = User::query()->where('email', (string) $this->input('email'))->first();
 
                 if ($invited !== null && $this->organization()->hasMember($invited)) {
-                    $validator->errors()->add('email', 'Diese Adresse gehört bereits zur Organisation.');
+                    $validator->errors()->add('email', __('validation.messages.invitation_already_member'));
                 }
             },
         ];
@@ -63,7 +63,7 @@ class StoreInvitationRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.unique' => 'Für diese Adresse ist bereits eine Einladung offen.',
+            'email.unique' => __('validation.messages.invitation_already_open'),
         ];
     }
 

@@ -20,17 +20,11 @@ enum NotificationTransport: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::Mail => 'E-Mail',
-            self::InApp => 'In der Anwendung',
-        };
+        return __('enums.notification_transport.'.$this->value);
     }
 
     public function description(): string
     {
-        return match ($this) {
-            self::Mail => 'An die E-Mail-Adresse dieses Kontos.',
-            self::InApp => 'Im Postfach innerhalb von Errstack.',
-        };
+        return __('enums.notification_transport_description.'.$this->value);
     }
 }

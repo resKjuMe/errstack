@@ -69,7 +69,7 @@ class DeliverNotification implements ShouldQueue
         }
 
         if (! $delivery->channel->is_active) {
-            $delivery->markFailed('Der Kanal ist abgeschaltet.');
+            $delivery->markFailed(__('notifications.deliveries.channel_off'));
 
             return;
         }

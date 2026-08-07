@@ -11,6 +11,7 @@ import {
     SecondaryButton,
     TextInput,
 } from '../../components/Form.jsx';
+import { useT } from '../../i18n.js';
 
 // Benachrichtigungswege einer Organisation: einrichten, testen und im
 // Zustellprotokoll nachsehen, ob es angekommen ist. Welche Kanäle es gibt und
@@ -25,13 +26,14 @@ export default function Index({
     webhookDocs,
 }) {
     const { shell } = usePage().props;
+    const t = useT();
 
     return (
         <>
             <PageHead
-                title="Benachrichtigungen"
+                title={t('notifications.channels.title')}
                 appName={shell.appName}
-                help={`Jeder Kanal geht an ein eigenes Ziel. „Testnachricht senden“ schickt eine echte Meldung auf demselben Weg — das Ergebnis steht im Protokoll. Der Aufbau der Webhook-Unterschrift steht in ${webhookDocs}.`}
+                help={t('notifications.channels.help', { docs: webhookDocs })}
                 meta={
                     <Link
                         href={organization.href}
@@ -55,6 +57,7 @@ export default function Index({
 
 // Formular für einen neuen Kanal. Die Feldliste wechselt mit der Auswahl.
 function NewChannel({ organization, catalog }) {
+    const t = useT();
     const [type, setType] = useState(catalog[0]?.type ?? '');
     const driver = catalog.find((entry) => entry.type === type);
 
@@ -82,12 +85,12 @@ function NewChannel({ organization, catalog }) {
 
     return (
         <Card
-            title="Neuer Kanal"
-            description="Wohin Errstack melden soll. Zugangsdaten liegen verschlüsselt und werden nie wieder angezeigt."
+            title={t('notifications.channels.new_title')}
+            description={t('notifications.channels.new_description')}
         >
             <form onSubmit={submit} className="max-w-xl space-y-4">
                 <div>
-                    <InputLabel htmlFor="type" value="Kanal" />
+                    <InputLabel htmlFor="type" value={t('notifications.channels.channel')} />
                     <select
                         id="type"
                         value={type}
@@ -109,13 +112,13 @@ function NewChannel({ organization, catalog }) {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="name" value="Name" />
+                    <InputLabel htmlFor="name" value={t('notifications.channels.name')} />
                     <TextInput
                         id="name"
                         value={data.name}
                         required
                         className="mt-1"
-                        placeholder="Bereitschaft"
+                        placeholder={t('notifications.channels.name_placeholder')}
                         onChange={(e) => setData('name', e.target.value)}
                     />
                     <InputError message={errors.name} className="mt-2" />
@@ -130,7 +133,7 @@ function NewChannel({ organization, catalog }) {
                 />
 
                 <PrimaryButton type="submit" disabled={processing}>
-                    Kanal einrichten
+                    {t('notifications.channels.create')}
                 </PrimaryButton>
             </form>
         </Card>
@@ -177,18 +180,23 @@ function ConfigFields({ idPrefix, fields, values, errors, onChange }) {
 }
 
 function Channels({ channels, canManage }) {
+    const t = useT();
+
     if (channels.length === 0) {
         return (
-            <Card title="Kanäle">
+            <Card title={t('notifications.channels.list_title')}>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Noch kein Kanal eingerichtet — Meldungen bleiben in Errstack.
+                    {t('notifications.channels.empty')}
                 </p>
             </Card>
         );
     }
 
     return (
-        <Card title="Kanäle" description="Eingerichtete Wege dieser Organisation.">
+        <Card
+            title={t('notifications.channels.list_title')}
+            description={t('notifications.channels.list_description')}
+        >
             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                 {channels.map((channel) => (
                     <ChannelRow key={channel.id} channel={channel} canManage={canManage} />
@@ -199,6 +207,7 @@ function Channels({ channels, canManage }) {
 }
 
 function ChannelRow({ channel, canManage }) {
+    const t = useT();
     const [editing, setEditing] = useState(false);
 
     return (
@@ -209,7 +218,7 @@ function ChannelRow({ channel, canManage }) {
                         {channel.name}
                         {!channel.isActive && (
                             <span className="ms-2 text-xs text-gray-500 dark:text-gray-400">
-                                (abgeschaltet)
+                                {t('notifications.channels.inactive')}
                             </span>
                         )}
                     </p>
@@ -227,20 +236,24 @@ function ChannelRow({ channel, canManage }) {
                             }
                             disabled={!channel.known || !channel.isActive}
                         >
-                            Testnachricht senden
+                            {t('notifications.channels.test')}
                         </SecondaryButton>
                         <SecondaryButton
                             type="button"
                             onClick={() => setEditing((open) => !open)}
                             disabled={!channel.known}
                         >
-                            {editing ? 'Schließen' : 'Bearbeiten'}
+                            {t(
+                                editing
+                                    ? 'notifications.channels.close'
+                                    : 'notifications.channels.edit'
+                            )}
                         </SecondaryButton>
                         <DangerButton
                             type="button"
                             onClick={() => router.delete(channel.href, { preserveScroll: true })}
                         >
-                            Löschen
+                            {t('notifications.channels.delete')}
                         </DangerButton>
                     </div>
                 )}
@@ -252,6 +265,7 @@ function ChannelRow({ channel, canManage }) {
 }
 
 function ChannelForm({ channel, onDone }) {
+    const t = useT();
     const { data, setData, patch, processing, errors } = useForm({
         name: channel.name,
         is_active: channel.isActive,
@@ -266,7 +280,10 @@ function ChannelForm({ channel, onDone }) {
     return (
         <form onSubmit={submit} className="mt-4 max-w-xl space-y-4">
             <div>
-                <InputLabel htmlFor={`name-${channel.id}`} value="Name" />
+                <InputLabel
+                    htmlFor={`name-${channel.id}`}
+                    value={t('notifications.channels.name')}
+                />
                 <TextInput
                     id={`name-${channel.id}`}
                     value={data.name}
@@ -286,7 +303,7 @@ function ChannelForm({ channel, onDone }) {
             />
 
             <p className="text-sm text-gray-500 dark:text-gray-400">
-                Zugangsdaten bleiben unverändert, solange das Feld leer bleibt.
+                {t('notifications.channels.secrets_hint')}
             </p>
 
             <label className="flex items-center gap-2">
@@ -294,11 +311,13 @@ function ChannelForm({ channel, onDone }) {
                     checked={data.is_active}
                     onChange={(e) => setData('is_active', e.target.checked)}
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Kanal ist aktiv</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {t('notifications.channels.active')}
+                </span>
             </label>
 
             <PrimaryButton type="submit" disabled={processing}>
-                Speichern
+                {t('notifications.channels.save')}
             </PrimaryButton>
         </form>
     );
@@ -311,15 +330,18 @@ const statusClasses = {
 };
 
 function Deliveries({ deliveries, canManage }) {
+    const t = useT();
     const rows = useMemo(() => deliveries ?? [], [deliveries]);
 
     return (
         <Card
-            title="Zustellprotokoll"
-            description="Jeder Versuch mit Ergebnis. Fehlgeschlagene wiederholt die Warteschlange automatisch; danach hilft „Erneut versuchen“."
+            title={t('notifications.deliveries.title')}
+            description={t('notifications.deliveries.description')}
         >
             {rows.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400">Noch nichts zugestellt.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('notifications.deliveries.empty')}
+                </p>
             ) : (
                 <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                     {rows.map((delivery) => (
@@ -332,15 +354,17 @@ function Deliveries({ deliveries, canManage }) {
                                     {delivery.subject}
                                     {delivery.isTest && (
                                         <span className="ms-2 text-xs text-gray-500 dark:text-gray-400">
-                                            (Test)
+                                            {t('notifications.deliveries.test')}
                                         </span>
                                     )}
                                 </p>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                     {delivery.channel} · {delivery.createdAt} ·{' '}
                                     {delivery.attempts === 1
-                                        ? '1 Versuch'
-                                        : `${delivery.attempts} Versuche`}
+                                        ? t('notifications.deliveries.attempt')
+                                        : t('notifications.deliveries.attempts', {
+                                              count: delivery.attempts,
+                                          })}
                                     {delivery.responseCode
                                         ? ` · HTTP ${delivery.responseCode}`
                                         : ''}
@@ -369,7 +393,7 @@ function Deliveries({ deliveries, canManage }) {
                                             )
                                         }
                                     >
-                                        Erneut versuchen
+                                        {t('notifications.deliveries.retry')}
                                     </SecondaryButton>
                                 )}
                             </div>

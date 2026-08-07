@@ -8,6 +8,7 @@ use App\Models\Environment;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
+use App\Support\Formats;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -163,7 +164,7 @@ final class GlobalFilter
      */
     public function rangeLabel(): string
     {
-        return $this->from->format('d.m.Y H:i').' – '.$this->to->format('d.m.Y H:i');
+        return Formats::dateTime($this->from).' – '.Formats::dateTime($this->to);
     }
 
     /**

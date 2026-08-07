@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Support\Locales;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,8 +25,10 @@ class ProfileController extends Controller
             'user' => [
                 'name' => $user->name,
                 'email' => $user->email,
+                'locale' => $user->locale,
                 'isUnverified' => $user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail(),
             ],
+            'localeOptions' => Locales::options(),
             'status' => session('status'),
         ]);
     }

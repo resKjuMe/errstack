@@ -21,12 +21,12 @@ final class DiscordDriver extends HttpChannelDriver
 
     public function label(): string
     {
-        return 'Discord';
+        return __('channels.discord.label');
     }
 
     public function description(): string
     {
-        return 'Schickt die Meldung über einen Kanal-Webhook nach Discord.';
+        return __('channels.discord.description');
     }
 
     public function fields(): array
@@ -34,8 +34,8 @@ final class DiscordDriver extends HttpChannelDriver
         return [
             ChannelField::secret(
                 key: 'webhook_url',
-                label: 'Webhook-URL',
-                hint: 'Kanal › Einstellungen › Integrationen › Webhooks.',
+                label: __('channels.discord.webhook_url'),
+                hint: __('channels.discord.webhook_url_hint'),
                 placeholder: 'https://discord.com/api/webhooks/…',
             ),
         ];
@@ -50,7 +50,7 @@ final class DiscordDriver extends HttpChannelDriver
 
     public function summary(NotificationChannel $channel): string
     {
-        return 'Kanal-Webhook';
+        return __('channels.discord.summary');
     }
 
     public function send(NotificationChannel $channel, NotificationMessage $message): DeliveryResult

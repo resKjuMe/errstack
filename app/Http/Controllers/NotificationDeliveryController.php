@@ -22,11 +22,11 @@ class NotificationDeliveryController extends Controller
         if ($delivery->status !== DeliveryStatus::Failed) {
             // Eine laufende oder bereits zugestellte Nachricht ein zweites Mal
             // einzureihen, würde sie doppelt zustellen.
-            return back()->with('status', 'Diese Zustellung ist nicht fehlgeschlagen — es gibt nichts zu wiederholen.');
+            return back()->with('status', __('notifications.flash.delivery_not_failed'));
         }
 
         $dispatcher->retry($delivery);
 
-        return back()->with('status', 'Zustellung erneut eingereiht.');
+        return back()->with('status', __('notifications.flash.delivery_retried'));
     }
 }

@@ -3,6 +3,7 @@ import { router } from '@inertiajs/react';
 import Card from './Card.jsx';
 import { useToast } from './Toast.jsx';
 import { useLiveEvents } from '../useLiveEvents.js';
+import { useT } from '../i18n.js';
 
 // Vorführung der Hintergrund-Verarbeitung: Der Knopf legt einen Ingest-Job in
 // die Warteschlange, der Worker verarbeitet ihn und meldet das Ergebnis per
@@ -15,6 +16,7 @@ const buttonClass =
 export default function LiveDemo() {
     const { events, enabled } = useLiveEvents('demo.ingest.processed');
     const toast = useToast();
+    const t = useT();
 
     const dispatch = (fail) => {
         router.post(
@@ -22,38 +24,33 @@ export default function LiveDemo() {
             { fail },
             {
                 preserveScroll: true,
-                onError: () => toast.error('Der Job konnte nicht eingereiht werden.'),
+                onError: () => toast.error(t('components.live.dispatch_failed')),
             }
         );
     };
 
     return (
-        <Card
-            title="Hintergrund-Verarbeitung"
-            description="Der Job läuft in der Warteschlange „ingest“; sein Ergebnis kommt per Broadcast zurück."
-        >
+        <Card title={t('components.live.title')} description={t('components.live.description')}>
             <div className="flex flex-wrap gap-2">
                 <button
                     type="button"
                     onClick={() => dispatch(false)}
                     className={`${buttonClass} bg-rose-600 hover:bg-rose-700 focus:ring-rose-500`}
                 >
-                    Ingest einreihen
+                    {t('components.live.dispatch')}
                 </button>
                 <button
                     type="button"
                     onClick={() => dispatch(true)}
                     className={`${buttonClass} bg-gray-700 hover:bg-gray-800 focus:ring-gray-500`}
                 >
-                    Fehlschlag erzwingen
+                    {t('components.live.fail')}
                 </button>
             </div>
 
             {!enabled && (
                 <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                    Live-Aktualisierung ist aus: <code>BROADCAST_CONNECTION</code> und die
-                    Verbindungsdaten sind nicht gesetzt. Der Job läuft trotzdem — sichtbar in der
-                    Worker-Ausgabe.
+                    {t('components.live.disabled')}
                 </p>
             )}
 
@@ -61,8 +58,7 @@ export default function LiveDemo() {
                 <ul className="mt-4 space-y-2 text-sm">
                     {events.length === 0 && (
                         <li className="text-gray-500 dark:text-gray-400">
-                            Noch nichts eingegangen — Worker läuft?{' '}
-                            <code>php artisan queue:work</code>
+                            {t('components.live.empty')} <code>php artisan queue:work</code>
                         </li>
                     )}
                     {events.map((event) => (

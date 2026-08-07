@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\AuditAction;
 use App\Models\OrganizationInvitation;
 use App\Support\AuditLog;
+use App\Support\Formats;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,7 @@ class InvitationAcceptanceController extends Controller
                 'organization' => $invitation->organization->name,
                 'email' => $invitation->email,
                 'roleLabel' => $invitation->role->label(),
-                'expiresAt' => $invitation->expires_at->format('d.m.Y'),
+                'expiresAt' => Formats::date($invitation->expires_at),
                 'isExpired' => $invitation->isExpired(),
                 'isForCurrentUser' => $invitation->isFor($request->user()),
             ],
@@ -47,7 +48,7 @@ class InvitationAcceptanceController extends Controller
 
         if ($invitation->isExpired()) {
             throw ValidationException::withMessages([
-                'token' => 'Diese Einladung ist abgelaufen. Bitte um eine neue bitten.',
+                'token' => __('validation.messages.invitation_expired'),
             ]);
         }
 
@@ -69,7 +70,7 @@ class InvitationAcceptanceController extends Controller
                 subjectLabel: $user->name,
                 // Wer schon Mitglied war, behält seine Rolle — dann gibt es
                 // auch nichts an Vorher/Nachher zu berichten.
-                changes: $joined ? AuditLog::change('Rolle', null, $invitation->role->label()) : [],
+                changes: $joined ? AuditLog::roleChange(null, $invitation->role) : [],
             );
 
             $invitation->delete();
@@ -79,7 +80,7 @@ class InvitationAcceptanceController extends Controller
 
         return redirect()
             ->route('organizations.show', $organization)
-            ->with('status', "Willkommen bei {$organization->name}.");
+            ->with('status', __('invitations.welcome', ['organization' => $organization->name]));
     }
 
     private function find(string $token): OrganizationInvitation

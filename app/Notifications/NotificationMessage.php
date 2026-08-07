@@ -40,12 +40,12 @@ final readonly class NotificationMessage
     public static function test(string $organization): self
     {
         return new self(
-            title: 'Testnachricht aus Errstack',
-            body: "So sieht eine Meldung von Errstack in diesem Kanal aus. Ausgelöst aus den Einstellungen von {$organization}.",
+            title: __('channels.test.title'),
+            body: __('channels.test.body', ['organization' => $organization]),
             level: NotificationLevel::Info,
             context: [
-                'Organisation' => $organization,
-                'Anlass' => 'Testnachricht',
+                __('channels.test.context_organization') => $organization,
+                __('channels.test.context_reason') => __('channels.test.context_reason_value'),
             ],
             reference: 'TEST-'.Str::upper(Str::random(6)),
             occurredAt: now(),

@@ -30,15 +30,7 @@ enum FilterPeriod: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::LastHour => 'Letzte Stunde',
-            self::Last24Hours => 'Letzte 24 Stunden',
-            self::Last7Days => 'Letzte 7 Tage',
-            self::Last14Days => 'Letzte 14 Tage',
-            self::Last30Days => 'Letzte 30 Tage',
-            self::Last90Days => 'Letzte 90 Tage',
-            self::Custom => 'Eigener Zeitraum',
-        };
+        return __('enums.filter_period.'.$this->value);
     }
 
     /**

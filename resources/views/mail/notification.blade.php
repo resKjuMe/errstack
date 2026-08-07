@@ -23,16 +23,16 @@
 
 @if ($url)
 <x-mail::button :url="$url">
-In Errstack öffnen
+{{ __('emails.notification.open') }}
 </x-mail::button>
 @endif
 
 @if ($reference)
-Kennung: {{ $reference }}
+{{ __('emails.notification.reference', ['reference' => $reference]) }}
 @endif
 
-Diese Meldung stammt aus {{ $organization }} ({{ $level }}). Wer sie nicht mehr erhalten möchte, ändert den Benachrichtigungsweg in den Einstellungen der Organisation.
+{{ __('emails.notification.origin', ['organization' => $organization, 'level' => $level]) }}
 
-Viele Grüße<br>
+{{ __('emails.regards') }}<br>
 {{ config('app.name') }}
 </x-mail::message>

@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Enums\QueueName;
 use App\Models\OrganizationInvitation;
+use App\Support\Formats;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -28,7 +29,9 @@ class OrganizationInvitationMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Einladung zu {$this->invitation->organization->name}",
+            subject: __('emails.invitation.subject', [
+                'organization' => $this->invitation->organization->name,
+            ]),
         );
     }
 
@@ -41,7 +44,7 @@ class OrganizationInvitationMail extends Mailable implements ShouldQueue
                 'role' => $this->invitation->role->label(),
                 'invitedBy' => $this->invitation->invitedBy?->name,
                 'url' => $this->invitation->url(),
-                'expiresAt' => $this->invitation->expires_at->format('d.m.Y'),
+                'expiresAt' => Formats::date($this->invitation->expires_at),
             ],
         );
     }

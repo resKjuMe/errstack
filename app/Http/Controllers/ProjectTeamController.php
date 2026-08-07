@@ -32,6 +32,6 @@ class ProjectTeamController extends Controller
 
         $project->teams()->sync($validated['teams'] ?? []);
 
-        return back()->with('status', 'Zuständige Teams gespeichert.');
+        return back()->with('status', __('projects.flash.teams_updated'));
     }
 }

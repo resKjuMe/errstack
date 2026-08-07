@@ -12,6 +12,7 @@ import {
     SelectInput,
     TextInput,
 } from '../../components/Form.jsx';
+import { useT } from '../../i18n.js';
 
 // Persönliche Benachrichtigungen: was erreicht mich worüber — überall, je
 // Organisation und je Projekt.
@@ -22,13 +23,18 @@ import {
 // „Wirksam" beantwortet dabei die eigentliche Frage — eine geerbte Einstellung
 // sagt für sich genommen nichts darüber, ob am Ende eine Mail kommt.
 
-const CHOICES = [
-    { value: 'inherit', label: 'Erbt' },
-    { value: 'on', label: 'An' },
-    { value: 'off', label: 'Aus' },
-];
+// Die Auswahl je Zelle. Sie hängt an der Sprache und entsteht deshalb erst im
+// Render, nicht als Modul-Konstante.
+function choicesFor(t, inherits) {
+    const choices = [
+        { value: 'on', label: t('notifications.preferences.choice_on') },
+        { value: 'off', label: t('notifications.preferences.choice_off') },
+    ];
 
-const GLOBAL_CHOICES = CHOICES.filter((choice) => choice.value !== 'inherit');
+    return inherits
+        ? [{ value: 'inherit', label: t('notifications.preferences.choice_inherit') }, ...choices]
+        : choices;
+}
 
 export default function Preferences({
     events,
@@ -40,6 +46,7 @@ export default function Preferences({
     hrefs,
 }) {
     const { shell } = usePage().props;
+    const t = useT();
     const [scopeKey, setScopeKey] = useState(scopes[0]?.key ?? 'global');
     const scope = useMemo(
         () => scopes.find((entry) => entry.key === scopeKey) ?? scopes[0],
@@ -49,24 +56,24 @@ export default function Preferences({
     return (
         <>
             <PageHead
-                title="Benachrichtigungen"
+                title={t('notifications.preferences.title')}
                 appName={shell.appName}
-                help="Lege je Anlass fest, auf welchem Weg du informiert wirst. Eine Einstellung für ein Projekt schlägt die der Organisation, und die schlägt „Überall“. Kritische Alarme erreichen dich auch in der Ruhezeit und nach einer pauschalen Abmeldung — abschalten lassen sie sich nur hier, ausdrücklich."
+                help={t('notifications.preferences.help')}
             />
 
             <div className="space-y-6">
                 <CriticalWarning muted={mutedCritical} />
 
                 <Card
-                    title="Bereich"
-                    description="Je feiner der Bereich, desto stärker schlägt er durch."
+                    title={t('notifications.preferences.scope_title')}
+                    description={t('notifications.preferences.scope_description')}
                 >
                     <SelectInput
-                        aria-label="Bereich"
+                        aria-label={t('notifications.preferences.scope_title')}
                         value={scopeKey}
                         options={scopes.map((entry) => ({
                             value: entry.key,
-                            label: labelFor(entry),
+                            label: labelFor(t, entry),
                         }))}
                         onChange={(e) => setScopeKey(e.target.value)}
                     />
@@ -91,13 +98,13 @@ export default function Preferences({
     );
 }
 
-function labelFor(scope) {
+function labelFor(t, scope) {
     if (scope.kind === 'project') {
-        return `Projekt: ${scope.label}`;
+        return t('notifications.preferences.scope_project', { name: scope.label });
     }
 
     if (scope.kind === 'organization') {
-        return `Organisation: ${scope.label}`;
+        return t('notifications.preferences.scope_organization', { name: scope.label });
     }
 
     return scope.label;
@@ -107,17 +114,22 @@ function labelFor(scope) {
 // niemand versehentlich haben will — deshalb steht er ganz oben und nicht als
 // Fußnote unter der Tabelle.
 function CriticalWarning({ muted }) {
+    const t = useT();
+
     if (!muted || muted.length === 0) {
         return null;
     }
 
     return (
         <div className="rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
-            <p className="font-semibold">Kritische Alarme erreichen dich nicht überall.</p>
+            <p className="font-semibold">{t('notifications.preferences.critical_warning')}</p>
             <ul className="mt-2 list-disc space-y-1 ps-5">
                 {muted.map((entry) => (
                     <li key={`${entry.scope}-${entry.event}`}>
-                        {entry.event} — {entry.scope}: kein einziger Weg aktiv.
+                        {t('notifications.preferences.critical_entry', {
+                            event: entry.event,
+                            scope: entry.scope,
+                        })}
                     </li>
                 ))}
             </ul>
@@ -126,7 +138,8 @@ function CriticalWarning({ muted }) {
 }
 
 function Matrix({ scope, events, transports, href }) {
-    const choices = scope.inherits ? CHOICES : GLOBAL_CHOICES;
+    const t = useT();
+    const choices = choicesFor(t, scope.inherits);
     const { data, setData, transform, put, processing, errors, recentlySuccessful } = useForm({
         scope: scope.key,
         preferences: scope.rows,
@@ -162,13 +175,18 @@ function Matrix({ scope, events, transports, href }) {
         });
 
     return (
-        <Card title={labelFor(scope)} description="Ein Anlass je Zeile, ein Weg je Spalte.">
+        <Card
+            title={labelFor(t, scope)}
+            description={t('notifications.preferences.matrix_description')}
+        >
             <form onSubmit={submit}>
                 <div className="overflow-x-auto">
                     <table className="min-w-full text-sm">
                         <thead>
                             <tr className="text-left text-gray-500 dark:text-gray-400">
-                                <th className="py-2 pe-4 font-medium">Anlass</th>
+                                <th className="py-2 pe-4 font-medium">
+                                    {t('notifications.preferences.event_column')}
+                                </th>
                                 {transports.map((transport) => (
                                     <th key={transport.value} className="px-4 py-2 font-medium">
                                         {transport.label}
@@ -185,7 +203,7 @@ function Matrix({ scope, events, transports, href }) {
                                         </span>
                                         {event.critical && (
                                             <span className="ms-2 rounded bg-rose-100 px-1.5 py-0.5 text-xs font-semibold text-rose-700 dark:bg-rose-900/40 dark:text-rose-300">
-                                                kritisch
+                                                {t('notifications.preferences.critical')}
                                             </span>
                                         )}
                                         <span className="block text-xs text-gray-500 dark:text-gray-400">
@@ -198,7 +216,13 @@ function Matrix({ scope, events, transports, href }) {
                                         return (
                                             <td key={transport.value} className="px-4 py-3">
                                                 <SelectInput
-                                                    aria-label={`${event.label} — ${transport.label}`}
+                                                    aria-label={t(
+                                                        'notifications.preferences.cell_label',
+                                                        {
+                                                            event: event.label,
+                                                            transport: transport.label,
+                                                        }
+                                                    )}
                                                     value={cell.choice}
                                                     options={choices}
                                                     onChange={(e) =>
@@ -223,10 +247,12 @@ function Matrix({ scope, events, transports, href }) {
 
                 <div className="mt-6 flex items-center gap-4">
                     <PrimaryButton type="submit" disabled={processing}>
-                        Speichern
+                        {t('notifications.preferences.save')}
                     </PrimaryButton>
                     {recentlySuccessful && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Gespeichert.</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {t('notifications.preferences.saved')}
+                        </p>
                     )}
                 </div>
             </form>
@@ -237,18 +263,25 @@ function Matrix({ scope, events, transports, href }) {
 // Der gespeicherte Zustand, nicht der gerade ausgewählte: was wirksam ist,
 // weiß erst der Server (die Vererbung hängt an allen Bereichen zugleich).
 function Effective({ cell }) {
+    const t = useT();
+
     if (cell.choice !== 'inherit') {
         return null;
     }
 
     return (
         <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
-            wirksam: {cell.effective ? 'an' : 'aus'}
+            {t(
+                cell.effective
+                    ? 'notifications.preferences.effective_on'
+                    : 'notifications.preferences.effective_off'
+            )}
         </span>
     );
 }
 
 function QuietHours({ quietHours, href }) {
+    const t = useT();
     const { data, setData, put, processing, errors, recentlySuccessful } = useForm({
         quiet_hours_enabled: quietHours.enabled,
         quiet_from: quietHours.from,
@@ -263,12 +296,14 @@ function QuietHours({ quietHours, href }) {
 
     return (
         <Card
-            title="Ruhezeiten"
-            description="In dieser Spanne bleibt es still. Kritische Alarme kommen trotzdem an."
+            title={t('notifications.preferences.quiet_title')}
+            description={t('notifications.preferences.quiet_description')}
         >
             {quietHours.activeUntil && (
                 <p className="mb-4 rounded-md bg-gray-50 p-3 text-sm text-gray-600 dark:bg-gray-900/40 dark:text-gray-300">
-                    Gerade ist Ruhezeit — wieder ab {quietHours.activeUntil} Uhr.
+                    {t('notifications.preferences.quiet_active', {
+                        time: quietHours.activeUntil,
+                    })}
                 </p>
             )}
 
@@ -278,12 +313,15 @@ function QuietHours({ quietHours, href }) {
                         checked={data.quiet_hours_enabled}
                         onChange={(e) => setData('quiet_hours_enabled', e.target.checked)}
                     />
-                    Ruhezeiten einhalten
+                    {t('notifications.preferences.quiet_enabled')}
                 </label>
 
                 <div className="grid gap-4 sm:grid-cols-3">
                     <div>
-                        <InputLabel htmlFor="quiet_from" value="Von" />
+                        <InputLabel
+                            htmlFor="quiet_from"
+                            value={t('notifications.preferences.quiet_from')}
+                        />
                         <TextInput
                             id="quiet_from"
                             type="time"
@@ -295,7 +333,10 @@ function QuietHours({ quietHours, href }) {
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="quiet_until" value="Bis" />
+                        <InputLabel
+                            htmlFor="quiet_until"
+                            value={t('notifications.preferences.quiet_until')}
+                        />
                         <TextInput
                             id="quiet_until"
                             type="time"
@@ -307,7 +348,10 @@ function QuietHours({ quietHours, href }) {
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="timezone" value="Zeitzone" />
+                        <InputLabel
+                            htmlFor="timezone"
+                            value={t('notifications.preferences.timezone')}
+                        />
                         <SelectInput
                             id="timezone"
                             value={data.timezone}
@@ -324,10 +368,12 @@ function QuietHours({ quietHours, href }) {
 
                 <div className="flex items-center gap-4">
                     <PrimaryButton type="submit" disabled={processing}>
-                        Speichern
+                        {t('notifications.preferences.save')}
                     </PrimaryButton>
                     {recentlySuccessful && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Gespeichert.</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {t('notifications.preferences.saved')}
+                        </p>
                     )}
                 </div>
             </form>
@@ -338,6 +384,7 @@ function QuietHours({ quietHours, href }) {
 // Bewusst über `router` statt über useForm: das Formular hat kein Feld, nur
 // zwei Knöpfe, und der Wert steht erst beim Klick fest.
 function Subscription({ unsubscribedAt, href }) {
+    const t = useT();
     const [processing, setProcessing] = useState(false);
 
     const toggle = (unsubscribed) => {
@@ -353,11 +400,13 @@ function Subscription({ unsubscribedAt, href }) {
     if (unsubscribedAt) {
         return (
             <Card
-                title="Pauschal abbestellt"
-                description={`Seit ${unsubscribedAt}. Kritische Alarme erreichen dich weiterhin.`}
+                title={t('notifications.preferences.unsubscribed_title')}
+                description={t('notifications.preferences.unsubscribed_description', {
+                    date: unsubscribedAt,
+                })}
             >
                 <SecondaryButton type="button" disabled={processing} onClick={() => toggle(false)}>
-                    Wieder alles erhalten
+                    {t('notifications.preferences.resubscribe')}
                 </SecondaryButton>
             </Card>
         );
@@ -365,11 +414,11 @@ function Subscription({ unsubscribedAt, href }) {
 
     return (
         <Card
-            title="Alles abbestellen"
-            description="Schaltet alle nicht-kritischen Benachrichtigungen ab — auf einen Schlag und ohne die einzelnen Einstellungen zu verlieren."
+            title={t('notifications.preferences.unsubscribe_title')}
+            description={t('notifications.preferences.unsubscribe_description')}
         >
             <DangerButton type="button" disabled={processing} onClick={() => toggle(true)}>
-                Alles abbestellen
+                {t('notifications.preferences.unsubscribe')}
             </DangerButton>
         </Card>
     );

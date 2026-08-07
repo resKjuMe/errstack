@@ -10,19 +10,21 @@ import {
     SelectInput,
     TextInput,
 } from '../../components/Form.jsx';
+import { useT } from '../../i18n.js';
 
 // Alle Projekte der aktiven Organisation, daneben das Formular zum Anlegen
 // eines weiteren. Ohne Organisation gibt es nichts anzulegen — die Seite
 // verweist dann auf die Organisationen.
 export default function Index({ organization, permissions, projects, platformOptions }) {
     const { shell } = usePage().props;
+    const t = useT();
 
     return (
         <>
             <PageHead
-                title="Projekte"
+                title={t('projects.index.title')}
                 appName={shell.appName}
-                help="Ein Projekt steht für genau eine überwachte Anwendung. Fehlermeldungen kommen später über den Sicherheits-Token des Projekts herein; die Plattform bestimmt, welches SDK dafür eingerichtet wird."
+                help={t('projects.index.help')}
                 meta={
                     organization && (
                         <Link
@@ -37,14 +39,14 @@ export default function Index({ organization, permissions, projects, platformOpt
 
             {!organization ? (
                 <Card
-                    title="Noch keine Organisation"
-                    description="Projekte gehören immer zu einer Organisation. Lege zuerst eine an."
+                    title={t('projects.index.no_organization_title')}
+                    description={t('projects.index.no_organization_description')}
                 >
                     <Link
                         href="/organisationen"
                         className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                     >
-                        Zu den Organisationen
+                        {t('projects.index.to_organizations')}
                     </Link>
                 </Card>
             ) : (
@@ -52,12 +54,12 @@ export default function Index({ organization, permissions, projects, platformOpt
                     <div className="space-y-4 lg:col-span-2">
                         {projects.length === 0 && (
                             <Card
-                                title="Noch keine Projekte"
-                                description={
+                                title={t('projects.index.empty_title')}
+                                description={t(
                                     permissions.create
-                                        ? 'Lege eines an, um Fehlermeldungen einsortieren zu können.'
-                                        : 'Die Verwaltung dieser Organisation legt Projekte an.'
-                                }
+                                        ? 'projects.index.empty_can_create'
+                                        : 'projects.index.empty_read_only'
+                                )}
                             />
                         )}
 
@@ -101,6 +103,7 @@ export default function Index({ organization, permissions, projects, platformOpt
 }
 
 function CreateProject({ organization, platformOptions }) {
+    const t = useT();
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         platform: platformOptions[0]?.value ?? 'other',
@@ -113,12 +116,12 @@ function CreateProject({ organization, platformOptions }) {
 
     return (
         <Card
-            title="Neues Projekt"
-            description={`Wird in „${organization.name}“ angelegt. Die Einstellungen lassen sich danach ändern.`}
+            title={t('projects.create.title')}
+            description={t('projects.create.description', { organization: organization.name })}
         >
             <form onSubmit={submit} className="space-y-4">
                 <div>
-                    <InputLabel htmlFor="project_name" value="Name" />
+                    <InputLabel htmlFor="project_name" value={t('projects.create.name')} />
                     <TextInput
                         id="project_name"
                         name="name"
@@ -131,7 +134,7 @@ function CreateProject({ organization, platformOptions }) {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="project_platform" value="Plattform" />
+                    <InputLabel htmlFor="project_platform" value={t('projects.create.platform')} />
                     <SelectInput
                         id="project_platform"
                         name="platform"
@@ -144,7 +147,7 @@ function CreateProject({ organization, platformOptions }) {
                 </div>
 
                 <PrimaryButton type="submit" disabled={processing}>
-                    Anlegen
+                    {t('projects.create.submit')}
                 </PrimaryButton>
             </form>
         </Card>

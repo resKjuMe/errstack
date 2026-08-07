@@ -17,8 +17,6 @@ enum IngestType: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::Event => 'Fehlermeldung',
-        };
+        return __('enums.ingest_type.'.$this->value);
     }
 }

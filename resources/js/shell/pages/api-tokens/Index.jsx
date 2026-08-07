@@ -10,6 +10,7 @@ import {
     PrimaryButton,
     TextInput,
 } from '../../components/Form.jsx';
+import { formatDateTime, useT, useTranslations } from '../../i18n.js';
 
 // Zugriffstoken der aktiven Organisation: Liste, Anlegen, Widerrufen.
 // Der Wert eines Tokens ist genau einmal zu sehen — direkt nach dem Anlegen
@@ -24,16 +25,17 @@ export default function Index({
     createdToken = null,
 }) {
     const { shell } = usePage().props;
+    const t = useT();
 
     return (
         <>
             <PageHead
-                title="Zugriffstoken"
+                title={t('api_tokens.title')}
                 appName={shell.appName}
-                help={`Mit einem Token sprechen Skripte, CI-Läufe und Werkzeuge mit der Schnittstelle unter /api/0/ — im Namen der Organisation „${organization.name}“ und nur in den Grenzen der gewählten Geltungsbereiche. Der Wert ersetzt ein Passwort: er gehört in einen Geheimnis-Speicher, nicht ins Repository.`}
+                help={t('api_tokens.help', { organization: organization.name })}
                 meta={
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                        Organisation: {organization.name}
+                        {t('api_tokens.organization', { name: organization.name })}
                     </span>
                 }
             />
@@ -45,8 +47,8 @@ export default function Index({
                     <div className="space-y-4 lg:col-span-2">
                         {tokens.length === 0 && (
                             <Card
-                                title="Noch kein Token"
-                                description="Lege eines an, um die Schnittstelle von außen zu nutzen."
+                                title={t('api_tokens.empty_title')}
+                                description={t('api_tokens.empty_description')}
                             />
                         )}
 
@@ -65,6 +67,8 @@ export default function Index({
 // Einmalige Anzeige des Klartext-Werts. Bewusst auffällig und mit dem Hinweis,
 // dass es keine zweite Gelegenheit gibt.
 function CreatedToken({ token }) {
+    const t = useT();
+
     const copy = () => {
         navigator.clipboard?.writeText(token.value);
     };
@@ -72,15 +76,15 @@ function CreatedToken({ token }) {
     return (
         <Card
             className="border-2 border-rose-500 dark:border-rose-500"
-            title={`Token „${token.name}“ ist bereit`}
-            description="Jetzt kopieren und sicher ablegen — dieser Wert wird nie wieder angezeigt."
+            title={t('api_tokens.created.title', { name: token.name })}
+            description={t('api_tokens.created.description')}
         >
             <div className="flex flex-wrap items-center gap-3">
                 <code className="grow break-all rounded-md bg-gray-100 px-3 py-2 font-mono text-sm text-gray-900 select-all dark:bg-gray-900 dark:text-gray-100">
                     {token.value}
                 </code>
                 <PrimaryButton type="button" onClick={copy}>
-                    Kopieren
+                    {t('api_tokens.created.copy')}
                 </PrimaryButton>
             </div>
         </Card>
@@ -88,6 +92,7 @@ function CreatedToken({ token }) {
 }
 
 function TokenCard({ token }) {
+    const { t, formats } = useTranslations();
     const { delete: destroy, processing } = useForm({});
 
     return (
@@ -103,22 +108,27 @@ function TokenCard({ token }) {
                         </span>
                         {token.isExpired && (
                             <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700 dark:bg-red-900/40 dark:text-red-300">
-                                Abgelaufen
+                                {t('api_tokens.card.expired')}
                             </span>
                         )}
                     </div>
 
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Gehört: {token.owner}
-                        {token.createdBy && ` · Angelegt von ${token.createdBy}`}
+                        {t('api_tokens.card.owner', { owner: token.owner })}
+                        {token.createdBy &&
+                            ` · ${t('api_tokens.card.created_by', { name: token.createdBy })}`}
                         {' · '}
                         {token.lastUsedAt
-                            ? `Zuletzt benutzt am ${formatDate(token.lastUsedAt)}`
-                            : 'Noch nicht benutzt'}
+                            ? t('api_tokens.card.last_used', {
+                                  date: formatDateTime(token.lastUsedAt, formats),
+                              })
+                            : t('api_tokens.card.never_used')}
                         {' · '}
                         {token.expiresAt
-                            ? `Gültig bis ${formatDate(token.expiresAt)}`
-                            : 'Unbefristet'}
+                            ? t('api_tokens.card.valid_until', {
+                                  date: formatDateTime(token.expiresAt, formats),
+                              })
+                            : t('api_tokens.card.unlimited')}
                     </p>
 
                     <div className="mt-2 flex flex-wrap gap-1">
@@ -142,7 +152,7 @@ function TokenCard({ token }) {
                             destroy(`/zugriffstoken/${token.id}`, { preserveScroll: true })
                         }
                     >
-                        Widerrufen
+                        {t('api_tokens.card.revoke')}
                     </DangerButton>
                 )}
             </div>
@@ -151,6 +161,7 @@ function TokenCard({ token }) {
 }
 
 function CreateToken({ kinds, scopeGroups }) {
+    const t = useT();
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         kind: 'personal',
@@ -173,16 +184,16 @@ function CreateToken({ kinds, scopeGroups }) {
     };
 
     return (
-        <Card title="Neues Token" description="Der Wert wird nur einmal angezeigt.">
+        <Card title={t('api_tokens.create.title')} description={t('api_tokens.create.description')}>
             <form onSubmit={submit} className="space-y-4">
                 <div>
-                    <InputLabel htmlFor="token_name" value="Name" />
+                    <InputLabel htmlFor="token_name" value={t('api_tokens.create.name')} />
                     <TextInput
                         id="token_name"
                         name="name"
                         value={data.name}
                         required
-                        placeholder="z. B. Auslieferung aus der CI"
+                        placeholder={t('api_tokens.create.name_placeholder')}
                         className="mt-1"
                         onChange={(e) => setData('name', e.target.value)}
                     />
@@ -191,7 +202,7 @@ function CreateToken({ kinds, scopeGroups }) {
 
                 <fieldset>
                     <legend className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Art
+                        {t('api_tokens.create.kind')}
                     </legend>
                     <div className="mt-2 space-y-2">
                         {kinds.map((kind) => (
@@ -220,7 +231,7 @@ function CreateToken({ kinds, scopeGroups }) {
 
                 <fieldset>
                     <legend className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Geltungsbereiche
+                        {t('api_tokens.create.scopes')}
                     </legend>
                     <div className="mt-2 space-y-3">
                         {scopeGroups.map((group) => (
@@ -235,7 +246,7 @@ function CreateToken({ kinds, scopeGroups }) {
                                             title={
                                                 scope.allowed
                                                     ? scope.label
-                                                    : 'Die eigene Rolle erlaubt diesen Bereich nicht.'
+                                                    : t('api_tokens.create.scope_forbidden')
                                             }
                                             className={`flex items-center gap-2 text-sm ${scope.allowed ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}
                                         >
@@ -258,7 +269,7 @@ function CreateToken({ kinds, scopeGroups }) {
                 </fieldset>
 
                 <div>
-                    <InputLabel htmlFor="token_expires" value="Gültigkeit" />
+                    <InputLabel htmlFor="token_expires" value={t('api_tokens.create.expires')} />
                     <select
                         id="token_expires"
                         name="expires_in_days"
@@ -266,25 +277,18 @@ function CreateToken({ kinds, scopeGroups }) {
                         onChange={(e) => setData('expires_in_days', e.target.value)}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
                     >
-                        <option value="">Unbefristet</option>
-                        <option value="30">30 Tage</option>
-                        <option value="90">90 Tage</option>
-                        <option value="365">1 Jahr</option>
+                        <option value="">{t('api_tokens.create.expires_never')}</option>
+                        <option value="30">{t('api_tokens.create.expires_30')}</option>
+                        <option value="90">{t('api_tokens.create.expires_90')}</option>
+                        <option value="365">{t('api_tokens.create.expires_365')}</option>
                     </select>
                     <InputError message={errors.expires_in_days} className="mt-2" />
                 </div>
 
                 <PrimaryButton type="submit" disabled={processing}>
-                    Token anlegen
+                    {t('api_tokens.create.submit')}
                 </PrimaryButton>
             </form>
         </Card>
     );
-}
-
-function formatDate(value) {
-    return new Date(value).toLocaleString('de-DE', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    });
 }

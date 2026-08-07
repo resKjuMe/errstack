@@ -44,7 +44,7 @@ class ProjectController extends Controller
 
         return redirect()
             ->route('projects.show', [$organization, $project])
-            ->with('status', "Projekt „{$project->name}“ angelegt.");
+            ->with('status', __('projects.flash.created', ['name' => $project->name]));
     }
 
     public function show(Request $request, Organization $organization, Project $project): InertiaResponse
@@ -60,7 +60,7 @@ class ProjectController extends Controller
 
         $project->update($request->validated());
 
-        return back()->with('status', 'Projekt gespeichert.');
+        return back()->with('status', __('projects.flash.updated'));
     }
 
     public function destroy(Organization $organization, Project $project): RedirectResponse
@@ -72,6 +72,6 @@ class ProjectController extends Controller
 
         return redirect()
             ->route('projects.index')
-            ->with('status', "Projekt „{$name}“ gelöscht.");
+            ->with('status', __('projects.flash.deleted', ['name' => $name]));
     }
 }

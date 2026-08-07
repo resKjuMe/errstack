@@ -9,26 +9,28 @@ import {
     SecondaryButton,
     TextInput,
 } from '../../components/Form.jsx';
+import { useT } from '../../i18n.js';
 
 // Alle Organisationen dieses Kontos: aktive markiert, Wechsel per Schaltfläche,
 // darunter das Formular zum Anlegen einer weiteren.
 export default function Index({ organizations }) {
     const { shell } = usePage().props;
+    const t = useT();
 
     return (
         <>
             <PageHead
-                title="Organisationen"
+                title={t('organizations.index.title')}
                 appName={shell.appName}
-                help="Eine Organisation ist die Klammer um alles Weitere: Projekte, Fehlermeldungen und Alarme gehören immer genau einer. Wer eingeladen wird, sieht nur deren Daten."
+                help={t('organizations.index.help')}
             />
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                 <div className="space-y-4 lg:col-span-2">
                     {organizations.length === 0 && (
                         <Card
-                            title="Noch keine Organisation"
-                            description="Lege eine an, um loszulegen — oder warte auf eine Einladung per E-Mail."
+                            title={t('organizations.index.empty_title')}
+                            description={t('organizations.index.empty_description')}
                         />
                     )}
 
@@ -43,13 +45,15 @@ export default function Index({ organizations }) {
                                         {organization.name}
                                     </Link>
                                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        Eigene Rolle: {organization.roleLabel}
+                                        {t('organizations.index.own_role', {
+                                            role: organization.roleLabel,
+                                        })}
                                     </p>
                                 </div>
 
                                 {organization.isCurrent ? (
                                     <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700 dark:bg-rose-900/40 dark:text-rose-300">
-                                        Aktiv
+                                        {t('organizations.index.current')}
                                     </span>
                                 ) : (
                                     <SwitchButton slug={organization.slug} />
@@ -66,6 +70,7 @@ export default function Index({ organizations }) {
 }
 
 function SwitchButton({ slug }) {
+    const t = useT();
     const { post, processing } = useForm({});
 
     return (
@@ -74,12 +79,13 @@ function SwitchButton({ slug }) {
             disabled={processing}
             onClick={() => post(`/organisationen/${slug}/wechseln`, { preserveScroll: true })}
         >
-            Aktiv setzen
+            {t('organizations.index.switch')}
         </SecondaryButton>
     );
 }
 
 function CreateOrganization() {
+    const t = useT();
     const { data, setData, post, processing, errors, reset } = useForm({ name: '' });
 
     const submit = (e) => {
@@ -88,10 +94,16 @@ function CreateOrganization() {
     };
 
     return (
-        <Card title="Neue Organisation" description="Wer sie anlegt, wird ihr Besitzer.">
+        <Card
+            title={t('organizations.create.title')}
+            description={t('organizations.create.description')}
+        >
             <form onSubmit={submit} className="space-y-4">
                 <div>
-                    <InputLabel htmlFor="organization_name" value="Name" />
+                    <InputLabel
+                        htmlFor="organization_name"
+                        value={t('organizations.create.name')}
+                    />
                     <TextInput
                         id="organization_name"
                         name="name"
@@ -104,7 +116,7 @@ function CreateOrganization() {
                 </div>
 
                 <PrimaryButton type="submit" disabled={processing}>
-                    Anlegen
+                    {t('organizations.create.submit')}
                 </PrimaryButton>
             </form>
         </Card>

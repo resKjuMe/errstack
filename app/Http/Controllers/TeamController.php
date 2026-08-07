@@ -31,12 +31,12 @@ class TeamController extends Controller
             $organization,
             subject: $team,
             subjectLabel: $team->name,
-            changes: AuditLog::change('Name', null, $team->name),
+            changes: AuditLog::change('name', null, $team->name),
         );
 
         return redirect()
             ->route('teams.show', $team)
-            ->with('status', "Team „{$team->name}“ angelegt.");
+            ->with('status', __('teams.flash.created', ['name' => $team->name]));
     }
 
     public function show(Request $request, Team $team): InertiaResponse
@@ -98,11 +98,11 @@ class TeamController extends Controller
                 $team->organization,
                 subject: $team,
                 subjectLabel: $team->name,
-                changes: AuditLog::change('Name', $before, $team->name),
+                changes: AuditLog::change('name', $before, $team->name),
             );
         }
 
-        return back()->with('status', 'Team gespeichert.');
+        return back()->with('status', __('teams.flash.updated'));
     }
 
     public function destroy(Team $team): RedirectResponse
@@ -117,11 +117,11 @@ class TeamController extends Controller
             AuditAction::TeamDeleted,
             $organization,
             subjectLabel: $name,
-            changes: AuditLog::change('Name', $name, null),
+            changes: AuditLog::change('name', $name, null),
         );
 
         return redirect()
             ->route('organizations.show', $organization)
-            ->with('status', "Team „{$name}“ gelöscht.");
+            ->with('status', __('teams.flash.deleted', ['name' => $name]));
     }
 }

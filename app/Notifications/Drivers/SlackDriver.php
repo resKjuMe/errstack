@@ -21,12 +21,12 @@ final class SlackDriver extends HttpChannelDriver
 
     public function label(): string
     {
-        return 'Slack';
+        return __('channels.slack.label');
     }
 
     public function description(): string
     {
-        return 'Schickt die Meldung über einen eingehenden Webhook in einen Slack-Kanal.';
+        return __('channels.slack.description');
     }
 
     public function fields(): array
@@ -34,8 +34,8 @@ final class SlackDriver extends HttpChannelDriver
         return [
             ChannelField::secret(
                 key: 'webhook_url',
-                label: 'Webhook-URL',
-                hint: 'Slack › Apps › Incoming Webhooks. Der Ziel-Kanal steckt in der URL.',
+                label: __('channels.slack.webhook_url'),
+                hint: __('channels.slack.webhook_url_hint'),
                 placeholder: 'https://hooks.slack.com/services/…',
             ),
         ];
@@ -50,7 +50,7 @@ final class SlackDriver extends HttpChannelDriver
 
     public function summary(NotificationChannel $channel): string
     {
-        return 'Eingehender Webhook';
+        return __('channels.slack.summary');
     }
 
     public function send(NotificationChannel $channel, NotificationMessage $message): DeliveryResult

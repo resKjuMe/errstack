@@ -1,9 +1,11 @@
 import React from 'react';
 import { useForm } from '@inertiajs/react';
 import GuestShell from '../../GuestShell.jsx';
+import { useT } from '../../i18n.js';
 import { InputError, InputLabel, PrimaryButton, TextInput } from '../../components/Form.jsx';
 
 export default function ConfirmPassword() {
+    const t = useT();
     const { data, setData, post, processing, errors, reset } = useForm({ password: '' });
 
     const submit = (e) => {
@@ -14,12 +16,12 @@ export default function ConfirmPassword() {
     return (
         <>
             <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                Dieser Bereich ist besonders geschützt. Bitte das Passwort erneut eingeben.
+                {t('auth_ui.confirm.intro')}
             </div>
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="password" value="Passwort" />
+                    <InputLabel htmlFor="password" value={t('auth_ui.confirm.password')} />
                     <TextInput
                         id="password"
                         type="password"
@@ -36,7 +38,7 @@ export default function ConfirmPassword() {
 
                 <div className="mt-4 flex items-center justify-end">
                     <PrimaryButton type="submit" disabled={processing}>
-                        Bestätigen
+                        {t('auth_ui.confirm.submit')}
                     </PrimaryButton>
                 </div>
             </form>
@@ -44,4 +46,4 @@ export default function ConfirmPassword() {
     );
 }
 
-ConfirmPassword.layout = (page) => <GuestShell title="Passwort bestätigen">{page}</GuestShell>;
+ConfirmPassword.layout = (page) => <GuestShell titleKey="auth_ui.confirm.title">{page}</GuestShell>;

@@ -9,22 +9,22 @@
     @var string $expiresAt
 --}}
 <x-mail::message>
-# Einladung zu {{ $organization }}
+# {{ __('emails.invitation.heading', ['organization' => $organization]) }}
 
 @if ($invitedBy)
-{{ $invitedBy }} lädt dich in die Organisation **{{ $organization }}** ein.
+{{ __('emails.invitation.invited_by', ['name' => $invitedBy, 'organization' => $organization]) }}
 @else
-Du bist in die Organisation **{{ $organization }}** eingeladen.
+{{ __('emails.invitation.invited', ['organization' => $organization]) }}
 @endif
 
-Deine Rolle dort: **{{ $role }}**.
+{{ __('emails.invitation.role', ['role' => $role]) }}
 
 <x-mail::button :url="$url">
-Einladung annehmen
+{{ __('emails.invitation.button') }}
 </x-mail::button>
 
-Die Einladung gilt bis zum {{ $expiresAt }}. Wer sie nicht erwartet hat, kann diese Nachricht einfach löschen.
+{{ __('emails.invitation.expires', ['date' => $expiresAt]) }}
 
-Viele Grüße<br>
+{{ __('emails.regards') }}<br>
 {{ config('app.name') }}
 </x-mail::message>

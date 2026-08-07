@@ -81,7 +81,7 @@ final class NotificationData
             'typeLabel' => $driver?->label() ?? $channel->type,
             'name' => $channel->name,
             'isActive' => $channel->is_active,
-            'summary' => $driver?->summary($channel) ?? 'Unbekannter Kanal',
+            'summary' => $driver?->summary($channel) ?? __('notifications.channels.unknown'),
             'known' => $known,
             'fields' => $driver === null ? [] : array_map(
                 static fn (ChannelField $field): array => $field->toArray(),
@@ -138,8 +138,8 @@ final class NotificationData
                 'responseCode' => $delivery->response_code,
                 'error' => $delivery->error,
                 'isTest' => $delivery->is_test,
-                'createdAt' => $delivery->created_at->format('d.m.Y H:i'),
-                'deliveredAt' => $delivery->delivered_at?->format('d.m.Y H:i'),
+                'createdAt' => Formats::dateTime($delivery->created_at),
+                'deliveredAt' => Formats::dateTime($delivery->delivered_at),
                 'retryHref' => route('deliveries.retry', $delivery),
             ])
             ->all();

@@ -36,10 +36,13 @@ class TeamMemberController extends Controller
             $team->organization,
             subject: $team,
             subjectLabel: $team->name,
-            changes: AuditLog::change('Mitglied', null, $user->name),
+            changes: AuditLog::change('member', null, $user->name),
         );
 
-        return back()->with('status', "{$user->name} gehört jetzt zu „{$team->name}“.");
+        return back()->with('status', __('teams.flash.member_added', [
+            'name' => $user->name,
+            'team' => $team->name,
+        ]));
     }
 
     public function destroy(Team $team, User $user): RedirectResponse
@@ -53,9 +56,12 @@ class TeamMemberController extends Controller
             $team->organization,
             subject: $team,
             subjectLabel: $team->name,
-            changes: AuditLog::change('Mitglied', $user->name, null),
+            changes: AuditLog::change('member', $user->name, null),
         );
 
-        return back()->with('status', "{$user->name} wurde aus „{$team->name}“ entfernt.");
+        return back()->with('status', __('teams.flash.member_removed', [
+            'name' => $user->name,
+            'team' => $team->name,
+        ]));
     }
 }

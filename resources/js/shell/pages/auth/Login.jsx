@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useForm } from '@inertiajs/react';
 import GuestShell from '../../GuestShell.jsx';
+import { useT } from '../../i18n.js';
 import {
     Checkbox,
     InputError,
@@ -11,6 +12,7 @@ import {
 } from '../../components/Form.jsx';
 
 export default function Login({ canResetPassword = true, status = null }) {
+    const t = useT();
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -32,7 +34,7 @@ export default function Login({ canResetPassword = true, status = null }) {
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="email" value="E-Mail-Adresse" />
+                    <InputLabel htmlFor="email" value={t('auth_ui.login.email')} />
                     <TextInput
                         id="email"
                         type="email"
@@ -48,7 +50,7 @@ export default function Login({ canResetPassword = true, status = null }) {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Passwort" />
+                    <InputLabel htmlFor="password" value={t('auth_ui.login.password')} />
                     <TextInput
                         id="password"
                         type="password"
@@ -71,25 +73,25 @@ export default function Login({ canResetPassword = true, status = null }) {
                             onChange={(e) => setData('remember', e.target.checked)}
                         />
                         <span className="ms-2 text-sm text-gray-600 dark:text-gray-400">
-                            Angemeldet bleiben
+                            {t('auth_ui.login.remember')}
                         </span>
                     </label>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between">
                     <Link href="/register" className={formLinkClass}>
-                        Konto anlegen
+                        {t('auth_ui.login.register')}
                     </Link>
 
                     <div className="flex items-center gap-4">
                         {canResetPassword && (
                             <Link href="/forgot-password" className={formLinkClass}>
-                                Passwort vergessen?
+                                {t('auth_ui.login.forgot')}
                             </Link>
                         )}
 
                         <PrimaryButton type="submit" disabled={processing}>
-                            Anmelden
+                            {t('auth_ui.login.submit')}
                         </PrimaryButton>
                     </div>
                 </div>
@@ -98,4 +100,4 @@ export default function Login({ canResetPassword = true, status = null }) {
     );
 }
 
-Login.layout = (page) => <GuestShell title="Anmelden">{page}</GuestShell>;
+Login.layout = (page) => <GuestShell titleKey="auth_ui.login.title">{page}</GuestShell>;

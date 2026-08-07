@@ -3,6 +3,7 @@ import { router, usePage } from '@inertiajs/react';
 import GuestShell from '../../GuestShell.jsx';
 import Flash from '../../components/Flash.jsx';
 import { DangerButton, PrimaryButton, formLinkClass } from '../../components/Form.jsx';
+import { useT } from '../../i18n.js';
 
 // Abmelden über den Link aus einer Mail. Die Seite ist ohne Anmeldung
 // erreichbar (der Empfänger sitzt oft an einem anderen Gerät), deshalb der
@@ -10,6 +11,7 @@ import { DangerButton, PrimaryButton, formLinkClass } from '../../components/For
 // man, für wen man gerade abbestellt.
 export default function Unsubscribe({ recipient, event, applyHref, settingsHref, state }) {
     const { flash } = usePage().props;
+    const t = useT();
     const [processing, setProcessing] = useState(false);
 
     const apply = (mode) => {
@@ -27,11 +29,11 @@ export default function Unsubscribe({ recipient, event, applyHref, settingsHref,
             <Flash status={flash?.status} error={flash?.error} />
 
             <h1 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                Benachrichtigungen abbestellen
+                {t('notifications.unsubscribe.heading')}
             </h1>
 
             <p className="text-sm text-gray-600 dark:text-gray-400">
-                Für <span className="font-medium">{recipient.email}</span>.
+                {t('notifications.unsubscribe.recipient', { email: recipient.email })}
             </p>
 
             {event.critical ? (
@@ -47,12 +49,16 @@ export default function Unsubscribe({ recipient, event, applyHref, settingsHref,
                                 disabled={processing || state.eventOff}
                                 onClick={() => apply('event')}
                             >
-                                Keine E-Mails mehr zu „{event.label}“
+                                {t('notifications.unsubscribe.event_off', {
+                                    event: event.label,
+                                })}
                             </PrimaryButton>
                             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                {state.eventOff
-                                    ? 'Ist bereits abgeschaltet.'
-                                    : 'Wirkt sofort — auch für Mails, die schon in der Warteschlange stehen.'}
+                                {t(
+                                    state.eventOff
+                                        ? 'notifications.unsubscribe.event_off_done'
+                                        : 'notifications.unsubscribe.event_off_hint'
+                                )}
                             </p>
                         </div>
 
@@ -62,12 +68,14 @@ export default function Unsubscribe({ recipient, event, applyHref, settingsHref,
                                 disabled={processing || state.allOff}
                                 onClick={() => apply('all')}
                             >
-                                Alles abbestellen
+                                {t('notifications.unsubscribe.all_off')}
                             </DangerButton>
                             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                {state.allOff
-                                    ? 'Ist bereits pauschal abbestellt.'
-                                    : 'Schaltet alle nicht-kritischen Benachrichtigungen ab. Kritische Alarme kommen weiterhin an.'}
+                                {t(
+                                    state.allOff
+                                        ? 'notifications.unsubscribe.all_off_done'
+                                        : 'notifications.unsubscribe.all_off_hint'
+                                )}
                             </p>
                         </div>
                     </div>
@@ -76,7 +84,7 @@ export default function Unsubscribe({ recipient, event, applyHref, settingsHref,
 
             <p className="text-sm">
                 <a href={settingsHref} className={formLinkClass}>
-                    Alle Einstellungen öffnen
+                    {t('notifications.unsubscribe.settings_link')}
                 </a>
             </p>
         </div>
@@ -87,14 +95,17 @@ export default function Unsubscribe({ recipient, event, applyHref, settingsHref,
 // wer die Bereitschaft abschaltet, soll das angemeldet und mit der Warnung vor
 // Augen tun, nicht aus einer Mail heraus.
 function CriticalNotice({ event, settingsHref }) {
+    const t = useT();
+
     return (
         <div className="rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
-            <p className="font-semibold">„{event.label}“ ist ein kritischer Alarm.</p>
+            <p className="font-semibold">
+                {t('notifications.unsubscribe.critical_title', { event: event.label })}
+            </p>
             <p className="mt-2">
-                Er erreicht dich auch in der Ruhezeit und nach einer pauschalen Abmeldung.
-                Abschalten lässt er sich nur ausdrücklich in den{' '}
+                {t('notifications.unsubscribe.critical_body_before')}{' '}
                 <a href={settingsHref} className={formLinkClass}>
-                    Benachrichtigungs-Einstellungen
+                    {t('notifications.unsubscribe.critical_link')}
                 </a>
                 .
             </p>
@@ -102,4 +113,6 @@ function CriticalNotice({ event, settingsHref }) {
     );
 }
 
-Unsubscribe.layout = (page) => <GuestShell title="Abbestellen">{page}</GuestShell>;
+Unsubscribe.layout = (page) => (
+    <GuestShell titleKey="notifications.unsubscribe.title">{page}</GuestShell>
+);

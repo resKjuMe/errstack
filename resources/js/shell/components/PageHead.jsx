@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import { QuestionIcon } from '../icons.jsx';
+import { useT } from '../i18n.js';
 
 // Einheitlicher Seitenkopf: H1 links, optional Meta-Inhalt und ein „?"-Button
 // rechts, dessen Infobox darunter aufklappt. Setzt zugleich den Titel des
@@ -13,6 +14,7 @@ export default function PageHead({
     appName = null,
 }) {
     const [open, setOpen] = useState(false);
+    const t = useT();
 
     return (
         <div className="mb-6">
@@ -27,7 +29,7 @@ export default function PageHead({
                             type="button"
                             onClick={() => setOpen((v) => !v)}
                             aria-expanded={open}
-                            title="Hilfe anzeigen"
+                            title={t('common.show_help')}
                             className="text-gray-400 hover:text-rose-600 dark:text-gray-500 dark:hover:text-rose-400"
                         >
                             <QuestionIcon className="h-5 w-5" />

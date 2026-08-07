@@ -80,7 +80,7 @@ class StoreApiTokenRequest extends FormRequest
                 && $user->cannot('createShared', [ApiToken::class, $organization])) {
                 $validator->errors()->add(
                     'kind',
-                    'Organisationsweite Tokens darf nur die Verwaltung anlegen.',
+                    __('validation.messages.token_kind_forbidden'),
                 );
             }
 
@@ -88,7 +88,7 @@ class StoreApiTokenRequest extends FormRequest
                 if ($user->cannot('grantScope', [ApiToken::class, $organization, $scope])) {
                     $validator->errors()->add(
                         'scopes',
-                        "Die eigene Rolle erlaubt es nicht, „{$scope->label()}“ zu vergeben.",
+                        __('validation.messages.token_scope_forbidden', ['scope' => $scope->label()]),
                     );
                 }
             }
@@ -137,7 +137,7 @@ class StoreApiTokenRequest extends FormRequest
         $organization = $this->user()?->resolveCurrentOrganization();
 
         if ($organization === null) {
-            throw new AuthorizationException('Für API-Tokens braucht es zuerst eine Organisation.');
+            throw new AuthorizationException(__('validation.messages.organization_required'));
         }
 
         return $organization;

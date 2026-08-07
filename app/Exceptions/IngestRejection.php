@@ -33,7 +33,7 @@ class IngestRejection extends RuntimeException
      */
     public static function unauthorized(): self
     {
-        return new self('Der Client-Schlüssel ist unbekannt oder gehört nicht zu diesem Projekt.', 401);
+        return new self(__('validation.messages.client_key_unknown'), 401);
     }
 
     public static function tooLarge(int $limitBytes): self

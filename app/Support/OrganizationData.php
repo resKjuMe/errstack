@@ -83,7 +83,7 @@ final class OrganizationData
                     'email' => $invitation->email,
                     'role' => $invitation->role->value,
                     'roleLabel' => $invitation->role->label(),
-                    'expiresAt' => $invitation->expires_at->format('d.m.Y'),
+                    'expiresAt' => Formats::date($invitation->expires_at),
                     'isExpired' => $invitation->isExpired(),
                     'assignableRoles' => self::rolesFor(
                         fn (OrganizationRole $role): bool => Gate::forUser($viewer)->allows('update', [$invitation, $role]),
@@ -136,12 +136,12 @@ final class OrganizationData
     private static function roleHint(Membership $membership, User $viewer): ?string
     {
         if ($membership->user_id === $viewer->id) {
-            return 'Die eigene Rolle ändert man nicht selbst.';
+            return __('organizations.members.hint_self');
         }
 
         if ($membership->role === OrganizationRole::Owner
             && $membership->organization->roleFor($viewer) !== OrganizationRole::Owner) {
-            return 'Einen Besitzer ändert nur ein Besitzer.';
+            return __('organizations.members.hint_owner');
         }
 
         // Der letzte Besitzer braucht keinen eigenen Hinweis: er ist zwangsläufig

@@ -34,28 +34,12 @@ enum NotificationEventType: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::Alert => 'Alarme',
-            self::Assignment => 'Zuweisungen',
-            self::Mention => 'Erwähnungen',
-            self::WorkflowChange => 'Workflow-Änderungen',
-            self::Deploy => 'Deploys',
-            self::WeeklyDigest => 'Wochenbericht',
-            self::QuotaWarning => 'Kontingent-Warnungen',
-        };
+        return __('enums.notification_event.'.$this->value);
     }
 
     public function description(): string
     {
-        return match ($this) {
-            self::Alert => 'Ein Alarm hat ausgelöst — etwas ist kaputt.',
-            self::Assignment => 'Ein Fehler wurde dir zugewiesen.',
-            self::Mention => 'Jemand hat dich in einem Kommentar genannt.',
-            self::WorkflowChange => 'Ein Fehler wurde erledigt, ignoriert oder wieder geöffnet.',
-            self::Deploy => 'Eine neue Version ist ausgeliefert worden.',
-            self::WeeklyDigest => 'Die wöchentliche Zusammenfassung deiner Projekte.',
-            self::QuotaWarning => 'Das Aufnahme-Kontingent geht zur Neige.',
-        };
+        return __('enums.notification_event_description.'.$this->value);
     }
 
     /**

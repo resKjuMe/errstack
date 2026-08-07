@@ -20,11 +20,7 @@ enum NotificationLevel: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::Info => 'Information',
-            self::Warning => 'Warnung',
-            self::Error => 'Fehler',
-        };
+        return __('enums.notification_level.'.$this->value);
     }
 
     /**

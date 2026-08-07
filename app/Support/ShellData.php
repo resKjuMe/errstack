@@ -38,15 +38,15 @@ final class ShellData
             'links' => self::links(),
             'menu' => self::menu(),
             'labels' => [
-                'guest' => 'Gast',
-                'signIn' => 'Anmelden',
-                'signOut' => 'Abmelden',
-                'menu' => 'Menü',
-                'help' => 'Hilfe anzeigen',
+                'guest' => __('nav.guest'),
+                'signIn' => __('nav.sign_in'),
+                'signOut' => __('nav.sign_out'),
+                'menu' => __('nav.menu'),
+                'help' => __('common.show_help'),
                 'theme' => [
-                    'light' => 'Helles Design',
-                    'dark' => 'Dunkles Design',
-                    'system' => 'Design des Systems',
+                    'light' => __('nav.theme.light'),
+                    'dark' => __('nav.theme.dark'),
+                    'system' => __('nav.theme.system'),
                 ],
             ],
         ];
@@ -89,22 +89,22 @@ final class ShellData
     {
         return self::withExisting([
             [
-                'label' => 'Übersicht',
+                'label' => __('nav.links.dashboard'),
                 'route' => 'dashboard',
                 'activePattern' => 'dashboard',
             ],
             [
-                'label' => 'Projekte',
+                'label' => __('nav.links.projects'),
                 'route' => 'projects.index',
                 'activePattern' => 'projects.*',
             ],
             [
-                'label' => 'Organisationen',
+                'label' => __('nav.links.organizations'),
                 'route' => 'organizations.index',
                 'activePattern' => 'organizations.*',
             ],
             [
-                'label' => 'Bausteine',
+                'label' => __('nav.links.components'),
                 'route' => 'components',
                 'activePattern' => 'components',
                 'icon' => 'components',
@@ -121,25 +121,25 @@ final class ShellData
     {
         return self::withExisting([
             [
-                'label' => 'Profil',
+                'label' => __('nav.menu_items.profile'),
                 'route' => 'profile.edit',
                 'activePattern' => 'profile.*',
                 'icon' => 'profile',
             ],
             [
-                'label' => 'Benachrichtigungen',
+                'label' => __('nav.menu_items.notifications'),
                 'route' => 'notifications.preferences',
                 'activePattern' => 'notifications.preferences*',
                 'icon' => 'bell',
             ],
             [
-                'label' => 'Zugriffstoken',
+                'label' => __('nav.menu_items.api_tokens'),
                 'route' => 'api-tokens.index',
                 'activePattern' => 'api-tokens.*',
                 'icon' => 'key',
             ],
             [
-                'label' => 'Bausteine',
+                'label' => __('nav.menu_items.components'),
                 'route' => 'components',
                 'activePattern' => 'components',
                 'icon' => 'components',

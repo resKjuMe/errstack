@@ -42,9 +42,9 @@ class GlobalFilterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'to.after_or_equal' => 'Das Ende des Zeitraums liegt vor seinem Anfang.',
-            'from.required_if' => 'Für einen eigenen Zeitraum fehlt der Anfang.',
-            'to.required_if' => 'Für einen eigenen Zeitraum fehlt das Ende.',
+            'to.after_or_equal' => __('validation.messages.range_reversed'),
+            'from.required_if' => __('validation.messages.range_from_missing'),
+            'to.required_if' => __('validation.messages.range_to_missing'),
         ];
     }
 

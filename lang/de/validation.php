@@ -45,6 +45,33 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Eigene Meldungen der Formulare
+    |--------------------------------------------------------------------------
+    |
+    | Was die Formulare dieser Anwendung über die Regeln des Frameworks hinaus
+    | zu sagen haben (App\Http\Requests).
+    |
+    */
+
+    'messages' => [
+        'range_reversed' => 'Das Ende des Zeitraums liegt vor seinem Anfang.',
+        'range_from_missing' => 'Für einen eigenen Zeitraum fehlt der Anfang.',
+        'range_to_missing' => 'Für einen eigenen Zeitraum fehlt das Ende.',
+        'channel_name_taken' => 'Einen Kanal dieses Namens gibt es hier bereits.',
+        'environment_pattern' => 'Erlaubt sind Kleinbuchstaben, Ziffern, Punkt, Bindestrich und Unterstrich.',
+        'invitation_already_member' => 'Diese Adresse gehört bereits zur Organisation.',
+        'invitation_already_open' => 'Für diese Adresse ist bereits eine Einladung offen.',
+        'invitation_expired' => 'Diese Einladung ist abgelaufen. Bitte um eine neue bitten.',
+        'organization_required' => 'Für API-Tokens braucht es zuerst eine Organisation.',
+        'token_kind_forbidden' => 'Organisationsweite Tokens darf nur die Verwaltung anlegen.',
+        'token_scope_forbidden' => 'Die eigene Rolle erlaubt es nicht, „:scope" zu vergeben.',
+        'scope_role_too_low' => 'Die eigene Rolle in der Organisation reicht für „:scope" nicht aus.',
+        'membership_gone' => 'Das Konto gehört dieser Organisation nicht mehr an.',
+        'client_key_unknown' => 'Der Client-Schlüssel ist unbekannt oder gehört nicht zu diesem Projekt.',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Custom Validation Attributes
     |--------------------------------------------------------------------------
     |
@@ -59,6 +86,11 @@ return [
         'name' => 'Der Name',
         'password' => 'Das Passwort',
         'password_confirmation' => 'Die Passwort-Wiederholung',
+        'platform' => 'Plattform',
+        'default_environment' => 'Standard-Umgebung',
+        'resolution_behavior' => 'Auflösungs-Verhalten',
+        'retention_days' => 'Datenaufbewahrung',
+        'type' => 'Kanal',
         'role' => 'Die Rolle',
         'user_id' => 'Das Mitglied',
     ],

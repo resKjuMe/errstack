@@ -27,9 +27,12 @@ class EnvironmentController extends Controller
         $environment->is_hidden = $request->boolean('hidden');
         $environment->save();
 
-        $status = $environment->is_hidden
-            ? "Umgebung „{$environment->name}“ wird nicht mehr angeboten."
-            : "Umgebung „{$environment->name}“ wird wieder angeboten.";
+        $status = __(
+            $environment->is_hidden
+                ? 'projects.flash.environment_hidden'
+                : 'projects.flash.environment_shown',
+            ['name' => $environment->name],
+        );
 
         return back()->with('status', $status);
     }

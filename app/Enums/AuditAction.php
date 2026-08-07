@@ -33,22 +33,9 @@ enum AuditAction: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::OrganizationCreated => 'Organisation angelegt',
-            self::OrganizationUpdated => 'Organisation geändert',
-            self::InvitationSent => 'Einladung verschickt',
-            self::InvitationRoleChanged => 'Rolle einer Einladung geändert',
-            self::InvitationRevoked => 'Einladung zurückgezogen',
-            self::InvitationAccepted => 'Einladung angenommen',
-            self::MembershipRoleChanged => 'Rolle geändert',
-            self::MembershipRemoved => 'Mitglied entfernt',
-            self::MembershipLeft => 'Organisation verlassen',
-            self::TeamCreated => 'Team angelegt',
-            self::TeamUpdated => 'Team geändert',
-            self::TeamDeleted => 'Team gelöscht',
-            self::TeamMemberAdded => 'Mitglied zu Team hinzugefügt',
-            self::TeamMemberRemoved => 'Mitglied aus Team entfernt',
-        };
+        // Der Wert trägt einen Punkt (`team.created`); im Sprachverzeichnis
+        // wäre das ein Pfad in eine tiefere Ebene, die es nicht gibt.
+        return __('enums.audit_action.'.str_replace('.', '_', $this->value));
     }
 
     /**

@@ -44,7 +44,7 @@ class ResolveApiToken
         // fehlt die Berechtigung. Für den Aufrufer ist das der Unterschied
         // zwischen „neues Token holen" und „Zugang zur Organisation klären".
         if ($actor !== null && ! $organization->hasMember($actor)) {
-            throw new AuthorizationException('Das Konto gehört dieser Organisation nicht mehr an.');
+            throw new AuthorizationException(__('validation.messages.membership_gone'));
         }
 
         $request->attributes->set(ApiContext::TOKEN, $token);

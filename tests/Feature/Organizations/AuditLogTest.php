@@ -42,7 +42,7 @@ class AuditLogTest extends TestCase
         $this->assertSame('127.0.0.1', $entry->ip_address);
         $this->assertEquals(now(), $entry->created_at);
         $this->assertSame(
-            ['Rolle' => ['before' => 'Lesend', 'after' => 'Mitglied']],
+            ['role' => ['before' => 'viewer', 'after' => 'member']],
             $entry->changed_values,
         );
     }
@@ -78,7 +78,7 @@ class AuditLogTest extends TestCase
 
         $this->assertSame(AuditAction::MembershipRemoved, $removed->action);
         $this->assertSame($member->name, $removed->subject_label);
-        $this->assertSame(['Rolle' => ['before' => 'Mitglied', 'after' => null]], $removed->changed_values);
+        $this->assertSame(['role' => ['before' => 'member', 'after' => null]], $removed->changed_values);
 
         $this->assertSame(AuditAction::MembershipLeft, $left->action);
         $this->assertSame($leaver->id, $left->actor_id);
@@ -110,13 +110,13 @@ class AuditLogTest extends TestCase
 
         $this->assertSame(AuditAction::InvitationSent, $sent->action);
         $this->assertSame('neu@example.com', $sent->subject_label);
-        $this->assertSame(['Rolle' => ['before' => null, 'after' => 'Lesend']], $sent->changed_values);
+        $this->assertSame(['role' => ['before' => null, 'after' => 'viewer']], $sent->changed_values);
 
         $this->assertSame(AuditAction::InvitationRoleChanged, $changed->action);
-        $this->assertSame(['Rolle' => ['before' => 'Lesend', 'after' => 'Mitglied']], $changed->changed_values);
+        $this->assertSame(['role' => ['before' => 'viewer', 'after' => 'member']], $changed->changed_values);
 
         $this->assertSame(AuditAction::InvitationRevoked, $revoked->action);
-        $this->assertSame(['Rolle' => ['before' => 'Mitglied', 'after' => null]], $revoked->changed_values);
+        $this->assertSame(['role' => ['before' => 'member', 'after' => null]], $revoked->changed_values);
     }
 
     public function test_accepting_an_invitation_is_recorded(): void
@@ -136,7 +136,7 @@ class AuditLogTest extends TestCase
         $this->assertSame(AuditAction::InvitationAccepted, $entry->action);
         $this->assertSame($invited->id, $entry->actor_id);
         $this->assertSame($invited->name, $entry->subject_label);
-        $this->assertSame(['Rolle' => ['before' => null, 'after' => 'Mitglied']], $entry->changed_values);
+        $this->assertSame(['role' => ['before' => null, 'after' => 'member']], $entry->changed_values);
     }
 
     public function test_organization_and_team_actions_are_recorded(): void

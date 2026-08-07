@@ -24,12 +24,7 @@ enum OrganizationRole: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::Owner => 'Besitzer',
-            self::Admin => 'Verwaltung',
-            self::Member => 'Mitglied',
-            self::Viewer => 'Lesend',
-        };
+        return __('enums.organization_role.'.$this->value);
     }
 
     /**

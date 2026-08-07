@@ -38,11 +38,14 @@ class MembershipController extends Controller
                 $membership->organization,
                 subject: $membership,
                 subjectLabel: $membership->user->name,
-                changes: AuditLog::change('Rolle', $before->label(), $role->label()),
+                changes: AuditLog::roleChange($before, $role),
             );
         }
 
-        return back()->with('status', "Rolle von {$membership->user->name} auf {$role->label()} gesetzt.");
+        return back()->with('status', __('organizations.flash.role_changed', [
+            'name' => $membership->user->name,
+            'role' => $role->label(),
+        ]));
     }
 
     public function destroy(Request $request, Membership $membership): RedirectResponse
@@ -62,7 +65,7 @@ class MembershipController extends Controller
             $isSelf ? AuditAction::MembershipLeft : AuditAction::MembershipRemoved,
             $organization,
             subjectLabel: $user->name,
-            changes: AuditLog::change('Rolle', $role->label(), null),
+            changes: AuditLog::roleChange($role, null),
         );
 
         // Wer die Organisation verlassen hat, darf sie auch nicht mehr als
@@ -78,9 +81,9 @@ class MembershipController extends Controller
         if ($isSelf) {
             return redirect()
                 ->route('organizations.index')
-                ->with('status', "Organisation „{$organization->name}“ verlassen.");
+                ->with('status', __('organizations.flash.left', ['name' => $organization->name]));
         }
 
-        return back()->with('status', "{$user->name} wurde entfernt.");
+        return back()->with('status', __('organizations.flash.member_removed', ['name' => $user->name]));
     }
 }

@@ -13,6 +13,7 @@ import {
     SelectInput,
     TextInput,
 } from '../../components/Form.jsx';
+import { useT } from '../../i18n.js';
 
 // Einstellungen eines Projekts: Stammdaten und Verhalten, zuständige Teams, der
 // Weg zu den Client-Schlüsseln und das Löschen. Was der Betrachter nicht darf,
@@ -27,13 +28,14 @@ export default function Show({
     resolutionOptions,
 }) {
     const { shell } = usePage().props;
+    const t = useT();
 
     return (
         <>
             <PageHead
                 title={project.name}
                 appName={shell.appName}
-                help="Die Einstellungen wirken auf alles, was für dieses Projekt aufgenommen wird: die Umgebung ist der Standard für Meldungen ohne eigene Angabe, das Auflösungs-Verhalten schließt ruhige Issues von selbst, und die Aufbewahrung bestimmt, wie lange Ereignisse erhalten bleiben."
+                help={t('projects.show.help')}
                 meta={
                     <div className="flex items-center gap-3">
                         <PlatformIcon
@@ -51,7 +53,7 @@ export default function Show({
                             href="/projekte"
                             className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                         >
-                            Alle Projekte
+                            {t('projects.show.all_projects')}
                         </Link>
                     </div>
                 }
@@ -81,6 +83,7 @@ export default function Show({
 }
 
 function Settings({ project, platformOptions, resolutionOptions }) {
+    const t = useT();
     const { data, setData, patch, processing, errors } = useForm({
         name: project.name,
         platform: project.platform,
@@ -95,14 +98,11 @@ function Settings({ project, platformOptions, resolutionOptions }) {
     };
 
     return (
-        <Card
-            title="Einstellungen"
-            description="Der Slug in der Adresszeile bleibt beim Umbenennen unverändert, damit verteilte Links gültig bleiben."
-        >
+        <Card title={t('projects.settings.title')} description={t('projects.settings.description')}>
             <form onSubmit={submit} className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
-                        <InputLabel htmlFor="name" value="Name" />
+                        <InputLabel htmlFor="name" value={t('projects.settings.name')} />
                         <TextInput
                             id="name"
                             name="name"
@@ -115,7 +115,7 @@ function Settings({ project, platformOptions, resolutionOptions }) {
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="platform" value="Plattform" />
+                        <InputLabel htmlFor="platform" value={t('projects.settings.platform')} />
                         <SelectInput
                             id="platform"
                             name="platform"
@@ -128,7 +128,10 @@ function Settings({ project, platformOptions, resolutionOptions }) {
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="default_environment" value="Standard-Umgebung" />
+                        <InputLabel
+                            htmlFor="default_environment"
+                            value={t('projects.settings.default_environment')}
+                        />
                         <TextInput
                             id="default_environment"
                             name="default_environment"
@@ -139,13 +142,16 @@ function Settings({ project, platformOptions, resolutionOptions }) {
                             onChange={(e) => setData('default_environment', e.target.value)}
                         />
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            Gilt für Meldungen, die keine eigene Umgebung mitschicken.
+                            {t('projects.settings.default_environment_hint')}
                         </p>
                         <InputError message={errors.default_environment} className="mt-2" />
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="retention_days" value="Datenaufbewahrung (Tage)" />
+                        <InputLabel
+                            htmlFor="retention_days"
+                            value={t('projects.settings.retention')}
+                        />
                         <TextInput
                             id="retention_days"
                             name="retention_days"
@@ -161,7 +167,10 @@ function Settings({ project, platformOptions, resolutionOptions }) {
                     </div>
 
                     <div className="md:col-span-2">
-                        <InputLabel htmlFor="resolution_behavior" value="Auflösungs-Verhalten" />
+                        <InputLabel
+                            htmlFor="resolution_behavior"
+                            value={t('projects.settings.resolution')}
+                        />
                         <SelectInput
                             id="resolution_behavior"
                             name="resolution_behavior"
@@ -175,7 +184,7 @@ function Settings({ project, platformOptions, resolutionOptions }) {
                 </div>
 
                 <PrimaryButton type="submit" disabled={processing}>
-                    Speichern
+                    {t('projects.settings.submit')}
                 </PrimaryButton>
             </form>
         </Card>
@@ -183,19 +192,26 @@ function Settings({ project, platformOptions, resolutionOptions }) {
 }
 
 function ReadOnlySettings({ project, resolutionOptions }) {
+    const t = useT();
     const resolution = resolutionOptions.find(
         (option) => option.value === project.resolutionBehavior
     );
 
     const rows = [
-        ['Plattform', project.platformLabel],
-        ['Standard-Umgebung', project.defaultEnvironment],
-        ['Auflösungs-Verhalten', resolution?.label],
-        ['Datenaufbewahrung', `${project.retentionDays} Tage`],
+        [t('projects.settings.platform'), project.platformLabel],
+        [t('projects.settings.default_environment'), project.defaultEnvironment],
+        [t('projects.settings.resolution'), resolution?.label],
+        [
+            t('projects.settings.retention_label'),
+            t('projects.settings.retention_value', { days: project.retentionDays }),
+        ],
     ];
 
     return (
-        <Card title="Einstellungen" description="Ändern darf sie die Verwaltung der Organisation.">
+        <Card
+            title={t('projects.settings.title')}
+            description={t('projects.settings.read_only_description')}
+        >
             <dl className="divide-y divide-gray-200 dark:divide-gray-700">
                 {rows.map(([label, value]) => (
                     <div key={label} className="flex justify-between gap-3 py-2 text-sm">
@@ -209,6 +225,7 @@ function ReadOnlySettings({ project, resolutionOptions }) {
 }
 
 function Teams({ project, teams, canManage }) {
+    const t = useT();
     const { data, setData, put, processing } = useForm({
         teams: teams.filter((team) => team.assigned).map((team) => team.id),
     });
@@ -226,13 +243,10 @@ function Teams({ project, teams, canManage }) {
     };
 
     return (
-        <Card
-            title="Zuständige Teams"
-            description="Ohne Zuordnung ist das Projekt Sache der ganzen Organisation."
-        >
+        <Card title={t('projects.teams.title')} description={t('projects.teams.description')}>
             {teams.length === 0 ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Diese Organisation hat noch keine Teams.
+                    {t('projects.teams.empty')}
                 </p>
             ) : (
                 <form onSubmit={submit} className="space-y-4">
@@ -252,7 +266,7 @@ function Teams({ project, teams, canManage }) {
 
                     {canManage && (
                         <PrimaryButton type="submit" disabled={processing}>
-                            Speichern
+                            {t('projects.teams.submit')}
                         </PrimaryButton>
                     )}
                 </form>
@@ -266,6 +280,8 @@ function Teams({ project, teams, canManage }) {
 // Versteckt heißt nicht gelöscht: die Daten der Umgebung bleiben in den
 // Auswertungen enthalten.
 function Environments({ environments, canManage }) {
+    const t = useT();
+
     // Kein useForm: der Schalter schickt nur einen Wert und gehört zur jeweiligen
     // Zeile, nicht zu einem Formular über die ganze Liste.
     const toggle = (environment) =>
@@ -273,12 +289,12 @@ function Environments({ environments, canManage }) {
 
     return (
         <Card
-            title="Umgebungen"
-            description="Werden beim ersten Eintreffen einer Meldung erfasst. Ausgeblendete Umgebungen erscheinen nicht mehr in der Filterleiste."
+            title={t('projects.environments.title')}
+            description={t('projects.environments.description')}
         >
             {environments.length === 0 ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Für dieses Projekt ist noch keine Meldung eingegangen.
+                    {t('projects.environments.empty')}
                 </p>
             ) : (
                 <ul className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -292,20 +308,26 @@ function Environments({ environments, canManage }) {
                                     {environment.name}
                                     {environment.hidden && (
                                         <span className="ms-2 text-xs font-normal text-gray-500 dark:text-gray-400">
-                                            ausgeblendet
+                                            {t('projects.environments.hidden')}
                                         </span>
                                     )}
                                 </p>
                                 {environment.lastSeenAt && (
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Zuletzt gemeldet: {environment.lastSeenAt}
+                                        {t('projects.environments.last_seen', {
+                                            time: environment.lastSeenAt,
+                                        })}
                                     </p>
                                 )}
                             </div>
 
                             {canManage && (
                                 <SecondaryButton type="button" onClick={() => toggle(environment)}>
-                                    {environment.hidden ? 'Wieder anbieten' : 'Ausblenden'}
+                                    {t(
+                                        environment.hidden
+                                            ? 'projects.environments.show'
+                                            : 'projects.environments.hide'
+                                    )}
                                 </SecondaryButton>
                             )}
                         </li>
@@ -317,28 +339,25 @@ function Environments({ environments, canManage }) {
 }
 
 function ClientKeys({ project }) {
+    const t = useT();
+
     return (
-        <Card
-            title="Client-Schlüssel"
-            description="Die DSN ist die Adresse, an die das SDK seine Meldungen schickt. Sie steht mit allen Schlüsseln dieses Projekts auf einer eigenen Seite."
-        >
+        <Card title={t('projects.keys.title')} description={t('projects.keys.description')}>
             <Link href={project.keysHref}>
-                <SecondaryButton type="button">Client-Schlüssel verwalten</SecondaryButton>
+                <SecondaryButton type="button">{t('projects.keys.manage')}</SecondaryButton>
             </Link>
         </Card>
     );
 }
 
 function DeleteProject({ project }) {
+    const t = useT();
     const { delete: destroy, processing } = useForm({});
 
     return (
-        <Card
-            title="Projekt löschen"
-            description="Mit dem Projekt verschwinden seine Einstellungen, die Team-Zuordnung und alle daran hängenden Daten — unwiderruflich."
-        >
+        <Card title={t('projects.delete.title')} description={t('projects.delete.description')}>
             <DangerButton type="button" disabled={processing} onClick={() => destroy(project.href)}>
-                Projekt löschen
+                {t('projects.delete.submit')}
             </DangerButton>
         </Card>
     );

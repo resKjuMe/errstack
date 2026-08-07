@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useForm } from '@inertiajs/react';
 import GuestShell from '../../GuestShell.jsx';
+import { useT } from '../../i18n.js';
 import {
     InputError,
     InputLabel,
@@ -10,6 +11,7 @@ import {
 } from '../../components/Form.jsx';
 
 export default function ForgotPassword({ status = null }) {
+    const t = useT();
     const { data, setData, post, processing, errors } = useForm({ email: '' });
 
     const submit = (e) => {
@@ -20,8 +22,7 @@ export default function ForgotPassword({ status = null }) {
     return (
         <>
             <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                E-Mail-Adresse eintragen — danach kommt ein Link, über den ein neues Passwort
-                gesetzt werden kann.
+                {t('auth_ui.forgot.intro')}
             </div>
 
             {status && (
@@ -32,7 +33,7 @@ export default function ForgotPassword({ status = null }) {
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="email" value="E-Mail-Adresse" />
+                    <InputLabel htmlFor="email" value={t('auth_ui.forgot.email')} />
                     <TextInput
                         id="email"
                         type="email"
@@ -49,11 +50,11 @@ export default function ForgotPassword({ status = null }) {
 
                 <div className="mt-4 flex items-center justify-end gap-4">
                     <Link href="/login" className={formLinkClass}>
-                        Zurück zur Anmeldung
+                        {t('auth_ui.forgot.back')}
                     </Link>
 
                     <PrimaryButton type="submit" disabled={processing}>
-                        Link anfordern
+                        {t('auth_ui.forgot.submit')}
                     </PrimaryButton>
                 </div>
             </form>
@@ -61,4 +62,4 @@ export default function ForgotPassword({ status = null }) {
     );
 }
 
-ForgotPassword.layout = (page) => <GuestShell title="Passwort vergessen">{page}</GuestShell>;
+ForgotPassword.layout = (page) => <GuestShell titleKey="auth_ui.forgot.title">{page}</GuestShell>;

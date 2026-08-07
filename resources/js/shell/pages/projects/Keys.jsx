@@ -10,6 +10,7 @@ import {
     SecondaryButton,
     TextInput,
 } from '../../components/Form.jsx';
+import { useT } from '../../i18n.js';
 
 // Client-Schlüssel eines Projekts. Jeder Schlüssel ist eine DSN, die in ein
 // Sentry-SDK eingetragen wird; abgeschaltete Schlüssel bleiben sichtbar, ihre
@@ -17,13 +18,14 @@ import {
 // Schlüssel auch verwalten darf — entschieden wird das serverseitig.
 export default function Keys({ project, organization, keys, canDelete }) {
     const { shell } = usePage().props;
+    const t = useT();
 
     return (
         <>
             <PageHead
-                title={`Client-Schlüssel · ${project.name}`}
+                title={t('project_keys.title', { project: project.name })}
                 appName={shell.appName}
-                help="Die DSN enthält den öffentlichen Schlüssel und die Projekt-Nummer — mehr braucht ein SDK nicht. Für getrennte Umgebungen oder mehrere Anwendungen lohnt je ein eigener Schlüssel: Fällt einer aus, lässt er sich abschalten, ohne die übrigen stillzulegen."
+                help={t('project_keys.help')}
                 meta={
                     <div className="flex items-center gap-3">
                         <Link
@@ -54,6 +56,8 @@ export default function Keys({ project, organization, keys, canDelete }) {
 }
 
 function KeyCard({ entry, canDelete }) {
+    const t = useT();
+
     return (
         <Card
             title={
@@ -61,16 +65,16 @@ function KeyCard({ entry, canDelete }) {
                     {entry.name}
                     {!entry.active && (
                         <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-normal text-gray-700 dark:bg-gray-700 dark:text-gray-200">
-                            abgeschaltet
+                            {t('project_keys.disabled_badge')}
                         </span>
                     )}
                 </span>
             }
-            description={
+            description={t(
                 entry.active
-                    ? 'Meldungen mit dieser DSN werden angenommen.'
-                    : 'Meldungen mit dieser DSN werden abgewiesen.'
-            }
+                    ? 'project_keys.active_description'
+                    : 'project_keys.inactive_description'
+            )}
         >
             <div className="space-y-4">
                 <Dsn dsn={entry.dsn} />
@@ -84,6 +88,7 @@ function KeyCard({ entry, canDelete }) {
 // DSN zum Ablesen und Kopieren. Sie steht im Klartext: ohne sie lässt sich
 // nichts einrichten, und wer die Seite sehen darf, darf sie ohnehin neu ziehen.
 function Dsn({ dsn }) {
+    const t = useT();
     const [copied, setCopied] = useState(false);
 
     const copy = async () => {
@@ -105,13 +110,14 @@ function Dsn({ dsn }) {
             </code>
 
             <SecondaryButton type="button" onClick={copy}>
-                {copied ? 'Kopiert' : 'Kopieren'}
+                {t(copied ? 'project_keys.copied' : 'project_keys.copy')}
             </SecondaryButton>
         </div>
     );
 }
 
 function KeySettings({ entry }) {
+    const t = useT();
     const { data, setData, patch, processing, errors } = useForm({
         name: entry.name,
         rate_limit_per_minute: entry.rateLimitPerMinute ?? '',
@@ -125,7 +131,7 @@ function KeySettings({ entry }) {
     return (
         <form onSubmit={submit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-                <InputLabel htmlFor={`name_${entry.id}`} value="Name" />
+                <InputLabel htmlFor={`name_${entry.id}`} value={t('project_keys.name')} />
                 <TextInput
                     id={`name_${entry.id}`}
                     name="name"
@@ -135,32 +141,32 @@ function KeySettings({ entry }) {
                     onChange={(e) => setData('name', e.target.value)}
                 />
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Nur zur Unterscheidung, etwa nach Umgebung oder Anwendung.
+                    {t('project_keys.name_hint')}
                 </p>
                 <InputError message={errors.name} className="mt-2" />
             </div>
 
             <div>
-                <InputLabel htmlFor={`limit_${entry.id}`} value="Kontingent (Meldungen/Minute)" />
+                <InputLabel htmlFor={`limit_${entry.id}`} value={t('project_keys.limit')} />
                 <TextInput
                     id={`limit_${entry.id}`}
                     name="rate_limit_per_minute"
                     type="number"
                     min="1"
                     value={data.rate_limit_per_minute}
-                    placeholder="unbegrenzt"
+                    placeholder={t('project_keys.limit_placeholder')}
                     className="mt-1"
                     onChange={(e) => setData('rate_limit_per_minute', e.target.value)}
                 />
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Leer lassen heißt unbegrenzt. Greift mit der Datenaufnahme.
+                    {t('project_keys.limit_hint')}
                 </p>
                 <InputError message={errors.rate_limit_per_minute} className="mt-2" />
             </div>
 
             <div className="md:col-span-2">
                 <PrimaryButton type="submit" disabled={processing}>
-                    Speichern
+                    {t('project_keys.save')}
                 </PrimaryButton>
             </div>
         </form>
@@ -168,6 +174,7 @@ function KeySettings({ entry }) {
 }
 
 function KeyActions({ entry, canDelete }) {
+    const t = useT();
     const { post, delete: destroy, processing, errors } = useForm({});
 
     return (
@@ -178,7 +185,7 @@ function KeyActions({ entry, canDelete }) {
                     disabled={processing}
                     onClick={() => post(entry.toggleHref, { preserveScroll: true })}
                 >
-                    {entry.active ? 'Abschalten' : 'Wieder einschalten'}
+                    {t(entry.active ? 'project_keys.disable' : 'project_keys.enable')}
                 </SecondaryButton>
 
                 <DangerButton
@@ -186,7 +193,7 @@ function KeyActions({ entry, canDelete }) {
                     disabled={processing}
                     onClick={() => post(entry.rotateHref, { preserveScroll: true })}
                 >
-                    Neu erzeugen
+                    {t('project_keys.rotate')}
                 </DangerButton>
 
                 {canDelete && (
@@ -195,7 +202,7 @@ function KeyActions({ entry, canDelete }) {
                         disabled={processing}
                         onClick={() => destroy(entry.href, { preserveScroll: true })}
                     >
-                        Löschen
+                        {t('project_keys.delete')}
                     </DangerButton>
                 )}
             </div>
@@ -203,14 +210,14 @@ function KeyActions({ entry, canDelete }) {
             <InputError message={errors.key} className="mt-2" />
 
             <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                „Neu erzeugen" tauscht den Schlüssel in der DSN aus — die bisherige gilt danach
-                nicht mehr und muss überall ersetzt werden.
+                {t('project_keys.rotate_hint')}
             </p>
         </div>
     );
 }
 
 function CreateKey({ project }) {
+    const t = useT();
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         rate_limit_per_minute: '',
@@ -223,12 +230,12 @@ function CreateKey({ project }) {
 
     return (
         <Card
-            title="Weiteren Schlüssel anlegen"
-            description="Ein eigener Schlüssel je Umgebung oder Anwendung — dann trifft das Abschalten nur den, der es betrifft."
+            title={t('project_keys.create.title')}
+            description={t('project_keys.create.description')}
         >
             <form onSubmit={submit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                    <InputLabel htmlFor="new_key_name" value="Name" />
+                    <InputLabel htmlFor="new_key_name" value={t('project_keys.name')} />
                     <TextInput
                         id="new_key_name"
                         name="name"
@@ -242,14 +249,14 @@ function CreateKey({ project }) {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="new_key_limit" value="Kontingent (Meldungen/Minute)" />
+                    <InputLabel htmlFor="new_key_limit" value={t('project_keys.limit')} />
                     <TextInput
                         id="new_key_limit"
                         name="rate_limit_per_minute"
                         type="number"
                         min="1"
                         value={data.rate_limit_per_minute}
-                        placeholder="unbegrenzt"
+                        placeholder={t('project_keys.limit_placeholder')}
                         className="mt-1"
                         onChange={(e) => setData('rate_limit_per_minute', e.target.value)}
                     />
@@ -258,7 +265,7 @@ function CreateKey({ project }) {
 
                 <div className="md:col-span-2">
                     <PrimaryButton type="submit" disabled={processing}>
-                        Schlüssel anlegen
+                        {t('project_keys.create.submit')}
                     </PrimaryButton>
                 </div>
             </form>
