@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -54,6 +55,54 @@ class User extends Authenticatable implements MustVerifyEmail
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class)->withTimestamps();
+    }
+
+    /**
+     * Ausdrücklich getroffene Benachrichtigungs-Entscheidungen. Was hier nicht
+     * steht, ist nicht entschieden und erbt.
+     *
+     * @return HasMany<NotificationPreference, $this>
+     */
+    public function notificationPreferences(): HasMany
+    {
+        return $this->hasMany(NotificationPreference::class);
+    }
+
+    /**
+     * Ruhezeiten und pauschale Abmeldung. Kann fehlen — wer nichts eingestellt
+     * hat, hat keine Zeile.
+     *
+     * @return HasOne<NotificationSetting, $this>
+     */
+    public function notificationSetting(): HasOne
+    {
+        return $this->hasOne(NotificationSetting::class);
+    }
+
+    /**
+     * Dieselben Einstellungen, aber immer vorhanden: fehlt die Zeile, kommen
+     * die Vorgaben zurück. Damit muss keine aufrufende Stelle auf null prüfen.
+     */
+    public function notificationSettingOrDefault(): NotificationSetting
+    {
+        return $this->notificationSetting ?? NotificationSetting::defaultsFor($this);
+    }
+
+    /**
+     * Die Zeile für Schreibzugriffe — sie entsteht erst hier, beim ersten
+     * tatsächlichen Einstellen.
+     */
+    public function ensureNotificationSetting(): NotificationSetting
+    {
+        $setting = $this->notificationSetting;
+
+        if ($setting === null) {
+            $setting = NotificationSetting::defaultsFor($this);
+            $setting->save();
+            $this->setRelation('notificationSetting', $setting);
+        }
+
+        return $setting;
     }
 
     /**

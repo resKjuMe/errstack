@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\ApiToken;
 use App\Notifications\ChannelRegistry;
 use App\Notifications\Contracts\ChannelDriver;
+use App\Notifications\NotificationPreferences;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
@@ -28,6 +29,12 @@ class AppServiceProvider extends ServiceProvider
 
             return new ChannelRegistry($app, $channels);
         });
+
+        // Ebenfalls als Singleton: die persönlichen Einstellungen werden je
+        // Anfrage vielfach gefragt (Übersicht: Anlässe × Wege × Bereiche) und
+        // merken sich die einmal geladenen Entscheidungen. Als frische Instanz
+        // je Auflösung wäre der Zwischenspeicher wirkungslos.
+        $this->app->singleton(NotificationPreferences::class);
     }
 
     /**

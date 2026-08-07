@@ -127,6 +127,12 @@ final class ShellData
                 'icon' => 'profile',
             ],
             [
+                'label' => 'Benachrichtigungen',
+                'route' => 'notifications.preferences',
+                'activePattern' => 'notifications.preferences*',
+                'icon' => 'bell',
+            ],
+            [
                 'label' => 'Zugriffstoken',
                 'route' => 'api-tokens.index',
                 'activePattern' => 'api-tokens.*',
