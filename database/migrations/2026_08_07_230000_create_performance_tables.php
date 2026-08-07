@@ -234,7 +234,14 @@ return new class extends Migration
             // über diesen Schlüssel hoch, statt zu lesen und zu schreiben:
             // zwei Arbeiter mit Transaktionen derselben Minute würden sich sonst
             // gegenseitig überschreiben.
-            $table->unique(['project_id', 'environment', 'name', 'op', 'window_start']);
+            //
+            // Der Name ist von Hand gesetzt: aus Tabelle und fünf Spalten
+            // gebildet wäre er 73 Zeichen lang, und MySQL lässt für einen
+            // Bezeichner nur 64 zu.
+            $table->unique(
+                ['project_id', 'environment', 'name', 'op', 'window_start'],
+                'transaction_aggregates_window_unique',
+            );
 
             // Die Übersicht liest einen Zeitraum je Projekt und sortiert nach
             // Dauer oder Anzahl.
