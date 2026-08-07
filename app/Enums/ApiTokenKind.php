@@ -20,17 +20,11 @@ enum ApiTokenKind: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::Personal => 'Persönlich',
-            self::Organization => 'Organisationsweit',
-        };
+        return __('enums.api_token_kind.'.$this->value);
     }
 
     public function description(): string
     {
-        return match ($this) {
-            self::Personal => 'Handelt in deinem Namen und endet mit deiner Mitgliedschaft.',
-            self::Organization => 'Gehört der Organisation und gilt unabhängig von einzelnen Konten.',
-        };
+        return __('enums.api_token_kind_description.'.$this->value);
     }
 }

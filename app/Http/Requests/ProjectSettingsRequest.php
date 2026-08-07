@@ -36,21 +36,7 @@ class ProjectSettingsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'default_environment.regex' => 'Erlaubt sind Kleinbuchstaben, Ziffern, Punkt, Bindestrich und Unterstrich.',
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function attributes(): array
-    {
-        return [
-            'name' => 'Name',
-            'platform' => 'Plattform',
-            'default_environment' => 'Standard-Umgebung',
-            'resolution_behavior' => 'Auflösungs-Verhalten',
-            'retention_days' => 'Datenaufbewahrung',
+            'default_environment.regex' => __('validation.messages.environment_pattern'),
         ];
     }
 }

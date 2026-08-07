@@ -58,19 +58,7 @@ enum IngestType: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::Event => 'Fehlermeldung',
-            self::Transaction => 'Transaktion',
-            self::Session => 'Sitzung',
-            self::Sessions => 'Sitzungen',
-            self::Attachment => 'Anhang',
-            self::CheckIn => 'Cronjob-Lebenszeichen',
-            self::ReplayEvent => 'Aufzeichnung (Kopfdaten)',
-            self::ReplayRecording => 'Aufzeichnung (Daten)',
-            self::Profile => 'Laufzeitmessung',
-            self::ClientReport => 'Verworfen-Meldung des SDK',
-            self::UserReport => 'Nutzer-Rückmeldung',
-        };
+        return __('enums.ingest_type.'.$this->value);
     }
 
     /**

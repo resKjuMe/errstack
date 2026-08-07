@@ -3,6 +3,7 @@ import { Link, router, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
 import { InputLabel, PrimaryButton, SecondaryButton, TextInput } from '../../components/Form.jsx';
+import { useT } from '../../i18n.js';
 
 // Änderungsprotokoll einer Organisation: wer wann welche Verwaltungsaktion
 // ausgeführt hat, samt Vorher/Nachher-Werten. Nur lesend — Einträge lassen sich
@@ -16,6 +17,7 @@ export default function AuditLog({
     exportHref,
 }) {
     const { shell } = usePage().props;
+    const t = useT();
     const [form, setForm] = useState(filters);
 
     const set = (field, value) => setForm((previous) => ({ ...previous, [field]: value }));
@@ -38,9 +40,9 @@ export default function AuditLog({
     return (
         <>
             <PageHead
-                title="Änderungsprotokoll"
+                title={t('audit.title')}
                 appName={shell.appName}
-                help="Jede Verwaltungsaktion hinterlässt hier einen Eintrag: wer sie ausgeführt hat, wann, von welcher Adresse aus und was sich dabei geändert hat. Einträge sind unveränderlich — sie verschwinden nur mit der Aufbewahrungsfrist."
+                help={t('audit.help')}
                 meta={
                     <Link
                         href={organization.href}
@@ -52,32 +54,32 @@ export default function AuditLog({
             />
 
             <div className="space-y-4">
-                <Card title="Filter" description="Wirkt auf die Anzeige und auf den Export.">
+                <Card title={t('audit.filter.title')} description={t('audit.filter.description')}>
                     <form onSubmit={submit} className="flex flex-wrap items-end gap-3">
                         <div>
-                            <InputLabel htmlFor="filter_actor" value="Nutzer" />
+                            <InputLabel htmlFor="filter_actor" value={t('audit.filter.actor')} />
                             <Select
                                 id="filter_actor"
                                 value={form.actor}
                                 onChange={(value) => set('actor', value)}
                                 options={actorOptions}
-                                placeholder="Alle"
+                                placeholder={t('audit.filter.all')}
                             />
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="filter_action" value="Art" />
+                            <InputLabel htmlFor="filter_action" value={t('audit.filter.action')} />
                             <Select
                                 id="filter_action"
                                 value={form.action}
                                 onChange={(value) => set('action', value)}
                                 options={actionOptions}
-                                placeholder="Alle"
+                                placeholder={t('audit.filter.all')}
                             />
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="filter_from" value="Von" />
+                            <InputLabel htmlFor="filter_from" value={t('audit.filter.from')} />
                             <TextInput
                                 id="filter_from"
                                 type="date"
@@ -88,7 +90,7 @@ export default function AuditLog({
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="filter_to" value="Bis" />
+                            <InputLabel htmlFor="filter_to" value={t('audit.filter.to')} />
                             <TextInput
                                 id="filter_to"
                                 type="date"
@@ -98,9 +100,9 @@ export default function AuditLog({
                             />
                         </div>
 
-                        <PrimaryButton type="submit">Filtern</PrimaryButton>
+                        <PrimaryButton type="submit">{t('audit.filter.submit')}</PrimaryButton>
                         <SecondaryButton type="button" onClick={reset}>
-                            Zurücksetzen
+                            {t('audit.filter.reset')}
                         </SecondaryButton>
 
                         {/* Kein Inertia-Link: der Export ist ein Download, kein
@@ -109,7 +111,7 @@ export default function AuditLog({
                             href={query ? `${exportHref}?${query}` : exportHref}
                             className="ms-auto inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                         >
-                            Als CSV exportieren
+                            {t('audit.filter.export')}
                         </a>
                     </form>
                 </Card>
@@ -117,7 +119,7 @@ export default function AuditLog({
                 <Card>
                     {entries.data.length === 0 ? (
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Keine Einträge für diese Auswahl.
+                            {t('audit.empty')}
                         </p>
                     ) : (
                         <ul className="divide-y divide-gray-200 dark:divide-gray-700">

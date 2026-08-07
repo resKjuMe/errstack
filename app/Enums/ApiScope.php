@@ -43,40 +43,20 @@ enum ApiScope: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::OrgRead => 'Organisation lesen',
-            self::OrgWrite => 'Organisation ändern',
-            self::MemberRead => 'Mitglieder lesen',
-            self::MemberWrite => 'Mitglieder verwalten',
-            self::TeamRead => 'Teams lesen',
-            self::TeamWrite => 'Teams verwalten',
-            self::ProjectRead => 'Projekte lesen',
-            self::ProjectWrite => 'Projekte ändern',
-            self::ProjectAdmin => 'Projekte verwalten',
-            self::EventRead => 'Ereignisse lesen',
-            self::EventWrite => 'Ereignisse einliefern',
-            self::IssueRead => 'Fehler lesen',
-            self::IssueWrite => 'Fehler bearbeiten',
-            self::AlertsRead => 'Alarme lesen',
-            self::AlertsWrite => 'Alarme verwalten',
-        };
+        return __('enums.api_scope.'.$this->value);
     }
 
     /**
-     * Überschrift, unter der der Bereich in der Auswahl steht.
+     * Überschrift, unter der der Bereich in der Auswahl steht. Unbekannte
+     * Ressourcen landen unter „Weitere", damit ein neuer Bereich die Auswahl
+     * nicht ohne Überschrift lässt.
      */
     public function group(): string
     {
-        return match ($this->resource()) {
-            'org' => 'Organisation',
-            'member' => 'Mitglieder',
-            'team' => 'Teams',
-            'project' => 'Projekte',
-            'event' => 'Ereignisse',
-            'issue' => 'Fehler',
-            'alerts' => 'Alarme',
-            default => 'Weitere',
-        };
+        $resource = $this->resource();
+        $known = ['org', 'member', 'team', 'project', 'event', 'issue', 'alerts'];
+
+        return __('enums.api_scope_group.'.(in_array($resource, $known, true) ? $resource : 'other'));
     }
 
     /**

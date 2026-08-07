@@ -57,13 +57,13 @@ final class IngestBody
         }
 
         if (trim($raw) === '') {
-            throw IngestRejection::unreadable('Die Meldung hat keinen Inhalt.');
+            throw IngestRejection::unreadable('ingest.no_content');
         }
 
         $payload = self::unpack($raw, $request->header('Content-Encoding'), $payloadLimit);
 
         if ($payload === null) {
-            throw IngestRejection::unreadable('Die Meldung ließ sich nicht entpacken.');
+            throw IngestRejection::unreadable('ingest.not_decodable');
         }
 
         return $payload;

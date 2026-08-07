@@ -21,12 +21,12 @@ final class TeamsDriver extends HttpChannelDriver
 
     public function label(): string
     {
-        return 'Microsoft Teams';
+        return __('channels.teams.label');
     }
 
     public function description(): string
     {
-        return 'Schickt die Meldung als Karte in einen Teams-Kanal.';
+        return __('channels.teams.description');
     }
 
     public function fields(): array
@@ -34,8 +34,8 @@ final class TeamsDriver extends HttpChannelDriver
         return [
             ChannelField::secret(
                 key: 'webhook_url',
-                label: 'Webhook-URL',
-                hint: 'Kanal › Workflows bzw. Connectors › „Webhook“ einrichten und die URL hier eintragen.',
+                label: __('channels.teams.webhook_url'),
+                hint: __('channels.teams.webhook_url_hint'),
                 placeholder: 'https://….webhook.office.com/…',
             ),
         ];
@@ -50,7 +50,7 @@ final class TeamsDriver extends HttpChannelDriver
 
     public function summary(NotificationChannel $channel): string
     {
-        return 'Eingehender Webhook';
+        return __('channels.teams.summary');
     }
 
     public function send(NotificationChannel $channel, NotificationMessage $message): DeliveryResult

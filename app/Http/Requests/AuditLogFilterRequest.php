@@ -34,7 +34,7 @@ class AuditLogFilterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'to.after_or_equal' => 'Das Ende des Zeitraums liegt vor seinem Anfang.',
+            'to.after_or_equal' => __('validation.messages.range_reversed'),
         ];
     }
 

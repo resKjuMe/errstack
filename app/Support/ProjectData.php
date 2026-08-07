@@ -122,7 +122,7 @@ final class ProjectData
                     'id' => $environment->id,
                     'name' => $environment->name,
                     'hidden' => $environment->is_hidden,
-                    'lastSeenAt' => $environment->last_seen_at?->format('d.m.Y H:i'),
+                    'lastSeenAt' => Formats::dateTime($environment->last_seen_at),
                     'href' => route('projects.environments.update', [$organization, $project, $environment]),
                 ])->all(),
             'platformOptions' => Platform::options(),

@@ -80,7 +80,7 @@ class NotificationChannelRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.unique' => 'Einen Kanal dieses Namens gibt es hier bereits.',
+            'name.unique' => __('validation.messages.channel_name_taken'),
         ];
     }
 
@@ -89,7 +89,7 @@ class NotificationChannelRequest extends FormRequest
      */
     public function attributes(): array
     {
-        $attributes = ['name' => 'Name', 'type' => 'Kanal'];
+        $attributes = ['name' => __('validation.attributes.name'), 'type' => __('validation.attributes.type')];
 
         foreach ($this->fields() as $field) {
             $attributes["config.{$field->key}"] = $field->label;

@@ -16,11 +16,7 @@ enum ResolutionBehavior: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::Manual => 'Nur von Hand auflösen',
-            self::AfterWeek => 'Nach 7 Tagen ohne neues Auftreten',
-            self::AfterMonth => 'Nach 30 Tagen ohne neues Auftreten',
-        };
+        return __('enums.resolution_behavior.'.$this->value);
     }
 
     /**

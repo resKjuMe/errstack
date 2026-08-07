@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Support\Locales;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,12 +22,13 @@ use Laravel\Sanctum\HasApiTokens;
  * @property int $id
  * @property string $name
  * @property string $email
+ * @property string|null $locale
  * @property Carbon|null $email_verified_at
  * @property int|null $current_organization_id
  */
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'locale'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail
 {
     /**
      * @use HasFactory<UserFactory>
@@ -145,6 +148,17 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->current_organization_id = $organization?->id;
         $this->save();
         $this->unsetRelation('currentOrganization');
+    }
+
+    /**
+     * Sprache für alles, was außerhalb einer Anfrage entsteht — E-Mails und
+     * Benachrichtigungen. Laravel liest sie über HasLocalePreference selbst
+     * aus, sobald an ein Konto zugestellt wird. Ohne eigene Wahl kommt null
+     * zurück, dann bleibt es bei der Sprache der Anwendung.
+     */
+    public function preferredLocale(): ?string
+    {
+        return Locales::isSupported($this->locale) ? $this->locale : null;
     }
 
     /**

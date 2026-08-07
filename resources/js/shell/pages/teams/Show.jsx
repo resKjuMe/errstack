@@ -9,18 +9,20 @@ import {
     PrimaryButton,
     TextInput,
 } from '../../components/Form.jsx';
+import { useT } from '../../i18n.js';
 
 // Ein Team der Organisation: umbenennen, Mitglieder zuordnen und herausnehmen.
 // Zur Auswahl stehen nur Mitglieder der Organisation.
 export default function Show({ team, organization, permissions, members, candidates }) {
     const { shell } = usePage().props;
+    const t = useT();
 
     return (
         <>
             <PageHead
                 title={team.name}
                 appName={shell.appName}
-                help="Teams bündeln Mitglieder innerhalb einer Organisation. Rechte hängen weiterhin an der Rolle in der Organisation, nicht am Team."
+                help={t('teams.help')}
                 meta={
                     <Link
                         href={organization.href}
@@ -34,10 +36,10 @@ export default function Show({ team, organization, permissions, members, candida
             <div className="space-y-4">
                 {permissions.manage && <TeamSettings team={team} />}
 
-                <Card title="Mitglieder" description="Wer zu diesem Team gehört.">
+                <Card title={t('teams.members.title')} description={t('teams.members.description')}>
                     {members.length === 0 && (
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Noch niemand zugeordnet.
+                            {t('teams.members.empty')}
                         </p>
                     )}
 
@@ -66,7 +68,7 @@ export default function Show({ team, organization, permissions, members, candida
                                             )
                                         }
                                     >
-                                        Entfernen
+                                        {t('teams.members.remove')}
                                     </DangerButton>
                                 )}
                             </li>
@@ -83,6 +85,7 @@ export default function Show({ team, organization, permissions, members, candida
 }
 
 function TeamSettings({ team }) {
+    const t = useT();
     const { data, setData, patch, processing, errors } = useForm({ name: team.name });
 
     const submit = (e) => {
@@ -91,10 +94,10 @@ function TeamSettings({ team }) {
     };
 
     return (
-        <Card title="Stammdaten" description="Der Name des Teams.">
+        <Card title={t('teams.settings.title')} description={t('teams.settings.description')}>
             <form onSubmit={submit} className="max-w-xl space-y-4">
                 <div>
-                    <InputLabel htmlFor="team_name" value="Name" />
+                    <InputLabel htmlFor="team_name" value={t('teams.settings.name')} />
                     <TextInput
                         id="team_name"
                         name="name"
@@ -107,7 +110,7 @@ function TeamSettings({ team }) {
                 </div>
 
                 <PrimaryButton type="submit" disabled={processing}>
-                    Speichern
+                    {t('teams.settings.submit')}
                 </PrimaryButton>
             </form>
         </Card>
@@ -115,12 +118,13 @@ function TeamSettings({ team }) {
 }
 
 function AddMember({ team, candidates }) {
+    const t = useT();
     const [userId, setUserId] = useState('');
 
     if (candidates.length === 0) {
         return (
             <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                Alle Mitglieder der Organisation gehören bereits zu diesem Team.
+                {t('teams.members.all_assigned')}
             </p>
         );
     }
@@ -140,14 +144,14 @@ function AddMember({ team, candidates }) {
     return (
         <form onSubmit={submit} className="mt-4 flex flex-wrap items-end gap-3">
             <div>
-                <InputLabel htmlFor="team_member" value="Mitglied hinzufügen" />
+                <InputLabel htmlFor="team_member" value={t('teams.members.add')} />
                 <select
                     id="team_member"
                     value={userId}
                     onChange={(e) => setUserId(e.target.value)}
                     className="mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
                 >
-                    <option value="">Bitte wählen</option>
+                    <option value="">{t('teams.members.choose')}</option>
                     {candidates.map((candidate) => (
                         <option key={candidate.id} value={candidate.id}>
                             {candidate.name}
@@ -157,23 +161,24 @@ function AddMember({ team, candidates }) {
             </div>
 
             <PrimaryButton type="submit" disabled={!userId}>
-                Hinzufügen
+                {t('teams.members.submit')}
             </PrimaryButton>
         </form>
     );
 }
 
 function DeleteTeam({ team }) {
+    const t = useT();
     const { delete: destroy, processing } = useForm({});
 
     return (
-        <Card title="Team löschen" description="Die Mitglieder bleiben in der Organisation.">
+        <Card title={t('teams.delete.title')} description={t('teams.delete.description')}>
             <DangerButton
                 type="button"
                 disabled={processing}
                 onClick={() => destroy(`/teams/${team.id}`)}
             >
-                Team löschen
+                {t('teams.delete.submit')}
             </DangerButton>
         </Card>
     );

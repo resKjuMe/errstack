@@ -59,7 +59,7 @@ class NotificationPreferenceController extends Controller
 
         $preferences->forget($user);
 
-        return back()->with('status', 'Benachrichtigungen gespeichert.');
+        return back()->with('status', __('notifications.flash.preferences_saved'));
     }
 
     public function quietHours(QuietHoursRequest $request, NotificationPreferences $preferences): RedirectResponse
@@ -75,7 +75,7 @@ class NotificationPreferenceController extends Controller
 
         $preferences->forget($user);
 
-        return back()->with('status', 'Ruhezeiten gespeichert.');
+        return back()->with('status', __('notifications.flash.quiet_hours_saved'));
     }
 
     /**
@@ -93,9 +93,9 @@ class NotificationPreferenceController extends Controller
 
         $preferences->forget($user);
 
-        return back()->with('status', $unsubscribed
-            ? 'Alles abbestellt. Kritische Alarme kommen weiterhin an.'
-            : 'Benachrichtigungen wieder eingeschaltet.');
+        return back()->with('status', __(
+            $unsubscribed ? 'notifications.flash.unsubscribed' : 'notifications.flash.resubscribed',
+        ));
     }
 
     private function viewer(Request $request): User

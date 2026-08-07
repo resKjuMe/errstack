@@ -48,7 +48,7 @@ class EnsureApiScope
 
             if ($role === null || ! $role->atLeast($needed->minimumRole())) {
                 throw new AuthorizationException(
-                    "Die eigene Rolle in der Organisation reicht für „{$needed->value}“ nicht aus."
+                    __('validation.messages.scope_role_too_low', ['scope' => $needed->value])
                 );
             }
         }

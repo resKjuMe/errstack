@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Enums\AuditAction;
+use App\Enums\OrganizationRole;
 use App\Models\AuditLogEntry;
 use App\Models\Organization;
 use Illuminate\Database\Eloquent\Model;
@@ -57,5 +58,18 @@ final class AuditLog
     public static function change(string $field, ?string $before, ?string $after): array
     {
         return [$field => ['before' => $before, 'after' => $after]];
+    }
+
+    /**
+     * Eine Rollenänderung. Gespeichert wird der Wert der Aufzählung, nicht ihre
+     * Beschriftung: sonst stünde in derselben Spalte einmal „Mitglied“ und
+     * einmal „Member“, je nachdem in welcher Sprache gerade jemand geklickt
+     * hat. Übersetzt wird beim Anzeigen.
+     *
+     * @return array<string, array{before: string|null, after: string|null}>
+     */
+    public static function roleChange(?OrganizationRole $before, ?OrganizationRole $after): array
+    {
+        return self::change('role', $before?->value, $after?->value);
     }
 }

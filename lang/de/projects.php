@@ -1,0 +1,84 @@
+<?php
+
+// Projektseiten (resources/js/shell/pages/projects) und die Meldungen der
+// zugehörigen Controller.
+return [
+
+    'index' => [
+        'title' => 'Projekte',
+        'help' => 'Ein Projekt steht für genau eine überwachte Anwendung. Fehlermeldungen kommen später über den Sicherheits-Token des Projekts herein; die Plattform bestimmt, welches SDK dafür eingerichtet wird.',
+        'no_organization_title' => 'Noch keine Organisation',
+        'no_organization_description' => 'Projekte gehören immer zu einer Organisation. Lege zuerst eine an.',
+        'to_organizations' => 'Zu den Organisationen',
+        'empty_title' => 'Noch keine Projekte',
+        'empty_can_create' => 'Lege eines an, um Fehlermeldungen einsortieren zu können.',
+        'empty_read_only' => 'Die Verwaltung dieser Organisation legt Projekte an.',
+    ],
+
+    'create' => [
+        'title' => 'Neues Projekt',
+        'description' => 'Wird in „:organization" angelegt. Die Einstellungen lassen sich danach ändern.',
+        'name' => 'Name',
+        'platform' => 'Plattform',
+        'submit' => 'Anlegen',
+    ],
+
+    'show' => [
+        'help' => 'Die Einstellungen wirken auf alles, was für dieses Projekt aufgenommen wird: die Umgebung ist der Standard für Meldungen ohne eigene Angabe, das Auflösungs-Verhalten schließt ruhige Issues von selbst, und die Aufbewahrung bestimmt, wie lange Ereignisse erhalten bleiben.',
+        'all_projects' => 'Alle Projekte',
+    ],
+
+    'settings' => [
+        'title' => 'Einstellungen',
+        'description' => 'Der Slug in der Adresszeile bleibt beim Umbenennen unverändert, damit verteilte Links gültig bleiben.',
+        'read_only_description' => 'Ändern darf sie die Verwaltung der Organisation.',
+        'name' => 'Name',
+        'platform' => 'Plattform',
+        'default_environment' => 'Standard-Umgebung',
+        'default_environment_hint' => 'Gilt für Meldungen, die keine eigene Umgebung mitschicken.',
+        'retention' => 'Datenaufbewahrung (Tage)',
+        'retention_label' => 'Datenaufbewahrung',
+        'retention_value' => ':days Tage',
+        'resolution' => 'Auflösungs-Verhalten',
+        'submit' => 'Speichern',
+    ],
+
+    'teams' => [
+        'title' => 'Zuständige Teams',
+        'description' => 'Ohne Zuordnung ist das Projekt Sache der ganzen Organisation.',
+        'empty' => 'Diese Organisation hat noch keine Teams.',
+        'submit' => 'Speichern',
+    ],
+
+    'environments' => [
+        'title' => 'Umgebungen',
+        'description' => 'Werden beim ersten Eintreffen einer Meldung erfasst. Ausgeblendete Umgebungen erscheinen nicht mehr in der Filterleiste.',
+        'empty' => 'Für dieses Projekt ist noch keine Meldung eingegangen.',
+        'hidden' => 'ausgeblendet',
+        'last_seen' => 'Zuletzt gemeldet: :time',
+        'show' => 'Wieder anbieten',
+        'hide' => 'Ausblenden',
+    ],
+
+    'keys' => [
+        'title' => 'Client-Schlüssel',
+        'description' => 'Die DSN ist die Adresse, an die das SDK seine Meldungen schickt. Sie steht mit allen Schlüsseln dieses Projekts auf einer eigenen Seite.',
+        'manage' => 'Client-Schlüssel verwalten',
+    ],
+
+    'delete' => [
+        'title' => 'Projekt löschen',
+        'description' => 'Mit dem Projekt verschwinden seine Einstellungen, die Team-Zuordnung und alle daran hängenden Daten — unwiderruflich.',
+        'submit' => 'Projekt löschen',
+    ],
+
+    'flash' => [
+        'created' => 'Projekt „:name" angelegt.',
+        'updated' => 'Projekt gespeichert.',
+        'deleted' => 'Projekt „:name" gelöscht.',
+        'teams_updated' => 'Zuständige Teams gespeichert.',
+        'environment_shown' => 'Umgebung „:name" wird wieder angeboten.',
+        'environment_hidden' => 'Umgebung „:name" ausgeblendet.',
+    ],
+
+];

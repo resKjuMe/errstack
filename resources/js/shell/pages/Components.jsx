@@ -10,6 +10,7 @@ import {
     CardsSkeleton,
     TableSkeleton,
 } from '../components/Skeleton.jsx';
+import { useT } from '../i18n.js';
 
 // Musterseite: zeigt jeden wiederverwendbaren Baustein einmal, damit sich
 // Aussehen und Verhalten in Hell und Dunkel prüfen lassen, ohne eine Fachseite
@@ -21,60 +22,61 @@ const buttonClass =
 export default function Components() {
     const { shell } = usePage().props;
     const toast = useToast();
+    const t = useT();
 
     return (
         <>
             <PageHead
-                title="Bausteine"
+                title={t('components.title')}
                 appName={shell.appName}
                 meta={
                     <span className="text-sm text-gray-500 dark:text-gray-400">
                         resources/js/shell/components
                     </span>
                 }
-                help="Jeder Baustein einmal in Aktion — zum Prüfen von Hell-/Dunkelmodus und Verhalten."
+                help={t('components.help')}
             />
 
             <div className="space-y-6">
                 <Card
-                    title="Meldungen (Flash)"
-                    description="Werden aus der Session gelesen und oben im Inhalt gezeigt."
+                    title={t('components.flash.title')}
+                    description={t('components.flash.description')}
                 >
                     <Flash
-                        status="Die Änderungen wurden gespeichert."
-                        error="Der Vorgang konnte nicht abgeschlossen werden."
+                        status={t('components.flash.example_status')}
+                        error={t('components.flash.example_error')}
                         errors={{
-                            name: 'Der Name ist erforderlich.',
-                            email: 'Die E-Mail-Adresse ist ungültig.',
+                            name: t('components.flash.example_name_error'),
+                            email: t('components.flash.example_email_error'),
                         }}
                     />
                 </Card>
 
                 <Card
-                    title="Toasts"
-                    description="Kurzlebige Rückmeldungen rechts unten, unabhängig vom Seiteninhalt."
+                    title={t('components.toasts.title')}
+                    description={t('components.toasts.description')}
                 >
                     <div className="flex flex-wrap gap-2">
                         <button
                             type="button"
-                            onClick={() => toast.success('Die Änderungen wurden gespeichert.')}
+                            onClick={() => toast.success(t('components.toasts.example_success'))}
                             className={`${buttonClass} bg-green-600 hover:bg-green-700 focus:ring-green-500`}
                         >
-                            Erfolg
+                            {t('components.toasts.success')}
                         </button>
                         <button
                             type="button"
-                            onClick={() => toast.error('Das hat leider nicht geklappt.')}
+                            onClick={() => toast.error(t('components.toasts.example_error'))}
                             className={`${buttonClass} bg-rose-600 hover:bg-rose-700 focus:ring-rose-500`}
                         >
-                            Fehler
+                            {t('components.toasts.error')}
                         </button>
                         <button
                             type="button"
-                            onClick={() => toast.info('Zur Kenntnis genommen.')}
+                            onClick={() => toast.info(t('components.toasts.example_info'))}
                             className={`${buttonClass} bg-gray-700 hover:bg-gray-800 focus:ring-gray-500`}
                         >
-                            Hinweis
+                            {t('components.toasts.info')}
                         </button>
                     </div>
                 </Card>
@@ -85,10 +87,10 @@ export default function Components() {
                 <section className="space-y-4">
                     <div>
                         <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                            Ladeplatzhalter (Skeleton)
+                            {t('components.skeleton.title')}
                         </h2>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Bis die Daten da sind — gleiche Grautöne wie das restliche UI.
+                            {t('components.skeleton.description')}
                         </p>
                     </div>
                     <KpiTilesSkeleton />

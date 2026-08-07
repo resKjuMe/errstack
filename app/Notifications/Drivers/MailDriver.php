@@ -24,12 +24,12 @@ final class MailDriver implements ChannelDriver
 
     public function label(): string
     {
-        return 'E-Mail';
+        return __('channels.mail.label');
     }
 
     public function description(): string
     {
-        return 'Schickt die Meldung an eine feste Liste von Adressen.';
+        return __('channels.mail.description');
     }
 
     public function fields(): array
@@ -37,9 +37,9 @@ final class MailDriver implements ChannelDriver
         return [
             new ChannelField(
                 key: 'recipients',
-                label: 'Empfänger',
+                label: __('channels.mail.recipients'),
                 type: 'list',
-                hint: 'Eine Adresse je Zeile.',
+                hint: __('channels.mail.recipients_hint'),
                 placeholder: "team@example.com\nbereitschaft@example.com",
             ),
         ];
@@ -62,7 +62,7 @@ final class MailDriver implements ChannelDriver
         // Auskunft; erst bei vielen wird die Zahl übersichtlicher.
         return $count <= 3
             ? implode(', ', $recipients)
-            : "{$count} Empfänger";
+            : __('channels.mail.summary_count', ['count' => $count]);
     }
 
     public function send(NotificationChannel $channel, NotificationMessage $message): DeliveryResult
@@ -70,7 +70,7 @@ final class MailDriver implements ChannelDriver
         $recipients = $this->recipients($channel);
 
         if ($recipients === []) {
-            return DeliveryResult::failure('Für diesen Kanal ist keine Empfängeradresse hinterlegt.');
+            return DeliveryResult::failure(__('channels.mail.no_recipients'));
         }
 
         // Bewusst ohne `queue()`: dieser Aufruf läuft bereits im

@@ -24,9 +24,6 @@ enum DiscardOrigin: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::Server => 'vom Server verworfen',
-            self::Client => 'vom SDK verworfen',
-        };
+        return __('enums.discard_origin.'.$this->value);
     }
 }

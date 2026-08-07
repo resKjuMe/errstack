@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\AuditAction;
+use App\Enums\OrganizationRole;
 use App\Http\Requests\AuditLogFilterRequest;
 use App\Models\AuditLogEntry;
 use App\Models\Organization;
+use App\Support\Formats;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -55,7 +57,10 @@ class AuditLogController extends Controller
         Gate::authorize('viewAuditLog', $organization);
 
         $entries = $this->entries($organization, $request);
-        $filename = "protokoll-{$organization->slug}-".now()->format('Y-m-d').'.csv';
+        $filename = __('audit.export.filename', [
+            'organization' => $organization->slug,
+            'date' => now()->format('Y-m-d'),
+        ]);
 
         return response()->streamDownload(function () use ($entries): void {
             $handle = fopen('php://output', 'w');
@@ -64,11 +69,19 @@ class AuditLogController extends Controller
             // zwei Zeichen. Semikolon als Trenner aus demselben Grund.
             fwrite($handle, "\xEF\xBB\xBF");
 
-            self::putRow($handle, ['Zeitpunkt', 'Nutzer', 'E-Mail', 'Aktion', 'Betroffen', 'Änderungen', 'IP-Adresse']);
+            self::putRow($handle, [
+                __('audit.export.columns.occurred_at'),
+                __('audit.export.columns.actor'),
+                __('audit.export.columns.email'),
+                __('audit.export.columns.action'),
+                __('audit.export.columns.subject'),
+                __('audit.export.columns.changes'),
+                __('audit.export.columns.ip'),
+            ]);
 
             foreach ($entries->cursor() as $entry) {
                 self::putRow($handle, [
-                    $entry->created_at->format('d.m.Y H:i:s'),
+                    Formats::dateTimeSeconds($entry->created_at),
                     $entry->actor_name,
                     $entry->actor_email ?? '',
                     $entry->action->label(),
@@ -112,15 +125,15 @@ class AuditLogController extends Controller
 
         foreach ($entry->changed_values ?? [] as $field => $change) {
             $changes[] = [
-                'field' => (string) $field,
-                'before' => $change['before'],
-                'after' => $change['after'],
+                'field' => self::fieldLabel((string) $field),
+                'before' => self::valueLabel((string) $field, $change['before']),
+                'after' => self::valueLabel((string) $field, $change['after']),
             ];
         }
 
         return [
             'id' => $entry->id,
-            'occurredAt' => $entry->created_at->format('d.m.Y H:i'),
+            'occurredAt' => Formats::dateTime($entry->created_at),
             'actorName' => $entry->actor_name,
             'actorEmail' => $entry->actor_email,
             'action' => $entry->action->value,
@@ -129,6 +142,33 @@ class AuditLogController extends Controller
             'ip' => $entry->ip_address,
             'changes' => $changes,
         ];
+    }
+
+    /**
+     * Name eines geänderten Feldes in der Sprache des Betrachters. Gespeichert
+     * ist ein neutraler Schlüssel (`role`); ein Schlüssel ohne Übersetzung
+     * bleibt stehen, wie er ist — ein Eintrag aus der Zeit vor dieser Regel
+     * soll lesbar bleiben statt zu verschwinden.
+     */
+    private static function fieldLabel(string $field): string
+    {
+        $key = 'audit.fields.'.$field;
+        $label = __($key);
+
+        return is_string($label) && $label !== $key ? $label : $field;
+    }
+
+    /**
+     * Der Wert dazu. Nur wo der Wert selbst eine Aufzählung ist, gibt es etwas
+     * zu übersetzen — Namen und Adressen sind Daten und bleiben, wie sie sind.
+     */
+    private static function valueLabel(string $field, ?string $value): ?string
+    {
+        if ($field !== 'role' || $value === null) {
+            return $value;
+        }
+
+        return OrganizationRole::tryFrom($value)?->label() ?? $value;
     }
 
     /**
@@ -157,7 +197,12 @@ class AuditLogController extends Controller
         $parts = [];
 
         foreach ($entry->changed_values ?? [] as $field => $change) {
-            $parts[] = sprintf('%s: %s → %s', $field, $change['before'] ?? '—', $change['after'] ?? '—');
+            $parts[] = sprintf(
+                '%s: %s → %s',
+                self::fieldLabel((string) $field),
+                self::valueLabel((string) $field, $change['before']) ?? '—',
+                self::valueLabel((string) $field, $change['after']) ?? '—',
+            );
         }
 
         return implode('; ', $parts);

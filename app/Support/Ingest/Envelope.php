@@ -62,7 +62,7 @@ final class Envelope
             // Ohne Kopfzeile ist es kein Envelope. Das ist der einzige Fall, in
             // dem die ganze Anfrage abgewiesen wird: hier lässt sich nicht
             // einmal sagen, wo das erste Element anfängt.
-            throw IngestRejection::unreadable('Der Envelope beginnt nicht mit einer Kopfzeile aus JSON.');
+            throw IngestRejection::unreadable('ingest.envelope_header');
         }
 
         $items = [];

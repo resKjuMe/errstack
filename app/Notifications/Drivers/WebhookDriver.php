@@ -29,12 +29,12 @@ final class WebhookDriver extends HttpChannelDriver
 
     public function label(): string
     {
-        return 'Webhook';
+        return __('channels.webhook.label');
     }
 
     public function description(): string
     {
-        return 'Schickt die Meldung als signiertes JSON an eine eigene Adresse.';
+        return __('channels.webhook.description');
     }
 
     public function fields(): array
@@ -42,14 +42,14 @@ final class WebhookDriver extends HttpChannelDriver
         return [
             new ChannelField(
                 key: 'url',
-                label: 'Ziel-URL',
+                label: __('channels.webhook.url'),
                 type: 'url',
                 placeholder: 'https://example.com/errstack',
             ),
             ChannelField::secret(
                 key: 'secret',
-                label: 'Geheimnis',
-                hint: 'Mit diesem Wert wird jede Zustellung unterschrieben. Prüfung: siehe docs/webhooks.md.',
+                label: __('channels.webhook.secret'),
+                hint: __('channels.webhook.secret_hint'),
             ),
         ];
     }
@@ -68,7 +68,7 @@ final class WebhookDriver extends HttpChannelDriver
 
         // Nur Rechnername statt vollständiger URL: der Pfad kann selbst schon
         // ein Geheimnis sein.
-        return parse_url($url, PHP_URL_HOST) ?: 'eigene Adresse';
+        return parse_url($url, PHP_URL_HOST) ?: __('channels.webhook.summary');
     }
 
     public function send(NotificationChannel $channel, NotificationMessage $message): DeliveryResult

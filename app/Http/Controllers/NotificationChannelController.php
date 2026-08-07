@@ -43,7 +43,7 @@ class NotificationChannelController extends Controller
             'is_active' => $request->boolean('is_active', true),
         ]);
 
-        return back()->with('status', "Kanal „{$channel->name}“ eingerichtet.");
+        return back()->with('status', __('notifications.flash.channel_created', ['name' => $channel->name]));
     }
 
     public function update(NotificationChannelRequest $request, NotificationChannel $channel): RedirectResponse
@@ -56,7 +56,7 @@ class NotificationChannelController extends Controller
             'is_active' => $request->boolean('is_active', true),
         ]);
 
-        return back()->with('status', "Kanal „{$channel->name}“ gespeichert.");
+        return back()->with('status', __('notifications.flash.channel_updated', ['name' => $channel->name]));
     }
 
     public function destroy(NotificationChannel $channel): RedirectResponse
@@ -66,7 +66,7 @@ class NotificationChannelController extends Controller
         $name = $channel->name;
         $channel->delete();
 
-        return back()->with('status', "Kanal „{$name}“ gelöscht.");
+        return back()->with('status', __('notifications.flash.channel_deleted', ['name' => $name]));
     }
 
     /**
@@ -83,6 +83,6 @@ class NotificationChannelController extends Controller
             isTest: true,
         );
 
-        return back()->with('status', "Testnachricht an „{$channel->name}“ eingereiht. Das Ergebnis steht gleich im Protokoll.");
+        return back()->with('status', __('notifications.flash.channel_tested', ['name' => $channel->name]));
     }
 }

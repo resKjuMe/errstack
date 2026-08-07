@@ -64,7 +64,7 @@ class OrganizationController extends Controller
                 $organization,
                 subject: $organization,
                 subjectLabel: $organization->name,
-                changes: AuditLog::change('Name', null, $organization->name),
+                changes: AuditLog::change('name', null, $organization->name),
             );
 
             return $organization;
@@ -74,7 +74,7 @@ class OrganizationController extends Controller
 
         return redirect()
             ->route('organizations.show', $organization)
-            ->with('status', "Organisation „{$organization->name}“ angelegt.");
+            ->with('status', __('organizations.flash.created', ['name' => $organization->name]));
     }
 
     public function show(Request $request, Organization $organization): InertiaResponse
@@ -100,11 +100,11 @@ class OrganizationController extends Controller
                 $organization,
                 subject: $organization,
                 subjectLabel: $organization->name,
-                changes: AuditLog::change('Name', $before, $organization->name),
+                changes: AuditLog::change('name', $before, $organization->name),
             );
         }
 
-        return back()->with('status', 'Organisation gespeichert.');
+        return back()->with('status', __('organizations.flash.updated'));
     }
 
     public function destroy(Request $request, Organization $organization): RedirectResponse
@@ -124,7 +124,7 @@ class OrganizationController extends Controller
 
         return redirect()
             ->route('organizations.index')
-            ->with('status', "Organisation „{$name}“ gelöscht.");
+            ->with('status', __('organizations.flash.deleted', ['name' => $name]));
     }
 
     /**
@@ -136,6 +136,6 @@ class OrganizationController extends Controller
 
         $request->user()->switchOrganization($organization);
 
-        return back()->with('status', "Aktive Organisation: {$organization->name}.");
+        return back()->with('status', __('organizations.flash.switched', ['name' => $organization->name]));
     }
 }

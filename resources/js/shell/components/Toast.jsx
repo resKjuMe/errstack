@@ -7,6 +7,7 @@ import React, {
     useRef,
     useState,
 } from 'react';
+import { useT } from '../i18n.js';
 
 // Toast-Meldungen: kurzlebige Rückmeldungen rechts unten, unabhängig vom
 // Seiteninhalt. Die AppShell hängt den Provider einmal um die ganze App; Seiten
@@ -27,6 +28,8 @@ const VARIANTS = {
 const DEFAULT_DURATION = 5000;
 
 function ToastItem({ toast, onDismiss }) {
+    const t = useT();
+
     // Ein Timer je Meldung; onDismiss bleibt über useCallback stabil, sodass der
     // Timer nicht bei jedem Render neu startet.
     useEffect(() => {
@@ -49,7 +52,7 @@ function ToastItem({ toast, onDismiss }) {
                 type="button"
                 onClick={() => onDismiss(toast.id)}
                 className="text-white/80 hover:text-white"
-                aria-label="Meldung schließen"
+                aria-label={t('components.toasts.dismiss')}
             >
                 ✕
             </button>

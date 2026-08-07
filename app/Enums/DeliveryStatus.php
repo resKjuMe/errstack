@@ -20,10 +20,6 @@ enum DeliveryStatus: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::Pending => 'unterwegs',
-            self::Sent => 'zugestellt',
-            self::Failed => 'fehlgeschlagen',
-        };
+        return __('enums.delivery_status.'.$this->value);
     }
 }

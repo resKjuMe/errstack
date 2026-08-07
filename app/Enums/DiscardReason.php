@@ -33,11 +33,6 @@ enum DiscardReason: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::UnknownType => 'unbekannter Typ',
-            self::Unreadable => 'nicht lesbar',
-            self::TooLarge => 'zu groß',
-            self::TooManyItems => 'zu viele Elemente',
-        };
+        return __('enums.discard_reason.'.$this->value);
     }
 }

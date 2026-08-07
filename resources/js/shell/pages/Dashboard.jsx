@@ -4,6 +4,7 @@ import PageHead from '../components/PageHead.jsx';
 import Card from '../components/Card.jsx';
 import LiveDemo from '../components/LiveDemo.jsx';
 import FilterBar from '../components/FilterBar.jsx';
+import { useT } from '../i18n.js';
 
 // Beispielseite des Grundgerüsts: zeigt, dass eine Seite nichts weiter tun muss,
 // als ihren Inhalt zu liefern — Rahmen, Navigation und Theme kommen von der
@@ -13,22 +14,18 @@ import FilterBar from '../components/FilterBar.jsx';
 // Auswertungsseiten binden sie genauso ein und lesen dieselbe Nutzlast.
 export default function Dashboard({ filter, selection }) {
     const { shell } = usePage().props;
+    const t = useT();
 
     return (
         <>
             <PageHead
-                title="Übersicht"
+                title={t('dashboard.title')}
                 appName={shell.appName}
                 help={
                     <ul className="list-disc space-y-1 ps-4">
-                        <li>Diese Seite ist eine Beispielseite des Oberflächen-Grundgerüsts.</li>
-                        <li>
-                            Alle Seiten liegen im gemeinsamen Rahmen mit Navigation und Dunkelmodus.
-                        </li>
-                        <li>
-                            Die Filterleiste oben gilt für alle Auswertungen. Ihre Auswahl steht in
-                            der Adresszeile — der Link zeigt beim Empfänger dieselbe Ansicht.
-                        </li>
+                        <li>{t('dashboard.help.sample')}</li>
+                        <li>{t('dashboard.help.frame')}</li>
+                        <li>{t('dashboard.help.filter')}</li>
                     </ul>
                 }
             />
@@ -36,29 +33,39 @@ export default function Dashboard({ filter, selection }) {
             <FilterBar filter={filter} />
 
             <Card
-                title="Aktuelle Auswahl"
-                description="Solange es noch keine Auswertungen gibt, zeigt diese Karte, worauf der Filter zeigt."
+                title={t('dashboard.selection.title')}
+                description={t('dashboard.selection.description')}
                 className="mb-4"
             >
                 <dl className="divide-y divide-gray-200 text-sm dark:divide-gray-700">
-                    <Row label="Projekte" value={projectSummary(selection.projects)} />
-                    <Row label="Umgebung" value={selection.environment ?? 'Alle Umgebungen'} />
-                    <Row label="Zeitraum" value={selection.rangeLabel} />
+                    <Row
+                        label={t('dashboard.selection.projects')}
+                        value={
+                            selection.projects.length === 0
+                                ? t('dashboard.selection.no_projects')
+                                : selection.projects.join(', ')
+                        }
+                    />
+                    <Row
+                        label={t('dashboard.selection.environment')}
+                        value={selection.environment ?? t('dashboard.selection.all_environments')}
+                    />
+                    <Row label={t('dashboard.selection.period')} value={selection.rangeLabel} />
                 </dl>
             </Card>
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                 <Card
-                    title="Rahmen"
-                    description="Kopfzeile, Navigation, Mobil-Menü, Nutzer-Menü und Theme-Umschalter stehen bereit."
+                    title={t('dashboard.cards.frame_title')}
+                    description={t('dashboard.cards.frame_description')}
                 />
                 <Card
-                    title="Bausteine"
-                    description="Seitenkopf, Karten, Flash-Meldungen, Ladeplatzhalter und Toasts sind wiederverwendbar."
+                    title={t('dashboard.cards.components_title')}
+                    description={t('dashboard.cards.components_description')}
                 />
                 <Card
-                    title="Nächste Schritte"
-                    description="Fachseiten (Anmeldung, Projekte, Issues) ersetzen diese Beispielseite Schritt für Schritt."
+                    title={t('dashboard.cards.next_title')}
+                    description={t('dashboard.cards.next_description')}
                 />
             </div>
 
@@ -76,12 +83,4 @@ function Row({ label, value }) {
             <dd className="text-gray-900 dark:text-gray-100">{value}</dd>
         </div>
     );
-}
-
-function projectSummary(projects) {
-    if (projects.length === 0) {
-        return 'Keine Projekte';
-    }
-
-    return projects.join(', ');
 }

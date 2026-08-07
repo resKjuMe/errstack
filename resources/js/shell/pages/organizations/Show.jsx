@@ -9,6 +9,7 @@ import {
     PrimaryButton,
     TextInput,
 } from '../../components/Form.jsx';
+import { useT } from '../../i18n.js';
 
 // Detailseite einer Organisation: Stammdaten, Mitglieder samt Rolle, offene
 // Einladungen und Teams. Was der Betrachter nicht darf, blendet die Seite aus —
@@ -24,17 +25,18 @@ export default function Show({
     auditLogHref,
 }) {
     const { shell } = usePage().props;
+    const t = useT();
 
     return (
         <>
             <PageHead
                 title={organization.name}
                 appName={shell.appName}
-                help="Rollen bestimmen, wer was darf: Besitzer alles, Verwaltung die Organisation samt Mitgliedern und Teams, Mitglied die tägliche Arbeit, Lesend nur schauen."
+                help={t('organizations.show.help')}
                 meta={
                     <div className="flex items-center gap-3">
                         <span className="text-sm text-gray-500 dark:text-gray-400">
-                            Eigene Rolle:{' '}
+                            {t('organizations.show.own_role')}{' '}
                             {members.find((member) => member.userId === viewer.id)?.roleLabel}
                         </span>
                         {permissions.viewAuditLog && (
@@ -42,14 +44,14 @@ export default function Show({
                                 href={auditLogHref}
                                 className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                             >
-                                Änderungsprotokoll
+                                {t('organizations.show.audit_log')}
                             </Link>
                         )}
                         <Link
                             href="/organisationen"
                             className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                         >
-                            Alle Organisationen
+                            {t('organizations.show.all_organizations')}
                         </Link>
                     </div>
                 }
@@ -83,6 +85,7 @@ export default function Show({
 }
 
 function GeneralSettings({ organization }) {
+    const t = useT();
     const { data, setData, patch, processing, errors } = useForm({ name: organization.name });
 
     const submit = (e) => {
@@ -91,10 +94,13 @@ function GeneralSettings({ organization }) {
     };
 
     return (
-        <Card title="Stammdaten" description="Der Name der Organisation.">
+        <Card
+            title={t('organizations.settings.title')}
+            description={t('organizations.settings.description')}
+        >
             <form onSubmit={submit} className="max-w-xl space-y-4">
                 <div>
-                    <InputLabel htmlFor="name" value="Name" />
+                    <InputLabel htmlFor="name" value={t('organizations.settings.name')} />
                     <TextInput
                         id="name"
                         name="name"
@@ -107,7 +113,7 @@ function GeneralSettings({ organization }) {
                 </div>
 
                 <PrimaryButton type="submit" disabled={processing}>
-                    Speichern
+                    {t('organizations.settings.submit')}
                 </PrimaryButton>
             </form>
         </Card>
@@ -115,14 +121,16 @@ function GeneralSettings({ organization }) {
 }
 
 function Members({ members, canInvite }) {
+    const t = useT();
+
     return (
         <Card
-            title="Mitglieder"
-            description={
+            title={t('organizations.members.title')}
+            description={t(
                 canInvite
-                    ? 'Rolle ändern oder Mitglied entfernen.'
-                    : 'Wer zu dieser Organisation gehört.'
-            }
+                    ? 'organizations.members.description_manage'
+                    : 'organizations.members.description_read'
+            )}
         >
             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                 {members.map((member) => (
@@ -135,7 +143,7 @@ function Members({ members, canInvite }) {
                                 {member.name}
                                 {member.isSelf && (
                                     <span className="ms-2 text-xs text-gray-500 dark:text-gray-400">
-                                        (das bist du)
+                                        {t('organizations.members.self')}
                                     </span>
                                 )}
                             </p>
@@ -148,7 +156,9 @@ function Members({ members, canInvite }) {
                             {member.assignableRoles.length > 0 ? (
                                 <RoleSelect
                                     url={`/mitgliedschaften/${member.id}`}
-                                    label={`Rolle von ${member.name}`}
+                                    label={t('organizations.members.role_of', {
+                                        name: member.name,
+                                    })}
                                     role={member.role}
                                     options={member.assignableRoles}
                                 />
@@ -196,6 +206,7 @@ function RoleSelect({ url, label, role, options }) {
 }
 
 function RemoveMember({ member }) {
+    const t = useT();
     const { delete: destroy, processing } = useForm({});
 
     return (
@@ -204,12 +215,13 @@ function RemoveMember({ member }) {
             disabled={processing}
             onClick={() => destroy(`/mitgliedschaften/${member.id}`, { preserveScroll: true })}
         >
-            {member.isSelf ? 'Verlassen' : 'Entfernen'}
+            {t(member.isSelf ? 'organizations.members.leave' : 'organizations.members.remove')}
         </DangerButton>
     );
 }
 
 function Invitations({ organization, invitations, invitableRoles }) {
+    const t = useT();
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         role: 'member',
@@ -225,12 +237,15 @@ function Invitations({ organization, invitations, invitableRoles }) {
 
     return (
         <Card
-            title="Einladungen"
-            description="Der Link in der E-Mail führt direkt zum Beitritt — ein Konto kann dabei noch angelegt werden."
+            title={t('organizations.invitations.title')}
+            description={t('organizations.invitations.description')}
         >
             <form onSubmit={submit} className="flex flex-wrap items-start gap-3">
                 <div className="grow">
-                    <InputLabel htmlFor="invite_email" value="E-Mail-Adresse" />
+                    <InputLabel
+                        htmlFor="invite_email"
+                        value={t('organizations.invitations.email')}
+                    />
                     <TextInput
                         id="invite_email"
                         type="email"
@@ -244,7 +259,7 @@ function Invitations({ organization, invitations, invitableRoles }) {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="invite_role" value="Rolle" />
+                    <InputLabel htmlFor="invite_role" value={t('organizations.invitations.role')} />
                     <select
                         id="invite_role"
                         value={data.role}
@@ -261,7 +276,7 @@ function Invitations({ organization, invitations, invitableRoles }) {
                 </div>
 
                 <PrimaryButton type="submit" disabled={processing} className="mt-6">
-                    Einladen
+                    {t('organizations.invitations.submit')}
                 </PrimaryButton>
             </form>
 
@@ -278,8 +293,10 @@ function Invitations({ organization, invitations, invitableRoles }) {
                                 </p>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                     {invitation.isExpired
-                                        ? 'abgelaufen'
-                                        : `gültig bis ${invitation.expiresAt}`}
+                                        ? t('organizations.invitations.expired')
+                                        : t('organizations.invitations.valid_until', {
+                                              date: invitation.expiresAt,
+                                          })}
                                 </p>
                             </div>
 
@@ -287,7 +304,9 @@ function Invitations({ organization, invitations, invitableRoles }) {
                                 {invitation.assignableRoles.length > 0 ? (
                                     <RoleSelect
                                         url={`/einladungen/${invitation.id}`}
-                                        label={`Rolle der Einladung an ${invitation.email}`}
+                                        label={t('organizations.invitations.role_of', {
+                                            email: invitation.email,
+                                        })}
                                         role={invitation.role}
                                         options={invitation.assignableRoles}
                                     />
@@ -310,22 +329,25 @@ function Invitations({ organization, invitations, invitableRoles }) {
 // Die Benachrichtigungswege haben eine eigene Seite — hier steht nur der Weg
 // dorthin, damit die Detailseite nicht zur Sammelstelle wird.
 function Notifications({ organization }) {
+    const t = useT();
+
     return (
         <Card
-            title="Benachrichtigungen"
-            description="Wohin Errstack meldet: E-Mail, Slack, Discord, Teams oder ein eigener Webhook."
+            title={t('organizations.notifications.title')}
+            description={t('organizations.notifications.description')}
         >
             <Link
                 href={organization.notificationsHref}
                 className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
             >
-                Kanäle und Zustellprotokoll
+                {t('organizations.notifications.link')}
             </Link>
         </Card>
     );
 }
 
 function WithdrawInvitation({ invitation }) {
+    const t = useT();
     const { delete: destroy, processing } = useForm({});
 
     return (
@@ -334,12 +356,13 @@ function WithdrawInvitation({ invitation }) {
             disabled={processing}
             onClick={() => destroy(`/einladungen/${invitation.id}`, { preserveScroll: true })}
         >
-            Zurückziehen
+            {t('organizations.invitations.withdraw')}
         </DangerButton>
     );
 }
 
 function Teams({ organization, teams, canManage }) {
+    const t = useT();
     const { data, setData, post, processing, errors, reset } = useForm({ name: '' });
 
     const submit = (e) => {
@@ -348,9 +371,14 @@ function Teams({ organization, teams, canManage }) {
     };
 
     return (
-        <Card title="Teams" description="Teams bündeln Mitglieder innerhalb der Organisation.">
+        <Card
+            title={t('organizations.teams.title')}
+            description={t('organizations.teams.description')}
+        >
             {teams.length === 0 && (
-                <p className="text-sm text-gray-500 dark:text-gray-400">Noch keine Teams.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('organizations.teams.empty')}
+                </p>
             )}
 
             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -369,7 +397,7 @@ function Teams({ organization, teams, canManage }) {
             {canManage && (
                 <form onSubmit={submit} className="mt-4 flex flex-wrap items-start gap-3">
                     <div className="grow">
-                        <InputLabel htmlFor="team_name" value="Neues Team" />
+                        <InputLabel htmlFor="team_name" value={t('organizations.teams.new')} />
                         <TextInput
                             id="team_name"
                             name="name"
@@ -382,7 +410,7 @@ function Teams({ organization, teams, canManage }) {
                     </div>
 
                     <PrimaryButton type="submit" disabled={processing} className="mt-6">
-                        Anlegen
+                        {t('organizations.teams.submit')}
                     </PrimaryButton>
                 </form>
             )}
@@ -391,19 +419,20 @@ function Teams({ organization, teams, canManage }) {
 }
 
 function DeleteOrganization({ organization }) {
+    const t = useT();
     const { delete: destroy, processing } = useForm({});
 
     return (
         <Card
-            title="Organisation löschen"
-            description="Mit der Organisation verschwinden Mitgliedschaften, Teams und alle daran hängenden Daten — unwiderruflich."
+            title={t('organizations.delete.title')}
+            description={t('organizations.delete.description')}
         >
             <DangerButton
                 type="button"
                 disabled={processing}
                 onClick={() => destroy(organization.href)}
             >
-                Organisation löschen
+                {t('organizations.delete.submit')}
             </DangerButton>
         </Card>
     );

@@ -64,7 +64,7 @@ final class NotificationPreferenceData
                 'timezones' => timezone_identifiers_list(),
                 'activeUntil' => $settings->quietUntilLabel(Date::now()),
             ],
-            'unsubscribedAt' => $settings->unsubscribed_at?->format('d.m.Y H:i'),
+            'unsubscribedAt' => Formats::dateTime($settings->unsubscribed_at),
             // Kritische Alarme dürfen ausgeschaltet werden — aber nie
             // unbemerkt. Was hier steht, zeigt die Oberfläche als Warnung.
             'mutedCritical' => self::mutedCritical($scopes),
@@ -87,8 +87,8 @@ final class NotificationPreferenceData
             'key' => $scope->key(),
             'parentKey' => null,
             'kind' => 'global',
-            'label' => 'Überall',
-            'hint' => 'Gilt, solange eine Organisation oder ein Projekt nichts Eigenes sagt.',
+            'label' => __('notifications.preferences.scope_global'),
+            'hint' => __('notifications.preferences.scope_global_hint'),
             'inherits' => false,
             'rows' => self::rows($viewer, $preferences, $scope, null, null),
         ];
@@ -106,7 +106,7 @@ final class NotificationPreferenceData
             'parentKey' => 'global',
             'kind' => 'organization',
             'label' => $organization->name,
-            'hint' => 'Weicht von „Überall" ab, wo hier etwas eingestellt ist.',
+            'hint' => __('notifications.preferences.scope_organization_hint'),
             'inherits' => true,
             'rows' => self::rows($viewer, $preferences, $scope, null, $organization),
         ];
@@ -124,7 +124,7 @@ final class NotificationPreferenceData
             'parentKey' => "organization:{$project->organization_id}",
             'kind' => 'project',
             'label' => $project->name,
-            'hint' => 'Die feinste Ebene — sie schlägt Organisation und „Überall".',
+            'hint' => __('notifications.preferences.scope_project_hint'),
             'inherits' => true,
             'rows' => self::rows($viewer, $preferences, $scope, $project, null),
         ];

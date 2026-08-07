@@ -32,7 +32,7 @@ class ApiTokenController extends Controller
         if ($organization === null) {
             return redirect()
                 ->route('organizations.index')
-                ->with('error', 'Für API-Tokens braucht es zuerst eine Organisation.');
+                ->with('error', __('validation.messages.organization_required'));
         }
 
         Gate::authorize('viewAny', [ApiToken::class, $organization]);
@@ -71,7 +71,7 @@ class ApiTokenController extends Controller
 
         return redirect()
             ->route('api-tokens.index')
-            ->with('status', "Token „{$name}“ angelegt.")
+            ->with('status', __('api_tokens.flash.created', ['name' => $name]))
             ->with('createdToken', [
                 'name' => $name,
                 'value' => $token->plainTextToken,
@@ -87,6 +87,6 @@ class ApiTokenController extends Controller
 
         return redirect()
             ->route('api-tokens.index')
-            ->with('status', "Token „{$name}“ widerrufen.");
+            ->with('status', __('api_tokens.flash.revoked', ['name' => $name]));
     }
 }

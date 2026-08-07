@@ -73,7 +73,7 @@ class NotificationUnsubscribeController extends Controller
             $setting->unsubscribed_at = Date::now();
             $setting->save();
 
-            $status = 'Abgemeldet. Kritische Alarme kommen weiterhin an — alles andere nicht mehr.';
+            $status = __('notifications.flash.unsubscribed_all');
         } else {
             // Abgemeldet wird der Weg, über den die Mail kam. Das Postfach in
             // der Anwendung bleibt unberührt: wer keine Mail mehr will, will
@@ -86,7 +86,7 @@ class NotificationUnsubscribeController extends Controller
                 false,
             );
 
-            $status = 'Keine E-Mails mehr zu „'.$type->label().'“.';
+            $status = __('notifications.flash.unsubscribed_event', ['event' => $type->label()]);
         }
 
         $preferences->forget($user);
@@ -97,6 +97,6 @@ class NotificationUnsubscribeController extends Controller
     private function event(string $event): NotificationEventType
     {
         return NotificationEventType::tryFrom($event)
-            ?? throw new NotFoundHttpException("Unbekannter Anlass: {$event}");
+            ?? throw new NotFoundHttpException(__('notifications.unsubscribe.unknown_event', ['event' => $event]));
     }
 }

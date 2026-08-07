@@ -21,17 +21,7 @@ enum Platform: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::Php => 'PHP',
-            self::JavaScript => 'JavaScript',
-            self::Python => 'Python',
-            self::Node => 'Node.js',
-            self::Java => 'Java',
-            self::Go => 'Go',
-            self::Ruby => 'Ruby',
-            self::DotNet => '.NET',
-            self::Other => 'Sonstige',
-        };
+        return __('enums.platform.'.$this->value);
     }
 
     /**

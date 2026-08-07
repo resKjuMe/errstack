@@ -27,24 +27,24 @@
 
 @if ($url)
 <x-mail::button :url="$url">
-In Errstack öffnen
+{{ __('emails.notification.open') }}
 </x-mail::button>
 @endif
 
 @if ($reference)
-Kennung: {{ $reference }}
+{{ __('emails.notification.reference', ['reference' => $reference]) }}
 @endif
 
-Viele Grüße<br>
+{{ __('emails.regards') }}<br>
 {{ config('app.name') }}
 
 <x-slot:subcopy>
-Diese Meldung stammt aus {{ $origin }} ({{ $level }}) und erreicht dich, weil „{{ $eventLabel }}" in deinen Benachrichtigungen eingeschaltet ist.
+{{ __('emails.notification.personal_origin', ['origin' => $origin, 'level' => $level, 'event' => $eventLabel]) }}
 
 @if ($isCritical)
-Es handelt sich um einen kritischen Alarm. Auch abbestellt und in der Ruhezeit kommt er an — abschalten lässt er sich nur ausdrücklich in den [Benachrichtigungs-Einstellungen]({{ $settingsUrl }}).
+{{ __('emails.notification.critical') }} [{{ __('emails.notification.settings_link') }}]({{ $settingsUrl }}).
 @else
-[„{{ $eventLabel }}" abbestellen]({{ $unsubscribeUrl }}) · [Alle Einstellungen]({{ $settingsUrl }})
+[{{ __('emails.notification.unsubscribe_link', ['event' => $eventLabel]) }}]({{ $unsubscribeUrl }}) · [{{ __('emails.notification.all_settings_link') }}]({{ $settingsUrl }})
 @endif
 </x-slot:subcopy>
 </x-mail::message>

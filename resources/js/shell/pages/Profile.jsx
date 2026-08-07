@@ -7,8 +7,10 @@ import {
     InputLabel,
     PrimaryButton,
     SecondaryButton,
+    SelectInput,
     TextInput,
 } from '../components/Form.jsx';
+import { useT } from '../i18n.js';
 
 // Eigenes Konto verwalten: drei unabhängige Formulare (Stammdaten, Passwort,
 // Konto löschen) in je einer Karte — Aufbau wie die Profilseite in Planstack.
@@ -16,21 +18,22 @@ import {
 // die gleichnamigen Felder nicht ineinanderlaufen.
 const card = 'bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800';
 
-export default function Profile({ user, status = null }) {
+export default function Profile({ user, localeOptions = [], status = null }) {
     const { shell } = usePage().props;
+    const t = useT();
 
     return (
         <>
-            <PageHead
-                title="Profil"
-                appName={shell.appName}
-                help="Name, E-Mail-Adresse und Passwort ändern — oder das Konto endgültig löschen."
-            />
+            <PageHead title={t('profile.title')} appName={shell.appName} help={t('profile.help')} />
 
             <div className="space-y-6">
                 <div className={card}>
                     <div className="max-w-xl">
-                        <ProfileInformation user={user} status={status} />
+                        <ProfileInformation
+                            user={user}
+                            localeOptions={localeOptions}
+                            status={status}
+                        />
                     </div>
                 </div>
                 <div className={card}>
@@ -58,17 +61,21 @@ function SectionHeader({ title, hint }) {
 }
 
 function Saved({ show }) {
+    const t = useT();
+
     if (!show) {
         return null;
     }
 
-    return <p className="text-sm text-gray-600 dark:text-gray-400">Gespeichert.</p>;
+    return <p className="text-sm text-gray-600 dark:text-gray-400">{t('profile.saved')}</p>;
 }
 
-function ProfileInformation({ user, status }) {
+function ProfileInformation({ user, localeOptions, status }) {
+    const t = useT();
     const { data, setData, patch, processing, errors } = useForm({
         name: user.name,
         email: user.email,
+        locale: user.locale ?? '',
     });
 
     const submit = (e) => {
@@ -78,11 +85,14 @@ function ProfileInformation({ user, status }) {
 
     return (
         <section>
-            <SectionHeader title="Stammdaten" hint="Name und E-Mail-Adresse dieses Kontos." />
+            <SectionHeader
+                title={t('profile.information.title')}
+                hint={t('profile.information.hint')}
+            />
 
             <form onSubmit={submit} className="mt-6 space-y-6">
                 <div>
-                    <InputLabel htmlFor="name" value="Name" />
+                    <InputLabel htmlFor="name" value={t('profile.information.name')} />
                     <TextInput
                         id="name"
                         name="name"
@@ -96,7 +106,7 @@ function ProfileInformation({ user, status }) {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="email" value="E-Mail-Adresse" />
+                    <InputLabel htmlFor="email" value={t('profile.information.email')} />
                     <TextInput
                         id="email"
                         type="email"
@@ -111,14 +121,31 @@ function ProfileInformation({ user, status }) {
 
                     {user.isUnverified && (
                         <p className="mt-2 text-sm text-gray-800 dark:text-gray-100">
-                            Diese E-Mail-Adresse ist noch nicht bestätigt. <ResendVerification />
+                            {t('profile.information.unverified')} <ResendVerification />
                         </p>
                     )}
                 </div>
 
+                <div>
+                    <InputLabel htmlFor="locale" value={t('profile.information.locale')} />
+                    <SelectInput
+                        id="locale"
+                        name="locale"
+                        value={data.locale}
+                        options={localeOptions}
+                        placeholder={t('profile.information.locale_browser')}
+                        className="mt-1"
+                        onChange={(e) => setData('locale', e.target.value)}
+                    />
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        {t('profile.information.locale_hint')}
+                    </p>
+                    <InputError message={errors.locale} className="mt-2" />
+                </div>
+
                 <div className="flex items-center gap-4">
                     <PrimaryButton type="submit" disabled={processing}>
-                        Speichern
+                        {t('profile.information.submit')}
                     </PrimaryButton>
 
                     <Saved show={status === 'profile-updated'} />
@@ -131,13 +158,14 @@ function ProfileInformation({ user, status }) {
 // Eigenes kleines Formular, damit der Versand nicht am Stammdaten-Formular hängt
 // (dessen Absenden würde sonst die noch nicht gespeicherte Adresse mitschicken).
 function ResendVerification() {
+    const t = useT();
     const { post, processing } = useForm({});
     const [sent, setSent] = useState(false);
 
     if (sent) {
         return (
             <span className="font-medium text-green-600 dark:text-green-400">
-                Bestätigungslink verschickt.
+                {t('profile.information.resent')}
             </span>
         );
     }
@@ -154,12 +182,13 @@ function ResendVerification() {
             }
             className="text-sm text-gray-600 underline hover:text-gray-900 disabled:opacity-50 dark:text-gray-400 dark:hover:text-gray-100"
         >
-            Bestätigungslink erneut senden
+            {t('profile.information.resend')}
         </button>
     );
 }
 
 function UpdatePassword() {
+    const t = useT();
     const currentRef = useRef(null);
     const passwordRef = useRef(null);
     const { data, setData, put, processing, errors, reset, recentlySuccessful } = useForm({
@@ -195,14 +224,11 @@ function UpdatePassword() {
 
     return (
         <section>
-            <SectionHeader
-                title="Passwort ändern"
-                hint="Ein langes, zufälliges Passwort schützt das Konto am besten."
-            />
+            <SectionHeader title={t('profile.password.title')} hint={t('profile.password.hint')} />
 
             <form onSubmit={submit} className="mt-6 space-y-6">
                 <div>
-                    <InputLabel htmlFor="current_password" value="Aktuelles Passwort" />
+                    <InputLabel htmlFor="current_password" value={t('profile.password.current')} />
                     <TextInput
                         id="current_password"
                         ref={currentRef}
@@ -217,7 +243,7 @@ function UpdatePassword() {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="new_password" value="Neues Passwort" />
+                    <InputLabel htmlFor="new_password" value={t('profile.password.new')} />
                     <TextInput
                         id="new_password"
                         ref={passwordRef}
@@ -234,7 +260,7 @@ function UpdatePassword() {
                 <div>
                     <InputLabel
                         htmlFor="new_password_confirmation"
-                        value="Neues Passwort wiederholen"
+                        value={t('profile.password.confirmation')}
                     />
                     <TextInput
                         id="new_password_confirmation"
@@ -250,7 +276,7 @@ function UpdatePassword() {
 
                 <div className="flex items-center gap-4">
                     <PrimaryButton type="submit" disabled={processing}>
-                        Speichern
+                        {t('profile.password.submit')}
                     </PrimaryButton>
 
                     <Saved show={recentlySuccessful} />
@@ -261,6 +287,7 @@ function UpdatePassword() {
 }
 
 function DeleteAccount() {
+    const t = useT();
     const [open, setOpen] = useState(false);
     const passwordRef = useRef(null);
     const {
@@ -295,13 +322,10 @@ function DeleteAccount() {
 
     return (
         <section className="space-y-6">
-            <SectionHeader
-                title="Konto löschen"
-                hint="Mit dem Konto verschwinden alle daran hängenden Daten — unwiderruflich."
-            />
+            <SectionHeader title={t('profile.delete.title')} hint={t('profile.delete.hint')} />
 
             <DangerButton type="button" onClick={() => setOpen(true)}>
-                Konto löschen
+                {t('profile.delete.button')}
             </DangerButton>
 
             {open && (
@@ -314,17 +338,16 @@ function DeleteAccount() {
                     <div className="relative w-full max-w-lg rounded-lg bg-white shadow-xl dark:bg-gray-800">
                         <form onSubmit={submit} className="p-6">
                             <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                Konto wirklich löschen?
+                                {t('profile.delete.dialog_title')}
                             </h2>
                             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                Zur Bestätigung bitte das Passwort eingeben. Danach ist das Konto
-                                endgültig gelöscht.
+                                {t('profile.delete.dialog_hint')}
                             </p>
 
                             <div className="mt-6">
                                 <InputLabel
                                     htmlFor="delete_password"
-                                    value="Passwort"
+                                    value={t('profile.delete.password')}
                                     className="sr-only"
                                 />
                                 <TextInput
@@ -334,7 +357,7 @@ function DeleteAccount() {
                                     name="password"
                                     value={data.password}
                                     autoComplete="current-password"
-                                    placeholder="Passwort"
+                                    placeholder={t('profile.delete.password')}
                                     className="mt-1 sm:w-3/4"
                                     onChange={(e) => setData('password', e.target.value)}
                                 />
@@ -343,11 +366,11 @@ function DeleteAccount() {
 
                             <div className="mt-6 flex justify-end gap-3">
                                 <SecondaryButton type="button" onClick={close}>
-                                    Abbrechen
+                                    {t('profile.delete.cancel')}
                                 </SecondaryButton>
 
                                 <DangerButton type="submit" disabled={processing}>
-                                    Konto löschen
+                                    {t('profile.delete.confirm')}
                                 </DangerButton>
                             </div>
                         </form>

@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureApiScope;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\ResolveApiToken;
 use App\Http\Middleware\ResolveIngestKey;
+use App\Http\Middleware\SetLocale;
 use App\Support\Api\ApiErrors;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
+            SetLocale::class,
             HandleInertiaRequests::class,
         ]);
 

@@ -38,7 +38,7 @@ class StoreController extends Controller
         $event = json_decode($payload);
 
         if (! $event instanceof stdClass) {
-            throw IngestRejection::unreadable('Die Meldung ist kein JSON-Objekt.');
+            throw IngestRejection::unreadable('ingest.not_json');
         }
 
         // Die Nummer kommt vom SDK. Fehlt sie oder ist sie unbrauchbar, vergeben
