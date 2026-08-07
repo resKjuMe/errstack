@@ -66,8 +66,8 @@ final class ProjectData
     }
 
     /**
-     * Einstellungsseite eines Projekts: Stammdaten, Verhalten, zuständige
-     * Teams und der Sicherheits-Token.
+     * Einstellungsseite eines Projekts: Stammdaten, Verhalten und zuständige
+     * Teams. Die Client-Schlüssel haben eine eigene Seite (ProjectKeyData).
      *
      * @return array<string, mixed>
      */
@@ -77,6 +77,7 @@ final class ProjectData
         $organization = $project->organization;
 
         $mayManage = Gate::forUser($viewer)->allows('update', $project);
+        $mayManageKeys = Gate::forUser($viewer)->allows('manageKeys', $project);
 
         return [
             'project' => [
@@ -88,10 +89,10 @@ final class ProjectData
                 'defaultEnvironment' => $project->default_environment,
                 'resolutionBehavior' => $project->resolution_behavior->value,
                 'retentionDays' => $project->retention_days,
-                // Der Token steht nur denen offen, die ihn auch neu ziehen
-                // dürfen — für alle anderen wäre er ein Mitleseschlüssel.
-                'token' => $mayManage ? $project->token : null,
                 'href' => route('projects.show', [$organization, $project]),
+                // Die DSN steht auf der Schlüssel-Seite; hier verweist nur der
+                // Link darauf, und auch der nur für die Verwaltung.
+                'keysHref' => $mayManageKeys ? route('projects.keys.index', [$organization, $project]) : null,
             ],
             'organization' => [
                 'slug' => $organization->slug,
@@ -102,6 +103,7 @@ final class ProjectData
                 'update' => $mayManage,
                 'delete' => Gate::forUser($viewer)->allows('delete', $project),
                 'manageTeams' => Gate::forUser($viewer)->allows('manageTeams', $project),
+                'manageKeys' => $mayManageKeys,
             ],
             'teams' => $organization->teams()
                 ->orderBy('name')

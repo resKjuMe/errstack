@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
@@ -24,13 +26,18 @@ use Illuminate\Support\Str;
  * @property string $default_environment
  * @property ResolutionBehavior $resolution_behavior
  * @property int $retention_days
- * @property string $token
  */
 #[Fillable(['name', 'platform', 'default_environment', 'resolution_behavior', 'retention_days'])]
 class Project extends Model
 {
     /** @use HasFactory<ProjectFactory> */
     use HasFactory;
+
+    /**
+     * Name des Schlüssels, der beim Anlegen entsteht. Derselbe Name wie in der
+     * Datenübernahme der bisherigen Projekt-Token.
+     */
+    public const FIRST_KEY_NAME = 'Standard';
 
     /**
      * In der Adresszeile steht der Slug hinter der Organisation
@@ -42,25 +49,34 @@ class Project extends Model
     }
 
     /**
-     * Legt ein Projekt samt Slug und Token an. Wie bei der Organisation
-     * bewusst ein benannter Konstruktor statt eines `creating`-Hooks: Seeder
-     * laufen mit abgeschalteten Model-Events und würden ihn überspringen.
+     * Legt ein Projekt samt Slug und erstem Client-Schlüssel an. Wie bei der
+     * Organisation bewusst ein benannter Konstruktor statt eines
+     * `creating`-Hooks: Seeder laufen mit abgeschalteten Model-Events und
+     * würden ihn überspringen.
+     *
+     * Der erste Schlüssel entsteht sofort mit, damit ein frisches Projekt eine
+     * DSN zum Kopieren hat und nicht erst eingerichtet werden muss.
      *
      * @param  array<string, mixed>  $attributes  weitere Einstellungen
      */
     public static function createFor(Organization $organization, string $name, Platform $platform, array $attributes = []): self
     {
-        $project = new self(array_merge($attributes, [
-            'name' => $name,
-            'platform' => $platform,
-        ]));
+        // Projekt und erster Schlüssel gehören zusammen: ein Projekt ohne
+        // Schlüssel hätte keine Adresse, an die gemeldet werden könnte.
+        return DB::transaction(function () use ($organization, $name, $platform, $attributes): self {
+            $project = new self(array_merge($attributes, [
+                'name' => $name,
+                'platform' => $platform,
+            ]));
 
-        $project->organization_id = $organization->id;
-        $project->slug = self::uniqueSlug($organization, $name);
-        $project->token = self::freshToken();
-        $project->save();
+            $project->organization_id = $organization->id;
+            $project->slug = self::uniqueSlug($organization, $name);
+            $project->save();
 
-        return $project;
+            ProjectKey::createFor($project, self::FIRST_KEY_NAME);
+
+            return $project;
+        });
     }
 
     /**
@@ -86,21 +102,14 @@ class Project extends Model
     }
 
     /**
-     * Neuer Sicherheits-Token. 32 Hex-Zeichen aus dem Zufallsgenerator des
-     * Systems — derselbe Wert, den die SDKs später mitschicken.
+     * Client-Schlüssel dieses Projekts — die DSNs, unter denen Meldungen
+     * eingestellt werden.
+     *
+     * @return HasMany<ProjectKey, $this>
      */
-    public static function freshToken(): string
+    public function keys(): HasMany
     {
-        return bin2hex(random_bytes(16));
-    }
-
-    /**
-     * Zieht den Token neu. Ab dann werden Meldungen mit dem alten abgewiesen.
-     */
-    public function rotateToken(): void
-    {
-        $this->token = self::freshToken();
-        $this->save();
+        return $this->hasMany(ProjectKey::class);
     }
 
     /**

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
@@ -14,9 +14,9 @@ import {
     TextInput,
 } from '../../components/Form.jsx';
 
-// Einstellungen eines Projekts: Stammdaten und Verhalten, zuständige Teams,
-// Sicherheits-Token und das Löschen. Was der Betrachter nicht darf, blendet die
-// Seite aus — entschieden wird es serverseitig in den Policies.
+// Einstellungen eines Projekts: Stammdaten und Verhalten, zuständige Teams, der
+// Weg zu den Client-Schlüsseln und das Löschen. Was der Betrachter nicht darf,
+// blendet die Seite aus — entschieden wird es serverseitig in den Policies.
 export default function Show({
     project,
     organization,
@@ -69,7 +69,7 @@ export default function Show({
 
                 <Teams project={project} teams={teams} canManage={permissions.manageTeams} />
 
-                {project.token !== null && <Token project={project} />}
+                {project.keysHref && <ClientKeys project={project} />}
 
                 {permissions.delete && <DeleteProject project={project} />}
             </div>
@@ -258,32 +258,15 @@ function Teams({ project, teams, canManage }) {
     );
 }
 
-function Token({ project }) {
-    const [revealed, setRevealed] = useState(false);
-    const { post, processing } = useForm({});
-
+function ClientKeys({ project }) {
     return (
         <Card
-            title="Sicherheits-Token"
-            description="Damit weist sich das SDK gegenüber diesem Projekt aus. Nicht weitergeben — wer ihn hat, kann Meldungen einstellen."
+            title="Client-Schlüssel"
+            description="Die DSN ist die Adresse, an die das SDK seine Meldungen schickt. Sie steht mit allen Schlüsseln dieses Projekts auf einer eigenen Seite."
         >
-            <div className="flex flex-wrap items-center gap-3">
-                <code className="grow rounded-md bg-gray-100 px-3 py-2 font-mono text-sm break-all text-gray-800 dark:bg-gray-900 dark:text-gray-200">
-                    {revealed ? project.token : '•'.repeat(32)}
-                </code>
-
-                <SecondaryButton type="button" onClick={() => setRevealed((v) => !v)}>
-                    {revealed ? 'Verbergen' : 'Anzeigen'}
-                </SecondaryButton>
-
-                <DangerButton
-                    type="button"
-                    disabled={processing}
-                    onClick={() => post(`${project.href}/token`, { preserveScroll: true })}
-                >
-                    Neu erzeugen
-                </DangerButton>
-            </div>
+            <Link href={project.keysHref}>
+                <SecondaryButton type="button">Client-Schlüssel verwalten</SecondaryButton>
+            </Link>
         </Card>
     );
 }

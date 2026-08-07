@@ -97,9 +97,9 @@ class ProjectSettingsTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('permissions.update', false)
-                // Der Token ist ein Zugangsschlüssel — wer ihn nicht ziehen
-                // darf, bekommt ihn auch nicht zu sehen.
-                ->where('project.token', null)
+                // Die DSN ist ein Zugangsschlüssel — wer sie nicht verwalten
+                // darf, bekommt nicht einmal den Weg dorthin zu sehen.
+                ->where('project.keysHref', null)
             );
 
         $this->actingAs($member)->patch($path, [
@@ -113,23 +113,16 @@ class ProjectSettingsTest extends TestCase
         $this->assertSame('Webshop', $project->refresh()->name);
     }
 
-    public function test_the_security_token_can_be_rotated_by_the_administration_only(): void
+    public function test_the_settings_page_points_to_the_client_keys(): void
     {
         [$owner, $organization, $project] = $this->project();
-        $path = "/organisationen/{$organization->slug}/projekte/{$project->slug}/token";
-        $before = $project->token;
 
-        $viewer = User::factory()->create();
-        $organization->setRole($viewer, OrganizationRole::Viewer);
-
-        $this->actingAs($viewer)->post($path)->assertForbidden();
-        $this->assertSame($before, $project->refresh()->token);
-
-        $this->actingAs($owner)->post($path)->assertSessionHasNoErrors();
-
-        $after = $project->refresh()->token;
-        $this->assertNotSame($before, $after);
-        $this->assertSame(32, strlen($after));
+        $this->actingAs($owner)
+            ->get("/organisationen/{$organization->slug}/projekte/{$project->slug}")
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('permissions.manageKeys', true)
+                ->where('project.keysHref', route('projects.keys.index', [$organization, $project]))
+            );
     }
 
     public function test_teams_of_the_organization_can_be_assigned_and_removed(): void
