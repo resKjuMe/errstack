@@ -11,6 +11,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Sentry\Laravel\Integration;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -41,6 +42,15 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Errstack überwacht sich selbst — dieselbe Meldung, die eine fremde
+        // Anwendung schickt, schickt es auch für die eigenen Fehler. Ohne DSN
+        // ({@see config/sentry.php}) tut die Zeile nichts.
+        //
+        // Sie steht vor den eigenen Regeln: `reportable` meldet, `render`
+        // beantwortet — beides läuft, und die Reihenfolge sagt, dass das Melden
+        // von der Antwortform unabhängig ist.
+        Integration::handles($exceptions);
+
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
