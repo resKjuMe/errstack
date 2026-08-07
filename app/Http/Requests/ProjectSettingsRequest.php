@@ -39,14 +39,4 @@ class ProjectSettingsRequest extends FormRequest
             'default_environment.regex' => __('validation.messages.environment_pattern'),
         ];
     }
-
-    /**
-     * @return array<string, string>
-     */
-    public function attributes(): array
-    {
-        // Die Namen stehen in lang/<sprache>/validation.php und gelten damit
-        // auch dort, wo das Framework sie von sich aus einsetzt.
-        return [];
-    }
 }
