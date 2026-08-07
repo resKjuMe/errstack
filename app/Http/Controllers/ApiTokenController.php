@@ -58,20 +58,22 @@ class ApiTokenController extends Controller
             ? $organization
             : $user;
 
+        $name = (string) $request->validated('name');
+
         $token = ApiToken::issue(
             tokenable: $tokenable,
             organization: $organization,
             createdBy: $user,
-            name: (string) $request->validated('name'),
+            name: $name,
             scopes: $request->scopes(),
             expiresAt: $request->expiresAt(),
         );
 
         return redirect()
             ->route('api-tokens.index')
-            ->with('status', "Token „{$token->accessToken->name}“ angelegt.")
+            ->with('status', "Token „{$name}“ angelegt.")
             ->with('createdToken', [
-                'name' => $token->accessToken->name,
+                'name' => $name,
                 'value' => $token->plainTextToken,
             ]);
     }

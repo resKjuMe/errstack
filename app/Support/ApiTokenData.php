@@ -54,7 +54,7 @@ final class ApiTokenData
                     'value' => $scope->value,
                     'label' => $scope->label(),
                 ], $token->scopes()),
-                'createdAt' => $token->created_at?->toIso8601String(),
+                'createdAt' => $token->created_at->toIso8601String(),
                 'createdBy' => $token->createdBy?->name,
                 'lastUsedAt' => $token->last_used_at?->toIso8601String(),
                 'expiresAt' => $token->expires_at?->toIso8601String(),

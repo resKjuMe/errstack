@@ -67,7 +67,7 @@ class ApiToken extends PersonalAccessToken
             'created_by_id' => $createdBy?->id,
             'name' => $name,
             'token' => hash('sha256', $plainText),
-            'abilities' => array_values(array_map(fn (ApiScope $scope): string => $scope->value, $scopes)),
+            'abilities' => array_map(fn (ApiScope $scope): string => $scope->value, $scopes),
             'expires_at' => $expiresAt,
         ]);
 
