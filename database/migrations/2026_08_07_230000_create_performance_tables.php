@@ -25,10 +25,17 @@ return new class extends Migration
      * genau das jedem Aufrufer zur Pflicht machen — und beim ersten
      * vergessenen Filter stünde die Startseite voll mit erfolgreichen
      * Seitenaufrufen.
+     *
+     * Jeder Schritt prüft, ob es ihn schon gibt. Der Grund ist ein
+     * abgebrochener Lauf: MySQL kann DDL nicht zurückrollen, und ein Fehler in
+     * der Mitte lässt alles Vorherige stehen — ohne Eintrag in `migrations`,
+     * sodass der nächste Versuch wieder von vorn beginnt und über der ersten
+     * bereits bestehenden Tabelle abbricht. Die Prüfungen machen den zweiten
+     * Lauf zu dem, was er sein soll: er ergänzt, was fehlt.
      */
     public function up(): void
     {
-        Schema::create('transactions', function (Blueprint $table) {
+        $this->createIfMissing('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
 
@@ -118,7 +125,7 @@ return new class extends Migration
             $table->index('trace_id');
         });
 
-        Schema::create('transaction_spans', function (Blueprint $table) {
+        $this->createIfMissing('transaction_spans', function (Blueprint $table) {
             $table->id();
             $table->foreignId('transaction_id')->constrained()->cascadeOnDelete();
 
@@ -173,7 +180,7 @@ return new class extends Migration
             $table->index(['project_id', 'op', 'started_at']);
         });
 
-        Schema::create('transaction_aggregates', function (Blueprint $table) {
+        $this->createIfMissing('transaction_aggregates', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
 
@@ -229,7 +236,16 @@ return new class extends Migration
             // Ein Wert mit Millisekunden wäre dort eine zweite Schreibweise
             // desselben Fensters — und damit eine zweite Zeile.
             $table->timestamps();
+        });
 
+        // Die Indizes dieser Tabelle stehen außerhalb ihrer Definition, weil
+        // genau zwischen Tabelle und Index der erste Lauf gescheitert ist: die
+        // Tabelle steht dort bereits, ihre Indizes fehlen. Würde sie hier nur
+        // übersprungen, bliebe sie für immer ohne den eindeutigen Schlüssel —
+        // und `TransactionAggregate::record()` hängt an ihm: das
+        // `insertOrIgnore` legt ohne ihn bei **jeder** Messung eine weitere
+        // Zeile für dasselbe Fenster an, statt die bestehende zu finden.
+        $this->addIfMissing('transaction_aggregates', [
             // Ein Fenster je Name, Operation und Umgebung. Die Aufnahme zählt
             // über diesen Schlüssel hoch, statt zu lesen und zu schreiben:
             // zwei Arbeiter mit Transaktionen derselben Minute würden sich sonst
@@ -238,14 +254,56 @@ return new class extends Migration
             // Der Name ist von Hand gesetzt: aus Tabelle und fünf Spalten
             // gebildet wäre er 73 Zeichen lang, und MySQL lässt für einen
             // Bezeichner nur 64 zu.
-            $table->unique(
+            'transaction_aggregates_window_unique' => fn (Blueprint $table) => $table->unique(
                 ['project_id', 'environment', 'name', 'op', 'window_start'],
                 'transaction_aggregates_window_unique',
-            );
+            ),
 
             // Die Übersicht liest einen Zeitraum je Projekt und sortiert nach
             // Dauer oder Anzahl.
-            $table->index(['project_id', 'window_start']);
+            'transaction_aggregates_project_id_window_start_index' => fn (Blueprint $table) => $table->index(
+                ['project_id', 'window_start'],
+            ),
+        ]);
+    }
+
+    /**
+     * Legt eine Tabelle an, wenn sie noch fehlt.
+     */
+    private function createIfMissing(string $table, Closure $definition): void
+    {
+        if (Schema::hasTable($table)) {
+            return;
+        }
+
+        Schema::create($table, $definition);
+    }
+
+    /**
+     * Ergänzt die Indizes, die unter ihrem Namen noch nicht stehen.
+     *
+     * Geprüft wird der Name, nicht die Spaltenliste: unter demselben Namen darf
+     * es einen Index nur einmal geben, und genau daran scheitert ein zweiter
+     * Lauf.
+     *
+     * @param  array<string, Closure(Blueprint): mixed>  $indexes
+     */
+    private function addIfMissing(string $table, array $indexes): void
+    {
+        $missing = array_filter(
+            $indexes,
+            fn (string $name): bool => ! Schema::hasIndex($table, $name),
+            ARRAY_FILTER_USE_KEY,
+        );
+
+        if ($missing === []) {
+            return;
+        }
+
+        Schema::table($table, function (Blueprint $table) use ($missing) {
+            foreach ($missing as $definition) {
+                $definition($table);
+            }
         });
     }
 
