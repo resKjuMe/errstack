@@ -22,8 +22,10 @@ use Illuminate\Support\Str;
  * @property int|null $project_key_id
  * @property string $event_id
  * @property IngestType $type
+ * @property array<string, mixed>|null $item_headers
  * @property string|null $sdk
  * @property string $payload
+ * @property string|null $payload_encoding
  * @property int $size_bytes
  */
 class IngestPayload extends Model
@@ -32,12 +34,21 @@ class IngestPayload extends Model
     use HasFactory;
 
     /**
+     * Kennzeichen für Nutzdaten, die verpackt in der Spalte liegen, weil sie
+     * kein Text sind ({@see storable()}).
+     */
+    public const ENCODING_BASE64 = 'base64';
+
+    /**
      * Nimmt eine Meldung in die Ablage auf.
      *
      * Benannter Konstruktor wie bei Projekt und Schlüssel: der Aufrufer soll
      * nicht wissen müssen, welche Felder zusammen gesetzt werden müssen, und
      * die Angaben kommen hier ausschließlich von der Aufnahme — nichts davon
      * ist vom Client frei füllbar. Deshalb hat das Model auch kein `Fillable`.
+     *
+     * @param  array<string, mixed>|null  $itemHeaders  Kopf des Envelope-Elements,
+     *                                                  bei `/store/` nicht vorhanden.
      */
     public static function accept(
         ProjectKey $key,
@@ -45,6 +56,7 @@ class IngestPayload extends Model
         string $payload,
         IngestType $type = IngestType::Event,
         ?string $sdk = null,
+        ?array $itemHeaders = null,
     ): self {
         $entry = new self;
 
@@ -52,12 +64,43 @@ class IngestPayload extends Model
         $entry->project_key_id = $key->id;
         $entry->event_id = $eventId;
         $entry->type = $type;
+        $entry->item_headers = $itemHeaders;
         $entry->sdk = $sdk;
-        $entry->payload = $payload;
         $entry->size_bytes = strlen($payload);
+
+        // Die Größe ist die der **Nutzdaten**, nicht die der Spalte: sie wird
+        // oben aus dem Original genommen, bevor eine mögliche Verpackung
+        // hinzukommt. Sonst wäre jede Auswertung der Datenmenge um ein Drittel
+        // zu hoch, sobald Anhänge im Spiel sind.
+        [$entry->payload, $entry->payload_encoding] = self::storable($payload);
+
         $entry->save();
 
         return $entry;
+    }
+
+    /**
+     * Bringt Nutzdaten in eine Form, die die Textspalte unbeschadet übersteht,
+     * und sagt dazu, ob dabei etwas verpackt wurde.
+     *
+     * Der Regelfall ist JSON und bleibt unverändert — Zeichen für Zeichen, denn
+     * darauf beruhen Signaturbildung und das Vorzeigen des Originals. Anhänge
+     * und Aufzeichnungen sind dagegen beliebige Bytes: ein Screenshot ist kein
+     * gültiges UTF-8, und ein Nullbyte beendet in manchen Treibern die
+     * Zeichenkette. Beides wird deshalb Base64-verpackt.
+     *
+     * Entschieden wird am Inhalt, nicht am Typ: eine als Anhang gesendete
+     * Logdatei bleibt so lesbar, und ein Element, das seinen Typ falsch
+     * angibt, wird trotzdem heil abgelegt.
+     *
+     * @return array{string, string|null}
+     */
+    private static function storable(string $payload): array
+    {
+        $isText = $payload === ''
+            || (mb_check_encoding($payload, 'UTF-8') && ! str_contains($payload, "\0"));
+
+        return $isText ? [$payload, null] : [base64_encode($payload), self::ENCODING_BASE64];
     }
 
     /**
@@ -106,6 +149,25 @@ class IngestPayload extends Model
     }
 
     /**
+     * Die Nutzdaten, wie das SDK sie geschickt hat — eine mögliche Verpackung
+     * für die Textspalte wieder abgenommen.
+     *
+     * Alles, was mit den Daten arbeitet, nimmt diesen Weg und nicht die Spalte
+     * `payload` direkt: sonst bekommt es bei einem Anhang die Base64-Zeichen
+     * statt des Bildes.
+     */
+    public function bytes(): string
+    {
+        if ($this->payload_encoding !== self::ENCODING_BASE64) {
+            return $this->payload;
+        }
+
+        $decoded = base64_decode($this->payload, true);
+
+        return $decoded === false ? '' : $decoded;
+    }
+
+    /**
      * Der Rumpf als Feld-Baum. Bewusst kein `casts`-Eintrag auf `array`: die
      * Spalte ist die unveränderte Kopie des Eingangs, und ein Cast würde sie
      * beim Speichern neu formatieren.
@@ -114,9 +176,29 @@ class IngestPayload extends Model
      */
     public function decoded(): ?array
     {
-        $decoded = json_decode($this->payload, true);
+        $decoded = json_decode($this->bytes(), true);
 
         return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
+     * Der Dateiname eines Anhangs, sofern das Element einen mitgebracht hat.
+     */
+    public function filename(): ?string
+    {
+        $filename = $this->item_headers['filename'] ?? null;
+
+        return is_string($filename) && $filename !== '' ? $filename : null;
+    }
+
+    /**
+     * Der Inhaltstyp des Elements, sofern angegeben.
+     */
+    public function contentType(): ?string
+    {
+        $contentType = $this->item_headers['content_type'] ?? null;
+
+        return is_string($contentType) && $contentType !== '' ? $contentType : null;
     }
 
     /**
@@ -126,6 +208,9 @@ class IngestPayload extends Model
     {
         return [
             'type' => IngestType::class,
+            // Der Kopf des Elements ist unsere eigene Ablage, keine Kopie des
+            // Eingangs — hier darf umformatiert werden, anders als beim Rumpf.
+            'item_headers' => 'array',
             'size_bytes' => 'integer',
         ];
     }
