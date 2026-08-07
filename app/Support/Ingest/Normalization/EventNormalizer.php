@@ -234,7 +234,7 @@ final class EventNormalizer
 
         $normalized = $this->sanitizer->freeform($map, 'extra');
 
-        /** @var array<string, mixed>|null */
+        /** @var non-empty-array<string, mixed>|null */
         return is_array($normalized) && $normalized !== [] ? $normalized : null;
     }
 
@@ -266,7 +266,7 @@ final class EventNormalizer
 
         $normalized = $this->sanitizer->freeform($unknown, 'unknown');
 
-        /** @var array<string, mixed>|null */
+        /** @var non-empty-array<string, mixed>|null */
         return is_array($normalized) && $normalized !== [] ? $normalized : null;
     }
 

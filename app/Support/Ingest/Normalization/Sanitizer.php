@@ -218,7 +218,7 @@ final class Sanitizer
             $value = array_slice($value, 0, $max);
         }
 
-        return array_values($value);
+        return $value;
     }
 
     /**

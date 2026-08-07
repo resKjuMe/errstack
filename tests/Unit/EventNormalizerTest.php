@@ -385,7 +385,11 @@ class EventNormalizerTest extends TestCase
             'extra' => ['zahl' => INF, 'text' => "\xC3\x28"],
         ]);
 
-        $this->assertIsString(json_encode($event->toArray(), JSON_THROW_ON_ERROR));
+        $json = json_encode($event->toArray(), JSON_THROW_ON_ERROR);
+
+        // Die eigentliche Prüfung ist, dass `json_encode()` nicht wirft — der
+        // Rückweg zeigt nur, dass dabei auch etwas Brauchbares herauskam.
+        $this->assertSame($event->eventId, data_get(json_decode($json, true), 'event_id'));
     }
 
     public function test_a_body_that_is_a_list_yields_an_event_instead_of_an_error(): void
