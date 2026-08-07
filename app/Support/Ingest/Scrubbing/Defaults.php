@@ -86,12 +86,29 @@ final class Defaults
     ];
 
     /**
+     * Die einmal gebauten Anweisungen.
+     *
+     * @var list<Directive>|null
+     */
+    private static ?array $directives = null;
+
+    /**
      * Die Standardregeln als Anweisungen.
+     *
+     * Einmal je Prozess und nicht je Meldung: es sind über vierzig Anweisungen,
+     * jede prüft beim Bauen ihren übersetzten Ausdruck, und die Liste ist für
+     * jedes Projekt dieselbe. Ein Arbeiter der Warteschlange wertet tausende
+     * Meldungen hintereinander aus — dort wäre das vierzigtausendmal dieselbe
+     * Arbeit mit demselben Ergebnis.
      *
      * @return list<Directive>
      */
     public static function directives(): array
     {
+        if (self::$directives !== null) {
+            return self::$directives;
+        }
+
         $directives = [];
 
         foreach (self::FIELDS as $field) {
@@ -102,6 +119,6 @@ final class Defaults
             $directives[] = new Directive(ScrubRuleType::Pattern, $pattern);
         }
 
-        return $directives;
+        return self::$directives = $directives;
     }
 }
