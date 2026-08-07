@@ -56,4 +56,18 @@ class ProjectPolicy
     {
         return $user->can('manageProjects', $project->organization);
     }
+
+    /**
+     * Fingerprint-Regeln anlegen, ändern und löschen.
+     *
+     * Dasselbe Recht wie für die übrigen Einstellungen, und das ist hier keine
+     * Bequemlichkeit: eine Regel ändert, wie **alle** künftigen Meldungen des
+     * Projekts zusammengefasst werden. Eine unbedacht gesetzte Regel kann die
+     * ganze Fehlerliste in einen Eintrag ziehen — sichtbar bleibt dann alles,
+     * unterscheidbar nichts mehr.
+     */
+    public function manageGrouping(User $user, Project $project): bool
+    {
+        return $user->can('manageProjects', $project->organization);
+    }
 }

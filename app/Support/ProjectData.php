@@ -98,6 +98,10 @@ final class ProjectData
                 // Link steht deshalb ohne Bedingung da, anders als der zu den
                 // Schlüsseln.
                 'cronsHref' => route('projects.crons.index', [$organization, $project]),
+                // Die Gruppierung ebenfalls ohne Bedingung: die Regeln
+                // erklären, warum die Fehlerliste so aussieht, wie sie aussieht
+                // — und diese Frage stellt sich nicht nur die Verwaltung.
+                'groupingHref' => route('projects.grouping.index', [$organization, $project]),
             ],
             'organization' => [
                 'slug' => $organization->slug,
@@ -110,6 +114,7 @@ final class ProjectData
                 'manageTeams' => Gate::forUser($viewer)->allows('manageTeams', $project),
                 'manageKeys' => $mayManageKeys,
                 'manageCrons' => Gate::forUser($viewer)->allows('manageCrons', $project),
+                'manageGrouping' => Gate::forUser($viewer)->allows('manageGrouping', $project),
             ],
             'teams' => $organization->teams()
                 ->orderBy('name')

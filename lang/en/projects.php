@@ -72,6 +72,12 @@ return [
         'manage' => 'View cron jobs',
     ],
 
+    'grouping' => [
+        'title' => 'Grouping',
+        'description' => 'Similar reports are folded into a single entry. Where that turns out too coarse or too fine, project rules correct it.',
+        'manage' => 'View rules',
+    ],
+
     'delete' => [
         'title' => 'Delete project',
         'description' => 'Deleting the project removes its settings, the team assignment and all attached data — irreversibly.',

@@ -36,6 +36,7 @@ final class NormalizedEvent
      * @param  array<string, string>  $modules  Bibliotheken samt Fassung.
      * @param  array<string, mixed>|null  $unknown  Felder, die wir nicht kennen — unverändert bewahrt.
      * @param  array{truncated?: list<string>, invalid?: list<string>}|null  $notes  Was gekürzt und was verworfen wurde.
+     * @param  list<string>|null  $fingerprint  Die eigene Gruppierungs-Angabe des SDK.
      */
     public function __construct(
         public readonly string $eventId,
@@ -63,6 +64,21 @@ final class NormalizedEvent
         public readonly array $modules,
         public readonly ?array $unknown,
         public readonly ?array $notes,
+
+        /**
+         * Die eigene Gruppierungs-Angabe des SDK (`fingerprint`).
+         *
+         * Sie steht hier und nicht unter `unknown`, weil sie kein Inhalt der
+         * Meldung ist, sondern eine Anweisung darüber, was mit ihr geschehen
+         * soll — die einzige, die ein SDK überhaupt geben kann. Ausgewertet
+         * wird sie in der Gruppierung (I5), nicht hier: die Normalisierung
+         * entscheidet nichts, sie richtet nur her.
+         *
+         * Der Vorgabewert am Ende der Liste ist Absicht: die Angabe kam mit
+         * dieser Aufgabe dazu, und ein Vorgabewert erspart es, jede
+         * Erzeugungsstelle mitzuändern.
+         */
+        public readonly ?array $fingerprint = null,
     ) {}
 
     /**
@@ -140,6 +156,7 @@ final class NormalizedEvent
             'modules' => $this->modules,
             'unknown' => $this->unknown,
             'notes' => $this->notes,
+            'fingerprint' => $this->fingerprint,
         ];
     }
 }

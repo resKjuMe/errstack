@@ -4,6 +4,16 @@
 // nach dem gespeicherten Wert — so bleibt der Bezug auch im Export lesbar.
 return [
 
+    'grouping_source' => [
+        'rule' => 'Projektweite Regel',
+        'custom' => 'Eigene Angabe des SDK',
+        'stacktrace' => 'Stacktrace',
+        'exception' => 'Ausnahme',
+        'message' => 'Meldungstext',
+        'fallback' => 'Titel und Fehlerstelle',
+        'empty' => 'Ohne unterscheidbaren Inhalt',
+    ],
+
     'api_scope' => [
         'org:read' => 'Organisation lesen',
         'org:write' => 'Organisation ändern',
