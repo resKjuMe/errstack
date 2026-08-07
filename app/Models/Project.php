@@ -29,6 +29,13 @@ use Illuminate\Support\Str;
  * @property bool $scrub_ip_addresses
  * @property bool $scrub_user_data
  * @property bool $scrub_attachments
+ * @property bool $filter_browser_extensions
+ * @property bool $filter_legacy_browsers
+ * @property bool $filter_localhost
+ * @property bool $filter_crawlers
+ * @property bool $filter_message_patterns
+ * @property bool $filter_ip_addresses
+ * @property bool $filter_releases
  */
 #[Fillable([
     'name',
@@ -39,6 +46,13 @@ use Illuminate\Support\Str;
     'scrub_ip_addresses',
     'scrub_user_data',
     'scrub_attachments',
+    'filter_browser_extensions',
+    'filter_legacy_browsers',
+    'filter_localhost',
+    'filter_crawlers',
+    'filter_message_patterns',
+    'filter_ip_addresses',
+    'filter_releases',
 ])]
 class Project extends Model
 {
@@ -195,6 +209,17 @@ class Project extends Model
     }
 
     /**
+     * Die Listen der Eingangsfilter (I8): gesperrte Fehlertexte, Absender,
+     * Releases und die Untergrenzen für Browser-Fassungen.
+     *
+     * @return HasMany<InboundFilterRule, $this>
+     */
+    public function inboundFilterRules(): HasMany
+    {
+        return $this->hasMany(InboundFilterRule::class);
+    }
+
+    /**
      * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
@@ -225,6 +250,13 @@ class Project extends Model
             'scrub_ip_addresses' => 'boolean',
             'scrub_user_data' => 'boolean',
             'scrub_attachments' => 'boolean',
+            'filter_browser_extensions' => 'boolean',
+            'filter_legacy_browsers' => 'boolean',
+            'filter_localhost' => 'boolean',
+            'filter_crawlers' => 'boolean',
+            'filter_message_patterns' => 'boolean',
+            'filter_ip_addresses' => 'boolean',
+            'filter_releases' => 'boolean',
         ];
     }
 }

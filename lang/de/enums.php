@@ -120,6 +120,17 @@ return [
         'too_many_items' => 'zu viele Elemente',
         'duplicate' => 'doppelte Zustellung',
         'scrubbed' => 'aus Datenschutzgründen nicht gespeichert',
+        'filtered' => 'vom Eingangsfilter aussortiert',
+    ],
+
+    'inbound_filter_kind' => [
+        'browser_extension' => 'Browser-Erweiterungen',
+        'legacy_browser' => 'Veraltete Browser',
+        'localhost' => 'Lokale Entwicklung',
+        'crawler' => 'Web-Crawler',
+        'message_pattern' => 'Fehlermeldungen nach Muster',
+        'ip_address' => 'Absender-Sperrliste',
+        'release' => 'Release-Sperrliste',
     ],
 
     'event_level' => [

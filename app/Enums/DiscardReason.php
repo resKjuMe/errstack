@@ -46,6 +46,17 @@ enum DiscardReason: string
      */
     case Scrubbed = 'scrubbed';
 
+    /**
+     * Ein Eingangsfilter des Projekts hat die Meldung aussortiert.
+     *
+     * **Welcher** Filter, steht in der Kategorie: sie trägt den Wert von
+     * {@see InboundFilterKind}. Ein Grund je Filterart wäre die naheliegende
+     * Alternative und die falsche — die Kategorie ist genau dafür da, und mit
+     * sieben Gründen müsste jede Auswertung, die „wie viel wurde gefiltert?"
+     * beantwortet, sieben Werte kennen statt einen.
+     */
+    case Filtered = 'filtered';
+
     public function label(): string
     {
         return __('enums.discard_reason.'.$this->value);

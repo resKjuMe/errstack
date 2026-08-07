@@ -70,4 +70,18 @@ class ProjectPolicy
     {
         return $user->can('manageProjects', $project->organization);
     }
+
+    /**
+     * Eingangsfilter schalten und ihre Listen pflegen.
+     *
+     * Wieder dasselbe Recht, und hier steht am meisten auf dem Spiel: ein
+     * Eingangsfilter verhindert nicht, dass etwas zusammengefasst wird, sondern
+     * dass es überhaupt entsteht. Eine zu weit gefasste Sperre lässt Meldungen
+     * verschwinden, ohne dass in der Liste eine Lücke zu sehen wäre — nur die
+     * Zählung der gefilterten Ereignisse verrät sie noch.
+     */
+    public function manageFilters(User $user, Project $project): bool
+    {
+        return $user->can('manageProjects', $project->organization);
+    }
 }

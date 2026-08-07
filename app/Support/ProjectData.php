@@ -105,6 +105,9 @@ final class ProjectData
                 // Ebenso ohne Bedingung: was von einer Meldung gespeichert wird,
                 // geht jeden an, der mit den Daten arbeitet.
                 'privacyHref' => route('projects.privacy.index', [$organization, $project]),
+                // Und ebenso die Eingangsfilter: wer eine Meldung vermisst, muss
+                // nachsehen können, ob ein Filter sie genommen hat.
+                'filtersHref' => route('projects.filters.index', [$organization, $project]),
             ],
             'organization' => [
                 'slug' => $organization->slug,
@@ -118,6 +121,7 @@ final class ProjectData
                 'manageKeys' => $mayManageKeys,
                 'manageCrons' => Gate::forUser($viewer)->allows('manageCrons', $project),
                 'manageGrouping' => Gate::forUser($viewer)->allows('manageGrouping', $project),
+                'manageFilters' => Gate::forUser($viewer)->allows('manageFilters', $project),
             ],
             'teams' => $organization->teams()
                 ->orderBy('name')

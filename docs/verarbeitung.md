@@ -23,6 +23,8 @@ POST /api/{projekt}/envelope/     ─┴─▶ ingest_payloads (Rohdaten)
                                      └ Aggregation    (I6)
 ```
 
+Was der Eingangsfilter aussortiert — und was von einer aussortierten Meldung
+bleibt —, steht in [eingangsfilter.md](eingangsfilter.md).
 Was die Normalisierung aus einer Meldung macht — und warum sie nichts
 aussortiert —, steht in [normalisierung.md](normalisierung.md). Wie
 Transaktionen und ihre Einzelschritte abgelegt werden, steht in

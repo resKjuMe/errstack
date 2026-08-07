@@ -1,6 +1,7 @@
 <?php
 
 use App\Support\Ingest\Processing\Steps\DecodePayload;
+use App\Support\Ingest\Processing\Steps\FilterEvent;
 use App\Support\Ingest\Processing\Steps\GroupEvent;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
@@ -114,15 +115,18 @@ return [
     | Sentry-Schema arbeitet und nicht mit unserem Fehler-Modell — mit dem hat
     | eine Transaktion nichts zu tun.
     |
-    | Das Scrubbing steht vor allem, was schreibt — und zwar auch vor den beiden
-    | Schritten, die noch fehlen (Eingangsfilter, Stichprobe): die sortieren aus,
-    | sie speichern nicht. Käme es hinter ihnen, würde eine aussortierte Meldung
-    | zwar nie gespeichert, eine behaltene aber erst nach zwei weiteren Schritten
-    | bereinigt — und jeder davon wäre eine Stelle, an der versehentlich etwas
-    | abgelegt wird.
+    | Das Scrubbing steht vor allem, was schreibt — und zwar auch hinter dem
+    | Eingangsfilter und der noch fehlenden Stichprobe: die sortieren aus, sie
+    | speichern nicht. Käme es vor ihnen, wäre die Bereinigung an einer Meldung
+    | getan, die gleich darauf verworfen wird.
     |
-    | Solange die davorstehenden Schritte fehlen, ist die Liste kürzer als der
-    | Plan: sie werden **vor** den bestehenden eingefügt, nicht dahinter.
+    | Der Eingangsfilter arbeitet damit auf ungeschwärzten Daten, und das ist
+    | Voraussetzung und nicht Nachlässigkeit: die Absender-Sperrliste vergleicht
+    | Adressen, und ein Projekt, das Adressen nicht speichert, könnte sonst nach
+    | ihnen nicht filtern.
+    |
+    | Solange die noch fehlende Stichprobe fehlt, ist die Liste kürzer als der
+    | Plan: sie wird **vor** dem Scrubbing eingefügt, nicht dahinter.
     |
     | Ein neuer Schritt ist eine neue Klasse und eine neue Zeile. Ein
     | bestehender Schritt wird dafür nicht angefasst — auch nicht der Rahmen.
@@ -133,6 +137,7 @@ return [
 
         'steps' => [
             DecodePayload::class,
+            FilterEvent::class,
             ScrubEvent::class,
             RecordTransaction::class,
             NormalizeEvent::class,

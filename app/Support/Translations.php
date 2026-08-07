@@ -29,6 +29,7 @@ final class Translations
         'dashboard',
         'filters',
         'grouping',
+        'inbound',
         'invitations',
         'nav',
         'notifications',

@@ -82,6 +82,8 @@ export default function Show({
 
                 <Privacy project={project} />
 
+                <InboundFilters project={project} />
+
                 {permissions.delete && <DeleteProject project={project} />}
             </div>
         </>
@@ -395,6 +397,21 @@ function Privacy({ project }) {
         <Card title={t('projects.privacy.title')} description={t('projects.privacy.description')}>
             <Link href={project.privacyHref}>
                 <SecondaryButton type="button">{t('projects.privacy.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zu den Eingangsfiltern. Auch dieser ohne Bedingung, und hier zählt es am
+// meisten: eine gefilterte Meldung hinterlässt in der Fehlerliste keine Lücke —
+// wer eine vermisst, findet die Antwort nur auf dieser Seite.
+function InboundFilters({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.filters.title')} description={t('projects.filters.description')}>
+            <Link href={project.filtersHref}>
+                <SecondaryButton type="button">{t('projects.filters.manage')}</SecondaryButton>
             </Link>
         </Card>
     );
