@@ -111,6 +111,14 @@ return [
         'duplicate' => 'duplicate delivery',
     ],
 
+    'event_level' => [
+        'fatal' => 'Fatal',
+        'error' => 'Error',
+        'warning' => 'Warning',
+        'info' => 'Info',
+        'debug' => 'Debug',
+    ],
+
     'filter_period' => [
         '1h' => 'Last hour',
         '24h' => 'Last 24 hours',
