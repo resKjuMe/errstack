@@ -78,6 +78,8 @@ export default function Show({
 
                 <CronMonitors project={project} />
 
+                <Privacy project={project} />
+
                 {permissions.delete && <DeleteProject project={project} />}
             </div>
         </>
@@ -361,6 +363,21 @@ function CronMonitors({ project }) {
         <Card title={t('projects.crons.title')} description={t('projects.crons.description')}>
             <Link href={project.cronsHref}>
                 <SecondaryButton type="button">{t('projects.crons.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zu den Datenschutz-Einstellungen. Ebenfalls ohne Bedingung: was von einer
+// Meldung übrig bleibt, muss jeder wissen, der mit den Daten arbeitet — ändern
+// darf es dort nur die Verwaltung.
+function Privacy({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.privacy.title')} description={t('projects.privacy.description')}>
+            <Link href={project.privacyHref}>
+                <SecondaryButton type="button">{t('projects.privacy.manage')}</SecondaryButton>
             </Link>
         </Card>
     );

@@ -26,8 +26,20 @@ use Illuminate\Support\Str;
  * @property string $default_environment
  * @property ResolutionBehavior $resolution_behavior
  * @property int $retention_days
+ * @property bool $scrub_ip_addresses
+ * @property bool $scrub_user_data
+ * @property bool $scrub_attachments
  */
-#[Fillable(['name', 'platform', 'default_environment', 'resolution_behavior', 'retention_days'])]
+#[Fillable([
+    'name',
+    'platform',
+    'default_environment',
+    'resolution_behavior',
+    'retention_days',
+    'scrub_ip_addresses',
+    'scrub_user_data',
+    'scrub_attachments',
+])]
 class Project extends Model
 {
     /** @use HasFactory<ProjectFactory> */
@@ -148,6 +160,21 @@ class Project extends Model
     }
 
     /**
+     * Eigene Datenschutz-Regeln dieses Projekts.
+     *
+     * Nur die eigenen — die organisationsweiten hängen an der Organisation und
+     * gelten hier mit. Wer beides braucht, nimmt
+     * {@see ScrubRule::scopeEffectiveFor()}; eine Beziehung, die
+     * fremde Datensätze mitliefert, wäre bei jedem Speichern eine Falle.
+     *
+     * @return HasMany<ScrubRule, $this>
+     */
+    public function scrubRules(): HasMany
+    {
+        return $this->hasMany(ScrubRule::class);
+    }
+
+    /**
      * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
@@ -175,6 +202,9 @@ class Project extends Model
             'platform' => Platform::class,
             'resolution_behavior' => ResolutionBehavior::class,
             'retention_days' => 'integer',
+            'scrub_ip_addresses' => 'boolean',
+            'scrub_user_data' => 'boolean',
+            'scrub_attachments' => 'boolean',
         ];
     }
 }

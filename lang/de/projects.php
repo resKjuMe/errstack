@@ -72,6 +72,12 @@ return [
         'manage' => 'Cronjobs ansehen',
     ],
 
+    'privacy' => [
+        'title' => 'Datenschutz',
+        'description' => 'Passwörter, Nachweise und Kartennummern werden bei jeder Meldung entfernt, bevor etwas gespeichert wird. Was darüber hinaus verschwinden soll, steht auf einer eigenen Seite.',
+        'manage' => 'Datenschutz einstellen',
+    ],
+
     'delete' => [
         'title' => 'Projekt löschen',
         'description' => 'Mit dem Projekt verschwinden seine Einstellungen, die Team-Zuordnung und alle daran hängenden Daten — unwiderruflich.',

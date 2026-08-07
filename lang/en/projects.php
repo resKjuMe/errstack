@@ -72,6 +72,12 @@ return [
         'manage' => 'View cron jobs',
     ],
 
+    'privacy' => [
+        'title' => 'Privacy',
+        'description' => 'Passwords, credentials and card numbers are removed from every report before anything is stored. Whatever should disappear on top of that has its own page.',
+        'manage' => 'Configure privacy',
+    ],
+
     'delete' => [
         'title' => 'Delete project',
         'description' => 'Deleting the project removes its settings, the team assignment and all attached data — irreversibly.',

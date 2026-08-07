@@ -98,6 +98,9 @@ final class ProjectData
                 // Link steht deshalb ohne Bedingung da, anders als der zu den
                 // Schlüsseln.
                 'cronsHref' => route('projects.crons.index', [$organization, $project]),
+                // Ebenso ohne Bedingung: was von einer Meldung gespeichert wird,
+                // geht jeden an, der mit den Daten arbeitet.
+                'privacyHref' => route('projects.privacy.index', [$organization, $project]),
             ],
             'organization' => [
                 'slug' => $organization->slug,
