@@ -66,6 +66,18 @@ return [
         'failed' => 'fehlgeschlagen',
     ],
 
+    'discard_origin' => [
+        'server' => 'vom Server verworfen',
+        'client' => 'vom SDK verworfen',
+    ],
+
+    'discard_reason' => [
+        'unknown_type' => 'unbekannter Typ',
+        'unreadable' => 'nicht lesbar',
+        'too_large' => 'zu groß',
+        'too_many_items' => 'zu viele Elemente',
+    ],
+
     'filter_period' => [
         '1h' => 'Letzte Stunde',
         '24h' => 'Letzte 24 Stunden',
@@ -78,6 +90,16 @@ return [
 
     'ingest_type' => [
         'event' => 'Fehlermeldung',
+        'transaction' => 'Transaktion',
+        'session' => 'Sitzung',
+        'sessions' => 'Sitzungen',
+        'attachment' => 'Anhang',
+        'check_in' => 'Cronjob-Lebenszeichen',
+        'replay_event' => 'Aufzeichnung (Kopfdaten)',
+        'replay_recording' => 'Aufzeichnung (Daten)',
+        'profile' => 'Laufzeitmessung',
+        'client_report' => 'Verworfen-Meldung des SDK',
+        'user_report' => 'Nutzer-Rückmeldung',
     ],
 
     'notification_event' => [

@@ -67,7 +67,6 @@ return [
         'token_scope_forbidden' => 'Your own role does not allow granting ":scope".',
         'scope_role_too_low' => 'Your own role in the organization is not enough for ":scope".',
         'membership_gone' => 'The account no longer belongs to this organization.',
-        'client_key_unknown' => 'The client key is unknown or does not belong to this project.',
     ],
 
     /*

@@ -181,6 +181,69 @@ hängt die Antwortzeit der überwachten Anwendung nicht an unserer Verarbeitung,
 und eine Meldung geht auch dann nicht verloren, wenn die Auswertung scheitert.
 Die läuft anschließend im Hintergrund über die Warteschlange `ingest`.
 
+### Envelopes
+
+Heutige SDKs nehmen den moderneren Weg und bündeln alles in eine Anfrage:
+
+```
+POST /api/<projekt-id>/envelope/
+```
+
+Zugangsdaten und Verpackung sind dieselben wie oben; nur der Rumpf ist anders
+aufgebaut — eine Kopfzeile, danach je Element ein eigener Kopf und dessen
+Nutzdaten:
+
+```
+{"event_id":"9ec79c33ec9942ab8353589fcb2e04dc","sdk":{"name":"sentry.php","version":"4.0.0"}}
+{"type":"event"}
+{"event_id":"9ec79c33ec9942ab8353589fcb2e04dc","message":"Kaputt"}
+{"type":"attachment","length":1234,"filename":"bild.png","content_type":"image/png"}
+<1234 Byte Binärdaten>
+```
+
+Steht im Kopf eines Elements eine `length`, gilt sie — die Nutzdaten dürfen dann
+Zeilenumbrüche und Nullbytes enthalten. Fehlt sie, reicht das Element bis zum
+nächsten Umbruch. Der abschließende Umbruch ist freigestellt.
+
+Erkannt werden `event`, `transaction`, `session`, `sessions`, `attachment`,
+`check_in`, `replay_event`, `replay_recording`, `profile`, `client_report` und
+`user_report`. Jedes Element wird einzeln in dieselbe Ablage gelegt wie eine
+Meldung von `/store/`, nur mit seinem eigenen Typ; Anhänge erben die Nummer aus
+dem Envelope-Kopf und finden so später zu ihrer Meldung. Binärdaten liegen dort
+Base64-verpackt (`payload_encoding`), damit sie die Textspalte unbeschadet
+überstehen — `IngestPayload::bytes()` gibt sie unverändert zurück.
+
+| Antwort | Bedeutung |
+| --- | --- |
+| `200 {"id":"<event_id>"}` | angenommen; die Nummer stammt aus dem Envelope |
+| `200 {}` | angenommen, aber ohne Meldung darin (z. B. nur Sitzungen) |
+| `400` | keine lesbare Kopfzeile — dann ist es kein Envelope |
+| `413` | Envelope größer als `INGEST_ENVELOPE_MAX_REQUEST_BYTES` / `…_PAYLOAD_BYTES` |
+
+**Ein kaputtes Element nimmt die anderen nicht mit.** Ein unbekannter Typ, ein zu
+großes Element oder eines ohne lesbaren Kopf wird für sich verworfen,
+protokolliert und in `ingest_discards` gezählt — die Antwort bleibt 200. Der
+Grund ist die Gegenseite: ein SDK schickt einen abgewiesenen Envelope nicht
+erneut, und mit ihm wären auch die heilen Elemente weg.
+
+Dieselbe Tabelle nimmt auf, was ein SDK schon bei sich verworfen hat
+(`client_report`) — die einzige Auskunft darüber, was gar nicht erst abgeschickt
+wurde. Ausgewertet werden die Zahlen in der Nutzungsstatistik.
+
+Zum Ausprobieren:
+
+```bash
+printf '%s\n' \
+  '{}' \
+  '{"type":"event"}' \
+  '{"message":"Kaputt","level":"error"}' \
+  '{"type":"session"}' \
+  '{"sid":"3c2e1a","status":"ok"}' \
+| curl -i -X POST http://localhost:8000/api/1/envelope/ \
+    -H 'X-Sentry-Auth: Sentry sentry_version=7, sentry_key=<schlüssel>' \
+    --data-binary @-
+```
+
 ## Aufbau
 
 Verzeichnisse und Konventionen sind absichtlich identisch zu

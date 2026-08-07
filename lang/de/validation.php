@@ -67,7 +67,6 @@ return [
         'token_scope_forbidden' => 'Die eigene Rolle erlaubt es nicht, „:scope" zu vergeben.',
         'scope_role_too_low' => 'Die eigene Rolle in der Organisation reicht für „:scope" nicht aus.',
         'membership_gone' => 'Das Konto gehört dieser Organisation nicht mehr an.',
-        'client_key_unknown' => 'Der Client-Schlüssel ist unbekannt oder gehört nicht zu diesem Projekt.',
     ],
 
     /*

@@ -66,6 +66,18 @@ return [
         'failed' => 'failed',
     ],
 
+    'discard_origin' => [
+        'server' => 'discarded by the server',
+        'client' => 'discarded by the SDK',
+    ],
+
+    'discard_reason' => [
+        'unknown_type' => 'unknown type',
+        'unreadable' => 'unreadable',
+        'too_large' => 'too large',
+        'too_many_items' => 'too many items',
+    ],
+
     'filter_period' => [
         '1h' => 'Last hour',
         '24h' => 'Last 24 hours',
@@ -78,6 +90,16 @@ return [
 
     'ingest_type' => [
         'event' => 'Error report',
+        'transaction' => 'Transaction',
+        'session' => 'Session',
+        'sessions' => 'Sessions',
+        'attachment' => 'Attachment',
+        'check_in' => 'Cron job check-in',
+        'replay_event' => 'Replay (header)',
+        'replay_recording' => 'Replay (data)',
+        'profile' => 'Profile',
+        'client_report' => 'Client report of the SDK',
+        'user_report' => 'User feedback',
     ],
 
     'notification_event' => [
