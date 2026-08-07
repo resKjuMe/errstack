@@ -28,3 +28,4 @@ Route::post('/demo/ingest', function (Request $request) {
 })->name('demo.ingest');
 
 require __DIR__.'/auth.php';
+require __DIR__.'/organizations.php';

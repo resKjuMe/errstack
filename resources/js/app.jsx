@@ -5,6 +5,10 @@ import AppShell from './shell/AppShell.jsx';
 import Dashboard from './shell/pages/Dashboard.jsx';
 import Components from './shell/pages/Components.jsx';
 import Profile from './shell/pages/Profile.jsx';
+import OrganizationsIndex from './shell/pages/organizations/Index.jsx';
+import OrganizationsShow from './shell/pages/organizations/Show.jsx';
+import TeamsShow from './shell/pages/teams/Show.jsx';
+import InvitationsAccept from './shell/pages/invitations/Accept.jsx';
 import Login from './shell/pages/auth/Login.jsx';
 import Register from './shell/pages/auth/Register.jsx';
 import ForgotPassword from './shell/pages/auth/ForgotPassword.jsx';
@@ -20,6 +24,10 @@ const pages = {
     Dashboard,
     Components,
     Profile,
+    'organizations/Index': OrganizationsIndex,
+    'organizations/Show': OrganizationsShow,
+    'teams/Show': TeamsShow,
+    'invitations/Accept': InvitationsAccept,
     'auth/Login': Login,
     'auth/Register': Register,
     'auth/ForgotPassword': ForgotPassword,

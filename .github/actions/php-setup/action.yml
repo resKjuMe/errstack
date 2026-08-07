@@ -5,7 +5,7 @@ inputs:
   php-version:
     description: PHP-Version für diesen Job.
     required: false
-    default: '8.3'
+    default: '8.4'
   install:
     description: Abhängigkeiten installieren (für reine Lock-Prüfungen auf "false" setzen).
     required: false
