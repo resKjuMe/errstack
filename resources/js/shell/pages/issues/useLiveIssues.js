@@ -29,6 +29,11 @@ import { subscribe } from '../../broadcasting.js';
 // Schüben, und jeder für sich wäre eine Anfrage.
 const DEBOUNCE_MS = 2000;
 
+// Nachgeholt wird die Liste — und die Gesamtzahl daneben. Sie steht in einer
+// eigenen Nutzlast, und ohne sie hier stünde nach dem Nachladen eine Zeile mehr
+// in der Liste, während darüber weiter die alte Zahl steht.
+const RELOAD_PROPS = ['issues', 'totalLabel'];
+
 export default function useLiveIssues(live, { auto, paused = false } = {}) {
     const { shell } = usePage().props;
     const config = shell.broadcast;
@@ -68,7 +73,7 @@ export default function useLiveIssues(live, { auto, paused = false } = {}) {
 
             timer.current = setTimeout(() => {
                 timer.current = null;
-                router.reload({ only: ['issues'] });
+                router.reload({ only: RELOAD_PROPS });
             }, DEBOUNCE_MS);
         });
 
@@ -87,7 +92,7 @@ export default function useLiveIssues(live, { auto, paused = false } = {}) {
         pending,
         show: () => {
             setPending(0);
-            router.reload({ only: ['issues'] });
+            router.reload({ only: RELOAD_PROPS });
         },
     };
 }

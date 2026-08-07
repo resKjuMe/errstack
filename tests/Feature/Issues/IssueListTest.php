@@ -253,6 +253,32 @@ class IssueListTest extends TestCase
         return $count;
     }
 
+    /**
+     * Ein eigener Zeitraum ist auf zwei Datumsfelder geprüft, aber nicht auf
+     * seine Länge — die Größe des Rasters darf deshalb nicht daran hängen.
+     */
+    public function test_an_absurdly_long_custom_period_does_not_blow_up_the_trend(): void
+    {
+        [$user, , $project] = $this->context();
+
+        $this->issue($project, 'Mit Verlauf');
+
+        $this->actingAs($user)
+            ->get(route('issues.index', [
+                'period' => 'custom',
+                'from' => '1900-01-01',
+                'to' => Carbon::now()->format('Y-m-d'),
+            ]))
+            ->assertInertia(function (AssertableInertia $page) {
+                /** @var list<int> $series */
+                $series = $page->prop('issues.data.0.series');
+
+                // Über 45.000 Tagesfenster wären es ohne Grenze. Weiter zurück,
+                // als die Zähler aufbewahrt werden, gibt es ohnehin nichts.
+                $this->assertLessThanOrEqual(CountPeriod::Day->retentionDays() + 2, count($series));
+            });
+    }
+
     public function test_the_list_stops_at_the_organization_of_the_viewer(): void
     {
         [$user] = $this->context();

@@ -107,7 +107,7 @@ final class IssueSeries
      */
     private static function windows(CountPeriod $period, GlobalFilter $filter): array
     {
-        $cursor = $period->windowFor($filter->fromUtc());
+        $cursor = $period->windowFor(self::start($period, $filter));
         $last = $period->windowFor($filter->toUtc());
 
         $windows = [];
@@ -119,5 +119,27 @@ final class IssueSeries
         }
 
         return $windows;
+    }
+
+    /**
+     * Der Anfang des Rasters — nie weiter zurück, als es Zähler gibt.
+     *
+     * Ohne diese Grenze bestimmt die Adresszeile die Größe des Rasters: ein
+     * eigener Zeitraum ist auf zwei Datumsfelder geprüft, aber nicht auf seine
+     * Länge, und `from=1900-01-01` wären rund 46.000 Tagesfenster — je Zeile der
+     * Seite ein Feld dieser Länge, für eine Grafik von Daumenbreite. Genau das
+     * ist die Sorte Anfrage, mit der man eine Seite umlegt, ohne etwas
+     * anzugreifen.
+     *
+     * Die Grenze ist keine gegriffene Zahl, sondern die Aufbewahrung der Zähler
+     * ({@see CountPeriod::retentionDays()}): davor gibt es nichts zu zeichnen,
+     * die zusätzlichen Fenster wären Nullen.
+     */
+    private static function start(CountPeriod $period, GlobalFilter $filter): CarbonImmutable
+    {
+        $earliest = CarbonImmutable::now('UTC')->subDays($period->retentionDays());
+        $from = $filter->fromUtc();
+
+        return $from->lessThan($earliest) ? $earliest : $from;
     }
 }
