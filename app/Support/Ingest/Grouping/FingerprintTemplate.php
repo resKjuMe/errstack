@@ -105,8 +105,10 @@ final class FingerprintTemplate
     {
         $substituted = preg_replace_callback(
             '/\{\{\s*([a-z][a-z0-9_.]*)\s*\}\}/i',
+            // Der Feldname ist die erste Klammergruppe des Musters oben; dass es
+            // ihn gibt, sichert das Muster zu — hier steht deshalb keine
+            // zusätzliche Prüfung.
             static function (array $match) use ($attributes): string {
-                /** @var array{0: string, 1: string} $match */
                 if (strcasecmp($match[1], self::DEFAULT) === 0) {
                     // `{{ default }}` mitten im Text: die Bestandteile lassen
                     // sich dort nicht sinnvoll einsetzen — als eigener Eintrag
