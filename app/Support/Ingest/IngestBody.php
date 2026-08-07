@@ -35,12 +35,18 @@ final class IngestBody
     /**
      * Die entpackten Nutzdaten.
      *
+     * Die Grenzen lassen sich übergeben, weil sie nicht überall dieselben sind:
+     * eine einzelne Fehlermeldung ist auf 1 MiB begrenzt, ein Envelope darf
+     * deutlich größer sein — er trägt oft einen Screenshot mit sich. Ohne diese
+     * Möglichkeit müsste entweder die Grenze für Einzelmeldungen mit angehoben
+     * werden oder jeder Anhang scheitern.
+     *
      * @throws IngestRejection wenn die Meldung zu groß oder nicht lesbar ist
      */
-    public static function decode(Request $request): string
+    public static function decode(Request $request, ?int $requestLimit = null, ?int $payloadLimit = null): string
     {
-        $requestLimit = (int) config('ingest.max_request_bytes');
-        $payloadLimit = (int) config('ingest.max_payload_bytes');
+        $requestLimit ??= (int) config('ingest.max_request_bytes');
+        $payloadLimit ??= (int) config('ingest.max_payload_bytes');
 
         $raw = $request->getContent();
 

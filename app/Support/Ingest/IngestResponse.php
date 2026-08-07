@@ -3,6 +3,7 @@
 namespace App\Support\Ingest;
 
 use Illuminate\Http\JsonResponse;
+use stdClass;
 
 /**
  * Antworten der Datenaufnahme in der Form, die Sentry-SDKs erwarten.
@@ -31,6 +32,23 @@ final class IngestResponse
     public static function accepted(string $eventId): JsonResponse
     {
         return new JsonResponse(['id' => $eventId], 200);
+    }
+
+    /**
+     * Ein Envelope ist angenommen.
+     *
+     * Enthielt er eine Meldung, geht deren Nummer wie gewohnt zurück. Enthielt
+     * er keine — ein Envelope aus lauter Sitzungen oder eine Verworfen-Meldung
+     * bringt keine mit —, bleibt der Rumpf ein leeres Objekt statt
+     * `{"id":null}`: eine Nummer zu nennen, unter der nichts zu finden ist,
+     * wäre die schlechtere Auskunft, und die SDKs kommen mit beidem zurecht.
+     *
+     * `stdClass` statt `[]`, weil ein leeres Feld-Array als `[]` ausgegeben
+     * würde — eine Liste, wo ein Objekt erwartet wird.
+     */
+    public static function envelopeAccepted(?string $eventId): JsonResponse
+    {
+        return new JsonResponse($eventId === null ? new stdClass : ['id' => $eventId], 200);
     }
 
     /**

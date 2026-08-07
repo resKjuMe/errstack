@@ -20,6 +20,7 @@
 |
 */
 
+use App\Http\Controllers\Ingest\EnvelopeController;
 use App\Http\Controllers\Ingest\StoreController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,3 +30,11 @@ Route::post('{project}/store', [StoreController::class, 'store'])
     ->whereNumber('project')
     ->middleware('ingest.key')
     ->name('ingest.store');
+
+// Der Weg heutiger SDKs: mehrere Elemente in einer Anfrage — Fehler,
+// Transaktion, Sitzung, Anhang. `/store/` bleibt daneben bestehen; ältere SDKs
+// kennen den Envelope nicht, und keines von beiden soll ausgeschlossen werden.
+Route::post('{project}/envelope', [EnvelopeController::class, 'store'])
+    ->whereNumber('project')
+    ->middleware('ingest.key')
+    ->name('ingest.envelope');
