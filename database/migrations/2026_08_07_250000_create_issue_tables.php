@@ -193,9 +193,17 @@ return new class extends Migration
 
         // Zuerst die Verweise lösen, dann die Einträge: ein Fremdschlüssel
         // hält die Tabelle fest, auf die er zeigt.
+        //
+        // Die Reihenfolge ist die einzige, die beide Datenbanken hinnehmen:
+        // MySQL lässt den Index nicht fallen, solange der Fremdschlüssel ihn
+        // braucht — SQLite lässt die Spalte nicht fallen, solange ein Index auf
+        // ihr liegt. Also erst der Schlüssel, dann der Index, dann die Spalte.
+        // (Das Lösen des Schlüssels ist unter SQLite folgenlos; dort steht er
+        // in der Tabellendefinition und geht mit der Spalte.)
         Schema::table('event_groups', function (Blueprint $table) {
+            $table->dropForeign(['issue_id']);
             $table->dropIndex(['issue_id']);
-            $table->dropConstrainedForeignId('issue_id');
+            $table->dropColumn('issue_id');
         });
 
         Schema::dropIfExists('issues');

@@ -116,6 +116,10 @@ class IssueAggregationTest extends TestCase
         // Ein Eintrag zu einer Gruppe — und die Gruppe weiß es auch.
         $this->assertSame(1, EventGroup::query()->count());
         $this->assertSame($issue->id, EventGroup::query()->sole()->issue_id);
+
+        // Der Weg vom Eintrag zu seinen Ereignissen führt über die Gruppen: ab
+        // S9 sind es mehrere, und dann ist das der einzige, der alle findet.
+        $this->assertSame(15, $issue->events()->count());
     }
 
     /**

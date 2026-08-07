@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -74,6 +75,12 @@ class Issue extends Model
      * geschrieben, wenn dort noch keiner steht. Wer dabei leer ausgeht, räumt
      * seinen Eintrag wieder weg und nimmt den des Gewinners — er hat noch keine
      * Zähler, es geht nichts verloren.
+     *
+     * **Titel, Fehlerstelle und Art stammen vom ersten Ereignis** und werden
+     * nicht nachgeführt. Dieselbe Wahl wie bei der Begründung der Gruppe: sie
+     * beschreiben, womit dieser Eintrag angefangen hat. Der Grad ist die
+     * Ausnahme und folgt dem jüngsten Ereignis ({@see bump()}) — an ihm hängen
+     * die Alarmregeln, und eine Verschärfung muss ankommen.
      */
     public static function forGroup(EventGroup $group, Event $event): self
     {
@@ -136,6 +143,15 @@ class Issue extends Model
      * Verbesserung an einem Schritt —, wird ihr ausgewerteter Datensatz ersetzt,
      * die Zähler dürfen sich aber nicht verdoppeln. Ein Zähler, der bei jedem
      * erneuten Anlauf steigt, ist schlimmer als gar keiner: er sieht richtig aus.
+     *
+     * **Bewusst ohne umschließende Transaktion.** Bricht die Verbindung
+     * zwischen zwei der vier Schritte ab, steht die Häufigkeit um eins höher als
+     * die Zeitreihe — und der erneute Anlauf holt es nicht nach, denn der
+     * Anspruch ist vergeben. Die Alternative wäre, alle vier in eine Transaktion
+     * zu legen: dann hielte jeder Arbeiter die Sperre auf der Zeile des
+     * Eintrags bis zum Abschluss, und genau diese Zeile ist bei einem Ausfall
+     * die, auf die alle gleichzeitig schreiben. Eine seltene Abweichung um eins
+     * in einer Statistik ist der bessere Preis als ein Engpass im Regelbetrieb.
      *
      * @return bool `false`, wenn dieses Ereignis bereits gezählt war.
      */
@@ -231,11 +247,10 @@ class Issue extends Model
     /**
      * Die Ereignisse dieses Eintrags — über seine Gruppen.
      *
-     * @return HasMany<Event, EventGroup>
+     * @return HasManyThrough<Event, EventGroup, $this>
      */
-    public function events(): HasMany
+    public function events(): HasManyThrough
     {
-        /** @var HasMany<Event, EventGroup> */
         return $this->hasManyThrough(Event::class, EventGroup::class, 'issue_id', 'event_group_id');
     }
 
