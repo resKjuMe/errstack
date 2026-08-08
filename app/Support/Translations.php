@@ -46,6 +46,7 @@ final class Translations
         'projects',
         'releases',
         'sampling',
+        'setup',
         'tags',
         'teams',
         'traces',

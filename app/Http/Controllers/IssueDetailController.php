@@ -42,7 +42,18 @@ class IssueDetailController extends Controller
         // Organisation. Ohne das Nachladen wären das zwei Abfragen mitten in der
         // Darstellung. Wer erledigt bzw. stummgeschaltet hat und in welcher
         // Version, steht im Kopf daneben — dieselbe Rechnung.
-        $issue->loadMissing('project.organization', 'resolvedBy', 'resolvedInRelease', 'ignoredBy');
+        // Dazu, woraus der Eintrag besteht: die von Hand beigetretenen
+        // Untergruppen samt ihren Fingerabdrücken und — bei einem beigetretenen
+        // Eintrag — der Kopf, unter dem er jetzt gezählt wird (S9). Mitgeladen,
+        // weil es sonst je Untergruppe eine Abfrage wäre.
+        $issue->loadMissing([
+            'project.organization',
+            'resolvedBy',
+            'resolvedInRelease',
+            'ignoredBy',
+            'mergedSources.groups',
+            'mergedInto',
+        ]);
 
         $event = $this->resolve($issue, $event);
 

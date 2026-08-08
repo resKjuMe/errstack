@@ -1,6 +1,7 @@
 import React from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
+import { SecondaryButton } from '../../components/Form.jsx';
 import { useT } from '../../i18n.js';
 import Activity from './detail/Activity.jsx';
 import Breadcrumbs from './detail/Breadcrumbs.jsx';
@@ -35,7 +36,11 @@ export default function Show({ issue, event, navigation, rawHref, activity, comm
                 meta={navigation && <EventNav navigation={navigation} t={t} />}
             />
 
+            {issue.mergedInto && <MergedIntoNotice head={issue.mergedInto} t={t} />}
+
             <IssueHeader issue={issue} actions={actions} t={t} />
+
+            {issue.merged.length > 0 && <MergedSources sources={issue.merged} t={t} />}
 
             {event === null ? (
                 <div className="rounded-lg bg-white p-6 text-sm shadow dark:bg-gray-800">
@@ -265,6 +270,83 @@ function StateNote({ issue, t }) {
     }
 
     return null;
+}
+
+// Woraus dieser Eintrag besteht: die von Hand beigetretenen Untergruppen.
+//
+// Der Abschnitt steht unmittelbar unter dem Kopf, weil er dessen Zahlen erklärt:
+// wer eine Häufigkeit sieht, die aus zwei Fingerabdrücken stammt, soll das nicht
+// erst suchen müssen. Jede Untergruppe steht mit ihren **eigenen** Zahlen da —
+// daran erkennt man, ob das Zusammenführen richtig war.
+function MergedSources({ sources, t }) {
+    return (
+        <div className="mb-4 rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+            <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {t('issues.merge.sources.title', { count: sources.length })}
+            </h2>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {t('issues.merge.sources.description')}
+            </p>
+
+            <ul className="mt-4 divide-y divide-gray-100 dark:divide-gray-700">
+                {sources.map((source) => (
+                    <li
+                        key={source.id}
+                        className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3"
+                    >
+                        <div className="min-w-0 flex-1">
+                            <Link
+                                href={source.href}
+                                className="text-sm font-medium text-gray-900 underline hover:text-gray-700 dark:text-gray-100 dark:hover:text-gray-300"
+                            >
+                                {source.title}
+                            </Link>
+
+                            {source.fingerprints.length > 0 && (
+                                <p className="mt-0.5 font-mono text-xs break-all text-gray-500 dark:text-gray-400">
+                                    {source.fingerprints.join(', ')}
+                                </p>
+                            )}
+                        </div>
+
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {t('issues.merge.sources.figures', {
+                                count: source.timesSeenLabel,
+                                first: source.firstSeenLabel,
+                                last: source.lastSeenLabel,
+                            })}
+                        </span>
+
+                        <SecondaryButton
+                            type="button"
+                            title={t('issues.merge.split.hint')}
+                            onClick={() =>
+                                router.delete(source.unmergeHref, { preserveScroll: true })
+                            }
+                        >
+                            {t('issues.merge.split.action')}
+                        </SecondaryButton>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
+
+// Dieser Eintrag ist selbst eine Untergruppe.
+//
+// Er bleibt aufrufbar — Lesezeichen und alte Links zeigen weiter hierher —, aber
+// seine Zahlen stehen still: gezählt wird ab dem Zusammenführen am Kopf. Ohne
+// diesen Hinweis sähe das aus wie ein Fehler, der aufgehört hat.
+function MergedIntoNotice({ head, t }) {
+    return (
+        <div className="mb-4 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+            {t('issues.merge.merged_into')}{' '}
+            <Link href={head.href} className="font-medium underline">
+                {head.title}
+            </Link>
+        </div>
+    );
 }
 
 function Figure({ label, value }) {

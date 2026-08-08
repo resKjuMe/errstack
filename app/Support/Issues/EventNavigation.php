@@ -105,16 +105,17 @@ final class EventNavigation
     }
 
     /**
-     * Die Meldungen dieses Eintrags.
+     * Die Meldungen dieses Eintrags — **samt** denen seiner Untergruppen.
+     *
+     * Ein von Hand zusammengeführter Eintrag (S9) steht für mehrere
+     * Fingerabdrücke, und das Blättern soll durch alle führen: wer zwei Einträge
+     * zusammenführt, will danach eine Geschichte lesen und nicht zwei.
      *
      * @return Builder<Event>
      */
     private static function query(Issue $issue): Builder
     {
-        return Event::query()->whereIn(
-            'event_group_id',
-            $issue->groups()->getQuery()->select('event_groups.id'),
-        );
+        return Event::query()->whereIn('event_group_id', $issue->groupIds());
     }
 
     /**

@@ -34,6 +34,7 @@ export default function Index({
     searchError = null,
     unavailableTerms = [],
     tagsHref,
+    mergeHref,
     suggestHref,
     actions,
 }) {
@@ -196,6 +197,7 @@ export default function Index({
                                     total={issues.total}
                                     totalLabel={totalLabel}
                                     pageSize={ids.length}
+                                    mergeHref={mergeHref}
                                     actions={actions}
                                     t={t}
                                 />
@@ -234,8 +236,14 @@ export default function Index({
 // „Alle auf dieser Seite" und „alle 12.480" sind bewusst zwei Schritte: die
 // zweite Aussage soll man ausdrücklich treffen und nicht durch einen Klick auf
 // dieselbe Stelle.
-function ListHeader({ selection, total, totalLabel, pageSize, actions, t }) {
+function ListHeader({ selection, total, totalLabel, pageSize, mergeHref, actions, t }) {
     const some = selection.allMatching || selection.selected.size > 0;
+
+    // Zusammenführen braucht die Kennungen, und „alle Treffer" hat keine: die
+    // Aussage ist serverseitig ein `where` und könnte Zehntausende meinen. Eine
+    // Aktion, die aus zehntausend Fehlern einen macht, soll man nicht mit zwei
+    // Klicks auslösen können — also nur die ausdrücklich angehakten Zeilen.
+    const mergeable = !selection.allMatching && selection.selected.size > 1;
 
     return (
         <div className="flex items-center gap-4 border-b border-gray-100 px-4 py-2 text-xs font-medium text-gray-500 dark:border-gray-700 dark:text-gray-400">
@@ -266,6 +274,22 @@ function ListHeader({ selection, total, totalLabel, pageSize, actions, t }) {
                     <SecondaryButton type="button" onClick={selection.clear}>
                         {t('issues.selection.clear')}
                     </SecondaryButton>
+
+                    {mergeable && (
+                        <SecondaryButton
+                            type="button"
+                            title={t('issues.merge.hint')}
+                            onClick={() =>
+                                router.post(
+                                    mergeHref,
+                                    { issues: [...selection.selected] },
+                                    { preserveScroll: true }
+                                )
+                            }
+                        >
+                            {t('issues.merge.action', { count: selection.selected.size })}
+                        </SecondaryButton>
+                    )}
 
                     {/* Die Sammelaktionen. Sie stehen in derselben Zeile wie die
                         Auswahl und nicht in einem eigenen Streifen: was

@@ -23,6 +23,7 @@ use App\Http\Controllers\ProjectFilterController;
 use App\Http\Controllers\ProjectKeyController;
 use App\Http\Controllers\ProjectPerformanceController;
 use App\Http\Controllers\ProjectPrivacyController;
+use App\Http\Controllers\ProjectSetupController;
 use App\Http\Controllers\ProjectTeamController;
 use App\Http\Controllers\SamplingRuleController;
 use App\Http\Controllers\ScrubRuleController;
@@ -48,6 +49,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::put('{project}/teams', [ProjectTeamController::class, 'update'])
                 ->name('projects.teams.update');
+
+            // Der Einrichtungs-Assistent. Er zeigt die DSN im Klartext und
+            // braucht deshalb dasselbe Recht wie die Schlüssel-Seite. Einen
+            // gespeicherten Fortschritt hat er nicht — er ist jederzeit erneut
+            // aufrufbar (siehe ProjectSetupController).
+            Route::get('{project}/einrichtung', [ProjectSetupController::class, 'index'])
+                ->name('projects.setup.index');
+            // Woher der Wartebildschirm erfährt, dass die erste Meldung da ist,
+            // ohne dass die Seite neu geladen wird.
+            Route::get('{project}/einrichtung/stand', [ProjectSetupController::class, 'status'])
+                ->name('projects.setup.status');
 
             // Umgebungen. Nur die Sichtbarkeit ist einstellbar — die Einträge
             // selbst entstehen aus den eingehenden Meldungen.

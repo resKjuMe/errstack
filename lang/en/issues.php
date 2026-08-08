@@ -211,6 +211,47 @@ return [
         ],
     ],
 
+    // Merging and splitting issues by hand (S9,
+    // app/Support/Issues/IssueMerging).
+    'merge' => [
+        'action' => 'Merge :count issues',
+        'hint' => 'The selected issues become one. The one seen most often becomes the '
+            .'head, the others become subgroups and can be split off again one by one. '
+            .'No event is lost in the process.',
+        'merged_into' => 'This issue is a subgroup of',
+
+        'badge' => [
+            'label' => ':count merged',
+            'hint' => 'This issue was merged by hand from several. The figures cover all '
+                .'subgroups together.',
+        ],
+
+        'sources' => [
+            'title' => 'Subgroups (:count)',
+            'description' => 'Issues merged by hand. Their figures are the ones from the '
+                .'merge — whatever happened afterwards counts towards the issue above.',
+            'figures' => ':count times · :first to :last',
+        ],
+
+        'split' => [
+            'action' => 'Split off',
+            'hint' => 'This subgroup returns to the list as an issue of its own, with the '
+                .'figures it had when it was merged.',
+        ],
+
+        'error' => [
+            'mixed_projects' => 'Issues can only be merged within a single project.',
+            'only_errors' => 'Only errors can be merged, not performance issues.',
+            'already_merged' => 'At least one of the selected issues is already a '
+                .'subgroup. It has to be split off first.',
+        ],
+
+        'flash' => [
+            'merged' => ':count issues merged into one.',
+            'unmerged' => 'Subgroup split off again.',
+        ],
+    ],
+
     'live' => [
         'new_one' => 'One new issue',
         'new_many' => ':count new issues',

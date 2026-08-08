@@ -25,9 +25,16 @@ use Illuminate\Support\Facades\DB;
  * Betroffenen, erstem und letztem Auftreten.
  *
  * Die Gruppe (I5) sagt, welche Meldungen zusammengehören; der Eintrag sagt, was
- * das bedeutet. Er umfasst zunächst genau eine Gruppe und ab S9 mehrere, wenn
- * jemand von Hand zusammenführt — deshalb zeigt die Gruppe auf ihn und nicht
- * umgekehrt.
+ * das bedeutet. Er umfasst zunächst genau eine Gruppe und mehrere, sobald jemand
+ * von Hand zusammenführt — deshalb zeigt die Gruppe auf ihn und nicht umgekehrt.
+ *
+ * **Zusammengeführt wird über `merged_into_id`, nicht über das Umhängen von
+ * Gruppen.** Ein beigetretener Eintrag behält alles, was ihm gehört, und bekommt
+ * nur einen Verweis auf den Kopf; das Auftrennen löscht diesen Verweis wieder.
+ * Wer über einen Eintrag redet, meint deshalb je nach Frage zwei verschiedene
+ * Mengen: seine **eigenen** Zeilen (`groups()`, `events()`, seine Zähler) und
+ * die seiner **Mitglieder** ({@see memberIds()}). Alles, was jemandem angezeigt
+ * wird, meint die zweite.
  *
  * **Das Zählen ist der Kern dieser Klasse, und es ist sperrfrei.** Kein
  * `lockForUpdate`, kein Lesen-Ändern-Schreiben: jede Fortschreibung ist eine
@@ -46,6 +53,7 @@ use Illuminate\Support\Facades\DB;
  * @property int $id
  * @property int $project_id
  * @property IssueCategory $category
+ * @property int|null $merged_into_id
  * @property string|null $title
  * @property string|null $culprit
  * @property string|null $type
@@ -72,6 +80,7 @@ use Illuminate\Support\Facades\DB;
  * @property int|null $ignore_users
  * @property int|null $ignore_times_seen
  * @property int|null $ignore_users_seen
+ * @property int|null $merged_sources_count nur nach `withCount('mergedSources')`
  */
 class Issue extends Model
 {
@@ -109,7 +118,15 @@ class Issue extends Model
             $existing = self::query()->find($group->issue_id);
 
             if ($existing !== null) {
-                return $existing;
+                // Der Kopf und nicht der Eintrag selbst: ist er von Hand einem
+                // anderen beigetreten, gehören die folgenden Meldungen dorthin.
+                // Sonst liefe die Zählung weiter am beigetretenen Eintrag
+                // auf, den niemand mehr in der Liste sieht — der
+                // zusammengeführte Fehler stünde still, obwohl er auftritt.
+                //
+                // Eine Abfrage mehr, aber nur für zusammengeführte Gruppen:
+                // steht dort `null` — der Regelfall —, wird nichts nachgeladen.
+                return $existing->head();
             }
         }
 
@@ -425,10 +442,12 @@ class Issue extends Model
     }
 
     /**
-     * Die Gruppen, aus denen dieser Eintrag besteht.
+     * Die **eigenen** Gruppen dieses Eintrags.
      *
-     * Bis S9 genau eine. Die Beziehung steht trotzdem in der Mehrzahl, weil
-     * sich daran später nichts ändern soll — nur die Zahl der Zeilen.
+     * Ohne die seiner Mitglieder: die gehören denen und kommen erst über
+     * {@see groupIds()} dazu. Wer alle Meldungen eines zusammengeführten
+     * Eintrags meint — und das ist beim Anzeigen fast immer der Fall —, nimmt
+     * deshalb nicht diese Beziehung.
      *
      * @return HasMany<EventGroup, $this>
      */
@@ -438,13 +457,117 @@ class Issue extends Model
     }
 
     /**
-     * Die Ereignisse dieses Eintrags — über seine Gruppen.
+     * Die Ereignisse dieses Eintrags — über seine eigenen Gruppen.
+     *
+     * Dieselbe Einschränkung wie bei {@see groups()}: die Meldungen der
+     * Mitglieder sind nicht dabei.
      *
      * @return HasManyThrough<Event, EventGroup, $this>
      */
     public function events(): HasManyThrough
     {
         return $this->hasManyThrough(Event::class, EventGroup::class, 'issue_id', 'event_group_id');
+    }
+
+    /**
+     * Der Eintrag, dem dieser beigetreten ist — oder `null`, wenn er für sich
+     * steht.
+     *
+     * @return BelongsTo<self, $this>
+     */
+    public function mergedInto(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'merged_into_id');
+    }
+
+    /**
+     * Die Einträge, die diesem beigetreten sind — die Untergruppen, die die
+     * Detailseite zeigt.
+     *
+     * @return HasMany<self, $this>
+     */
+    public function mergedSources(): HasMany
+    {
+        return $this->hasMany(self::class, 'merged_into_id');
+    }
+
+    /**
+     * Ist dieser Eintrag einem anderen beigetreten?
+     */
+    public function isMerged(): bool
+    {
+        return $this->merged_into_id !== null;
+    }
+
+    /**
+     * Der Eintrag, unter dem dieser angezeigt und gezählt wird.
+     *
+     * **Genau eine Stufe, keine Kette.** Ein Kopf darf nicht selbst beitreten
+     * und ein Beigetretener nicht Kopf sein ({@see App\Support\Issues\IssueMerging});
+     * damit ist die Auflösung ein einzelner Schritt und nicht eine Schleife, die
+     * im Fehlerfall keinen Boden hat. Der Preis ist eine Regel mehr beim
+     * Zusammenführen, der Gewinn ist, dass jede Leseabfrage mit einem `whereIn`
+     * auskommt.
+     */
+    public function head(): self
+    {
+        if (! $this->isMerged()) {
+            return $this;
+        }
+
+        // `?? $this`, falls der Kopf inzwischen gelöscht wurde: der
+        // Fremdschlüssel setzt die Spalte dann auf `null`, aber diese Instanz
+        // kann älter sein als das Löschen.
+        return $this->mergedInto ?? $this;
+    }
+
+    /**
+     * Die Kennungen dieses Eintrags und aller ihm beigetretenen.
+     *
+     * Das ist die Menge, über die summiert wird: Verlaufsgrafik, Merkmale und
+     * das Blättern zwischen den Meldungen meinen den Fehler, wie er dasteht —
+     * und dazu gehören die Untergruppen.
+     *
+     * @return list<int>
+     */
+    public function memberIds(): array
+    {
+        if ($this->isMerged()) {
+            // Ein beigetretener Eintrag hat keine eigenen Mitglieder (eine
+            // Stufe, siehe {@see head()}). Die Abfrage wäre garantiert leer —
+            // hier wird sie erst gar nicht gestellt.
+            return [$this->id];
+        }
+
+        // Die schon geladene Beziehung, falls es sie gibt: die Detailseite lädt
+        // die Untergruppen ohnehin, und die Merkmale fragen zweimal danach —
+        // ohne das wären es zwei Abfragen für eine Antwort, die schon dasteht.
+        $members = $this->relationLoaded('mergedSources')
+            ? $this->mergedSources
+            : $this->mergedSources()->get(['id']);
+
+        return [
+            $this->id,
+            ...$members->pluck('id')->all(),
+        ];
+    }
+
+    /**
+     * Die Gruppen dieses Eintrags **samt** denen seiner Mitglieder, als
+     * Unterabfrage.
+     *
+     * Eine Unterabfrage und keine Liste von Kennungen: ein Eintrag mit vielen
+     * Untergruppen brächte sonst deren Kennungen einzeln in jede Abfrage, und
+     * das ist genau die Stelle, an der eine Anfrage aus der Adresszeile beliebig
+     * lang wird.
+     *
+     * @return Builder<EventGroup>
+     */
+    public function groupIds(): Builder
+    {
+        return EventGroup::query()
+            ->whereIn('issue_id', $this->memberIds())
+            ->select('event_groups.id');
     }
 
     /**
@@ -528,6 +651,21 @@ class Issue extends Model
     public function scopeOpen(Builder $query): void
     {
         $query->where('status', IssueStatus::Unresolved);
+    }
+
+    /**
+     * Nur Einträge, die für sich stehen — ohne die einem anderen beigetretenen.
+     *
+     * Der Filter der Fehlerliste. Ein beigetretener Eintrag ist nicht
+     * verschwunden, er steht nur nicht mehr für sich: seine Zahlen sind im Kopf
+     * enthalten, und daneben ein zweites Mal einzeln aufzutauchen wäre genau die
+     * Doppelzählung, gegen die jemand den Fehler zusammengeführt hat.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeStandalone(Builder $query): void
+    {
+        $query->whereNull('merged_into_id');
     }
 
     /**
