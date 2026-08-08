@@ -23,9 +23,13 @@ return [
     // @see: https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/#logger
     // 'logger' => Sentry\Logger\DebugFileLogger::class, // By default this will log to `storage_path('logs/sentry.log')`
 
-    // The release version of your application
-    // Example with dynamic git hash: trim(exec('git --git-dir ' . base_path('.git') . ' log --pretty="%h" -n1 HEAD'))
-    'release' => env('SENTRY_RELEASE'),
+    // Welche Auslieferung läuft — die Angabe, an der die Versionen (R1) hängen:
+    // ohne sie steht an jedem Fehler „erste Version: unbekannt".
+    //
+    // `SENTRY_RELEASE` hat Vorrang; ohne sie zählt eine Datei `VERSION` im
+    // Wurzelverzeichnis, die das Deploy-Skript schreibt
+    // ({@see App\Support\SelfMonitoring\DeployedVersion}).
+    'release' => App\Support\SelfMonitoring\DeployedVersion::resolve(env('SENTRY_RELEASE'), dirname(__DIR__)),
 
     // When left empty or `null` the Laravel environment will be used (usually discovered from `APP_ENV` in your `.env`)
     'environment' => env('SENTRY_ENVIRONMENT'),
@@ -79,6 +83,7 @@ return [
         // {@see Sentry\Laravel\Integration::extractNameAndSourceForRoute()}.
         '/api/{project}/store',
         '/api/{project}/envelope',
+        '/api/{project}/security',
         '/api/{project}/cron/{monitor}/{key}',
     ],
 
