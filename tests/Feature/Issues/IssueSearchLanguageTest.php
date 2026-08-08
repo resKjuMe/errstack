@@ -95,7 +95,13 @@ class IssueSearchLanguageTest extends TestCase
      */
     private function event(Project $project, Issue $issue, array $user): void
     {
-        $group = EventGroup::factory()->for($project)->create(['issue_id' => $issue->id]);
+        // Der Fingerabdruck kommt aus dem Eintrag, nicht aus der Fabrik: die
+        // würfelt aus drei Fehlerarten, und zwei Gruppen in einem Projekt
+        // stoßen so in einem Drittel der Läufe gegen den Eindeutigkeits-Index.
+        $group = EventGroup::factory()->for($project)->create([
+            'issue_id' => $issue->id,
+            'fingerprint' => md5('nutzer-'.$issue->id),
+        ]);
 
         Event::factory()->for($project)->create([
             'event_group_id' => $group->id,
