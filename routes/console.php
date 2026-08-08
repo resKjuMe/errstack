@@ -51,6 +51,19 @@ ScheduleCheckIn::attach($sweep);
 // der länger als eine Minute braucht, würde sonst vom nächsten überholt.
 Schedule::command('alerts:sweep')->everyMinute()->withoutOverlapping();
 
+// Nachsehen, ob die eigene Verarbeitung mitkommt (O5).
+//
+// Der dritte Fall derselben Art: ein Rückstand meldet sich nicht von selbst.
+// Ein Fehler meldet sich, ein Ausfall fällt auf — eine Warteschlange, die
+// volläuft, sieht von außen aus wie Betrieb, bis Nutzer fragen, warum ihre
+// Fehler fehlen.
+//
+// Minütlich, weil die Frist bis zur Warnung in Minuten gerechnet wird
+// ({@see App\Support\Operations\BacklogWatch}) und ein gröberer Takt sie
+// verwässern würde. `withoutOverlapping` gegen das Auflaufen: die Prüfung liest
+// den Rückstand, und genau der macht Abfragen langsam.
+Schedule::command('ops:watch')->everyMinute()->withoutOverlapping();
+
 // Die Wichtigkeit der Fehler fortschreiben und eskalierte Stummschaltungen
 // erkennen (S11).
 //

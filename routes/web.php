@@ -42,3 +42,4 @@ require __DIR__.'/releases.php';
 require __DIR__.'/profiling.php';
 require __DIR__.'/traces.php';
 require __DIR__.'/api-tokens.php';
+require __DIR__.'/operations.php';

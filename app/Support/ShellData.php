@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -176,6 +177,17 @@ final class ShellData
                 'activePattern' => 'profile.*',
                 'icon' => 'profile',
             ],
+            // Der Zustand der Installation (O5). Im Nutzer-Menü und nicht in
+            // der Kopfzeile: die Seite wird selten gebraucht, und wenn, dann
+            // gezielt. Sichtbar nur für den Betreiber — steht der Eintrag bei
+            // allen, führt er die Mehrheit auf eine Seite, die sie nicht sehen
+            // darf.
+            ...(Gate::allows('operations') ? [[
+                'label' => __('nav.menu_items.operations'),
+                'route' => 'operations.index',
+                'activePattern' => 'operations.*',
+                'icon' => 'pulse',
+            ]] : []),
             [
                 'label' => __('nav.menu_items.notifications'),
                 'route' => 'notifications.preferences',
