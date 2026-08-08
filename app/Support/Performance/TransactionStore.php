@@ -9,6 +9,7 @@ use App\Models\Transaction;
 use App\Models\TransactionAggregate;
 use App\Models\TransactionSpan;
 use App\Models\TransactionUserAggregate;
+use App\Models\WebVitalAggregate;
 use App\Support\Ingest\Sampling\SamplingDecision;
 use Illuminate\Support\Facades\DB;
 
@@ -66,6 +67,13 @@ final class TransactionStore
             $transaction->source = $event->source;
             $transaction->status = $event->status;
             $transaction->platform = $event->platform;
+            // Womit und von wo aus gemessen wurde. Ohne diese drei Angaben wäre
+            // die Auswertung der Browser-Messwerte (PF5) auf einen Gesamtwert
+            // beschränkt — und „das LCP ist schlecht" ohne „bei wem" ist keine
+            // Auskunft, mit der sich etwas beheben lässt.
+            $transaction->browser = $event->browser;
+            $transaction->device = $event->device;
+            $transaction->country = $event->country;
             $transaction->environment = $environment->name;
             $transaction->release = $event->release;
             $transaction->user_identifier = $event->userIdentifier;
@@ -98,6 +106,14 @@ final class TransactionStore
                 // Verkehr, aber ohne Betroffene — und niemand käme darauf, dass
                 // die Zahl fehlt statt null zu sein.
                 TransactionUserAggregate::record($transaction, $transaction->miserable());
+
+                // Und die dritte: die Browser-Messwerte (PF5). Sie schreibt nur
+                // etwas fort, wenn die Meldung welche mitgebracht hat — bei
+                // serverseitigen Transaktionen ist das nie der Fall, und eine
+                // Zeile mit lauter Nullen wäre dort keine Auskunft, sondern eine
+                // Seite ohne Messwerte, die in der Übersicht als gemessen
+                // gälte.
+                WebVitalAggregate::record($transaction);
             }
 
             return $transaction;

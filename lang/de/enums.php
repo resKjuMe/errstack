@@ -467,5 +467,28 @@ return [
         'frame_limit_reached' => 'Über der Grenze übersetzter Rahmen je Meldung:',
         'no_source_content' => 'Die Quellkarte enthält den Quelltext nicht:',
     ],
+    'web_vital' => [
+        'lcp' => 'LCP',
+        'inp' => 'INP',
+        'cls' => 'CLS',
+        'fcp' => 'FCP',
+        'ttfb' => 'TTFB',
+        'fid' => 'FID',
+    ],
+
+    'web_vital_description' => [
+        'lcp' => 'Wann der größte sichtbare Inhalt stand',
+        'inp' => 'Wie träge die Seite auf Eingaben reagiert',
+        'cls' => 'Wie stark der Inhalt beim Laden springt',
+        'fcp' => 'Wann überhaupt etwas zu sehen war',
+        'ttfb' => 'Wann die erste Antwort des Servers ankam',
+        'fid' => 'Verzögerung der ersten Eingabe (Vorgänger von INP)',
+    ],
+
+    'vital_rating' => [
+        'good' => 'Gut',
+        'needs_improvement' => 'Mäßig',
+        'poor' => 'Schlecht',
+    ],
 
 ];

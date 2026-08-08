@@ -17,6 +17,7 @@ return [
         'releases' => 'Releases',
         'performance' => 'Performance',
         'performance_issues' => 'Performance issues',
+        'web_vitals' => 'Web Vitals',
         'profiling' => 'Profiles',
         'projects' => 'Projects',
         'organizations' => 'Organizations',
