@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
@@ -15,10 +16,15 @@ class ShellTest extends TestCase
     /**
      * Der Rahmen ist seit der Anmeldung (F3) nur angemeldet zu sehen — jeder Test,
      * der ihn prüft, braucht ein Konto.
+     *
+     * Und seit U5 eine Organisation: die Fachseiten liegen unter
+     * `/organisationen/{organisation}/…`, und ohne Mitgliedschaft gibt es diese
+     * Adressen für dieses Konto nicht — die Leiste hätte dann nichts zu zeigen.
      */
     private function signIn(): User
     {
         $user = User::factory()->create();
+        $user->switchOrganization(Organization::factory()->withMember($user)->create());
 
         $this->actingAs($user);
 
@@ -29,7 +35,7 @@ class ShellTest extends TestCase
     {
         $this->signIn();
 
-        $this->get('/')
+        $this->get(route('dashboard'))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Dashboard')
@@ -70,7 +76,7 @@ class ShellTest extends TestCase
     {
         $this->signIn();
 
-        $this->get('/')
+        $this->get(route('dashboard'))
             ->assertInertia(function (AssertableInertia $page) {
                 $nav = $page->toArray()['props']['shell']['nav'];
 
@@ -100,7 +106,7 @@ class ShellTest extends TestCase
         // dort ein leeres Kästchen.
         $this->signIn();
 
-        $this->get('/')
+        $this->get(route('dashboard'))
             ->assertInertia(function (AssertableInertia $page) {
                 foreach ($page->toArray()['props']['shell']['nav'] as $group) {
                     foreach ($group['links'] as $link) {
@@ -117,25 +123,25 @@ class ShellTest extends TestCase
         // Genau ein Eintrag ist hervorgehoben — die Antwort auf die Frage, wo
         // man gerade ist, gibt es nicht in doppelter Ausführung.
         $expectations = [
-            '/' => 'Übersicht',
-            '/bausteine' => 'Bausteine',
+            route('dashboard') => 'Übersicht',
+            route('components') => 'Bausteine',
             // Die Merkmal-Übersicht markiert sich selbst über ihr Muster
             // `tags.*` und nicht über die Adresse.
-            '/merkmale' => 'Merkmale',
+            route('tags.index') => 'Merkmale',
             // Die Auswertungsseite markiert sich über `performance.index`;
             // `performance.*` wäre hier falsch, darunter lägen auch die
             // Leistungsprobleme.
-            '/leistung' => 'Leistung',
-            '/leistungsprobleme' => 'Leistungsprobleme',
+            route('performance.index') => 'Leistung',
+            route('performance.issues.index') => 'Leistungsprobleme',
             // Das Ladeerlebnis ist ein eigener Eintrag: es misst, was der
             // Besucher erlebt, und nicht, was der Server braucht.
-            '/ladeerlebnis' => 'Ladeerlebnis',
-            // Die Profile liegen unterhalb von `/leistung`, gehören aber zu
+            route('web-vitals.index') => 'Ladeerlebnis',
+            // Die Profile liegen unterhalb von `leistung`, gehören aber zu
             // ihrem eigenen Muster `profiling.*`: die Adresse allein würde hier
             // zwei Einträge gleichzeitig markieren.
-            '/leistung/profile' => 'Profile',
-            '/versionen' => 'Versionen',
-            '/rueckmeldungen' => 'Rückmeldungen',
+            route('profiling.index') => 'Profile',
+            route('releases.index') => 'Versionen',
+            route('feedback.index') => 'Rückmeldungen',
         ];
 
         foreach ($expectations as $url => $expected) {
@@ -152,7 +158,7 @@ class ShellTest extends TestCase
     {
         $user = $this->signIn();
 
-        $this->get('/')
+        $this->get(route('dashboard'))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('shell.user.name', $user->name)
                 ->where('shell.user.email', $user->email)
@@ -176,7 +182,7 @@ class ShellTest extends TestCase
         $this->signIn();
 
         // Anti-Flash-Script: setzt die .dark-Klasse synchron im <head>.
-        $this->get('/')
+        $this->get(route('dashboard'))
             ->assertOk()
             ->assertSee("localStorage.getItem('theme')", false)
             ->assertSee("classList.toggle('dark'", false);
@@ -187,7 +193,7 @@ class ShellTest extends TestCase
         $this->signIn();
 
         $this->withSession(['status' => 'Gespeichert.'])
-            ->get('/')
+            ->get(route('dashboard'))
             ->assertInertia(fn (AssertableInertia $page) => $page->where('flash.status', 'Gespeichert.'));
     }
 }

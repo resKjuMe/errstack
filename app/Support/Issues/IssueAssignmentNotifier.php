@@ -6,6 +6,7 @@ use App\Enums\NotificationEventType;
 use App\Enums\NotificationLevel;
 use App\Http\Requests\IssueListRequest;
 use App\Models\Issue;
+use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
 use App\Notifications\NotificationDispatcher;
@@ -42,8 +43,13 @@ final class IssueAssignmentNotifier
      *                               Auswahl bleibt die Liste leer — dann zählt
      *                               nur `$count`.
      */
-    public function send(IssueAssignee $assignee, int $count, array $issueIds, ?User $actor): void
-    {
+    public function send(
+        Organization $organization,
+        IssueAssignee $assignee,
+        int $count,
+        array $issueIds,
+        ?User $actor,
+    ): void {
         if ($count < 1) {
             return;
         }
@@ -65,15 +71,20 @@ final class IssueAssignmentNotifier
 
         $this->dispatcher->sendToUsers(
             User::query()->whereIn('id', $recipients)->get(),
-            $this->message($assignee, $count, $single, $actor),
+            $this->message($organization, $assignee, $count, $single, $actor),
             NotificationEventType::Assignment,
             $project instanceof Project ? $project : null,
             $project?->organization,
         );
     }
 
-    private function message(IssueAssignee $assignee, int $count, ?Issue $issue, ?User $actor): NotificationMessage
-    {
+    private function message(
+        Organization $organization,
+        IssueAssignee $assignee,
+        int $count,
+        ?Issue $issue,
+        ?User $actor,
+    ): NotificationMessage {
         $actorName = $actor->name ?? __('issues.activity.system');
 
         // An ein Team gerichtet steht das im Betreff: sonst liest ein Mitglied
@@ -93,7 +104,7 @@ final class IssueAssignmentNotifier
                 // wer das liest, muss sonst nachsehen, um zu wissen, ob es eilt.
                 body: $issue->title ?? $issue->culprit ?? __('issues.list.untitled'),
                 level: NotificationLevel::Info,
-                url: route('issues.show', $issue),
+                url: route('issues.show', ['organization' => $organization, 'issue' => $issue]),
                 context: array_filter([
                     __('issues.assignment.notification.context_project') => $issue->project?->name,
                     __('issues.assignment.notification.context_culprit') => $issue->culprit,
@@ -117,6 +128,7 @@ final class IssueAssignmentNotifier
             // wenn die Liste inzwischen anders aussieht. Der Zustandsfilter geht
             // ausdrücklich auf „alle": zugewiesen wird auch, was erledigt ist.
             url: route('issues.index', [
+                'organization' => $organization,
                 'q' => 'assigned:'.$assignee->term(),
                 'status' => IssueListRequest::STATUS_ANY,
             ]),

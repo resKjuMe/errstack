@@ -82,6 +82,10 @@ return [
         'submit' => 'Delete organization',
     ],
 
+    'errors' => [
+        'not_a_member' => 'This account does not belong to that organization.',
+    ],
+
     'flash' => [
         'created' => 'Organization ":name" created.',
         'updated' => 'Organization saved.',

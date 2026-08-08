@@ -7,6 +7,11 @@
 |
 | Included at the end of routes/web.php.
 |
+| Alles hier liegt unter `/organisationen/{organisation}/…` (U5): welche
+| Organisation gemeint ist, steht in der Adresse und nicht in der zuletzt
+| gewählten. Aufgelöst und auf Mitgliedschaft geprüft wird sie in
+| App\Http\Middleware\ResolveOrganization.
+|
 | Die Übersicht hängt wie alle Auswertungsseiten nicht an einem Projekt in der
 | Adresszeile: welche Projekte gemeint sind, steht in der globalen Filterleiste.
 | Die Rechteprüfung steckt damit im Filter — was jemand nicht sehen darf, steht
@@ -26,20 +31,22 @@
 use App\Http\Controllers\ProfilingController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('leistung/profile', [ProfilingController::class, 'index'])
-        ->name('profiling.index');
+Route::middleware(['auth', 'verified'])
+    ->prefix('organisationen/{organization}')
+    ->group(function () {
+        Route::get('leistung/profile', [ProfilingController::class, 'index'])
+            ->name('profiling.index');
 
-    Route::get('leistung/profile/{profile}', [ProfilingController::class, 'show'])
-        ->name('profiling.show');
+        Route::get('leistung/profile/{profile}', [ProfilingController::class, 'show'])
+            ->name('profiling.show');
 
-    Route::get('leistung/transaktionen/{transaction}/profil', [ProfilingController::class, 'transaction'])
-        ->name('profiling.transaction');
+        Route::get('leistung/transaktionen/{transaction}/profil', [ProfilingController::class, 'transaction'])
+            ->name('profiling.transaction');
 
-    // Die Trace-Kennung ist keine Zeile in einer Tabelle, sondern 32
-    // Hex-Zeichen, die mehrere Projekte gemeinsam haben — deshalb kein
-    // Modell-Binding, sondern eine geprüfte Zeichenkette.
-    Route::get('leistung/traces/{trace}/profil', [ProfilingController::class, 'trace'])
-        ->where('trace', '[0-9a-fA-F]{32}')
-        ->name('profiling.trace');
-});
+        // Die Trace-Kennung ist keine Zeile in einer Tabelle, sondern 32
+        // Hex-Zeichen, die mehrere Projekte gemeinsam haben — deshalb kein
+        // Modell-Binding, sondern eine geprüfte Zeichenkette.
+        Route::get('leistung/traces/{trace}/profil', [ProfilingController::class, 'trace'])
+            ->where('trace', '[0-9a-fA-F]{32}')
+            ->name('profiling.trace');
+    });

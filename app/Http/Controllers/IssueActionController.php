@@ -6,6 +6,7 @@ use App\Enums\IssueIgnoreMode;
 use App\Http\Requests\IssueActionRequest;
 use App\Models\Issue;
 use App\Policies\IssuePolicy;
+use App\Support\CurrentOrganization;
 use App\Support\Filters\GlobalFilter;
 use App\Support\Formats;
 use App\Support\Issues\IssueActionResult;
@@ -82,10 +83,19 @@ class IssueActionController extends Controller
         // niemanden benachrichtigt naturgemäß niemanden.
         if ($action === 'assign') {
             $assignee = $request->assignee();
+            // Die Organisation kommt aus der Adresse und wird ausdrücklich
+            // mitgegeben: die Nachricht trägt einen Link, und der entsteht nicht
+            // zwingend noch in dieser Anfrage.
+            $organization = CurrentOrganization::for($request);
 
-            if ($assignee !== null) {
-                app(IssueAssignmentNotifier::class)
-                    ->send($assignee, $result->count, $result->undoIds, $request->user());
+            if ($assignee !== null && $organization !== null) {
+                app(IssueAssignmentNotifier::class)->send(
+                    $organization,
+                    $assignee,
+                    $result->count,
+                    $result->undoIds,
+                    $request->user(),
+                );
             }
         }
 

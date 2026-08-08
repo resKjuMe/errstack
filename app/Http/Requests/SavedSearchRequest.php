@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\IssueSort;
 use App\Models\SavedSearch;
+use App\Support\CurrentOrganization;
 use App\Support\Search\SearchExpression;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -55,7 +56,7 @@ class SavedSearchRequest extends FormRequest
     /**
      * Die Organisation, in der der Name eindeutig sein muss.
      *
-     * Beim Ändern ist es die der Suche und nicht die gerade aktive: wer die
+     * Beim Ändern ist es die der Suche und nicht die aus der Adresse: wer die
      * Organisation gewechselt hat und einen alten Reiter absendet, soll seine
      * Suche nicht in eine andere schieben.
      */
@@ -67,7 +68,7 @@ class SavedSearchRequest extends FormRequest
             return $search->organization_id;
         }
 
-        return $this->user()->resolveCurrentOrganization()?->id;
+        return CurrentOrganization::for($this)?->id;
     }
 
     /**

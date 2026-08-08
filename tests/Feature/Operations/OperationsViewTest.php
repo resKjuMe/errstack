@@ -136,7 +136,7 @@ class OperationsViewTest extends TestCase
 
     private function menuHasOperations(User $user): bool
     {
-        $shell = $this->actingAs($user)->get('/')->viewData('page')['props']['shell'];
+        $shell = $this->actingAs($user)->get(route('dashboard'))->viewData('page')['props']['shell'];
 
         foreach ($shell['menu'] as $item) {
             if ($item['href'] === route('operations.index')) {

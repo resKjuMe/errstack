@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\FilterPeriod;
 use App\Models\Environment;
+use App\Support\CurrentOrganization;
 use App\Support\Filters\GlobalFilter;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -49,14 +50,15 @@ class GlobalFilterRequest extends FormRequest
     }
 
     /**
-     * Der aufgelöste Filter für die aktive Organisation des Betrachters.
+     * Der aufgelöste Filter für die Organisation, die in der Adresse steht
+     * ({@see CurrentOrganization}) — nicht für die zuletzt angesehene.
      */
     public function filter(): GlobalFilter
     {
         $user = $this->user();
         $projects = $this->validated('projects');
 
-        return GlobalFilter::resolve($user->resolveCurrentOrganization(), $user, [
+        return GlobalFilter::resolve(CurrentOrganization::for($this), $user, [
             'projects' => is_array($projects) ? array_values($projects) : [],
             'environment' => $this->stringOrNull($this->validated('environment')),
             'period' => $this->stringOrNull($this->validated('period')),

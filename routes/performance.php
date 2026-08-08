@@ -7,6 +7,11 @@
 |
 | Included at the end of routes/web.php.
 |
+| Alles hier liegt unter `/organisationen/{organisation}/…` (U5): welche
+| Organisation gemeint ist, steht in der Adresse und nicht in der zuletzt
+| gewählten. Aufgelöst und auf Mitgliedschaft geprüft wird sie in
+| App\Http\Middleware\ResolveOrganization.
+|
 | Die Auswertung der Antwortzeiten: die Übersicht („wohin soll ich schauen")
 | und die Detailanalyse einer einzelnen Transaktion („warum ist das langsam").
 |
@@ -43,36 +48,38 @@ use App\Http\Controllers\TransactionDetailController;
 use App\Http\Controllers\WebVitalController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('leistung', PerformanceController::class)->name('performance.index');
+Route::middleware(['auth', 'verified'])
+    ->prefix('organisationen/{organization}')
+    ->group(function () {
+        Route::get('leistung', PerformanceController::class)->name('performance.index');
 
-    Route::get('leistung/transaktion', TransactionDetailController::class)
-        ->name('performance.transaction');
+        Route::get('leistung/transaktion', TransactionDetailController::class)
+            ->name('performance.transaction');
 
-    Route::get('leistung/trends', [PerformanceTrendController::class, 'index'])
-        ->name('performance.trends.index');
+        Route::get('leistung/trends', [PerformanceTrendController::class, 'index'])
+            ->name('performance.trends.index');
 
-    // Abhaken und wieder aufheben unter derselben Adresse, unterschieden nur
-    // durch das Verfahren: es ist ein Schalter und keine zwei Handlungen — die
-    // Oberfläche schickt POST oder DELETE an dieselbe Stelle.
-    Route::post('leistung/trends/{trend}/gesehen', [PerformanceTrendController::class, 'store'])
-        ->name('performance.trends.seen');
+        // Abhaken und wieder aufheben unter derselben Adresse, unterschieden nur
+        // durch das Verfahren: es ist ein Schalter und keine zwei Handlungen — die
+        // Oberfläche schickt POST oder DELETE an dieselbe Stelle.
+        Route::post('leistung/trends/{trend}/gesehen', [PerformanceTrendController::class, 'store'])
+            ->name('performance.trends.seen');
 
-    Route::delete('leistung/trends/{trend}/gesehen', [PerformanceTrendController::class, 'destroy'])
-        ->name('performance.trends.unseen');
+        Route::delete('leistung/trends/{trend}/gesehen', [PerformanceTrendController::class, 'destroy'])
+            ->name('performance.trends.unseen');
 
-    Route::get('leistungsprobleme', [PerformanceIssueController::class, 'index'])
-        ->name('performance.issues.index');
+        Route::get('leistungsprobleme', [PerformanceIssueController::class, 'index'])
+            ->name('performance.issues.index');
 
-    Route::get('leistungsprobleme/{issue}', [PerformanceIssueController::class, 'show'])
-        ->name('performance.issues.show');
+        Route::get('leistungsprobleme/{issue}', [PerformanceIssueController::class, 'show'])
+            ->name('performance.issues.show');
 
-    Route::get('ladeerlebnis', [WebVitalController::class, 'index'])
-        ->name('web-vitals.index');
+        Route::get('ladeerlebnis', [WebVitalController::class, 'index'])
+            ->name('web-vitals.index');
 
-    // Die Seite als Parameter und nicht als Pfad-Abschnitt: ihr Name ist ein
-    // Pfad und bringt damit genau die Zeichen mit, die ein Abschnitt nicht
-    // tragen kann — dieselbe Überlegung wie bei der Transaktions-Detailseite.
-    Route::get('ladeerlebnis/seite', [WebVitalController::class, 'show'])
-        ->name('web-vitals.show');
-});
+        // Die Seite als Parameter und nicht als Pfad-Abschnitt: ihr Name ist ein
+        // Pfad und bringt damit genau die Zeichen mit, die ein Abschnitt nicht
+        // tragen kann — dieselbe Überlegung wie bei der Transaktions-Detailseite.
+        Route::get('ladeerlebnis/seite', [WebVitalController::class, 'show'])
+            ->name('web-vitals.show');
+    });

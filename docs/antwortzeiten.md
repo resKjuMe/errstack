@@ -128,7 +128,7 @@ der Aufnahme (O12).
 
 ## Die Trace-Ansicht
 
-Unter `/spur/{trace_id}` steht der ganze Ablauf als Wasserfall: alle
+Unter `/organisationen/{org}/spur/{trace_id}` steht der ganze Ablauf als Wasserfall: alle
 Transaktionen dieser Spur, ihre Einzelschritte, die Zeitachse und die Fehler an
 der Stelle, an der sie gemeldet wurden (`App\Support\Performance\Trace`).
 
@@ -154,7 +154,7 @@ die Zusatzangaben eines Schrittes kommen erst beim Anklicken nach. Ohne beides
 wäre eine Spur mit zehntausend Schritten — also die mit dem N+1-Problem, wegen
 der man hier nachsieht — nicht zu öffnen.
 
-Der Weg von einem Fehler in seine Spur ist `/spur/ereignis/{event}`; dafür
+Der Weg von einem Fehler in seine Spur ist `/organisationen/{org}/spur/ereignis/{event}`; dafür
 tragen Fehlermeldungen `trace_id` und `trace_span_id` in eigenen Spalten. Sie
 stehen zwar auch in `contexts.trace`, aber ein Index über ein JSON-Fach wäre in
 MySQL und SQLite verschieden zu schreiben.
@@ -194,9 +194,9 @@ sollen sich die Rohdaten erneut durchlaufen lassen.
 ## Was hier noch nicht steht
 
 Die Auswertung. Die Übersicht (PF2) liest aus diesen Tabellen — sie steht unter
-`/leistung` und rechnet mit drei Abfragen, unabhängig von der Datenmenge
+`/organisationen/{org}/leistung` und rechnet mit drei Abfragen, unabhängig von der Datenmenge
 (`App\Support\Performance\TransactionOverview`), die Trace-Ansicht (PF4) unter
-`/spur/{trace_id}`. Detailseite mit Verteilung
+`/organisationen/{org}/spur/{trace_id}`. Detailseite mit Verteilung
 (PF3), Web Vitals (PF5), automatisch erkannte Probleme
 (PF6) und Trend-Erkennung (PF7, [docs/leistungstrends.md](leistungstrends.md))
 lesen ebenfalls von hier — geschrieben werden die Tabellen in diesem Teil.

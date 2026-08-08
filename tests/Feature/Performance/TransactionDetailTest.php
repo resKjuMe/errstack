@@ -79,7 +79,7 @@ class TransactionDetailTest extends TestCase
      */
     private function url(array $query = []): string
     {
-        return '/leistung/transaktion?'.http_build_query($query + [
+        return route('performance.transaction', $query + [
             'name' => self::NAME,
             'op' => 'http.server',
             'tz' => 'UTC',

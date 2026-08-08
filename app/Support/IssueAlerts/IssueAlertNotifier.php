@@ -156,7 +156,10 @@ final class IssueAlertNotifier
             // meldet je nach Fall eine Warnung und einen Absturz, und wer die
             // Nachricht sieht, will das unterscheiden können.
             level: $context->event->level->notificationLevel(),
-            url: route('issues.show', $issue),
+            // Die Organisation steht ausdrücklich dabei: diese Adresse entsteht
+            // außerhalb einer Anfrage, und dort gibt es keine Vorbelegung, aus
+            // der sie sich ergäbe (siehe App\Http\Middleware\ResolveOrganization).
+            url: route('issues.show', ['organization' => $project->organization, 'issue' => $issue]),
             context: $this->context($rule, $context, $matched),
             // Dieselbe Kennung über alle Meldungen einer Regel zu einem Fehler:
             // erst dadurch lassen sich Wiederholungen im Kanal einander
