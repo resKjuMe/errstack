@@ -4,17 +4,12 @@ import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
 import FilterBar from '../../components/FilterBar.jsx';
 import Pagination from '../../components/Pagination.jsx';
-import {
-    Checkbox,
-    InputLabel,
-    SecondaryButton,
-    SelectInput,
-    TextInput,
-} from '../../components/Form.jsx';
+import { Checkbox, InputLabel, SecondaryButton, SelectInput } from '../../components/Form.jsx';
 import { TableSkeleton } from '../../components/Skeleton.jsx';
 import { useT } from '../../i18n.js';
 import IssueActions from './IssueActions.jsx';
 import IssueRow from './IssueRow.jsx';
+import SearchInput from './SearchInput.jsx';
 import useIssueSelection from './useIssueSelection.js';
 import useLiveIssues from './useLiveIssues.js';
 
@@ -36,9 +31,10 @@ export default function Index({
     live: liveConfig,
     environmentIgnored,
     totalLabel,
-    unsupportedTerms = [],
-    tagLabel,
+    searchError = null,
+    unavailableTerms = [],
     tagsHref,
+    suggestHref,
     actions,
 }) {
     const { shell } = usePage().props;
@@ -56,18 +52,6 @@ export default function Index({
         auto: issues.current_page === 1 && list.sort === 'last_seen',
         paused: selection.selected.size > 0 || selection.allMatching,
     });
-
-    // Ein Feld der Adresszeile abwählen, ohne die übrigen anzurühren — für die
-    // Merkmal-Einschränkung, die aus einem Klick in der Verteilung entstanden
-    // ist und ohne diesen Weg nur von Hand aus dem Link zu entfernen wäre.
-    const drop = (key) => {
-        const query = new URLSearchParams(window.location.search);
-
-        query.delete(key);
-        query.delete('page');
-
-        router.get(`${window.location.pathname}?${query.toString()}`, {}, { preserveState: true });
-    };
 
     // Sortierung und Zustand sind Felder dieser Seite, nicht der Leiste; die
     // übrigen Parameter der Adresszeile bleiben deshalb stehen. Eine neue
@@ -109,23 +93,13 @@ export default function Index({
 
             <Card className="mb-4">
                 <div className="flex flex-wrap items-end gap-4">
-                    <form
-                        className="min-w-64 flex-1"
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            go({ q });
-                        }}
-                    >
-                        <InputLabel htmlFor="issue_q" value={t('issues.filter.search')} />
-                        <TextInput
-                            id="issue_q"
-                            type="search"
-                            className="mt-1 block w-full"
-                            value={q}
-                            placeholder={t('issues.filter.search_placeholder')}
-                            onChange={(e) => setQ(e.target.value)}
-                        />
-                    </form>
+                    <SearchInput
+                        value={q}
+                        onChange={setQ}
+                        onSubmit={() => go({ q })}
+                        suggestHref={suggestHref}
+                        t={t}
+                    />
 
                     <div>
                         <InputLabel htmlFor="issue_sort" value={t('issues.filter.sort')} />
@@ -159,35 +133,35 @@ export default function Index({
                         <span>{t('issues.list.count', { count: totalLabel })}</span>
                     </div>
                 </div>
-
-                {/* Die Merkmal-Einschränkung als abwählbare Marke: sie steht in
-                    der Adresszeile und wäre sonst nur an den Zahlen zu
-                    bemerken. */}
-                {list.tag && (
-                    <div className="mt-4 flex flex-wrap items-center gap-2">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-sm text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200">
-                            {t('tags.filter.active', {
-                                key: tagLabel ?? list.tag.key,
-                                value: list.tag.value,
-                            })}
-                            <button
-                                type="button"
-                                onClick={() => drop('tag')}
-                                aria-label={t('tags.filter.clear')}
-                                title={t('tags.filter.clear')}
-                                className="font-semibold hover:text-indigo-600 dark:hover:text-indigo-100"
-                            >
-                                ×
-                            </button>
-                        </span>
-                    </div>
-                )}
             </Card>
 
-            {unsupportedTerms.length > 0 && (
+            {/* Eine Eingabe, die nicht aufging, leert die Liste nicht — sie
+                sagt, woran es liegt, und zeigt die ungefilterte Liste. Die
+                Stelle steht dabei, weil „ungültiger Ausdruck" bei drei Klammern
+                keine Auskunft ist. */}
+            {searchError && (
+                <p
+                    role="alert"
+                    className="mb-4 rounded-md bg-red-50 px-4 py-2 text-sm text-red-800 dark:bg-red-900/30 dark:text-red-200"
+                >
+                    {t('issues.filter.search_error', { message: searchError.message })}
+                    {searchError.excerpt && (
+                        <>
+                            {' '}
+                            <span className="font-mono">
+                                {t('issues.filter.search_error_at', {
+                                    excerpt: searchError.excerpt,
+                                })}
+                            </span>
+                        </>
+                    )}
+                </p>
+            )}
+
+            {unavailableTerms.length > 0 && (
                 <p className="mb-4 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
-                    {t('issues.filter.search_unsupported', {
-                        terms: unsupportedTerms.join(', '),
+                    {t('issues.filter.search_unavailable', {
+                        terms: unavailableTerms.join(', '),
                     })}
                 </p>
             )}

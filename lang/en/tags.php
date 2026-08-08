@@ -43,11 +43,6 @@ return [
     'period_ignored' => 'The selected period does not narrow this breakdown: tags '
         .'are counted across the entire lifetime of an issue.',
 
-    'filter' => [
-        'active' => 'Narrowed down to :key: :value',
-        'clear' => 'Clear this filter',
-    ],
-
     'link' => [
         'issue' => 'Tags',
         'overview' => 'Tags of the selection',

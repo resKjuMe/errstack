@@ -234,32 +234,36 @@ class TagFacetsTest extends TestCase
         $this->tags($project, $chrome, 'browser', ['Chrome 124' => 100]);
         $this->tags($project, $firefox, 'browser', ['Firefox 125' => 100]);
 
+        // Der Klick schreibt einen Suchausdruck und keinen eigenen Parameter:
+        // die Einschränkung steht damit dort, wo man sie ändern und ergänzen
+        // kann — im Suchfeld. Genau diese Adresse baut TagLinks.
         $this->actingAs($user)
-            ->get(route('issues.index', ['tag' => 'browser:Chrome 124']))
+            ->get(route('issues.index', ['q' => 'browser:"Chrome 124"']))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('issues/Index')
                 ->has('issues.data', 1)
                 ->where('issues.data.0.id', $chrome->id)
-                ->where('list.tag.key', 'browser')
-                ->where('list.tag.value', 'Chrome 124')
-                ->where('tagLabel', 'Browser')
+                ->where('list.q', 'browser:"Chrome 124"')
                 ->etc()
             );
     }
 
-    public function test_an_unusable_tag_expression_leaves_the_list_alone(): void
+    /**
+     * Und der Klick erzeugt tatsächlich diese Adresse — sonst prüfte die
+     * Erwartung oben nur sich selbst.
+     */
+    public function test_the_link_of_a_value_carries_that_expression(): void
     {
         [$user, , $project] = $this->context();
-        $this->issue($project);
 
-        // Ein von Hand verkürzter Link soll die Liste ungefiltert zeigen und
-        // nicht mit einem Fehler antworten.
+        $this->tags($project, $this->issue($project), 'browser', ['Chrome 124' => 100]);
+
         $this->actingAs($user)
-            ->get(route('issues.index', ['tag' => 'browser']))
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->has('issues.data', 1)
-                ->where('list.tag', null)
-                ->etc()
-            );
+            ->get(route('tags.show', 'browser'))
+            ->assertInertia(function (AssertableInertia $page): void {
+                $href = (string) $page->toArray()['props']['detail']['values'][0]['href'];
+
+                $this->assertStringContainsString(rawurlencode('browser:"Chrome 124"'), $href);
+            });
     }
 }

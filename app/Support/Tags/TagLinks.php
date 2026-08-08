@@ -3,6 +3,7 @@
 namespace App\Support\Tags;
 
 use App\Support\Filters\GlobalFilter;
+use App\Support\Search\SearchQuery;
 use Closure;
 
 /**
@@ -15,9 +16,14 @@ use Closure;
  * damit ein Klick nicht nebenbei die Filterleiste zurücksetzt.
  *
  * **Ein Klick auf einen Wert führt in die Fehlerliste**, eingeschränkt auf genau
- * diesen Wert (`?tag=browser:Chrome 124`). Das ist die eigentliche Zusage der
- * Aufgabe: die Verteilung ist keine Anzeige, sondern der Einstieg in die Frage
- * „und welche Fehler sind das?".
+ * diesen Wert. Das ist die eigentliche Zusage der Aufgabe: die Verteilung ist
+ * keine Anzeige, sondern der Einstieg in die Frage „und welche Fehler sind
+ * das?".
+ *
+ * **Der Klick schreibt einen Suchausdruck** (`?q=browser:"Chrome 124"`) und
+ * keinen eigenen Parameter. Damit steht die Einschränkung dort, wo man sie
+ * ändern kann — im Suchfeld —, und lässt sich um weitere Bedingungen ergänzen,
+ * statt in einer Marke zu enden, die man nur an- oder abschalten kann.
  */
 final class TagLinks
 {
@@ -71,7 +77,7 @@ final class TagLinks
     public static function issuesHref(GlobalFilter $filter, string $key, string $value): string
     {
         return route('issues.index', $filter->formValues() + [
-            'tag' => TagFilter::make($key, $value)->toQuery(),
+            'q' => SearchQuery::term($key, $value),
         ]);
     }
 }

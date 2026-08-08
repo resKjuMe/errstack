@@ -4,8 +4,8 @@ namespace App\Http\Requests;
 
 use App\Enums\IssueSort;
 use App\Enums\IssueStatus;
-use App\Support\Issues\IssueSearch;
-use App\Support\Tags\TagFilter;
+use App\Support\Issues\IssueFields;
+use App\Support\Search\SearchExpression;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 
@@ -37,27 +37,12 @@ class IssueListRequest extends GlobalFilterRequest
             // eigener Wert und nicht der leere Text: der steht in einer
             // Adresszeile für „Feld vergessen" und nicht für „ausdrücklich alle".
             'status' => ['nullable', Rule::in([self::STATUS_ANY, ...array_column(IssueStatus::cases(), 'value')])],
-            // Ein Merkmalswert in der Schreibweise `browser:Chrome 124` — die
-            // Einschränkung, die aus einem Klick in der Verteilung entsteht.
-            // Geprüft wird nur die Länge; was darin steht, liest
-            // {@see TagFilter::parse()}, und Unbrauchbares wird dort übergangen.
-            'tag' => ['nullable', 'string', 'max:601'],
             'page' => ['nullable', 'integer', 'min:1'],
             // Die Suchleiste. Die Länge ist großzügig, aber begrenzt: ein
             // Ausdruck, der nicht mehr in eine Adresszeile passt, ist keiner
             // mehr, und ungeprüft stünde er in jedem Datenbank-Protokoll.
             'q' => ['nullable', 'string', 'max:500'],
         ];
-    }
-
-    /**
-     * Die gewählte Merkmal-Einschränkung, oder `null`.
-     */
-    public function tag(): ?TagFilter
-    {
-        $tag = $this->validated('tag');
-
-        return TagFilter::parse(is_string($tag) ? $tag : null);
     }
 
     /**
@@ -87,11 +72,18 @@ class IssueListRequest extends GlobalFilterRequest
     }
 
     /**
-     * Der zerlegte Suchausdruck.
+     * Der übersetzte Suchausdruck.
+     *
+     * Die Zeitzone des Betrachters fährt mit, weil sie zur Bedeutung gehört:
+     * `firstSeen:2026-03-01` meint **seinen** ersten März und nicht den in UTC —
+     * sonst fehlten je nach Standort die ersten oder die letzten Stunden.
      */
-    public function search(): IssueSearch
+    public function search(): SearchExpression
     {
-        return IssueSearch::parse($this->searchInput());
+        return SearchExpression::compile(
+            $this->searchInput(),
+            new IssueFields($this->filter()->timezone),
+        );
     }
 
     /**
@@ -109,25 +101,16 @@ class IssueListRequest extends GlobalFilterRequest
     /**
      * Die Werte, wie die Oberfläche sie in ihren Feldern führt.
      *
-     * @return array{sort: string, status: string, q: string, tag: array{key: string, value: string, query: string}|null}
+     * @return array{sort: string, status: string, q: string}
      */
     public function listValues(): array
     {
         $status = $this->status();
-        $tag = $this->tag();
 
         return [
             'sort' => $this->sort()->value,
             'status' => $status === null ? self::STATUS_ANY : $status->value,
             'q' => $this->searchInput(),
-            // Die Einschränkung kommt zerlegt **und** in der Schreibweise der
-            // Adresszeile: die Oberfläche zeigt Name und Wert getrennt an,
-            // braucht aber die ungeteilte Angabe, um sie wieder abzuwählen.
-            'tag' => $tag === null ? null : [
-                'key' => $tag->key,
-                'value' => $tag->value,
-                'query' => $tag->toQuery(),
-            ],
         ];
     }
 }

@@ -11,7 +11,6 @@ use App\Support\Formats;
 use App\Support\Issues\IssueActionData;
 use App\Support\Issues\IssueList;
 use App\Support\Issues\IssueSeries;
-use App\Support\Tags\TagFacets;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -30,24 +29,24 @@ class IssueController extends Controller
     {
         $filter = $request->filter();
         $period = IssueSeries::periodFor($filter);
-        $tag = $request->tag();
 
         $search = $request->search();
 
-        $issues = IssueList::paginate($filter, $request->sort(), $request->status(), $search, $tag);
+        $issues = IssueList::paginate($filter, $request->sort(), $request->status(), $search);
 
         return Inertia::render('issues/Index', [
             'filter' => FilterData::bar($filter),
             'issues' => $issues,
             'list' => $request->listValues(),
-            // Der Name des eingeschränkten Merkmals in der Sprache des
-            // Betrachters — die Marke über der Liste soll „Browser: Chrome 124"
-            // heißen und nicht „browser: Chrome 124".
-            'tagLabel' => $tag === null ? null : TagFacets::label($tag->key),
             // Der Weg zur projektweiten Merkmal-Übersicht, mit derselben
             // Projektauswahl. Sortierung, Zustand und Seite bleiben draußen —
             // dort gibt es sie nicht.
             'tagsHref' => route('tags.index', $filter->formValues()),
+            // Woher das Suchfeld seine Vorschläge holt. Als Adresse und nicht
+            // als fertige Liste: welche Merkmale es gibt, hängt an den gewählten
+            // Projekten und wäre auf Vorrat die halbe Merkmal-Übersicht in jeder
+            // Seitenlast.
+            'suggestHref' => route('issues.search.suggest', $filter->formValues()),
             // Die Gesamtzahl auch geschrieben: „12.480" gegen „12480" — wie eine
             // Zahl aussieht, entscheidet die Sprache, und die kennt der Server.
             'totalLabel' => Formats::number($issues->total()),
@@ -58,11 +57,17 @@ class IssueController extends Controller
             // Menge, die hier steht, und die Oberfläche schickt sie dafür aus
             // der Adresszeile mit zurück.
             'actions' => IssueActionData::forViewer(),
-            // Begriffe, die die Suche (noch) nicht auswertet. Sie stillschweigend
-            // zu übergehen wäre die schlechtere Wahl: die Liste sähe aus, als
-            // hätte sie den Begriff berücksichtigt. Die vollständige Suchsprache
-            // ist S4.
-            'unsupportedTerms' => $search->unsupported,
+            // Was an der Eingabe nicht aufging. Beides stillschweigend zu
+            // übergehen wäre die schlechtere Wahl: die Liste sähe aus, als hätte
+            // sie die Frage beantwortet.
+            //
+            //   - `searchError`: die Eingabe wurde nicht verstanden. Die Liste
+            //     steht ungefiltert da — eine leere Seite wäre die Sackgasse,
+            //     aus der man nur durch Löschen der Adresszeile herausfindet.
+            //   - `unavailableTerms`: Begriffe der Sprache, für die es die Daten
+            //     noch nicht gibt (`assigned:`, `bookmarks:`, `is:regressed`).
+            'searchError' => $search->error?->toArray(),
+            'unavailableTerms' => $search->unavailable,
             'series' => [
                 'period' => $period->value,
                 'periodLabel' => $period->label(),

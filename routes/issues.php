@@ -23,12 +23,19 @@
 use App\Http\Controllers\IssueActionController;
 use App\Http\Controllers\IssueController;
 use App\Http\Controllers\IssueDetailController;
+use App\Http\Controllers\IssueSearchController;
 use App\Http\Controllers\IssueTagController;
 use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('fehler', IssueController::class)->name('issues.index');
+
+    // Die Vorschläge des Suchfeldes. Sie stehen **vor** den Fehler-Routen, und
+    // das ist keine Ordnungsfrage: `fehler/{issue}/merkmale` hat dieselbe Form,
+    // und „suche" wäre dort eine Fehlerkennung.
+    Route::get('fehler/suche/vorschlaege', [IssueSearchController::class, 'suggest'])
+        ->name('issues.search.suggest');
 
     // Die Zustandsaktionen (S6) — eine Adresse für einen Fehler wie für
     // zwölftausend. Sie steht **neben** der Liste und nicht unter einem

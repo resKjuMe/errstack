@@ -9,7 +9,7 @@ use App\Models\Issue;
 use App\Models\Project;
 use App\Support\Filters\GlobalFilter;
 use App\Support\Formats;
-use App\Support\Tags\TagFilter;
+use App\Support\Search\SearchExpression;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -24,6 +24,12 @@ use Illuminate\Pagination\LengthAwarePaginator;
  * gelesen. Ein `count(*)` über die Ereignisse an dieser Stelle sähe in einem
  * Testbestand harmlos aus und wäre im Betrieb der Grund, warum die Seite nicht
  * mehr aufgeht.
+ *
+ * **Die einzige Ausnahme trägt der Suchende selbst ein.** `user.email:` fragt
+ * nach etwas, das nur am Ereignis steht, und geht deshalb dorthin
+ * ({@see IssueFields}). Sie kostet, was eine solche Frage kostet — aber nur, wer
+ * sie stellt, bezahlt sie: ohne diesen Begriff bleibt die Liste eine Abfrage auf
+ * den Zählern.
  */
 final class IssueList
 {
@@ -41,9 +47,9 @@ final class IssueList
      *
      * @return LengthAwarePaginator<int, array<string, mixed>>
      */
-    public static function paginate(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?IssueSearch $search = null, ?TagFilter $tag = null): LengthAwarePaginator
+    public static function paginate(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?SearchExpression $search = null): LengthAwarePaginator
     {
-        $page = self::query($filter, $sort, $status, $search, $tag)
+        $page = self::query($filter, $sort, $status, $search)
             ->paginate(self::PER_PAGE)
             ->withQueryString();
 
@@ -68,7 +74,7 @@ final class IssueList
      *
      * @return Builder<Issue>
      */
-    public static function query(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?IssueSearch $search = null, ?TagFilter $tag = null): Builder
+    public static function query(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?SearchExpression $search = null): Builder
     {
         $query = Issue::query()->with([
             'project:id,name,slug,organization_id',
@@ -93,10 +99,6 @@ final class IssueList
         }
 
         $search?->apply($query);
-
-        // Die Merkmal-Einschränkung liest die vorberechneten Zähler und nicht
-        // die Ereignisse — dieselbe Zusage wie für den Rest dieser Liste.
-        $tag?->apply($query);
 
         $sort->apply($query);
 

@@ -7,7 +7,6 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Release;
 use App\Models\User;
-use App\Support\Issues\IssueSearch;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -17,10 +16,10 @@ use Tests\TestCase;
 /**
  * Die Suche nach der ausgelieferten Version in der Fehlerliste.
  *
- * Sie ist der Anfang der Suchsprache und nicht die Sprache selbst — `is:`,
- * `browser:`, Klammern und Verneinung kommen mit S4. Geprüft wird deshalb
- * beides: dass die beiden Begriffe wirken **und** dass ein noch unbekannter
- * Begriff nicht stillschweigend übergangen wird.
+ * Die Sprache selbst — Klammern, Verneinung, Vergleiche — hat ihre eigene
+ * Prüfung ({@see IssueSearchLanguageTest}). Hier geht es um die beiden Begriffe,
+ * die eine Version meinen, und um die Grenze ihrer Auskunft: erfasst sind die
+ * **erste** und die **letzte** bekannte Version, keine dazwischen.
  */
 class IssueReleaseSearchTest extends TestCase
 {
@@ -128,10 +127,10 @@ class IssueReleaseSearchTest extends TestCase
     }
 
     /**
-     * Ein Begriff, den die Suche noch nicht kennt, filtert nichts — und darf
-     * deshalb nicht so aussehen, als hätte er gewirkt.
+     * Zustand und Version zusammen — der Begriff, der zu S1 noch nicht
+     * ausgewertet werden konnte, wirkt jetzt.
      */
-    public function test_an_unknown_term_is_reported_back(): void
+    public function test_a_state_and_a_release_narrow_together(): void
     {
         [$user, $project] = $this->context();
 
@@ -143,7 +142,9 @@ class IssueReleaseSearchTest extends TestCase
             ->get(route('issues.index', ['q' => 'is:unresolved release:1.0.0']))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->has('issues.data', 1)
-                ->where('unsupportedTerms', ['is:unresolved'])
+                ->where('unavailableTerms', [])
+                ->where('searchError', null)
+                ->etc()
             );
     }
 
@@ -162,22 +163,47 @@ class IssueReleaseSearchTest extends TestCase
             );
     }
 
+    /**
+     * Der Schlüssel ist gleichgültig gegenüber Groß- und Kleinschreibung, der
+     * **Wert** nicht: Versionsangaben sind Bezeichner, und `1.0.0-RC1` ist nicht
+     * `1.0.0-rc1`.
+     */
     public function test_the_key_is_case_insensitive_but_the_value_is_not(): void
     {
-        $search = IssueSearch::parse('FIRSTRELEASE:1.0.0-RC1');
+        [$user, $project] = $this->context();
 
-        $this->assertSame(['1.0.0-RC1'], $search->firstReleases);
-        $this->assertSame([], $search->unsupported);
+        $release = Release::factory()->for($project)->version('1.0.0-RC1')->create();
+
+        $this->issue($project, 'Vorabfassung', $release, $release);
+
+        $this->actingAs($user)
+            ->get(route('issues.index', ['q' => 'FIRSTRELEASE:1.0.0-RC1']))
+            ->assertInertia(fn (AssertableInertia $page) => $page->has('issues.data', 1));
+
+        $this->actingAs($user)
+            ->get(route('issues.index', ['q' => 'firstRelease:1.0.0-rc1']))
+            ->assertInertia(fn (AssertableInertia $page) => $page->has('issues.data', 0));
     }
 
     public function test_a_quoted_value_may_contain_spaces(): void
     {
-        $search = IssueSearch::parse('release:"1.0.0 beta"');
+        [$user, $project] = $this->context();
 
-        $this->assertSame(['1.0.0 beta'], $search->releases);
+        $release = Release::factory()->for($project)->version('1.0.0 beta')->create();
+
+        $this->issue($project, 'Mit Leerzeichen', $release, $release);
+
+        $this->actingAs($user)
+            ->get(route('issues.index', ['q' => 'release:"1.0.0 beta"']))
+            ->assertInertia(fn (AssertableInertia $page) => $page->has('issues.data', 1));
     }
 
-    public function test_several_values_of_one_key_are_an_or(): void
+    /**
+     * Zwei Angaben desselben Feldes sind ein **Und** — dieselbe Regel wie für
+     * alles andere in dieser Sprache, und deshalb ohne Treffer. Wer beide meint,
+     * schreibt `or`; genau dafür gibt es das Wort.
+     */
+    public function test_two_values_of_one_key_need_an_or(): void
     {
         [$user, $project] = $this->context();
 
@@ -191,6 +217,10 @@ class IssueReleaseSearchTest extends TestCase
 
         $this->actingAs($user)
             ->get(route('issues.index', ['q' => 'firstRelease:1.0.0 firstRelease:1.2.0']))
+            ->assertInertia(fn (AssertableInertia $page) => $page->has('issues.data', 0));
+
+        $this->actingAs($user)
+            ->get(route('issues.index', ['q' => 'firstRelease:1.0.0 or firstRelease:1.2.0']))
             ->assertInertia(fn (AssertableInertia $page) => $page->has('issues.data', 2));
     }
 
@@ -208,7 +238,8 @@ class IssueReleaseSearchTest extends TestCase
             ->get(route('issues.index'))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->has('issues.data', 1)
-                ->where('unsupportedTerms', [])
+                ->where('unavailableTerms', [])
+                ->etc()
             );
     }
 }

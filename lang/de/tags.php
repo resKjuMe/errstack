@@ -45,11 +45,6 @@ return [
     'period_ignored' => 'Der gewählte Zeitraum schränkt diese Auswertung nicht ein: '
         .'Merkmale werden über die gesamte Lebensdauer eines Fehlers gezählt.',
 
-    'filter' => [
-        'active' => 'Eingeschränkt auf :key: :value',
-        'clear' => 'Einschränkung aufheben',
-    ],
-
     'link' => [
         'issue' => 'Merkmale',
         'overview' => 'Merkmale der Auswahl',
