@@ -45,7 +45,8 @@ return [
         'problem' => 'Muster',
         'any_problem' => 'Alle Muster',
         'environment_ignored' => 'Die Zähler eines Eintrags gelten über alle Umgebungen '
-            .'hinweg — die gewählte Umgebung wirkt sich auf diese Liste nicht aus.',
+            .'hinweg — die gewählte Umgebung wirkt sich auf diese Liste nicht aus. '
+            .'Sie bestimmt aber, welche Auslieferungen im Verlauf markiert werden.',
     ],
 
     'detail' => [

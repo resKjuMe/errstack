@@ -213,8 +213,26 @@ function IssueHeader({ issue, actions, t }) {
                 <Figure label={t('issues.detail.header.first_seen')} value={issue.firstSeenLabel} />
                 <Figure label={t('issues.detail.header.last_seen')} value={issue.lastSeenLabel} />
                 <Figure label={t('issues.detail.header.status')} value={issue.statusLabel} />
-                <Figure label={t('issues.detail.header.priority')} value={issue.priorityLabel} />
+                {/* Die Wichtigkeit — mit dem Hinweis, wer sie gesetzt hat
+                    (S11). „Hoch" von der Ableitung und „hoch, weil ich das
+                    sage" sind zwei verschiedene Aussagen, und nur die zweite
+                    bleibt beim nächsten Durchlauf stehen. */}
+                <Figure
+                    label={t('issues.detail.header.priority')}
+                    value={issue.priorityLabel}
+                    hint={t(
+                        issue.priorityLocked
+                            ? 'issues.priority.hint_locked'
+                            : 'issues.priority.hint'
+                    )}
+                />
             </dl>
+
+            {/* Wer zuständig ist (S7) — und ob der Fehler noch zur Prüfung
+                liegt. Eine eigene Zeile und keine siebte Kennzahl: „Anna Beck,
+                zugewiesen am 10.03. von Jonas" ist ein Satz und keine Zahl, und
+                zwischen sechs Zählern stünde er falsch. */}
+            <AssignmentNote issue={issue} t={t} />
 
             {/* Der Zustand allein sagt „erledigt". Erst die Bedingung sagt, ob
                 das heißt „behoben", „behoben in 1.4.2" oder „behoben, sobald
@@ -227,12 +245,52 @@ function IssueHeader({ issue, actions, t }) {
                     actions={actions}
                     target={{ issues: [issue.id] }}
                     status={issue.status}
-                    state={{ bookmarked: issue.bookmarked, subscribed: issue.subscribed }}
+                    state={{
+                        bookmarked: issue.bookmarked,
+                        subscribed: issue.subscribed,
+                        assignee: issue.assignee,
+                        priority: issue.priority,
+                        priorityLocked: issue.priorityLocked,
+                    }}
                     t={t}
                 />
             </div>
         </div>
     );
+}
+
+// Die Zuständigkeit (S7): wer sich kümmert — oder dass es noch niemand tut.
+//
+// Beides steht hier und nicht nur eines: „zur Prüfung" ist keine Zuständigkeit,
+// sondern deren Abwesenheit mit einem Datum daran. Wer den Fehler aufschlägt,
+// soll sehen, ob er ihn liegen lassen darf.
+function AssignmentNote({ issue, t }) {
+    if (issue.assignee) {
+        return (
+            <p className="mt-4 rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
+                {issue.assignee.by
+                    ? t('issues.assignment.state_by', {
+                          name: issue.assignee.label,
+                          at: issue.assignee.atLabel,
+                          actor: issue.assignee.by,
+                      })
+                    : t('issues.assignment.state', {
+                          name: issue.assignee.label,
+                          at: issue.assignee.atLabel,
+                      })}
+            </p>
+        );
+    }
+
+    if (issue.forReview) {
+        return (
+            <p className="mt-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+                {t('issues.assignment.for_review_state')}
+            </p>
+        );
+    }
+
+    return null;
 }
 
 // Woran der Zustand hängt — nur dort, wo es etwas zu sagen gibt.
@@ -376,11 +434,17 @@ function MergedIntoNotice({ head, t }) {
     );
 }
 
-function Figure({ label, value }) {
+function Figure({ label, value, hint = null }) {
     return (
         <div>
             <dt className="text-xs text-gray-500 dark:text-gray-400">{label}</dt>
-            <dd className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-gray-100">
+            <dd
+                // Der Hinweis hängt am Wert und nicht daneben: die Kopfzeile ist
+                // eine Reihe kurzer Zahlen, und ein zweiter Satz Text in jeder
+                // Zelle würde sie zerreißen.
+                title={hint ?? undefined}
+                className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-gray-100"
+            >
                 {value}
             </dd>
         </div>

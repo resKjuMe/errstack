@@ -358,13 +358,10 @@ class SavedSearchTest extends TestCase
                 ->where('savedSearches.views.0.key', 'unresolved')
                 ->where('savedSearches.views.0.query', 'is:unresolved')
                 ->where('savedSearches.views.0.available', true)
-                // „Zur Prüfung" gehört zur Sprache, die Daten dazu kommen mit
-                // S7 — die Ansicht steht trotzdem da und sagt es.
+                // „Zur Prüfung" ist seit S7 vollständig beantwortbar …
                 ->where('savedSearches.views.1.key', 'for_review')
-                ->where('savedSearches.views.1.available', false)
-                // „Wieder aufgetreten" antwortet seit S8 — die Ansicht ist
-                // damit von selbst nutzbar geworden, ohne dass hier etwas
-                // umgestellt werden musste.
+                ->where('savedSearches.views.1.available', true)
+                // … „Wieder aufgetreten" seit S8 ebenso.
                 ->where('savedSearches.views.2.key', 'regressed')
                 ->where('savedSearches.views.2.available', true)
                 ->where('savedSearches.project.slug', 'webshop'));

@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\Release;
 use App\Support\Api\ApiQuery;
 use App\Support\Api\ApiResponse;
+use App\Support\Releases\CommitImport;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -66,11 +67,21 @@ class ReleaseController extends Controller
             'ref' => ['nullable', 'string', 'max:250'],
             'url' => ['nullable', 'string', 'url', 'max:500'],
             'released_at' => ['nullable', 'date'],
+
+            // Der Inhalt der Auslieferung, gleich mit angekündigt (R2). Das ist
+            // der Aufruf, den eine Auslieferungs-Pipeline eigentlich machen
+            // will: Version melden und sagen, was drinsteckt — in einem Schritt.
+            // Freiwillig, und weggelassen lässt er eine bereits übergebene Liste
+            // stehen; dieselbe Überlegung wie bei den Feldern darüber. Wer sie
+            // leeren will, schickt eine leere Liste.
+            'commits' => ['sometimes', 'array'],
+            ...CommitImport::rules(),
         ], [], [
             'version' => 'Version',
             'ref' => 'Stand im Repository',
             'url' => 'Adresse',
             'released_at' => 'Zeitpunkt der Auslieferung',
+            ...CommitImport::attributes(),
         ]);
 
         $version = Release::normalizeVersion($validated['version']);
@@ -97,6 +108,14 @@ class ReleaseController extends Controller
 
         if ($changes !== []) {
             $release->fill($changes)->save();
+        }
+
+        if (array_key_exists('commits', $validated)) {
+            CommitImport::into(
+                $release,
+                $validated['commits'],
+                is_string($validated['repository'] ?? null) ? $validated['repository'] : null,
+            );
         }
 
         return ApiResponse::data(self::payload($release), $created ? 201 : 200);

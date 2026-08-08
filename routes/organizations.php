@@ -17,6 +17,7 @@ use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationInvitationController;
 use App\Http\Controllers\OrganizationPrivacyController;
+use App\Http\Controllers\RepositoryController;
 use App\Http\Controllers\ScrubRuleController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamMemberController;
@@ -59,6 +60,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('scrub-rules.update');
     Route::delete('datenschutz-regeln/{scrub_rule}', [ScrubRuleController::class, 'destroy'])
         ->name('scrub-rules.destroy');
+
+    // Verbundene Repositories (R2): woher der Code dieser Organisation kommt.
+    // Ansehen darf jedes Mitglied, verbinden und lösen die Verwaltung — die
+    // Prüfung steht im Controller.
+    Route::get('organisationen/{organization}/repositories', [RepositoryController::class, 'index'])
+        ->name('organizations.repositories.index');
+    Route::post('organisationen/{organization}/repositories', [RepositoryController::class, 'store'])
+        ->name('organizations.repositories.store');
+
+    // Gelöst wird ohne diesen Vorbau, wie bei Einladungen und Regeln: das
+    // Repository weiß selbst, zu welcher Organisation es gehört.
+    Route::delete('repositories/{repository}', [RepositoryController::class, 'destroy'])
+        ->name('repositories.destroy');
 
     Route::post('organisationen/{organization}/einladungen', [OrganizationInvitationController::class, 'store'])
         ->name('organizations.invitations.store');

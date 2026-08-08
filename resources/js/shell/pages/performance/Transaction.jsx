@@ -198,33 +198,59 @@ function Series({ series, t, formats }) {
     const points = series.points;
     const peak = points.reduce((max, point) => Math.max(max, point.p95Us ?? 0), 0);
 
+    // Wo ausgeliefert wurde (R3), nach der Nummer des Punktes. Als Menge und
+    // nicht als Liste: gefragt wird je Balken, ob an seiner Stelle ein Strich
+    // steht, und das ist bei sechzig Markierungen über hundert Punkten der
+    // Unterschied zwischen einem Nachsehen und einem Durchlauf je Balken.
+    const deploys = new Map((series.markers ?? []).map((marker) => [marker.slot, marker]));
+
     return (
         <Card title={t('performance.transaction.series.title')}>
             {points.length === 0 ? (
                 <Missing />
             ) : (
                 <div className="flex h-40 items-end gap-px">
-                    {points.map((point) => (
-                        <div
-                            key={point.window}
-                            className="flex min-w-0 flex-1 flex-col justify-end"
-                            title={t('performance.transaction.series.point', {
-                                at: formatDateTime(point.window, formats),
-                                p95: plainDuration(point.p95Us, t, formats),
-                                count: formatNumber(point.count, formats),
-                            })}
-                        >
+                    {points.map((point, index) => {
+                        const deploy = deploys.get(index);
+
+                        return (
                             <div
-                                className="rounded-t bg-emerald-500/80 dark:bg-emerald-400/80"
-                                style={{
-                                    height:
-                                        peak === 0 || point.p95Us === null
-                                            ? 0
-                                            : `${Math.max(2, (point.p95Us / peak) * 100)}%`,
-                                }}
-                            />
-                        </div>
-                    ))}
+                                key={point.window}
+                                // Die Markierung ist der linke Rand des Balkens
+                                // und kein eigenes Element: sie muss zwischen
+                                // zwei Balken passen, und die sind hier einen
+                                // Pixel breit.
+                                className={`flex min-w-0 flex-1 flex-col justify-end${
+                                    deploy ? ' border-l border-sky-500 dark:border-sky-400' : ''
+                                }`}
+                                title={
+                                    deploy
+                                        ? t('performance.transaction.series.deploy', {
+                                              at: formatDateTime(point.window, formats),
+                                              p95: plainDuration(point.p95Us, t, formats),
+                                              count: formatNumber(point.count, formats),
+                                              version: deploy.version,
+                                              environment: deploy.environment,
+                                          })
+                                        : t('performance.transaction.series.point', {
+                                              at: formatDateTime(point.window, formats),
+                                              p95: plainDuration(point.p95Us, t, formats),
+                                              count: formatNumber(point.count, formats),
+                                          })
+                                }
+                            >
+                                <div
+                                    className="rounded-t bg-emerald-500/80 dark:bg-emerald-400/80"
+                                    style={{
+                                        height:
+                                            peak === 0 || point.p95Us === null
+                                                ? 0
+                                                : `${Math.max(2, (point.p95Us / peak) * 100)}%`,
+                                    }}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
             )}
 

@@ -7,6 +7,7 @@ import {
     SelectInput,
     TextInput,
 } from '../../components/Form.jsx';
+import AssigneePicker from './AssigneePicker.jsx';
 
 // Die Aktionsleiste eines Fehlers — dieselbe in der Liste und auf der
 // Detailseite.
@@ -23,9 +24,10 @@ import {
 // Adresszeile und werden von dort übernommen; sie im Formular nachzubauen wäre
 // eine zweite Wahrheit über die aktuelle Ansicht.
 export default function IssueActions({ actions, target, status, state = {}, compact = false, t }) {
-    // Welches Untermenü offen ist: `resolve`, `ignore` oder nichts. Die beiden
-    // sind die einzigen Aktionen mit einer Rückfrage — alle übrigen sind ein
-    // Klick.
+    // Welches Untermenü offen ist: `resolve`, `ignore`, `assign`, `priority`
+    // oder nichts.
+    // Die drei sind die einzigen Aktionen mit einer Rückfrage — alle übrigen
+    // sind ein Klick.
     const [open, setOpen] = useState(null);
     const [busy, setBusy] = useState(false);
 
@@ -71,6 +73,26 @@ export default function IssueActions({ actions, target, status, state = {}, comp
                     {t('issues.actions.ignore')}
                 </SecondaryButton>
             )}
+
+            {/* Die Zuständigkeit (S7). Die Schaltfläche trägt den jetzigen
+                Zuständigen als Beschriftung — „Zuweisen" allein ließe offen, ob
+                schon jemand zuständig ist, und genau das ist die Frage, wegen
+                der man hinschaut. In der Sammelaktion gibt es keinen jetzigen
+                Zuständigen: die Auswahl kann fünfzig verschiedene haben. */}
+            <SecondaryButton type="button" disabled={busy} onClick={() => setOpen('assign')}>
+                {state.assignee
+                    ? t('issues.assignment.assigned_to', { name: state.assignee.label })
+                    : t('issues.assignment.action')}
+            </SecondaryButton>
+
+            {/* Die Wichtigkeit von Hand (S11). Sie steht bei den Aktionen und
+                nicht im Kopf der Detailseite, weil sie dieselbe Frage für einen
+                Eintrag wie für eine ganze Auswahl ist — und weil die Ableitung
+                ihr sonst in die Quere käme, ohne dass es einen Weg zurück
+                gäbe. */}
+            <SecondaryButton type="button" disabled={busy} onClick={() => setOpen('priority')}>
+                {t('issues.actions.priority.label')}
+            </SecondaryButton>
 
             <SecondaryButton
                 type="button"
@@ -125,11 +147,36 @@ export default function IssueActions({ actions, target, status, state = {}, comp
                 />
             )}
 
+            {open === 'priority' && (
+                <PriorityPanel
+                    priorities={actions.priorities}
+                    current={state.priority}
+                    locked={state.priorityLocked}
+                    onCancel={() => setOpen(null)}
+                    onApply={(priority) => submit({ action: 'priority', priority })}
+                    t={t}
+                />
+            )}
+
             {open === 'ignore' && (
                 <IgnorePanel
                     actions={actions}
                     onCancel={() => setOpen(null)}
                     onApply={(payload) => submit({ action: 'ignore', ...payload })}
+                    t={t}
+                />
+            )}
+
+            {open === 'assign' && (
+                <AssigneePicker
+                    suggestHref={actions.assignSuggestHref}
+                    current={state.assignee?.term ?? null}
+                    onCancel={() => setOpen(null)}
+                    // `null` heißt „niemand" — der Server liest daraus dieselbe
+                    // Aktion mit leerem Zuständigen und hebt die Zuständigkeit
+                    // auf. Eine zweite Aktion dafür wäre ein zweiter Name für
+                    // denselben Vorgang.
+                    onApply={(assignee) => submit({ action: 'assign', assignee })}
                     t={t}
                 />
             )}
@@ -151,6 +198,28 @@ function ModePanel({ modes, onApply, onCancel, t }) {
                 options={modes}
                 onChange={(e) => setMode(e.target.value)}
                 aria-label={t('issues.actions.resolve')}
+            />
+        </Panel>
+    );
+}
+
+// Die Rückfrage zur Wichtigkeit. Vorausgewählt ist, was gerade gilt — „auto"
+// dann, wenn die Ableitung zuständig ist: der Auswahlkasten zeigt damit den
+// Zustand und nicht nur die Wahl, und ein Klick auf „Ausführen" ohne Änderung
+// ändert nichts.
+//
+// In der Liste (mehrere Einträge, kein gemeinsamer Zustand) steht „auto" vorn;
+// eine Sammelaktion hat keine Stufe, die sie zeigen könnte.
+function PriorityPanel({ priorities, current, locked, onApply, onCancel, t }) {
+    const [priority, setPriority] = useState(locked && current ? current : 'auto');
+
+    return (
+        <Panel onCancel={onCancel} onApply={() => onApply(priority)} t={t}>
+            <SelectInput
+                value={priority}
+                options={priorities}
+                onChange={(e) => setPriority(e.target.value)}
+                aria-label={t('issues.actions.priority.label')}
             />
         </Panel>
     );

@@ -507,10 +507,10 @@ class IssueSearchLanguageTest extends TestCase
         $this->issue($project, 'Erledigt', ['status' => IssueStatus::Resolved]);
 
         $this->actingAs($user)
-            ->get(route('issues.index', ['q' => 'is:unresolved or is:for_review', 'status' => 'alle']))
+            ->get(route('issues.index', ['q' => 'is:unresolved or bookmarks:mir', 'status' => 'alle']))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->has('issues.data', 2)
-                ->where('unavailableTerms', ['is:for_review'])
+                ->where('unavailableTerms', ['bookmarks:mir'])
                 ->etc()
             );
     }

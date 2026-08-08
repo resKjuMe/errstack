@@ -77,12 +77,17 @@ class IssueListRequest extends GlobalFilterRequest
      * Die Zeitzone des Betrachters fährt mit, weil sie zur Bedeutung gehört:
      * `firstSeen:2026-03-01` meint **seinen** ersten März und nicht den in UTC —
      * sonst fehlten je nach Standort die ersten oder die letzten Stunden.
+     *
+     * Organisation und Betrachter aus demselben Grund: `assigned:me` meint ihn,
+     * und `assigned:Anna Beck` meint die Anna Beck **dieser** Organisation.
      */
     public function search(): SearchExpression
     {
+        $filter = $this->filter();
+
         return SearchExpression::compile(
             $this->searchInput(),
-            new IssueFields($this->filter()->timezone),
+            new IssueFields($filter->timezone, $filter->organization, $this->user()),
         );
     }
 

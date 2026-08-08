@@ -27,6 +27,7 @@ return [
         'own_role' => 'Eigene Rolle:',
         'audit_log' => 'Änderungsprotokoll',
         'privacy' => 'Datenschutz',
+        'repositories' => 'Repositories',
         'all_organizations' => 'Alle Organisationen',
     ],
 

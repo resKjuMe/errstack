@@ -357,6 +357,11 @@ return [
         'regressed' => 'Regressed',
         'ignored' => 'Ignored',
         'ignore_expired' => 'Ignoring ended',
+        'assigned' => 'Assigned',
+        'unassigned' => 'Assignment removed',
+        'deployed' => 'Deployed',
+        'priority' => 'Priority changed',
+        'escalated' => 'Escalated',
         'bookmarked' => 'Bookmarked',
         'unbookmarked' => 'Bookmark removed',
         'subscribed' => 'Subscribed',
@@ -421,6 +426,12 @@ return [
         'min_total_ms' => 'Minimum total in ms',
         'min_duration_ms' => 'Minimum duration in ms',
         'min_size_kb' => 'Minimum size in KB',
+    ],
+
+    'commit_file_change' => [
+        'A' => 'Added',
+        'M' => 'Modified',
+        'D' => 'Removed',
     ],
 
     'release_artifact_kind' => [

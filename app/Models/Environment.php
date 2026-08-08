@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
@@ -76,6 +77,53 @@ class Environment extends Model
         }
 
         return $environment;
+    }
+
+    /**
+     * Findet die Umgebung eines Projekts oder legt sie an — ohne die Zeitpunkte
+     * anzufassen.
+     *
+     * Der Weg für alles, was **keine** Meldung ist: eine Auslieferung (R3)
+     * bringt eine Umgebung mit, aber sie hat dort nichts „gesehen".
+     * {@see record()} zu benutzen würde `last_seen_at` auf den Zeitpunkt des
+     * Deploys setzen, und die Angabe hieße danach nicht mehr „von dort kam
+     * zuletzt eine Meldung" — eine Umgebung, aus der seit Wochen nichts kommt,
+     * sähe nach einem Deploy taufrisch aus.
+     *
+     * Ohne Namen gilt die Standard-Umgebung des Projekts, wie beim Aufnehmen.
+     */
+    public static function forName(Project $project, ?string $name = null): self
+    {
+        $name = self::normalizeName($name) ?? self::normalizeName($project->default_environment) ?? 'production';
+
+        $existing = self::query()
+            ->where('project_id', $project->id)
+            ->where('name', $name)
+            ->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        try {
+            // Ohne Massenzuweisung wie in {@see record()} — es gibt aus
+            // demselben Grund keine `fillable`-Liste.
+            $environment = new self;
+            $environment->project_id = $project->id;
+            $environment->name = $name;
+            $environment->save();
+
+            return $environment;
+        } catch (UniqueConstraintViolationException) {
+            // Zwei Auslieferungen derselben Umgebung im selben Augenblick: der
+            // eindeutige Index entscheidet, wer sie anlegt, und der andere
+            // bekommt die Zeile des Gewinners. Ein `exists()` davor wäre nur
+            // eine Momentaufnahme.
+            return self::query()
+                ->where('project_id', $project->id)
+                ->where('name', $name)
+                ->firstOrFail();
+        }
     }
 
     /**

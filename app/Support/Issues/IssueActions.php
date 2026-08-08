@@ -5,6 +5,7 @@ namespace App\Support\Issues;
 use App\Enums\IgnoreOutcome;
 use App\Enums\IssueActivityType;
 use App\Enums\IssueIgnoreMode;
+use App\Enums\IssuePriority;
 use App\Enums\IssueResolveMode;
 use App\Enums\IssueStatus;
 use App\Models\Issue;
@@ -20,7 +21,17 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Die Zustandsaktionen an Fehler-Einträgen: erledigen, wieder öffnen,
- * stummschalten, merken, abonnieren, löschen.
+ * stummschalten, zuweisen, merken, abonnieren, löschen.
+ *
+ * **Die Prüfliste (S7) wird hier geführt und nirgends sonst.** Sie ist keine
+ * eigene Tabelle und kein eigener Zustand, sondern ein Zeitpunkt am Eintrag
+ * (`for_review_at`): gesetzt, wenn er entsteht ({@see Issue::forGroup()}) oder
+ * von selbst zurückkehrt ({@see expireIgnore()}), geräumt, sobald jemand
+ * entschieden hat — zuweisen, erledigen, stummschalten. Ein eigener Zustand
+ * daneben wäre die naheliegende Alternative und die falsche: „zur Prüfung" ist
+ * keine Auskunft darüber, ob der Fehler behoben ist, sondern darüber, ob jemand
+ * hingesehen hat. Beides in eine Spalte zu legen hieße, das eine zu verlieren,
+ * sobald das andere gesetzt wird.
  *
  * **Jede Aktion nimmt eine Abfrage entgegen, nicht einen Eintrag.** Das ist die
  * eine Entscheidung, aus der sich der Rest dieser Klasse ergibt: „diesen einen"
@@ -110,6 +121,10 @@ final class IssueActions
                 // Fehler zurück und würde wieder geöffnet, gälte plötzlich eine
                 // Bedingung, die niemand mehr auf dem Schirm hat.
                 ...self::clearedIgnore(),
+                // Erledigen ist die zweite Art, einen Eintrag zu prüfen: „das
+                // ist behoben" beantwortet die Frage der Prüfliste genauso wie
+                // eine Zuweisung.
+                'for_review_at' => null,
                 'updated_at' => $now,
             ]),
             IssueActivityType::Resolved,
@@ -184,6 +199,10 @@ final class IssueActions
                 'resolved_in_release_id' => null,
                 'resolved_in_next_release' => false,
                 ...self::clearedRegression(),
+                // Und die dritte: „interessiert mich nicht" ist ebenfalls eine
+                // Entscheidung, und danach hat die Prüfliste nichts mehr zu
+                // fragen.
+                'for_review_at' => null,
                 'updated_at' => $now,
             ]),
             IssueActivityType::Ignored,
@@ -193,6 +212,84 @@ final class IssueActions
                 'window' => $condition['window'],
                 'users' => $condition['users'],
             ], static fn (mixed $value): bool => $value !== null),
+        );
+    }
+
+    /**
+     * Zuweisen und Zuständigkeit aufheben (S7).
+     *
+     * **Eine Aktion für beides**, weil es dieselbe Anweisung ist: `null` räumt
+     * beide Spalten. Zwei Methoden wären zwei Stellen mit demselben Vermerk und
+     * derselben Räumung der Prüfliste — und die zweite bekäme die nächste
+     * Änderung erfahrungsgemäß nicht mit.
+     *
+     * **Zuweisen nimmt den Eintrag aus der Prüfliste**, denn genau das heißt
+     * „geprüft": jemand hat hingesehen und entschieden, wer sich kümmert. Das
+     * Aufheben stellt ihn **nicht** zurück — wer eine Zuständigkeit aufhebt, hat
+     * den Fehler gesehen, und ihn erneut zur Prüfung zu legen hieße, die eigene
+     * Entscheidung zu vergessen.
+     *
+     * Die Benachrichtigung verschickt nicht diese Methode: sie kennt die
+     * betroffenen Einträge, aber nicht, ob es einer oder zwölftausend werden —
+     * und beides ergibt eine andere Nachricht. Der Aufrufer entscheidet das mit
+     * dem Ergebnis in der Hand ({@see IssueAssignmentNotifier}).
+     *
+     * @param  Builder<Issue>  $query
+     */
+    public function assign(Builder $query, ?IssueAssignee $assignee): IssueActionResult
+    {
+        $now = CarbonImmutable::now();
+        $columns = IssueAssignee::columnsFor($assignee);
+
+        return $this->apply(
+            $query,
+            fn (array $ids): int => Issue::query()->whereIn('id', $ids)->update([
+                ...$columns,
+                'assigned_at' => $assignee === null ? null : $now,
+                'assigned_by_id' => $assignee === null ? null : $this->actor?->id,
+                // Zugewiesen heißt geprüft. Beim Aufheben bleibt die Prüfliste
+                // unberührt — sie steht ohnehin schon auf `null`.
+                ...($assignee === null ? [] : ['for_review_at' => null]),
+                'updated_at' => $now,
+            ]),
+            $assignee === null ? IssueActivityType::Unassigned : IssueActivityType::Assigned,
+            $assignee === null ? null : ['assignee' => $assignee->label(), 'kind' => $assignee->kind()],
+        );
+    }
+
+    /**
+     * Die Wichtigkeit von Hand setzen — oder sie wieder der Ableitung
+     * überlassen (S11).
+     *
+     * **Von Hand gesetzt heißt festgestellt.** `priority_locked` ist die einzige
+     * Auskunft, an der die Ableitung erkennen kann, dass jemand widersprochen
+     * hat; ohne sie hätte sie nur die Wahl, entweder jede Einordnung von Hand im
+     * nächsten Durchlauf zu überschreiben oder nie wieder etwas anzufassen, was
+     * einmal von der Vorgabe abweicht ({@see IssuePrioritySweep}).
+     *
+     * **Der Weg zurück ist derselbe Knopf.** `null` heißt „automatisch": der
+     * Schalter fällt, die Stufe bleibt vorerst stehen und der nächste Durchlauf
+     * rechnet sie neu. Sie dabei sofort auf die Vorgabe zurückzusetzen wäre die
+     * lautere und die falsche Wahl — zwischen Klick und Durchlauf stünde eine
+     * Zahl da, die niemand behauptet hat.
+     *
+     * @param  Builder<Issue>  $query
+     */
+    public function prioritize(Builder $query, ?IssuePriority $priority): IssueActionResult
+    {
+        $now = CarbonImmutable::now();
+
+        return $this->apply(
+            $query,
+            fn (array $ids): int => Issue::query()->whereIn('id', $ids)->update(array_filter([
+                'priority' => $priority?->value,
+                'priority_locked' => $priority !== null,
+                'updated_at' => $now,
+            ], static fn (mixed $value): bool => $value !== null)),
+            IssueActivityType::PriorityChanged,
+            $priority === null
+                ? ['mode' => 'auto']
+                : ['mode' => 'manual', 'priority' => $priority->value],
         );
     }
 
@@ -336,6 +433,12 @@ final class IssueActions
             ->update([
                 'status' => IssueStatus::Unresolved,
                 ...self::clearedIgnore(),
+                // Der Eintrag meldet sich von selbst zurück, und niemand hat es
+                // entschieden — also gehört er wieder auf die Prüfliste. Das ist
+                // dieselbe Stelle, an der die Rückfallerkennung (S8) einen
+                // wiedergekehrten Fehler eintragen wird: „wieder da und niemand
+                // zuständig" ist beide Male die Aussage.
+                'for_review_at' => $now,
                 'updated_at' => $now,
             ]);
 
@@ -419,6 +522,60 @@ final class IssueActions
         $issue->status = IssueStatus::Unresolved;
         $issue->regressed_at = $now;
         $issue->regressed_in_release_id = $seenIn?->id;
+
+        return true;
+    }
+
+    /**
+     * Holt einen stummgeschalteten Eintrag zurück, der aus dem Ruder gelaufen
+     * ist (S11).
+     *
+     * Der Zwilling von {@see self::expireIgnore()} und aus denselben Teilen
+     * gebaut — bedingter `update` auf `status`, Vermerk ohne Konto, dieselbe
+     * geleerte Bedingung. Der Unterschied liegt allein im Anlass: dort ist
+     * eingetreten, was jemand vereinbart hat, hier hat niemand etwas vereinbart
+     * ({@see IssueEscalation}). Deshalb ein eigener Vermerk und ein eigener
+     * Zeitstempel — `escalated_at` ist der Grund, warum dieselbe Welle nicht in
+     * jedem Durchlauf erneut gemeldet wird.
+     *
+     * Läuft im Hintergrund-Durchlauf und damit ohne handelndes Konto.
+     */
+    public static function escalate(Issue $issue, IssueEscalation $escalation, ?CarbonImmutable $now = null): bool
+    {
+        $now ??= CarbonImmutable::now();
+
+        $woken = Issue::query()
+            ->whereKey($issue->id)
+            // Dieselbe Bedingung wie beim Ablauf der Stummschaltung: zwischen
+            // dem Errechnen und dem Schreiben kann jemand den Eintrag von Hand
+            // erledigt oder wieder geöffnet haben.
+            ->where('status', IssueStatus::Ignored)
+            ->update([
+                'status' => IssueStatus::Unresolved,
+                ...self::clearedIgnore(),
+                'escalated_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+        if ($woken === 0) {
+            return false;
+        }
+
+        IssueActivity::query()->create([
+            'issue_id' => $issue->id,
+            'project_id' => $issue->project_id,
+            'user_id' => null,
+            'actor_name' => null,
+            'type' => IssueActivityType::Escalated,
+            'data' => [
+                'observed' => $escalation->observed,
+                'expected' => round($escalation->expected, 1),
+                'factor' => $escalation->factor(),
+            ],
+        ]);
+
+        $issue->status = IssueStatus::Unresolved;
+        $issue->escalated_at = $now;
 
         return true;
     }

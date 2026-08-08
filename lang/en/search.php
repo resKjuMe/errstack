@@ -33,6 +33,9 @@ return [
         'relative_with_comparison' => 'A span such as -24h already states the direction; '
             .'a comparison in front of it does not work for :field.',
         'no_comparison' => ':field cannot be compared with “:comparator”.',
+        'unknown_assignee' => ':field does not know “:value” — no account and no team of '
+            .'this organization goes by that name. Allowed: me, none, an e-mail address '
+            .'or #Team.',
     ],
 
     /*
@@ -46,7 +49,7 @@ return [
     */
 
     'fields' => [
-        'is' => 'State: unresolved, resolved, ignored',
+        'is' => 'State: unresolved, resolved, ignored, assigned, unassigned, for_review',
         'level' => 'Level: fatal, error, warning, info, debug',
         'priority' => 'Priority: high, medium, low',
         'timesseen' => 'Number of events, also as a comparison: >100',
@@ -55,7 +58,7 @@ return [
         'lastseen' => 'Last seen: 2026-03-01 or -24h',
         'release' => 'Release it was first or last seen in',
         'firstrelease' => 'Release it was first seen in',
-        'assigned' => 'Ownership (arrives with a later task)',
+        'assigned' => 'Assignee: me, none, an e-mail address or #Team',
         'bookmarks' => 'Bookmarked issues (arrives with a later task)',
         'user' => [
             'email' => 'E-mail of an affected user (searches the events)',

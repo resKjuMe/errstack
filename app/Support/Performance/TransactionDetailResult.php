@@ -15,6 +15,7 @@ final class TransactionDetailResult
      *                                           Zeile, aus der man kam
      * @param  list<array{fromUs: int, toUs: int|null, count: int}>  $histogram
      * @param  list<array{window: string, count: int, p95Us: int|null, failureRate: float|null}>  $series
+     * @param  list<array{slot: int, version: string, environment: string, atLabel: string}>  $seriesMarkers
      * @param  list<SpanBreakdownRow>  $spans
      * @param  list<TransactionSample>  $samples
      * @param  list<TransactionFacet>  $facets
@@ -29,6 +30,7 @@ final class TransactionDetailResult
         public readonly array $histogram,
         public readonly string $seriesPeriod,
         public readonly array $series,
+        public readonly array $seriesMarkers,
         public readonly array $spans,
         public readonly array $samples,
         public readonly array $facets,
@@ -50,6 +52,9 @@ final class TransactionDetailResult
             'series' => [
                 'period' => $this->seriesPeriod,
                 'points' => $this->series,
+                // Wann in diesem Zeitraum ausgeliefert wurde (R3) — als Nummer
+                // des Punktes, auf dem der Strich steht.
+                'markers' => $this->seriesMarkers,
             ],
             'spans' => array_map(
                 fn (SpanBreakdownRow $row): array => $row->toArray(),

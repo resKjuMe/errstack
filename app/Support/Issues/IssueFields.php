@@ -6,6 +6,8 @@ use App\Enums\EventLevel;
 use App\Enums\IssuePriority;
 use App\Enums\IssueStatus;
 use App\Models\IssueTag;
+use App\Models\Organization;
+use App\Models\User;
 use App\Support\Performance\TransactionSearch;
 use App\Support\Search\Ast\Condition;
 use App\Support\Search\Ast\FreeText;
@@ -25,7 +27,8 @@ use Illuminate\Support\Facades\Date;
  *
  * Hier endet die Sprache und beginnt das Schema. Drei Sorten von Feldern:
  *
- *   - **Spalten am Eintrag** — `is:`, `level:`, `priority:`, `timesSeen:`,
+ *   - **Spalten am Eintrag** — `is:`, `level:`, `priority:` (auch
+ *     `issue.priority:`), `timesSeen:`,
  *     `usersSeen:`, `firstSeen:`, `lastSeen:`. Sie kosten nichts, weil sie
  *     dieselben Zähler lesen, die die Liste ohnehin anzeigt.
  *   - **Merkmale** — alles, was hier nicht steht: `browser:Chrome`,
@@ -40,12 +43,19 @@ use Illuminate\Support\Facades\Date;
  *     ({@see EventTags}) — sie würden sonst das Aufräumen der
  *     Ereignisse überleben.
  *
- * **Was es noch nicht gibt, wird benannt und nicht erfunden.** `assigned:`,
- * `bookmarks:` und `is:for_review` gehören zur Sprache, aber die Zuständigkeit
- * (S7) und die Merkzettel (S6) sind eigene Aufgaben. Sie schränken deshalb
- * nichts ein und werden zurückgemeldet — eine Liste, die so tut, als hätte sie
- * „mir zugewiesen" ausgewertet, ist schlimmer als eine, die sagt, dass sie es
- * nicht konnte.
+ * **Was es noch nicht gibt, wird benannt und nicht erfunden.** `bookmarks:`
+ * gehört zur Sprache, aber die Merkzettel (S6) sind eine eigene Aufgabe. Das
+ * Feld schränkt deshalb nichts ein und wird zurückgemeldet — eine Liste, die
+ * so tut, als hätte sie „gemerkt" ausgewertet, ist schlimmer als eine, die
+ * sagt, dass sie es nicht konnte.
+ *
+ * **Die Zuständigkeit (S7) ist eine gewöhnliche Spalte.** `assigned:`,
+ * `is:assigned`, `is:unassigned` und `is:for_review` lesen `assigned_user_id`,
+ * `assigned_team_id` und `for_review_at` am Eintrag und kosten damit so wenig
+ * wie `is:unresolved`. **Wen** ein Text bezeichnet, entscheidet dabei nicht
+ * dieses Feld, sondern {@see IssueAssignee} — dieselbe Auflösung wie im
+ * Formular der Aktionsleiste, damit „anna@example.com" hier und dort dieselbe
+ * Person meint. Der Rückfall (S8) ebenso: `is:regressed` liest `regressed_at`.
  */
 final class IssueFields implements FieldResolver
 {
@@ -81,18 +91,19 @@ final class IssueFields implements FieldResolver
     private const MARKER_STATES = ['regressed'];
 
     /**
-     * Zustände, die es in der Sprache gibt und in den Daten noch nicht.
+     * Die Zustände, die `is:` über die Zuständigkeit beantwortet — sie lesen
+     * keine `status`-Spalte und stehen deshalb neben {@see STATES}.
      *
      * @var list<string>
      */
-    private const PENDING_STATES = ['assigned', 'unassigned', 'for_review'];
+    private const ASSIGNMENT_STATES = ['assigned', 'unassigned', 'for_review'];
 
     /**
      * Felder, die es in der Sprache gibt und in den Daten noch nicht.
      *
      * @var list<string>
      */
-    private const PENDING_FIELDS = ['assigned', 'bookmarks'];
+    private const PENDING_FIELDS = ['bookmarks'];
 
     /**
      * Die Nutzer-Angaben am Ereignis, die sich abfragen lassen — Feldname der
@@ -113,8 +124,18 @@ final class IssueFields implements FieldResolver
     /**
      * @param  string  $timezone  Zeitzone des Betrachters — Datumsangaben ohne
      *                            Uhrzeit meinen seinen Tag und nicht den in UTC.
+     * @param  Organization|null  $organization  Gegen wen `assigned:` aufgelöst
+     *                                           wird. Ohne sie ist die
+     *                                           Zuständigkeit nicht auflösbar —
+     *                                           ein Name ist nur innerhalb einer
+     *                                           Organisation ein Name.
+     * @param  User|null  $viewer  Wen `assigned:me` meint.
      */
-    public function __construct(private readonly string $timezone = 'UTC') {}
+    public function __construct(
+        private readonly string $timezone = 'UTC',
+        private readonly ?Organization $organization = null,
+        private readonly ?User $viewer = null,
+    ) {}
 
     /**
      * Die Felder mit eigener Bedeutung, für die Vorschläge des Suchfeldes.
@@ -127,12 +148,14 @@ final class IssueFields implements FieldResolver
             'is',
             'level',
             'priority',
+            'issue.priority',
             'timesSeen',
             'usersSeen',
             'firstSeen',
             'lastSeen',
             'release',
             'firstRelease',
+            'assigned',
             ...array_keys(self::USER_FIELDS),
             ...self::PENDING_FIELDS,
         ];
@@ -163,13 +186,19 @@ final class IssueFields implements FieldResolver
         return match ($key) {
             'is' => $this->state($condition),
             'level' => $this->enumColumn($condition, 'level', array_column(EventLevel::cases(), 'value')),
-            'priority' => $this->enumColumn($condition, 'priority', array_column(IssuePriority::cases(), 'value')),
+            // Beide Schreibweisen meinen dasselbe Feld. `issue.priority:` ist
+            // die Form, in der andere Werkzeuge danach fragen, und ein
+            // unbekanntes Feld wäre hier kein Fehler, sondern ein **Merkmal** —
+            // die Suche fände dann stillschweigend nichts. Genau diese stille
+            // falsche Antwort ist der Grund für den zweiten Namen (S11).
+            'priority', 'issue.priority' => $this->enumColumn($condition, 'priority', array_column(IssuePriority::cases(), 'value')),
             'timesseen' => $this->number($condition, 'times_seen'),
             'usersseen' => $this->number($condition, 'users_seen'),
             'firstseen' => $this->moment($condition, 'first_seen'),
             'lastseen' => $this->moment($condition, 'last_seen'),
             'release' => $this->release($condition, ['firstRelease', 'lastRelease']),
             'firstrelease' => $this->release($condition, ['firstRelease']),
+            'assigned' => $this->assigned($condition),
             default => $this->tag($condition),
         };
     }
@@ -189,16 +218,16 @@ final class IssueFields implements FieldResolver
 
     /**
      * `is:` — der Zustand des Eintrags.
+     *
+     * Zwei Sorten unter einem Feldnamen, und das ist Absicht: `is:unresolved`
+     * fragt nach der Bearbeitung, `is:unassigned` nach der Zuständigkeit — für
+     * den Suchenden ist beides dieselbe Frage („in welchem Zustand ist das?"),
+     * und ein zweites Feld dafür wäre eine Unterscheidung, die nur das Schema
+     * kennt.
      */
-    private function state(Condition $condition): ?Closure
+    private function state(Condition $condition): Closure
     {
         $value = mb_strtolower($condition->value);
-
-        if (in_array($value, self::PENDING_STATES, true)) {
-            $this->unavailable[] = $condition->field.':'.$condition->value;
-
-            return null;
-        }
 
         if ($value === 'regressed') {
             self::rejectComparator($condition);
@@ -211,12 +240,16 @@ final class IssueFields implements FieldResolver
 
         $status = self::STATES[$value] ?? null;
 
-        if ($status === null) {
+        if ($status === null && ! in_array($value, self::ASSIGNMENT_STATES, true)) {
             throw new SearchSyntaxException(
                 __('search.errors.unknown_value', [
                     'field' => $condition->field,
                     'value' => $condition->value,
-                    'allowed' => implode(', ', [...array_keys(self::STATES), ...self::MARKER_STATES, ...self::PENDING_STATES]),
+                    'allowed' => implode(', ', [
+                        ...array_keys(self::STATES),
+                        ...self::ASSIGNMENT_STATES,
+                        ...self::MARKER_STATES,
+                    ]),
                 ]),
                 $condition->valuePosition,
                 $condition->value,
@@ -225,7 +258,73 @@ final class IssueFields implements FieldResolver
 
         self::rejectComparator($condition);
 
-        return fn (Builder $query) => $query->where('status', $status);
+        return match ($value) {
+            'assigned' => static fn (Builder $query) => $query->where(
+                static fn (Builder $any) => $any
+                    ->whereNotNull('assigned_user_id')
+                    ->orWhereNotNull('assigned_team_id'),
+            ),
+            'unassigned' => static fn (Builder $query) => $query
+                ->whereNull('assigned_user_id')
+                ->whereNull('assigned_team_id'),
+            'for_review' => static fn (Builder $query) => $query->whereNotNull('for_review_at'),
+            default => static fn (Builder $query) => $query->where('status', $status),
+        };
+    }
+
+    /**
+     * `assigned:` — wem der Eintrag gehört.
+     *
+     * `assigned:none` fragt nach den herrenlosen und ist damit dasselbe wie
+     * `is:unassigned`. Beides stehen zu lassen ist keine Doppelung aus
+     * Versehen: die eine Schreibweise ist die, die man tippt, wenn man von der
+     * Zuständigkeit herkommt, die andere die, die man tippt, wenn man von den
+     * Zuständen herkommt — und beide sind derselbe eine `where`.
+     *
+     * **Ein unbekannter Name ist ein Fehler und keine leere Liste.** Wer sich
+     * bei einer Adresse vertippt, bekommt sonst null Treffer und liest daraus,
+     * dass die Kollegin nichts offen hat. Der Preis ist, dass eine gespeicherte
+     * Suche auf jemanden, der die Organisation verlassen hat, ab dann meckert —
+     * und das ist die richtige Auskunft, denn sie stimmt nicht mehr.
+     */
+    private function assigned(Condition $condition): Closure
+    {
+        self::rejectComparator($condition);
+
+        if (! IssueAssignee::means($condition->value)) {
+            return static fn (Builder $query) => $query
+                ->whereNull('assigned_user_id')
+                ->whereNull('assigned_team_id');
+        }
+
+        $assignee = $this->organization === null
+            ? null
+            : IssueAssignee::resolve($condition->value, $this->organization, $this->viewer);
+
+        if ($assignee === null) {
+            throw new SearchSyntaxException(
+                __('search.errors.unknown_assignee', [
+                    'field' => $condition->field,
+                    'value' => $condition->value,
+                ]),
+                $condition->valuePosition,
+                $condition->value,
+            );
+        }
+
+        // Genau eine der beiden Spalten, nie beide: eine Zuweisung an ein Team
+        // ist keine an dessen Mitglieder. Wer „meins **und** das meiner Teams"
+        // sehen will, schreibt `assigned:me or assigned:#Kasse` — die Sprache
+        // kann das, und sie soll es sagen müssen.
+        if ($assignee->team !== null) {
+            $teamId = $assignee->team->id;
+
+            return static fn (Builder $query) => $query->where('assigned_team_id', $teamId);
+        }
+
+        $userId = $assignee->user?->id;
+
+        return static fn (Builder $query) => $query->where('assigned_user_id', $userId);
     }
 
     /**

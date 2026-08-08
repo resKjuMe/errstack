@@ -13,6 +13,7 @@ use App\Support\FilterData;
 use App\Support\Formats;
 use App\Support\Issues\IssueSeries;
 use App\Support\Performance\Detection\PerformanceIssueList;
+use App\Support\Releases\DeployMarkers;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -53,6 +54,10 @@ class PerformanceIssueController extends Controller
             'series' => [
                 'period' => $period->value,
                 'periodLabel' => $period->label(),
+                // Wann in diesem Zeitraum ausgeliefert wurde (R3). Einmal für
+                // die ganze Seite: alle Grafiken darauf stehen über demselben
+                // Raster und zeigen deshalb dieselben Striche.
+                'markers' => DeployMarkers::forFilter($filter),
             ],
             // Dieselbe Anmerkung wie in der Fehlerliste: die Zähler eines
             // Eintrags sind über alle Umgebungen hinweg gebildet, eine

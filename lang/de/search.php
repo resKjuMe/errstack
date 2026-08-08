@@ -33,6 +33,9 @@ return [
         'relative_with_comparison' => 'Eine Angabe wie -24h sagt die Richtung schon selbst; '
             .'ein Vergleich davor geht bei :field nicht.',
         'no_comparison' => 'Bei :field lässt sich nicht mit „:comparator" vergleichen.',
+        'unknown_assignee' => ':field kennt „:value" nicht — kein Konto und kein Team '
+            .'dieser Organisation trägt diesen Namen. Möglich sind me, none, eine '
+            .'E-Mail-Adresse oder #Team.',
     ],
 
     /*
@@ -47,7 +50,7 @@ return [
     */
 
     'fields' => [
-        'is' => 'Zustand: unresolved, resolved, ignored',
+        'is' => 'Zustand: unresolved, resolved, ignored, assigned, unassigned, for_review',
         'level' => 'Grad: fatal, error, warning, info, debug',
         'priority' => 'Dringlichkeit: high, medium, low',
         'timesseen' => 'Häufigkeit, auch als Vergleich: >100',
@@ -56,7 +59,7 @@ return [
         'lastseen' => 'Zuletzt gesehen: 2026-03-01 oder -24h',
         'release' => 'Version, in der er zuerst oder zuletzt auftrat',
         'firstrelease' => 'Version, in der er zum ersten Mal auftrat',
-        'assigned' => 'Zuständigkeit (kommt mit einer späteren Aufgabe)',
+        'assigned' => 'Zuständig: me, none, eine E-Mail-Adresse oder #Team',
         'bookmarks' => 'Gemerkte Fehler (kommt mit einer späteren Aufgabe)',
         'user' => [
             'email' => 'E-Mail eines Betroffenen (durchsucht die Meldungen)',

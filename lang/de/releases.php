@@ -40,4 +40,52 @@ return [
     'environment_ignored' => 'Die gewählte Umgebung wirkt hier nicht: eine Version wird '
         .'als Ganzes ausgeliefert und gehört nicht zu einer Umgebung.',
 
+    // Die Detailseite einer Version (R2): was in ihr steckt.
+    'deploys' => [
+        'title' => 'Auslieferungen',
+        'help' => 'Wann diese Version in welcher Umgebung landete. Der Zeitpunkt '
+            .'geht aus keiner Meldung hervor — er kommt aus der Auslieferungs-'
+            .'Pipeline über die Schnittstelle.',
+        'empty' => 'Für diese Version wurde keine Auslieferung gemeldet.',
+        'empty_hint' => 'Eine Pipeline meldet sie am Ende ihres Laufs; '
+            .'POST /api/0/organizations/{org}/projects/{projekt}/releases/{version}/deploys.',
+        'environment' => 'Umgebung',
+        'at' => 'Zeitpunkt',
+        'duration' => 'Dauer',
+        'link' => 'Zum Baulauf',
+        'marker' => 'Ausgeliefert: :version nach :environment (:at)',
+
+        'notification' => [
+            'title' => ':version wurde nach :environment ausgeliefert',
+            'body' => 'Deine Änderungen sind draußen: :commits Commits stecken in dieser '
+                .'Auslieferung von :project.',
+            'context_project' => 'Projekt',
+            'context_environment' => 'Umgebung',
+        ],
+    ],
+
+    'detail' => [
+        'title' => 'Version :version',
+        'help' => 'Was in dieser Auslieferung steckt. Die Commits kommen aus einem '
+            .'verbundenen Repository oder werden beim Ausliefern über die '
+            .'Schnittstelle übergeben — eine Version, die nur aus Meldungen '
+            .'entstanden ist, hat keine.',
+        'commits' => 'Commits',
+        'commit_count' => ':count Commits',
+        'truncated' => 'Es werden :shown von :total Commits gezeigt.',
+        'empty' => 'Für diese Version wurden keine Commits übergeben.',
+        'empty_hint' => 'Eine Bauumgebung kann sie beim Ausliefern übergeben, auch '
+            .'ohne Anbindung an GitHub oder GitLab.',
+        'files' => ':count Dateien',
+        'no_files' => 'Keine Dateien angegeben',
+        'author_unknown' => 'Autor unbekannt',
+        'author_member_hint' => 'Diese Adresse gehört zu einem Konto dieser Organisation.',
+        'new_issues' => 'Neue Fehler dieser Version',
+        'back' => 'Zur Versionsliste',
+        'released_at' => 'Ausgeliefert: :value',
+        'first_event' => 'Zuerst gesehen: :value',
+        'last_event' => 'Zuletzt gesehen: :value',
+        'ref' => 'Stand: :value',
+    ],
+
 ];

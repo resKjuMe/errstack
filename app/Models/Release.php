@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -297,6 +298,23 @@ class Release extends Model
     }
 
     /**
+     * Die Commits, die in dieser Auslieferung stecken (R2).
+     *
+     * In der Reihenfolge, in der sie übergeben wurden, und nicht nach
+     * `committed_at`: die Zeit eines Commits stammt aus dem Repository und gibt
+     * nach einem Rebase oder Cherry-Pick die Reihenfolge verkehrt herum wieder.
+     * Wer die Liste schickt, kennt sie.
+     *
+     * @return BelongsToMany<Commit, $this>
+     */
+    public function commits(): BelongsToMany
+    {
+        return $this->belongsToMany(Commit::class, 'release_commit')
+            ->withPivot('position')
+            ->orderByPivot('position');
+    }
+
+    /**
      * Die hochgeladenen Bauartefakte dieser Version — Bundle und Quellkarte (R5).
      *
      * @return HasMany<ReleaseArtifact, $this>
@@ -304,6 +322,21 @@ class Release extends Model
     public function artifacts(): HasMany
     {
         return $this->hasMany(ReleaseArtifact::class);
+    }
+
+    /**
+     * Die Auslieferungen dieser Version, neueste zuerst (R3).
+     *
+     * Mehrere, und das ist der Punkt: dieselbe Version geht nacheinander nach
+     * `staging` und nach `production`, und nach einem Rollback ein zweites Mal.
+     * `released_at` daneben ist die eine angekündigte Zeit aus der
+     * Schnittstelle — sie ersetzt diese Liste nicht.
+     *
+     * @return HasMany<Deploy, $this>
+     */
+    public function deploys(): HasMany
+    {
+        return $this->hasMany(Deploy::class)->newestFirst();
     }
 
     /**

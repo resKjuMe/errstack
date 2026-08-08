@@ -7,6 +7,8 @@ use App\Enums\IssuePriority;
 use App\Models\ProjectTag;
 use App\Models\ProjectTagKey;
 use App\Models\Release;
+use App\Models\Team;
+use App\Models\User;
 use App\Support\Filters\GlobalFilter;
 use App\Support\Search\SearchQuery;
 use App\Support\Tags\TagFacets;
@@ -160,7 +162,7 @@ final class IssueSearchSuggestions
         $fixed = match ($key) {
             'is' => ['unresolved', 'resolved', 'ignored', 'assigned', 'unassigned', 'for_review', 'regressed'],
             'level' => array_column(EventLevel::cases(), 'value'),
-            'priority' => array_column(IssuePriority::cases(), 'value'),
+            'priority', 'issue.priority' => array_column(IssuePriority::cases(), 'value'),
             'timesseen', 'usersseen' => ['>100', '>1000', '1'],
             'firstseen', 'lastseen' => ['-24h', '-7d', '+30d'],
             default => null,
@@ -172,6 +174,10 @@ final class IssueSearchSuggestions
 
         if ($key === 'release' || $key === 'firstrelease') {
             return self::wrap($field, self::versions($filter, $prefix));
+        }
+
+        if ($key === 'assigned') {
+            return self::wrap($field, self::assignees($filter, $prefix));
         }
 
         // Alles übrige ist ein Merkmal — und dessen Werte kennt nur die
@@ -264,6 +270,59 @@ final class IssueSearchSuggestions
             ->map(fn (mixed $value): string => (string) $value)
             ->values()
             ->all();
+    }
+
+    /**
+     * Die Zuständigen zur Auswahl: `me`, `none`, die Teams und die Mitglieder
+     * der Organisation (S7).
+     *
+     * Vorgeschlagen wird, was man auch tippen kann — bei Personen die
+     * E-Mail-Adresse ({@see IssueAssignee::term()}), weil sie eindeutig ist und
+     * ein gespeicherter Link damit dieselbe Person meint, auch wenn jemand mit
+     * gleichem Namen dazukommt.
+     *
+     * @return list<string>
+     */
+    private static function assignees(GlobalFilter $filter, string $prefix): array
+    {
+        $organization = $filter->organization;
+
+        if ($organization === null) {
+            return [];
+        }
+
+        $teams = Team::query()
+            ->where('organization_id', $organization->id)
+            ->when($prefix !== '', fn ($q) => $q->whereRaw("name like ? escape '!'", [self::like($prefix)]))
+            ->orderBy('name')
+            ->limit(self::LIMIT)
+            ->get(['id', 'name'])
+            ->map(static fn (Team $team): string => IssueAssignee::forTeam($team)->term())
+            ->all();
+
+        $members = User::query()
+            ->select(['users.id', 'users.name', 'users.email'])
+            ->join('organization_user', 'organization_user.user_id', '=', 'users.id')
+            ->where('organization_user.organization_id', $organization->id)
+            ->when($prefix !== '', fn ($q) => $q->where(
+                fn ($any) => $any
+                    ->whereRaw("users.name like ? escape '!'", [self::like($prefix)])
+                    ->orWhereRaw("users.email like ? escape '!'", [self::like($prefix)]),
+            ))
+            ->orderBy('users.name')
+            ->limit(self::LIMIT)
+            ->get()
+            ->map(static fn (User $user): string => IssueAssignee::forUser($user)->term())
+            ->all();
+
+        return array_slice([
+            // `me` und `none` zuerst und ohne Namensvergleich: sie sind die
+            // beiden häufigsten Antworten und die einzigen, die auch dann
+            // gelten, wenn die Organisation niemanden führt.
+            ...self::startingWith([IssueAssignee::SELF, IssueAssignee::NOBODY], $prefix),
+            ...$teams,
+            ...$members,
+        ], 0, self::LIMIT);
     }
 
     /**

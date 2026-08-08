@@ -103,10 +103,15 @@ final class IssueSeries
      * fünfzig Umläufe für eine Grafik von Daumenbreite — dieselbe Rechnung wie
      * bei den Zählern selbst.
      *
+     * Öffentlich, weil der Durchlauf der Wichtigkeit dieselbe Zuordnung braucht
+     * ({@see IssuePrioritySweep}): eine zweite Fassung davon wäre die Stelle, an
+     * der ein zusammengeführter Fehler in der Grafik auftritt und in der
+     * Bewertung stillsteht.
+     *
      * @param  list<int>  $issueIds
      * @return array<int, int>
      */
-    private static function owners(array $issueIds): array
+    public static function owners(array $issueIds): array
     {
         $owner = array_combine($issueIds, $issueIds);
 
@@ -129,6 +134,22 @@ final class IssueSeries
         return $filter->fromUtc()->diffInHours($filter->toUtc()) > self::HOURLY_LIMIT_HOURS
             ? CountPeriod::Day
             : CountPeriod::Hour;
+    }
+
+    /**
+     * Das Raster, über dem eine Liste gezeichnet wird.
+     *
+     * Nach außen gegeben, weil nicht nur die Zahlen darauf liegen: die
+     * Deploy-Markierungen (R3) müssen auf **demselben** Raster sitzen, sonst
+     * steht der Strich neben seinem Ausschlag. Es hier zu holen ist die einzige
+     * Art, das sicherzustellen, die nicht darauf beruht, dass zwei Stellen
+     * dieselbe Rechnung anstellen.
+     *
+     * @return list<string>
+     */
+    public static function windowsFor(GlobalFilter $filter): array
+    {
+        return self::windows(self::periodFor($filter), $filter);
     }
 
     /**

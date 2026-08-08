@@ -7,6 +7,7 @@ use App\Enums\IssueCategory;
 use App\Enums\IssuePriority;
 use App\Enums\IssueStatus;
 use App\Enums\PerformanceProblem;
+use App\Support\Issues\IssueActions;
 use App\Support\Tags\TagAggregates;
 use Carbon\CarbonImmutable;
 use Database\Factories\IssueFactory;
@@ -60,6 +61,8 @@ use Illuminate\Support\Facades\DB;
  * @property EventLevel $level
  * @property IssueStatus $status
  * @property IssuePriority $priority
+ * @property bool $priority_locked
+ * @property CarbonImmutable|null $escalated_at
  * @property int $times_seen
  * @property int $users_seen
  * @property int $time_lost_us
@@ -82,6 +85,11 @@ use Illuminate\Support\Facades\DB;
  * @property int|null $ignore_users_seen
  * @property CarbonImmutable|null $regressed_at
  * @property int|null $regressed_in_release_id
+ * @property int|null $assigned_user_id
+ * @property int|null $assigned_team_id
+ * @property CarbonImmutable|null $assigned_at
+ * @property int|null $assigned_by_id
+ * @property CarbonImmutable|null $for_review_at
  * @property int|null $merged_sources_count nur nach `withCount('mergedSources')`
  */
 class Issue extends Model
@@ -148,6 +156,12 @@ class Issue extends Model
             // steigt.
             'first_seen' => $event->occurred_at,
             'last_seen' => $event->occurred_at,
+            // Ein neuer Eintrag liegt zur Prüfung (S7): niemand hat ihn gesehen,
+            // niemand ist zuständig. Der Zeitpunkt ist **jetzt** und nicht der
+            // des Ereignisses — er beantwortet „seit wann liegt das hier?", und
+            // eine Meldung, die verspätet eintrifft, liegt seit ihrer Ankunft
+            // hier und nicht seit ihrem Entstehen.
+            'for_review_at' => CarbonImmutable::now(),
         ]);
 
         $claimed = EventGroup::query()
@@ -261,6 +275,10 @@ class Issue extends Model
             'priority' => IssuePriority::DEFAULT,
             'first_seen' => $detection->occurred_at,
             'last_seen' => $detection->occurred_at,
+            // Auch ein neu erkanntes Leistungsproblem liegt zur Prüfung (S7):
+            // „neu und niemand zuständig" ist dieselbe Aussage, gleich ob eine
+            // Ausnahme oder eine langsame Abfrage dahintersteht.
+            'for_review_at' => CarbonImmutable::now(),
         ]);
 
         $claimed = EventGroup::query()
@@ -744,6 +762,49 @@ class Issue extends Model
     }
 
     /**
+     * Die Person, die sich um diesen Fehler kümmert (S7).
+     *
+     * Höchstens **eine** von beiden ist gesetzt — zugewiesen wird an eine Person
+     * oder an ein Team, nie an beides. Eingehalten wird das vom einzigen
+     * Schreibweg ({@see IssueActions::assign()}), der immer
+     * beide Spalten gemeinsam setzt.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function assignedUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_user_id');
+    }
+
+    /**
+     * Das Team, das sich um diesen Fehler kümmert.
+     *
+     * @return BelongsTo<Team, $this>
+     */
+    public function assignedTeam(): BelongsTo
+    {
+        return $this->belongsTo(Team::class, 'assigned_team_id');
+    }
+
+    /**
+     * Wer zugewiesen hat — für die Anzeige, nicht als Ersatz für den Verlauf.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function assignedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_by_id');
+    }
+
+    /**
+     * Liegt dieser Eintrag zur Prüfung?
+     */
+    public function isForReview(): bool
+    {
+        return $this->for_review_at !== null;
+    }
+
+    /**
      * Der Aktivitätsverlauf dieses Eintrags: wer wann was getan hat.
      *
      * @return HasMany<IssueActivity, $this>
@@ -816,6 +877,8 @@ class Issue extends Model
         'level',
         'status',
         'priority',
+        'priority_locked',
+        'escalated_at',
         'times_seen',
         'users_seen',
         'time_lost_us',
@@ -838,6 +901,11 @@ class Issue extends Model
         'ignore_users_seen',
         'regressed_at',
         'regressed_in_release_id',
+        'assigned_user_id',
+        'assigned_team_id',
+        'assigned_at',
+        'assigned_by_id',
+        'for_review_at',
     ];
 
     /**
@@ -850,6 +918,7 @@ class Issue extends Model
             'level' => EventLevel::class,
             'status' => IssueStatus::class,
             'priority' => IssuePriority::class,
+            'priority_locked' => 'boolean',
             'times_seen' => 'integer',
             'users_seen' => 'integer',
             'time_lost_us' => 'integer',
@@ -859,6 +928,7 @@ class Issue extends Model
             'last_seen' => 'immutable_datetime',
             'first_release_at' => 'immutable_datetime',
             'last_release_at' => 'immutable_datetime',
+            'escalated_at' => 'immutable_datetime',
             'resolved_at' => 'immutable_datetime',
             'resolved_in_next_release' => 'boolean',
             'ignored_at' => 'immutable_datetime',
@@ -868,6 +938,8 @@ class Issue extends Model
             'ignore_times_seen' => 'integer',
             'ignore_users_seen' => 'integer',
             'regressed_at' => 'immutable_datetime',
+            'assigned_at' => 'immutable_datetime',
+            'for_review_at' => 'immutable_datetime',
         ];
     }
 }
