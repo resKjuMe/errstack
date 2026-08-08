@@ -53,6 +53,9 @@ return [
         'microseconds' => 'µs',
         'milliseconds' => 'ms',
         'seconds' => 's',
+        'bytes' => 'B',
+        'kilobytes' => 'KB',
+        'megabytes' => 'MB',
     ],
 
     'empty' => [
@@ -68,6 +71,70 @@ return [
         'summary' => 'Seite :page von :pages · :total Transaktionen',
         'previous' => 'Zurück',
         'next' => 'Weiter',
+    ],
+
+    'transaction' => [
+        'title' => 'Transaktion',
+        'back' => 'Zurück zur Übersicht',
+
+        'help' => [
+            'purpose' => 'Diese Seite beantwortet, warum eine Transaktion langsam ist: wie sich die Antwortzeiten verteilen, wie sie sich entwickelt haben, welche Vorgangsart die Zeit verbraucht und welche Aufrufe sich ansehen lassen.',
+            'histogram' => 'Die Verteilung zeigt, ob alle Aufrufe gleich langsam sind oder ob es zwei Gruppen gibt. Ein zweiter Hügel weit rechts heißt: es gibt einen Sonderweg, der viel länger braucht.',
+            'sample' => 'Kennzahlen und Verlauf beruhen auf allen Messungen des Zeitraums. Zeitfresser, Merkmale und Beispiele werden aus einer begrenzten Stichprobe der jüngsten Aufrufe berechnet — ihre Größe steht an den jeweiligen Abschnitten.',
+            'samples' => 'Die Beispielfälle sind gezielt aus den Perzentil-Bereichen gewählt und nicht zufällig: ein zufälliger Aufruf wäre fast immer ein schneller.',
+            'facets' => 'Als auffällig markiert wird ein Wert, dessen p95 mindestens das Anderthalbfache der übrigen Werte beträgt — der Fall „nur diese eine Version ist langsam".',
+        ],
+
+        'empty' => 'Für diese Transaktion wurden im gewählten Zeitraum keine Antwortzeiten gemeldet.',
+        'empty_hint' => 'Der Zeitraum lässt sich oben ändern. Ein Link auf „letzte 24 Stunden" zeigt morgen andere Daten — das ist kein Fehler, sondern der Zeitraum.',
+
+        'histogram' => [
+            'title' => 'Verteilung der Antwortzeiten',
+            'bar' => ':count Messungen zwischen :from und :to',
+            'open_end' => 'darüber',
+            'hint' => 'Die Klassen verdoppeln sich jeweils: links die schnellen Aufrufe, rechts die langsamen.',
+        ],
+
+        'series' => [
+            'title' => 'Verlauf (p95)',
+            'point' => ':at · p95 :p95 aus :count Messungen',
+            'period_hour' => 'Ein Balken je Stunde.',
+            'period_day' => 'Ein Balken je Tag.',
+        ],
+
+        'spans' => [
+            'title' => 'Größte Zeitfresser',
+            'description' => 'Nach Vorgangsart, aus :transactions Aufrufen. Die Anteile beziehen sich auf die Gesamtzeit aller Schritte — Schritte liegen ineinander, ihre Summe ist deshalb größer als die Antwortzeit.',
+            'detail' => ':count Schritte · :total gesamt · :average im Mittel',
+            'empty' => 'Zu diesen Aufrufen wurden keine Einzelschritte gemeldet. Ohne sie ist nur die Gesamtdauer bekannt — Einzelschritte kommen aus dem Tracing des SDK.',
+        ],
+
+        'facets' => [
+            'title' => 'Auffällige Merkmale',
+            'description' => 'Das p95 je Version, Umgebung und Plattform — aus derselben Stichprobe.',
+            'empty' => 'Es gibt kein Merkmal mit mehr als einem Wert; damit lässt sich nichts vergleichen.',
+            'outlier' => 'auffällig',
+            'keys' => [
+                'release' => 'Version',
+                'environment' => 'Umgebung',
+                'platform' => 'Plattform',
+            ],
+        ],
+
+        'samples' => [
+            'title' => 'Beispielfälle',
+            'description' => 'Je Perzentil-Bereich ein tatsächlicher Aufruf.',
+            'empty' => 'Zu dieser Transaktion liegen keine Einzelmessungen mehr vor.',
+            'detail' => ':at · :spans Schritte · :release',
+            'no_release' => 'ohne Version',
+            'no_trace_view' => 'Die Trace-Ansicht steht noch nicht zur Verfügung.',
+        ],
+
+        'issues' => [
+            'title' => 'Verknüpfte Fehler',
+            'description' => 'Fehler, die im Zeitraum unter diesem Transaktionsnamen gemeldet wurden.',
+            'empty' => 'Unter diesem Namen wurde im Zeitraum kein Fehler gemeldet.',
+        ],
     ],
 
 ];

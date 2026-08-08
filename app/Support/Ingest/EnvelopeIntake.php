@@ -147,7 +147,7 @@ final class EnvelopeIntake
         // Elemente sind voneinander unabhängig, und ein Anhang, dessen
         // Auswertung scheitert, darf die Fehlermeldung nicht mitreißen, mit der
         // er zusammen gesendet wurde.
-        ProcessIngestPayload::dispatch($accepted);
+        ProcessIngestPayload::dispatch($accepted)->delay($this->delayFor($type));
 
         if ($type === IngestType::ClientReport) {
             $this->countClientReport($item, $key);
@@ -156,6 +156,29 @@ final class EnvelopeIntake
         if ($type === IngestType::CheckIn) {
             $this->acceptCheckIn($item, $key);
         }
+    }
+
+    /**
+     * Wie lange der Job eines Elements wartet, bevor er anläuft.
+     *
+     * Für fast alles: gar nicht. Die eine Ausnahme ist das Sample-Profil (M4).
+     * Es wird an der Transaktion abgelegt, die es vermessen hat, und beide
+     * stecken zwar im selben Envelope, laufen danach aber als zwei unabhängige
+     * Jobs — welcher zuerst drankommt, hängt an der Zahl der Arbeiter und nicht
+     * an der Reihenfolge hier. Ohne Vorsprung sucht das Profil seine
+     * Transaktion mitunter, bevor sie abgelegt ist, und wird als `orphaned`
+     * verworfen.
+     *
+     * Das ist bewusst eine Wartezeit und keine Warteschleife im Profil-Job
+     * selbst: eine Wiederholung, die auf einen anderen Job hofft, hält einen
+     * Arbeiter besetzt, und bei einem Ausfall der Transaktion hielte sie ihn
+     * bis zum letzten Versuch besetzt.
+     */
+    private function delayFor(IngestType $type): int
+    {
+        return $type === IngestType::Profile
+            ? max(0, (int) config('ingest.profiling.dispatch_delay_seconds'))
+            : 0;
     }
 
     /**

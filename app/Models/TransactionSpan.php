@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Carbon\CarbonImmutable;
+use Database\Factories\TransactionSpanFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -33,6 +35,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class TransactionSpan extends Model
 {
+    /** @use HasFactory<TransactionSpanFactory> */
+    use HasFactory;
+
     /**
      * Mit Millisekunden, wie bei der Transaktion ({@see Transaction::$dateFormat}).
      *

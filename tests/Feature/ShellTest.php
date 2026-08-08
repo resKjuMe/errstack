@@ -64,18 +64,22 @@ class ShellTest extends TestCase
                 ->where('shell.links.4.active', false)
                 ->where('shell.links.5.label', 'Leistung')
                 ->where('shell.links.5.active', false)
-                ->where('shell.links.6.label', 'Projekte')
+                ->where('shell.links.6.label', 'Leistungsprobleme')
                 ->where('shell.links.6.active', false)
-                ->where('shell.links.7.label', 'Organisationen')
+                ->where('shell.links.7.label', 'Profile')
                 ->where('shell.links.7.active', false)
-                ->where('shell.links.8.label', 'Bausteine')
+                ->where('shell.links.8.label', 'Projekte')
                 ->where('shell.links.8.active', false)
+                ->where('shell.links.9.label', 'Organisationen')
+                ->where('shell.links.9.active', false)
+                ->where('shell.links.10.label', 'Bausteine')
+                ->where('shell.links.10.active', false)
             );
 
         $this->get('/bausteine')
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('shell.links.0.active', false)
-                ->where('shell.links.8.active', true)
+                ->where('shell.links.10.active', true)
             );
 
         // Die Merkmal-Übersicht markiert sich selbst — über ihr Muster
@@ -87,11 +91,31 @@ class ShellTest extends TestCase
             );
 
         // Die Auswertungsseite markiert sich selbst — über ihr Muster
-        // `performance.*` und nicht über die Adresse.
+        // `performance.index` und nicht über die Adresse. `performance.*` wäre
+        // hier falsch: darunter lägen auch die Leistungsprobleme.
         $this->get('/leistung')
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('shell.links.0.active', false)
                 ->where('shell.links.5.active', true)
+                ->where('shell.links.6.active', false)
+            );
+
+        // Die Leistungsprobleme sind ein eigener Eintrag und nicht die
+        // Auswertungsseite: beide gleichzeitig hervorgehoben wäre die Antwort
+        // auf die Frage, wo man gerade ist, in doppelter Ausführung.
+        $this->get('/leistungsprobleme')
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('shell.links.5.active', false)
+                ->where('shell.links.6.active', true)
+            );
+
+        // Die Profile liegen unterhalb von `/leistung`, gehören aber zu ihrem
+        // eigenen Muster `profiling.*`: die Adresse allein würde hier zwei
+        // Einträge gleichzeitig markieren.
+        $this->get('/leistung/profile')
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('shell.links.5.active', false)
+                ->where('shell.links.7.active', true)
             );
 
         $this->get('/versionen')

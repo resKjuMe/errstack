@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\SelfMonitoring\ScheduleCheckIn;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -31,7 +32,15 @@ Schedule::command('queue:prune-failed --hours=168')->daily();
 // Zeitplan nicht, meldet die Überwachung still nichts mehr. `withoutOverlapping`,
 // damit ein langsamer Durchlauf den nächsten nicht überholt und derselbe Termin
 // zweimal als verpasst gilt.
-Schedule::command('crons:sweep')->everyMinute()->withoutOverlapping();
+$sweep = Schedule::command('crons:sweep')->everyMinute()->withoutOverlapping();
+
+// Und dieser eine Job meldet sich seinerseits an die Selbstüberwachung.
+//
+// Er ist der Punkt, an dem die Kette sonst still abreißt: er stellt fest, dass
+// ein fremder Cronjob ausgeblieben ist — bleibt er selbst aus, stellt das
+// niemand fest. Ein Lebenszeichen dorthin, wo auch die fremden hingehen,
+// schließt genau diese Lücke ({@see App\Support\SelfMonitoring\ScheduleCheckIn}).
+ScheduleCheckIn::attach($sweep);
 
 // Schwellwert-Alarme auf Kennzahlen auswerten (A3).
 //

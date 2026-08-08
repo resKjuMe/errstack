@@ -16,6 +16,8 @@ return [
         'feedback' => 'Rückmeldungen',
         'releases' => 'Versionen',
         'performance' => 'Leistung',
+        'performance_issues' => 'Leistungsprobleme',
+        'profiling' => 'Profile',
         'projects' => 'Projekte',
         'organizations' => 'Organisationen',
         'components' => 'Bausteine',

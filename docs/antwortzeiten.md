@@ -30,6 +30,11 @@ erfolgreichen Seitenaufrufen.
 dasselbe: die Schritte, die Fehler gruppieren und zusammenfassen (I5, I6),
 sehen keine Transaktion.
 
+Aus einem gespeicherten Ablauf kann später trotzdem ein Eintrag in der
+Issue-Maschinerie werden — als **Leistungsproblem**, nicht als Fehler, und in
+einer eigenen Liste. Wie die Erkennung das macht und warum sie nie im
+Aufnahme-Request läuft, steht in [leistungsprobleme.md](leistungsprobleme.md).
+
 ## Was gespeichert wird
 
 | Tabelle | Inhalt |
@@ -121,6 +126,39 @@ der Wartezeit auf einer heißen Zeile ist nicht die schwächere Zusage, sondern
 das Zusammenfassen mehrerer Messungen vor dem Schreiben; das gehört zur Härtung
 der Aufnahme (O12).
 
+## Die Trace-Ansicht
+
+Unter `/spur/{trace_id}` steht der ganze Ablauf als Wasserfall: alle
+Transaktionen dieser Spur, ihre Einzelschritte, die Zeitachse und die Fehler an
+der Stelle, an der sie gemeldet wurden (`App\Support\Performance\Trace`).
+
+Drei Entscheidungen tragen sie:
+
+**Kein Projekt in der Adresse.** Eine Spur führt über mehrere Dienste und damit
+über mehrere Projekte; ein Pfad `/projekte/{projekt}/spur/{spur}` müsste eines
+davon zum Hauptprojekt erklären, und aus dem zweiten Dienst wäre es ein anderes.
+Gezeigt wird, was der Betrachter sehen darf — die Projekte seiner
+Organisationen.
+
+**Was fehlt, wird gezeigt.** Nennt ein Knoten einen übergeordneten Schritt, den
+es hier nicht gibt (Dienst nicht angebunden, Meldung noch unterwegs, von der
+Stichprobe verworfen), entsteht an dessen Stelle eine **Lücke** mit der
+Zeitspanne ihrer Kinder. Die Kinder an die Wurzel zu hängen würde behaupten, sie
+hätten keinen Elternteil.
+
+**Feste Zahl an Abfragen, gezeichnet wird nur das Fenster.** Der Baum entsteht
+aus drei Abfragen (Transaktionen, Schritte, Fehler) — nicht aus einer je Ebene,
+denn die Tiefe einer Spur ist nicht vorhersagbar. Die Oberfläche zeichnet bei
+fester Zeilenhöhe nur den sichtbaren Ausschnitt; die vollen Beschreibungen und
+die Zusatzangaben eines Schrittes kommen erst beim Anklicken nach. Ohne beides
+wäre eine Spur mit zehntausend Schritten — also die mit dem N+1-Problem, wegen
+der man hier nachsieht — nicht zu öffnen.
+
+Der Weg von einem Fehler in seine Spur ist `/spur/ereignis/{event}`; dafür
+tragen Fehlermeldungen `trace_id` und `trace_span_id` in eigenen Spalten. Sie
+stehen zwar auch in `contexts.trace`, aber ein Index über ein JSON-Fach wäre in
+MySQL und SQLite verschieden zu schreiben.
+
 ## Grenzen
 
 | Grenze | Wert | Warum |
@@ -157,7 +195,8 @@ sollen sich die Rohdaten erneut durchlaufen lassen.
 
 Die Auswertung. Die Übersicht (PF2) liest aus diesen Tabellen — sie steht unter
 `/leistung` und rechnet mit drei Abfragen, unabhängig von der Datenmenge
-(`App\Support\Performance\TransactionOverview`). Detailseite mit Verteilung
-(PF3), Trace-Ansicht (PF4), Web Vitals (PF5), automatisch erkannte Probleme
+(`App\Support\Performance\TransactionOverview`), die Trace-Ansicht (PF4) unter
+`/spur/{trace_id}`. Detailseite mit Verteilung
+(PF3), Web Vitals (PF5), automatisch erkannte Probleme
 (PF6) und Trend-Erkennung (PF7) lesen ebenfalls von hier — geschrieben werden
 die Tabellen in diesem Teil.

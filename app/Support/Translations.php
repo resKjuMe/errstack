@@ -38,14 +38,17 @@ final class Translations
         'notifications',
         'organizations',
         'performance',
+        'performance_issues',
         'privacy',
         'profile',
+        'profiling',
         'project_keys',
         'projects',
         'releases',
         'sampling',
         'tags',
         'teams',
+        'traces',
     ];
 
     /**

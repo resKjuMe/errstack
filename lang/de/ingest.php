@@ -11,5 +11,6 @@ return [
     'not_decodable' => 'Die Meldung ließ sich nicht entpacken.',
     'feedback_incomplete' => 'Die Rückmeldung hat keinen Text — ohne Beschreibung ist sie keine.',
     'envelope_header' => 'Der Envelope beginnt nicht mit einer Kopfzeile aus JSON.',
+    'security_unknown' => 'Kein bekannter Sicherheitsbericht — erwartet werden csp-report, expect-ct-report oder expect-staple-report.',
 
 ];

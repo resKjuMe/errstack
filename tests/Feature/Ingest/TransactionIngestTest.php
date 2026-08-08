@@ -316,8 +316,12 @@ class TransactionIngestTest extends TestCase
         $key = $this->key();
         $spanWrites = 0;
 
+        // Gezählt werden **Einfügungen** und nicht jeder Zugriff auf die
+        // Tabelle: auf derselben Warteschlange laufen seit PF6 auch die
+        // Erkenner, und die lesen die Schritte. Ihr Lesen sagt über die hier
+        // zugesicherte Sammel-Einfügung nichts aus.
         DB::listen(function (QueryExecuted $query) use (&$spanWrites): void {
-            if (str_contains($query->sql, 'transaction_spans')) {
+            if (str_contains($query->sql, 'transaction_spans') && str_starts_with(ltrim(strtolower($query->sql)), 'insert')) {
                 $spanWrites++;
             }
         });

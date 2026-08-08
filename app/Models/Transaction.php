@@ -44,6 +44,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property float|null $client_sample_rate
  * @property float|null $server_sample_rate
  * @property array<string, mixed>|null $measurements
+ * @property CarbonImmutable|null $scanned_at
  */
 class Transaction extends Model
 {
@@ -236,6 +237,7 @@ class Transaction extends Model
             'client_sample_rate' => 'float',
             'server_sample_rate' => 'float',
             'measurements' => 'array',
+            'scanned_at' => 'immutable_datetime',
         ];
     }
 }
