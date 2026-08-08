@@ -24,6 +24,7 @@
 
 use App\Http\Controllers\Api\V0\OrganizationController;
 use App\Http\Controllers\Api\V0\ProjectController;
+use App\Http\Controllers\Api\V0\ReleaseController;
 use App\Http\Controllers\Api\V0\RootController;
 use Illuminate\Support\Facades\Route;
 
@@ -64,5 +65,27 @@ Route::prefix((string) config('api.version'))
                 Route::patch('{project}', [ProjectController::class, 'update'])
                     ->middleware('scope:project:write')
                     ->name('update');
+
+                // Ausgelieferte Versionen. Sie entstehen von selbst aus den
+                // Meldungen; dieser Weg ist für den umgekehrten Fall da — beim
+                // Ausliefern Bescheid geben, bevor der erste Fehler eintrifft.
+                Route::get('{project}/releases', [ReleaseController::class, 'index'])
+                    ->middleware('scope:project:read')
+                    ->name('releases.index');
+
+                Route::post('{project}/releases', [ReleaseController::class, 'store'])
+                    ->middleware('scope:project:write')
+                    ->name('releases.store');
+
+                // Die Versionsangabe steht roh in der Adresse und ist kein
+                // Modell-Parameter: sie ist nur innerhalb ihres Projekts
+                // eindeutig, und `scopeBindings` fände dafür keine Beziehung mit
+                // passendem Namen. Der Ausdruck lässt alles außer dem
+                // Schrägstrich zu — Versionen wie `mein-dienst@1.2.3` sollen
+                // sich ohne Umkodieren aufrufen lassen.
+                Route::get('{project}/releases/{version}', [ReleaseController::class, 'show'])
+                    ->where('version', '[^/]+')
+                    ->middleware('scope:project:read')
+                    ->name('releases.show');
             });
     });

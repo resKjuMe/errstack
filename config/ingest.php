@@ -5,6 +5,7 @@ use App\Support\Ingest\Processing\Steps\DecodePayload;
 use App\Support\Ingest\Processing\Steps\FilterEvent;
 use App\Support\Ingest\Processing\Steps\GroupEvent;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
+use App\Support\Ingest\Processing\Steps\RecordRelease;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
 use App\Support\Ingest\Processing\Steps\SampleTransaction;
 use App\Support\Ingest\Processing\Steps\ScrubEvent;
@@ -152,6 +153,7 @@ return [
             NormalizeEvent::class,
             GroupEvent::class,
             AggregateIssue::class,
+            RecordRelease::class,
         ],
 
     ],

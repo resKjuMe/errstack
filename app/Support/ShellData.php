@@ -106,6 +106,11 @@ final class ShellData
                 'activePattern' => 'issues.*',
             ],
             [
+                'label' => __('nav.links.releases'),
+                'route' => 'releases.index',
+                'activePattern' => 'releases.*',
+            ],
+            [
                 'label' => __('nav.links.performance'),
                 'route' => 'performance.index',
                 'activePattern' => 'performance.*',

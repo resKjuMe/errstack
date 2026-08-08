@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\IssueSort;
 use App\Enums\IssueStatus;
+use App\Support\Issues\IssueSearch;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 
@@ -36,6 +37,10 @@ class IssueListRequest extends GlobalFilterRequest
             // Adresszeile für „Feld vergessen" und nicht für „ausdrücklich alle".
             'status' => ['nullable', Rule::in([self::STATUS_ANY, ...array_column(IssueStatus::cases(), 'value')])],
             'page' => ['nullable', 'integer', 'min:1'],
+            // Die Suchleiste. Die Länge ist großzügig, aber begrenzt: ein
+            // Ausdruck, der nicht mehr in eine Adresszeile passt, ist keiner
+            // mehr, und ungeprüft stünde er in jedem Datenbank-Protokoll.
+            'q' => ['nullable', 'string', 'max:500'],
         ];
     }
 
@@ -66,9 +71,29 @@ class IssueListRequest extends GlobalFilterRequest
     }
 
     /**
+     * Der zerlegte Suchausdruck.
+     */
+    public function search(): IssueSearch
+    {
+        return IssueSearch::parse($this->searchInput());
+    }
+
+    /**
+     * Die Eingabe, wie sie im Suchfeld stehen soll — unverändert.
+     *
+     * Nicht die zerlegte Fassung wieder zusammengesetzt: wer `firstRelease:1.0.0`
+     * tippt und nach dem Absenden `firstrelease:1.0.0` vorfindet, bekommt eine
+     * Antwort auf eine Frage, die er so nicht gestellt hat.
+     */
+    public function searchInput(): string
+    {
+        return trim((string) ($this->validated('q') ?? ''));
+    }
+
+    /**
      * Die Werte, wie die Oberfläche sie in ihren Feldern führt.
      *
-     * @return array{sort: string, status: string}
+     * @return array{sort: string, status: string, q: string}
      */
     public function listValues(): array
     {
@@ -77,6 +102,7 @@ class IssueListRequest extends GlobalFilterRequest
         return [
             'sort' => $this->sort()->value,
             'status' => $status === null ? self::STATUS_ANY : $status->value,
+            'q' => $this->searchInput(),
         ];
     }
 }

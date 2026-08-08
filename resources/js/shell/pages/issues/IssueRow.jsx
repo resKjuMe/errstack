@@ -42,6 +42,8 @@ export default function IssueRow({ issue, selected, onToggle, showProject, trend
                         </>
                     )}
                 </p>
+
+                <ReleaseTrail issue={issue} t={t} />
             </div>
 
             <div className="hidden w-28 sm:block">
@@ -63,6 +65,54 @@ export default function IssueRow({ issue, selected, onToggle, showProject, trend
                 </p>
             </div>
         </li>
+    );
+}
+
+// Die betroffenen Versionen: „zuerst gesehen in" und „zuletzt aufgetreten in".
+//
+// Sie stehen unter der Fehlerstelle und nicht in einer eigenen Spalte, weil es
+// sie oft gar nicht gibt: ein SDK ohne `release`-Angabe liefert nichts davon,
+// und eine leere Spalte in jeder Zeile wäre der Preis für eine Auskunft, die
+// nur manche Projekte haben.
+//
+// Ist beides dieselbe Version, steht sie einmal da — „zuerst 1.0.0, zuletzt
+// 1.0.0" sagt nichts, was „in 1.0.0" nicht schon sagt.
+function ReleaseTrail({ issue, t }) {
+    if (!issue.firstRelease && !issue.lastRelease) {
+        return null;
+    }
+
+    const same = issue.firstRelease === issue.lastRelease;
+
+    return (
+        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+            {same ? (
+                <ReleaseTag label={t('issues.release.only')} version={issue.firstRelease} />
+            ) : (
+                <>
+                    {issue.firstRelease && (
+                        <ReleaseTag
+                            label={t('issues.release.first')}
+                            version={issue.firstRelease}
+                        />
+                    )}
+                    {issue.lastRelease && (
+                        <ReleaseTag label={t('issues.release.last')} version={issue.lastRelease} />
+                    )}
+                </>
+            )}
+        </p>
+    );
+}
+
+function ReleaseTag({ label, version }) {
+    return (
+        <span>
+            {label}{' '}
+            <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                {version}
+            </span>
+        </span>
     );
 }
 

@@ -29,7 +29,9 @@ class IssueController extends Controller
         $filter = $request->filter();
         $period = IssueSeries::periodFor($filter);
 
-        $issues = IssueList::paginate($filter, $request->sort(), $request->status());
+        $search = $request->search();
+
+        $issues = IssueList::paginate($filter, $request->sort(), $request->status(), $search);
 
         return Inertia::render('issues/Index', [
             'filter' => FilterData::bar($filter),
@@ -40,6 +42,11 @@ class IssueController extends Controller
             'totalLabel' => Formats::number($issues->total()),
             'sortOptions' => IssueSort::options(),
             'statusOptions' => self::statusOptions(),
+            // Begriffe, die die Suche (noch) nicht auswertet. Sie stillschweigend
+            // zu übergehen wäre die schlechtere Wahl: die Liste sähe aus, als
+            // hätte sie den Begriff berücksichtigt. Die vollständige Suchsprache
+            // ist S4.
+            'unsupportedTerms' => $search->unsupported,
             'series' => [
                 'period' => $period->value,
                 'periodLabel' => $period->label(),
