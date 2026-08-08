@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
+import Pagination from '../../components/Pagination.jsx';
 import { InputLabel, PrimaryButton, SecondaryButton, TextInput } from '../../components/Form.jsx';
 import { useT } from '../../i18n.js';
 
@@ -187,49 +188,6 @@ function Select({ id, value, onChange, options, placeholder }) {
             ))}
         </select>
     );
-}
-
-// Die Seitenzahlen kommen fertig vom Paginator; Einträge ohne Ziel sind die
-// Auslassungspunkte und die Pfeile am jeweiligen Rand.
-function Pagination({ links }) {
-    if (links.length <= 3) {
-        return null;
-    }
-
-    return (
-        <div className="mt-4 flex flex-wrap gap-1">
-            {links.map((link, index) =>
-                link.url === null ? (
-                    <span
-                        key={index}
-                        className="px-3 py-1 text-sm text-gray-400 dark:text-gray-600"
-                    >
-                        {label(link.label)}
-                    </span>
-                ) : (
-                    <Link
-                        key={index}
-                        href={link.url}
-                        preserveState
-                        className={`rounded-md px-3 py-1 text-sm ${
-                            link.active
-                                ? 'bg-indigo-600 text-white'
-                                : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
-                        }`}
-                    >
-                        {label(link.label)}
-                    </Link>
-                )
-            )}
-        </div>
-    );
-}
-
-// Die Beschriftungen des Paginators enthalten die Pfeile als HTML-Entität. Statt
-// sie als HTML einzusetzen, werden die beiden bekannten Zeichen ersetzt — die
-// Beschriftung ist Text und soll Text bleiben.
-function label(value) {
-    return value.replaceAll('&laquo;', '«').replaceAll('&raquo;', '»');
 }
 
 // Leere Felder gehören nicht in die Adresszeile — sonst steht dort

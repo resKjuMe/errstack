@@ -1,5 +1,8 @@
 * text=auto eol=lf
 
+# Mitschnitte echter SDK-Anfragen: Bytes bleiben Bytes, auch die Zeilenenden.
+*.envelope -text
+
 *.blade.php diff=html
 *.css diff=css
 *.html diff=html

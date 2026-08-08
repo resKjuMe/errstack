@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="de">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Kompatibilitätsprobe: @sentry/browser</title>
+
+        <!--
+            Das SDK kommt unverändert von Sentrys eigenem CDN — genau so, wie es
+            eine Anwendung einbinden würde, die keinen Bundler benutzt. Ein
+            eigener Aufbau aus `node_modules` wäre hier das Gegenteil des
+            Nachweises: dann wäre nicht mehr klar, ob das Ergebnis am SDK oder
+            am Aufbau liegt.
+
+            Beim Anheben der Fassung auch `docs/compat/README.md` nachziehen.
+        -->
+        <script
+            src="https://browser.sentry-cdn.com/10.69.0/bundle.tracing.min.js"
+            crossorigin="anonymous"
+        ></script>
+
+        <style>
+            body {
+                font-family: system-ui, sans-serif;
+                margin: 2rem auto;
+                max-width: 46rem;
+                line-height: 1.5;
+            }
+            code,
+            pre {
+                background: #f4f4f5;
+                border-radius: 0.25rem;
+                padding: 0.1rem 0.3rem;
+            }
+            pre {
+                padding: 0.75rem;
+                white-space: pre-wrap;
+            }
+            button {
+                font: inherit;
+                padding: 0.4rem 0.8rem;
+                margin-right: 0.5rem;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Kompatibilitätsprobe: <code>@sentry/browser</code></h1>
+
+        <p>
+            Diese Seite meldet mit dem unveränderten Browser-SDK an den Klon. Getauscht wird nur die
+            DSN — als <code>?dsn=…</code> in der Adresse, sonst gilt die des Mitschnitt-Servers
+            dieser Herkunft.
+        </p>
+
+        <p>
+            <button id="alles">Alles senden</button>
+            <button id="fehler">Fehler</button>
+            <button id="nachricht">Nachricht</button>
+            <button id="transaktion">Transaktion</button>
+        </p>
+
+        <pre id="protokoll">Wird geladen …</pre>
+
+        <script>
+            const parameter = new URLSearchParams(location.search);
+            const dsn =
+                parameter.get('dsn') ||
+                `${location.protocol}//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@${location.host}/1`;
+
+            const protokoll = document.getElementById('protokoll');
+            protokoll.textContent = '';
+
+            const notiere = (zeile) => {
+                protokoll.textContent += `${zeile}\n`;
+            };
+
+            Sentry.init({
+                dsn,
+                release: 'compat@1.0.0',
+                environment: 'compat',
+                tracesSampleRate: 1.0,
+                integrations: [
+                    // Der Seitenaufruf als Transaktion.
+                    Sentry.browserTracingIntegration(),
+                    // Release Health: seit Fassung 10 nicht mehr von allein an,
+                    // sondern als eigener Baustein.
+                    Sentry.browserSessionIntegration(),
+                ],
+            });
+
+            Sentry.setUser({ id: '4711', username: 'kompatibilitaet' });
+            Sentry.setTag('beispiel', 'sentry-browser');
+
+            notiere(`SDK ${Sentry.SDK_VERSION} meldet an ${dsn}`);
+
+            const nachricht = async () => {
+                Sentry.captureMessage(
+                    'Kompatibilitätsprobe: Nachricht aus @sentry/browser',
+                    'info'
+                );
+                await Sentry.flush(5000);
+                notiere('Nachricht geschickt');
+            };
+
+            const fehler = async () => {
+                try {
+                    throw new TypeError('Rechnungsnummer 4711 ist unbekannt');
+                } catch (ursache) {
+                    Sentry.captureException(
+                        new Error('Rechnung konnte nicht erstellt werden', {
+                            cause: ursache,
+                        })
+                    );
+                }
+                await Sentry.flush(5000);
+                notiere('Fehler geschickt');
+            };
+
+            const transaktion = async () => {
+                await Sentry.startSpan({ name: 'GET /rechnungen', op: 'navigation' }, async () => {
+                    await Sentry.startSpan(
+                        {
+                            op: 'http.client',
+                            name: 'GET https://zahlungen.example/status',
+                        },
+                        () => new Promise((fertig) => setTimeout(fertig, 15))
+                    );
+                });
+                await Sentry.flush(5000);
+                notiere('Transaktion geschickt');
+            };
+
+            const alles = async () => {
+                await nachricht();
+                await fehler();
+                await transaktion();
+                notiere('fertig');
+            };
+
+            document.getElementById('nachricht').onclick = nachricht;
+            document.getElementById('fehler').onclick = fehler;
+            document.getElementById('transaktion').onclick = transaktion;
+            document.getElementById('alles').onclick = alles;
+
+            // Für die Aufnahme ohne Klicken: `?auto=1` an die Adresse hängen.
+            if (parameter.get('auto') !== null) {
+                alles();
+            }
+        </script>
+    </body>
+</html>

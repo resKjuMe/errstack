@@ -20,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    // Private Kanaele brauchen eine Stelle, an der geprueft wird, wer mithoeren
+    // darf — ohne sie beantwortet Laravel jede Anmeldung mit „nein". Die Regeln
+    // stehen in routes/channels.php.
+    ->withBroadcasting(__DIR__.'/../routes/channels.php')
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             SetLocale::class,

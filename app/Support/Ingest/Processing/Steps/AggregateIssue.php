@@ -2,6 +2,7 @@
 
 namespace App\Support\Ingest\Processing\Steps;
 
+use App\Events\IssueCreated;
 use App\Models\Event;
 use App\Models\EventGroup;
 use App\Models\Issue;
@@ -58,7 +59,20 @@ final class AggregateIssue implements ProcessingStep
 
         $issue = Issue::forGroup($group, $record);
 
+        // Vor dem Zählen abgegriffen: `record()` schreibt am Eintrag und setzt
+        // die Marke zurück.
+        $isNew = $issue->wasRecentlyCreated;
+
         $issue->record($record);
+
+        // Die Fehlerliste (S1) hört mit und trägt einen neuen Eintrag nach, ohne
+        // dass jemand die Seite neu lädt. Gemeldet wird nur das **erste**
+        // Auftreten: dass ein bekannter Fehler wieder da ist, steht in seinen
+        // Zählern — eine Meldung je Ereignis wären bei einem Ausfall tausend in
+        // der Minute für denselben Eintrag.
+        if ($isNew) {
+            event(IssueCreated::fromIssue($issue));
+        }
 
         // Der Eintrag ist nach dem Zählen im Speicher veraltet — die Zähler
         // stehen in der Datenbank, nicht in dieser Instanz. Wer die neuen Werte

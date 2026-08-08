@@ -18,6 +18,16 @@ function connect(config) {
         cluster: config.cluster ?? '',
         forceTLS: config.scheme === 'https',
         enabledTransports: ['ws', 'wss'],
+        // Private Kanäle lässt sich der Websocket-Server von der Anwendung
+        // bestätigen: der Browser holt für jedes Abo eine Unterschrift bei
+        // `/broadcasting/auth`, und dort entscheidet routes/channels.php, wer
+        // mitlesen darf. Der CSRF-Wert muss mit — das ist ein POST auf die
+        // eigene Anwendung, und ohne ihn scheitert das Abo mit 419, während die
+        // Seite selbst weiterläuft und niemand sähe, woran es liegt.
+        channelAuthorization: {
+            endpoint: config.authEndpoint,
+            headers: { 'X-CSRF-TOKEN': config.csrf },
+        },
     };
 
     if (config.host) {

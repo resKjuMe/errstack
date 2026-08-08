@@ -30,6 +30,7 @@ final class Translations
         'filters',
         'grouping',
         'invitations',
+        'issues',
         'nav',
         'notifications',
         'organizations',

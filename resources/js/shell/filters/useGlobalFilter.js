@@ -44,10 +44,19 @@ export default function useGlobalFilter(filter) {
         visit(next);
     };
 
-    // Ohne Filter-Parameter setzt der Server seine Voreinstellungen ein; die
-    // Felder ziehen mit seiner Antwort nach. Zurückgesetzt wird die **Leiste**
-    // und nicht die Seite — Sortierung und Suche bleiben stehen.
-    const reset = () => go(carryOver(new URLSearchParams()));
+    // Ohne Parameter setzt der Server seine Voreinstellungen ein; die Felder
+    // ziehen mit seiner Antwort nach. Zurückgesetzt wird die **Leiste** und
+    // nicht die Seite: eine gewählte Sortierung ist keine Einschränkung und
+    // bleibt deshalb stehen.
+    const reset = () => {
+        const query = withoutFilter().toString();
+
+        router.get(
+            query ? `${window.location.pathname}?${query}` : window.location.pathname,
+            {},
+            { preserveState: true, preserveScroll: true }
+        );
+    };
 
     return {
         form,
@@ -63,11 +72,29 @@ export default function useGlobalFilter(filter) {
     };
 }
 
+// Die Felder, die der Leiste gehören. Alles andere in der Adresszeile gehört
+// der Seite (Sortierung, Zustand, …) und wird beim Filtern durchgereicht.
+const FILTER_KEYS = ['projects[]', 'environment', 'period', 'from', 'to', 'tz'];
+
+// Die Adresszeile ohne die Felder der Leiste — und ohne die Seitenzahl: eine
+// geänderte Auswahl hat eine andere Trefferliste, und „Seite 7" darin ist eine
+// andere Seite 7. Wer filtert, will das Ergebnis sehen und nicht dessen Mitte.
+function withoutFilter() {
+    const query = new URLSearchParams(window.location.search);
+
+    [...FILTER_KEYS, 'page'].forEach((key) => query.delete(key));
+
+    return query;
+}
+
 // Ein Filterzustand als Adresszeile. Leere Felder bleiben weg, damit dort nicht
 // `?environment=&from=` steht; die Datumsfelder nur beim eigenen Zeitraum, sonst
 // löst der Server den relativen selbst auf.
+//
+// Die übrigen Parameter der Seite bleiben erhalten: die Leiste steht auf fremden
+// Seiten, und sie darf deren Zustand nicht mit jedem Klick wegwischen.
 export function filterQuery(form) {
-    const query = new URLSearchParams();
+    const query = withoutFilter();
 
     form.projects.forEach((slug) => query.append('projects[]', slug));
 
@@ -91,36 +118,11 @@ export function filterQuery(form) {
     return query;
 }
 
-// Die Parameter, die der Leiste gehören. Alles andere in der Adresszeile gehört
-// der Seite.
-const OWNED = new Set(['projects[]', 'projects', 'environment', 'period', 'from', 'to', 'tz']);
-
-// Übernimmt die Parameter der Seite in eine neue Adresszeile.
-//
-// Sortierung und Suche einer Auswertungsseite sollen das Umstellen des Zeitraums
-// überleben — wer nach p95 sortiert hat und auf „letzte 7 Tage" wechselt, will
-// dieselbe Frage über einen anderen Zeitraum und nicht von vorn anfangen. Die
-// Seitenzahl allerdings nicht: ein anderer Zeitraum hat andere Zeilen, und
-// „Seite 7" von etwas anderem gibt es nicht.
-function carryOver(query) {
-    currentQuery().forEach((value, key) => {
-        if (!OWNED.has(key) && key !== 'page') {
-            query.append(key, value);
-        }
-    });
-
-    return query;
-}
-
 function visit(form, options = {}) {
-    go(carryOver(filterQuery(form)), options);
-}
-
-function go(query, options = {}) {
-    const search = query.toString();
+    const query = filterQuery(form).toString();
 
     router.get(
-        search ? `${window.location.pathname}?${search}` : window.location.pathname,
+        query ? `${window.location.pathname}?${query}` : window.location.pathname,
         {},
         {
             preserveState: true,
