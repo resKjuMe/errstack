@@ -70,4 +70,68 @@ return [
         'next' => 'Next',
     ],
 
+    'transaction' => [
+        'title' => 'Transaction',
+        'back' => 'Back to the overview',
+
+        'help' => [
+            'purpose' => 'This page answers why a transaction is slow: how the response times are distributed, how they developed, which operation eats the time and which calls can be inspected.',
+            'histogram' => 'The distribution shows whether all calls are equally slow or whether there are two groups. A second hill far to the right means there is a special path that takes much longer.',
+            'sample' => 'Metrics and trend cover every measurement in the range. Time consumers, attributes and examples are computed from a limited sample of the most recent calls — its size is stated at each section.',
+            'samples' => 'The examples are picked deliberately from percentile ranges and not at random: a random call would almost always be a fast one.',
+            'facets' => 'A value is marked as an outlier once its p95 is at least one and a half times that of the other values — the "only this one release is slow" case.',
+        ],
+
+        'empty' => 'No response times were reported for this transaction in the selected range.',
+        'empty_hint' => 'The range can be changed above. A link to "last 24 hours" shows different data tomorrow — that is the range, not an error.',
+
+        'histogram' => [
+            'title' => 'Distribution of response times',
+            'bar' => ':count measurements between :from and :to',
+            'open_end' => 'above',
+            'hint' => 'Each class is twice as wide as the previous one: fast calls on the left, slow ones on the right.',
+        ],
+
+        'series' => [
+            'title' => 'Trend (p95)',
+            'point' => ':at · p95 :p95 from :count measurements',
+            'period_hour' => 'One bar per hour.',
+            'period_day' => 'One bar per day.',
+        ],
+
+        'spans' => [
+            'title' => 'Biggest time consumers',
+            'description' => 'By operation, from :transactions calls. The shares refer to the total time of all steps — steps nest inside each other, so their sum exceeds the response time.',
+            'detail' => ':count steps · :total in total · :average on average',
+            'empty' => 'No individual steps were reported for these calls. Without them only the total duration is known — steps come from the SDK tracing.',
+        ],
+
+        'facets' => [
+            'title' => 'Notable attributes',
+            'description' => 'The p95 per release, environment and platform — from the same sample.',
+            'empty' => 'No attribute has more than one value; there is nothing to compare.',
+            'outlier' => 'notable',
+            'keys' => [
+                'release' => 'Release',
+                'environment' => 'Environment',
+                'platform' => 'Platform',
+            ],
+        ],
+
+        'samples' => [
+            'title' => 'Examples',
+            'description' => 'One actual call per percentile range.',
+            'empty' => 'No individual measurements are left for this transaction.',
+            'detail' => ':at · :spans steps · :release',
+            'no_release' => 'no release',
+            'no_trace_view' => 'The trace view is not available yet.',
+        ],
+
+        'issues' => [
+            'title' => 'Linked issues',
+            'description' => 'Issues reported under this transaction name within the range.',
+            'empty' => 'No issue was reported under this name within the range.',
+        ],
+    ],
+
 ];

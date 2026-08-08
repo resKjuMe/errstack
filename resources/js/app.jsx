@@ -4,6 +4,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import AppShell from './shell/AppShell.jsx';
 import Dashboard from './shell/pages/Dashboard.jsx';
 import Performance from './shell/pages/Performance.jsx';
+import PerformanceTransaction from './shell/pages/performance/Transaction.jsx';
 import Components from './shell/pages/Components.jsx';
 import Profile from './shell/pages/Profile.jsx';
 import OrganizationsIndex from './shell/pages/organizations/Index.jsx';
@@ -42,6 +43,9 @@ import VerifyEmail from './shell/pages/auth/VerifyEmail.jsx';
 const pages = {
     Dashboard,
     Performance,
+    // Die Detailanalyse einer Transaktion — die Frage „warum" hinter der
+    // Übersicht.
+    'performance/Transaction': PerformanceTransaction,
     Components,
     Profile,
     'organizations/Index': OrganizationsIndex,
