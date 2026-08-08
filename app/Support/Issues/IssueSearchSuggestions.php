@@ -160,7 +160,7 @@ final class IssueSearchSuggestions
         $fixed = match ($key) {
             'is' => ['unresolved', 'resolved', 'ignored', 'assigned', 'unassigned', 'for_review', 'regressed'],
             'level' => array_column(EventLevel::cases(), 'value'),
-            'priority' => array_column(IssuePriority::cases(), 'value'),
+            'priority', 'issue.priority' => array_column(IssuePriority::cases(), 'value'),
             'timesseen', 'usersseen' => ['>100', '>1000', '1'],
             'firstseen', 'lastseen' => ['-24h', '-7d', '+30d'],
             default => null,

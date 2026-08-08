@@ -150,6 +150,13 @@ return [
         'delete' => 'Löschen',
         'discard' => 'Löschen und künftig verwerfen',
 
+        // Die Wichtigkeit von Hand (S11). „Automatisch" ist keine vierte Stufe,
+        // sondern der Weg zurück zur Ableitung.
+        'priority' => [
+            'label' => 'Wichtigkeit',
+            'auto' => 'Automatisch ermitteln',
+        ],
+
         'apply' => 'Ausführen',
         'cancel' => 'Abbrechen',
         'threshold' => 'Anzahl',
@@ -201,6 +208,9 @@ return [
             'delete' => ':count Fehler gelöscht.',
             'discard' => ':count Fehler gelöscht; gleichartige Meldungen werden '
                 .'künftig verworfen.',
+            'priority' => 'Wichtigkeit von :count Fehlern auf :priority gesetzt.',
+            'priority_auto' => 'Wichtigkeit von :count Fehlern wird wieder '
+                .'automatisch ermittelt.',
             'none' => 'Kein Fehler betroffen — die Auswahl ist inzwischen nicht mehr da.',
             'undone' => 'Die Aktion wurde zurückgenommen.',
             'undo_expired' => 'Das lässt sich nicht mehr zurücknehmen.',
@@ -211,8 +221,41 @@ return [
             'mode' => 'Bitte eine Bedingung wählen.',
             'count' => 'Bitte eine Anzahl angeben.',
             'window' => 'Ein Zeitfenster gibt es nur bei einer Ereignis-Schwelle.',
+            'priority' => 'Bitte eine Wichtigkeit wählen.',
         ],
 
+    ],
+
+    // Die automatisch ermittelte Wichtigkeit (S11,
+    // App\Support\Issues\IssuePriorityScore). Die Beiträge der Ableitung werden
+    // erst beim Lesen zu Wörtern — im Vermerk stehen Schlüssel und Zahl.
+    'priority' => [
+        'hint' => 'Automatisch ermittelte Wichtigkeit',
+        'hint_locked' => 'Von Hand gesetzte Wichtigkeit',
+
+        'reason' => [
+            'level' => 'Grad :value',
+            'events' => ':value Ereignisse in 24 Stunden',
+            'users' => ':value Betroffene',
+            'new' => 'neu aufgetreten',
+            'trend_up' => 'stark steigend',
+            'trend_down' => 'rückläufig',
+        ],
+    ],
+
+    // Die Eskalation einer Stummschaltung (S11,
+    // App\Support\Issues\IssueEscalationNotifier).
+    'escalation' => [
+        'factor' => 'das :factor-Fache',
+
+        'notification' => [
+            'title' => 'Stummgeschalteter Fehler eskaliert in :project',
+            'body' => ':issue — :observed Ereignisse in einer Stunde, erwartet '
+                .'waren :expected. Der Fehler ist wieder offen.',
+            'context_project' => 'Projekt',
+            'context_observed' => 'Ereignisse in der Stunde',
+            'context_factor' => 'Über dem erwarteten Verlauf',
+        ],
     ],
 
     // Der Aktivitätsverlauf eines Fehlers
@@ -227,6 +270,13 @@ return [
         'unresolved' => 'Wieder geöffnet',
         'ignored' => 'Stummgeschaltet (:condition)',
         'ignore_expired' => 'Stummschaltung beendet — die Bedingung ist eingetreten',
+        'priority' => 'Wichtigkeit auf :priority gesetzt',
+        'priority_auto' => 'Wichtigkeit wird wieder automatisch ermittelt',
+        'priority_derived' => 'Wichtigkeit automatisch auf :priority — :reason',
+        'escalated' => 'Stummschaltung aufgehoben: :observed Ereignisse in einer '
+            .'Stunde, das :factor-Fache des erwarteten Verlaufs',
+        'escalated_plain' => 'Stummschaltung aufgehoben: :observed Ereignisse in '
+            .'einer Stunde, weit über dem erwarteten Verlauf',
         'bookmarked' => 'Gemerkt',
         'unbookmarked' => 'Vormerkung aufgehoben',
         'subscribed' => 'Abonniert',

@@ -356,6 +356,8 @@ return [
         'unresolved' => 'Reopened',
         'ignored' => 'Ignored',
         'ignore_expired' => 'Ignoring ended',
+        'priority' => 'Priority changed',
+        'escalated' => 'Escalated',
         'bookmarked' => 'Bookmarked',
         'unbookmarked' => 'Bookmark removed',
         'subscribed' => 'Subscribed',

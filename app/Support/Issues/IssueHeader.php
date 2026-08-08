@@ -38,6 +38,11 @@ final class IssueHeader
             'statusLabel' => $issue->status->label(),
             'priority' => $issue->priority->value,
             'priorityLabel' => $issue->priority->label(),
+            // Ob die Stufe von Hand steht (S11). Die Oberfläche braucht das
+            // nicht zum Anzeigen, sondern für die Auskunft, ob die Ableitung
+            // noch mitredet — „hoch" von der Automatik und „hoch, weil ich das
+            // sage" sind zwei verschiedene Aussagen.
+            'priorityLocked' => $issue->priority_locked,
             'timesSeen' => $issue->times_seen,
             'timesSeenLabel' => Formats::number($issue->times_seen),
             'usersSeen' => $issue->users_seen,

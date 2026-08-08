@@ -2,7 +2,10 @@
 
 namespace App\Support\Issues;
 
+use App\Enums\EventLevel;
+use App\Enums\IssueActivityType;
 use App\Enums\IssueIgnoreMode;
+use App\Enums\IssuePriority;
 use App\Enums\IssueResolveMode;
 use App\Models\Issue;
 use App\Models\IssueActivity;
@@ -15,6 +18,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Lang;
 
 /**
  * Die Zeitleiste eines Fehlers: was geschehen ist und was dazu gesagt wurde.
@@ -250,11 +254,121 @@ final class IssueActivityFeed
         $data = $activity->data ?? [];
         $key = 'issues.activity.'.$activity->type->value;
 
+        // Die beiden Vermerke aus S11 stehen für sich, weil ihr Satz nicht aus
+        // einer Bedingung entsteht, sondern aus Zahlen: die Herleitung der
+        // Wichtigkeit und das Vielfache, mit dem ein stummgeschalteter Fehler
+        // über seinem Verlauf liegt. Über dieselbe Ersetzungsliste geführt hinge
+        // an jedem Satz ein halbes Dutzend Platzhalter, von denen er einen
+        // braucht.
+        if ($activity->type === IssueActivityType::PriorityChanged) {
+            return self::priorityText($data);
+        }
+
+        if ($activity->type === IssueActivityType::Escalated) {
+            return self::escalationText($data);
+        }
+
         return __($key, [
             'condition' => self::condition($data),
             'count' => Formats::number((int) ($data['count'] ?? $data['users'] ?? 0)),
             'minutes' => Formats::number((int) ($data['window'] ?? 0)),
         ]);
+    }
+
+    /**
+     * Der Satz zu einer geänderten Wichtigkeit — und, wo die Ableitung sie
+     * gesetzt hat, ihre Herleitung.
+     *
+     * **Die Herleitung wird hier gebildet und nicht beim Rechnen.** Im Vermerk
+     * stehen die Beiträge als Schlüssel und Zahl
+     * ({@see IssuePriorityScore::$reasons}); erst hier werden sie zu Wörtern,
+     * und zwar in der Sprache dessen, der sie liest. Der fertige Satz in der
+     * Datenbank wäre der von damals — und in der falschen Sprache.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private static function priorityText(array $data): string
+    {
+        $priority = IssuePriority::tryFrom((string) ($data['priority'] ?? ''));
+        $mode = (string) ($data['mode'] ?? '');
+
+        if ($mode === 'auto' || $priority === null) {
+            return __('issues.activity.priority_auto');
+        }
+
+        if ($mode !== 'derived') {
+            return __('issues.activity.priority', ['priority' => $priority->label()]);
+        }
+
+        return __('issues.activity.priority_derived', [
+            'priority' => $priority->label(),
+            'reason' => self::reasons($data['reasons'] ?? []),
+        ]);
+    }
+
+    /**
+     * Die Beiträge der Ableitung, aneinandergereiht: „Grad fatal, 512
+     * Ereignisse in 24 Stunden, stark steigend".
+     *
+     * Ein unbekannter Schlüssel wird übergangen und nicht rohbelassen
+     * ausgegeben: Vermerke sind unveränderlich und überleben jede Änderung an
+     * der Ableitung — ein Beitrag, den es nicht mehr gibt, darf im Verlauf
+     * keinen Platzhalter hinterlassen.
+     */
+    private static function reasons(mixed $reasons): string
+    {
+        if (! is_array($reasons)) {
+            return '';
+        }
+
+        $parts = [];
+
+        foreach ($reasons as $reason) {
+            if (! is_array($reason) || ! isset($reason['key'])) {
+                continue;
+            }
+
+            $key = (string) $reason['key'];
+            $value = $reason['value'] ?? null;
+            $line = 'issues.priority.reason.'.$key;
+
+            if (! Lang::has($line)) {
+                continue;
+            }
+
+            $parts[] = __($line, [
+                // Der Grad kommt als abgelegter Wert und wird hier beschriftet;
+                // alles andere ist eine Zahl.
+                'value' => $key === 'level'
+                    ? (EventLevel::tryFrom((string) $value)?->label() ?? (string) $value)
+                    : Formats::number((int) $value),
+            ]);
+        }
+
+        return implode(', ', $parts);
+    }
+
+    /**
+     * Der Satz zu einer erkannten Eskalation — mit dem Vielfachen, wo es eines
+     * gibt.
+     *
+     * Ohne Erwartungswert („der Eintrag war seit Wochen still") gibt es kein
+     * Vielfaches; dann nennt der Satz nur die Zahl, statt „unendlich mal mehr"
+     * zu behaupten.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private static function escalationText(array $data): string
+    {
+        $observed = Formats::number((int) ($data['observed'] ?? 0));
+        $factor = $data['factor'] ?? null;
+
+        return $factor === null
+            ? __('issues.activity.escalated_plain', ['observed' => $observed])
+            : __('issues.activity.escalated', [
+                'observed' => $observed,
+                'factor' => Formats::number((float) $factor, 1),
+            ]);
     }
 
     /**
