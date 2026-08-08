@@ -20,6 +20,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -319,9 +320,13 @@ class TransactionDetailTest extends TestCase
             array_map(fn (Transaction $transaction): string => $transaction->trace_id, $slow),
         );
 
-        // Solange es die Trace-Ansicht (PF4) nicht gibt, steht der Fall ohne
-        // Link da — ein toter Link wäre die schlechtere Wahl.
-        $this->assertNull($high['traceHref']);
+        // Derselbe Maßstab wie beim Fehler-Link: solange es die Trace-Ansicht
+        // (PF4) nicht gibt, steht der Fall ohne Link da — ein toter Link wäre
+        // die schlechtere Wahl.
+        $this->assertSame(
+            Route::has('traces.show') ? route('traces.show', ['trace' => $high['traceId']]) : null,
+            $high['traceHref'],
+        );
     }
 
     /**
@@ -428,9 +433,14 @@ class TransactionDetailTest extends TestCase
         $this->assertSame($checkout->id, $issues[0]['id']);
         $this->assertSame(2, $issues[0]['count']);
 
-        // Die Fehler-Detailseite (S2) gibt es noch nicht — dann steht der
-        // Eintrag ohne Link da.
-        $this->assertNull($issues[0]['href']);
+        // Der Link entsteht nur, wenn es die Fehler-Detailseite (S2) gibt —
+        // ausdrücklich gegen `Route::has()` geprüft und nicht gegen `null`:
+        // sonst schlägt dieser Test in dem Augenblick fehl, in dem die Seite
+        // dazukommt, obwohl dann genau das Richtige passiert.
+        $this->assertSame(
+            Route::has('issues.show') ? route('issues.show', $checkout) : null,
+            $issues[0]['href'],
+        );
     }
 
     /**
