@@ -5,6 +5,8 @@ namespace App\Support\Alerts;
 use App\Enums\AlertMetric;
 use App\Models\Event;
 use App\Models\MetricAlert;
+use App\Models\ReleaseSessionCount;
+use App\Models\ReleaseSessionUser;
 use App\Models\TransactionAggregate;
 use App\Support\Performance\DurationHistogram;
 
@@ -24,7 +26,8 @@ use App\Support\Performance\DurationHistogram;
  * ({@see DurationHistogram::sumExpressions()}), sodass eine Zeile
  * herauskommt, aus der sich jedes Perzentil lesen lässt. Bei den Fehlern ist es
  * ein `count(*)` über den Index `(project_id, occurred_at)` — ein Bereich von
- * wenigen Minuten, kein Durchlauf.
+ * wenigen Minuten, kein Durchlauf. Bei der Crash-Free-Rate sind es die
+ * Sitzungszahlen je Version (R7), in derselben Minuten-Rasterung.
  *
  * Warum die Fehler **nicht** aus der Zeitreihe der Fehler-Einträge (I6) kommen:
  * die ist stunden- und tagesweise abgelegt, und ein Alarm über fünf Minuten
@@ -38,9 +41,62 @@ final class MetricSource
      */
     public function read(MetricAlert $alert, MetricWindow $window): MetricReading
     {
+        if ($alert->metric->isSessionMetric()) {
+            return $this->sessions($alert, $window);
+        }
+
         return $alert->metric === AlertMetric::ErrorCount
             ? $this->errors($alert, $window)
             : $this->transactions($alert, $window);
+    }
+
+    /**
+     * Die Crash-Free-Rate aus den Sitzungszahlen der Auslieferungen (R7).
+     *
+     * **Über alle Versionen** und nicht je Auslieferung: ein Alarm beantwortet
+     * die Frage „stürzt die Anwendung gerade häufiger ab als sonst", und die ist
+     * nicht an eine einzelne Version gerichtet. Nach einer schlechten
+     * Auslieferung schlägt er trotzdem an — deren Sitzungen sind ja genau die,
+     * die den Gesamtwert nach unten ziehen.
+     *
+     * Eine Abfrage über die vorberechneten Minuten-Fenster, wie bei den
+     * Antwortzeiten; die Nutzer-Fassung zählt über die vorverdichteten
+     * Nutzer-Zeilen und nicht über Einzelsitzungen.
+     */
+    private function sessions(MetricAlert $alert, MetricWindow $window): MetricReading
+    {
+        $overUsers = $alert->metric === AlertMetric::CrashFreeUsers;
+
+        $query = ($overUsers ? ReleaseSessionUser::query() : ReleaseSessionCount::query())
+            ->toBase()
+            ->where('project_id', $alert->project_id)
+            ->where('bucket_start', '>=', $window->from)
+            ->where('bucket_start', '<', $window->to);
+
+        if ($alert->environment !== null) {
+            $query->where('environment', $alert->environment);
+        }
+
+        $row = $query
+            ->selectRaw($overUsers
+                ? 'count(distinct user_key) as measured,'
+                    .' count(distinct case when crashed_count > 0 then user_key end) as crashed'
+                : 'sum(session_count) as measured, sum(crashed_count) as crashed')
+            ->first();
+
+        /** @var array<string, mixed> $values */
+        $values = $row === null ? [] : (array) $row;
+
+        $measured = (int) ($values['measured'] ?? 0);
+
+        // Keine Sitzungen heißt nicht „hundert Prozent absturzfrei", sondern
+        // „unbekannt" — und ein Alarm, der darauf Entwarnung gäbe, verstummte
+        // genau dann, wenn die Anwendung gar nicht mehr startet.
+        if ($measured === 0) {
+            return MetricReading::unknown();
+        }
+
+        return MetricReading::of((1 - (int) ($values['crashed'] ?? 0) / $measured) * 100, $measured);
     }
 
     /**
