@@ -288,6 +288,44 @@ return [
         'after_month' => 'After 30 days without a new occurrence',
     ],
 
+    'issue_alert_condition' => [
+        'new_issue' => 'A new issue appears',
+        'regression' => 'Regression (a resolved issue occurs again)',
+        'escalation' => 'Escalation (an ignored issue wakes up)',
+        'frequency' => 'Seen more than X times in Y minutes',
+        'user_frequency' => 'Affects more than X users in Y minutes',
+        'percent_change' => 'Increases by X % compared to last week',
+    ],
+
+    'issue_alert_filter' => [
+        'level' => 'Level',
+        'age' => 'Issue age (minutes)',
+        'times_seen' => 'Times seen',
+        'tag' => 'Tag',
+        'release' => 'Release',
+        'environment' => 'Environment',
+    ],
+
+    'issue_alert_comparison' => [
+        'eq' => 'equals',
+        'ne' => 'does not equal',
+        'contains' => 'contains',
+        'gte' => 'at least',
+        'lte' => 'at most',
+        'older' => 'older than',
+        'newer' => 'newer than',
+    ],
+
+    'issue_alert_action' => [
+        'channel' => 'To a notification channel',
+        'members' => 'To the members of the organisation',
+    ],
+
+    'issue_alert_match' => [
+        'all' => 'all match',
+        'any' => 'any matches',
+    ],
+
     'issue_status' => [
         'unresolved' => 'Unresolved',
         'resolved' => 'Resolved',

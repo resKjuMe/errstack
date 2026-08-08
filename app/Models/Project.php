@@ -209,6 +209,20 @@ class Project extends Model
     }
 
     /**
+     * Die Alarm-Regeln für Fehler (A2).
+     *
+     * `cascadeOnDelete` wie bei den Schwellwert-Alarmen: ein gelöschtes Projekt
+     * nimmt seine Regeln mit. Sie beziehen sich auf Fehler, die es dann nicht
+     * mehr gibt.
+     *
+     * @return HasMany<IssueAlertRule, $this>
+     */
+    public function issueAlertRules(): HasMany
+    {
+        return $this->hasMany(IssueAlertRule::class);
+    }
+
+    /**
      * Die projektweiten Regeln, nach denen von den Antwortzeiten eine Stichprobe
      * behalten wird (I9).
      *
