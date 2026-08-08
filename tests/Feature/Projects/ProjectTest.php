@@ -60,7 +60,9 @@ class ProjectTest extends TestCase
                 'platform' => 'php',
             ])
             ->assertSessionHasNoErrors()
-            ->assertRedirect("/organisationen/{$organization->slug}/projekte/webshop");
+            // Weiter in den Einrichtungs-Assistenten (O8): ein frisches Projekt
+            // hat nichts einzustellen, es hat etwas anzuschließen.
+            ->assertRedirect("/organisationen/{$organization->slug}/projekte/webshop/einrichtung");
 
         $project = Project::query()->where('slug', 'webshop')->firstOrFail();
 
