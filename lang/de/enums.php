@@ -386,4 +386,31 @@ return [
         'min_size_kb' => 'Mindestgröße in KB',
     ],
 
+    'release_artifact_kind' => [
+        'bundle' => 'Bundle',
+        'source_map' => 'Quellkarte',
+    ],
+
+    'symbolication_status' => [
+        'pending' => 'Wird zurückübersetzt',
+        'mapped' => 'Vollständig zurückübersetzt',
+        'partial' => 'Teilweise zurückübersetzt',
+        'unmapped' => 'Nicht zurückübersetzt',
+        'failed' => 'Rückübersetzung gescheitert',
+    ],
+
+    'symbolication_diagnosis' => [
+        'no_artifacts' => 'Zu dieser Version wurden keine Artefakte hochgeladen:',
+        'no_release' => 'Die Meldung nennt keine Version — ohne sie ist keine Quellkarte zuzuordnen.',
+        'artifact_not_found' => 'Kein Artefakt zu diesem Pfad:',
+        'unknown_debug_id' => 'Kein Artefakt zu dieser Debug-Kennung:',
+        'no_source_map_reference' => 'Das Bundle verweist auf keine Quellkarte:',
+        'source_map_missing' => 'Die verwiesene Quellkarte wurde nicht hochgeladen:',
+        'invalid_source_map' => 'Die Quellkarte ist unlesbar:',
+        'no_position' => 'Der Rahmen nennt keine Zeile:',
+        'no_mapping_for_position' => 'Die Quellkarte kennt diese Stelle nicht:',
+        'frame_limit_reached' => 'Über der Grenze übersetzter Rahmen je Meldung:',
+        'no_source_content' => 'Die Quellkarte enthält den Quelltext nicht:',
+    ],
+
 ];

@@ -11,12 +11,100 @@ import { Json, KeyValues } from './Sections.jsx';
 //
 // Die Reihenfolge kommt fertig vom Server: zuletzt geworfene Ausnahme zuerst,
 // innerster Rahmen zuerst.
-export default function StackTrace({ exceptions, t }) {
+//
+// **Zwei Fassungen desselben Stacktraces** (R5): die gemeldete und, wenn
+// Quellkarten hochgeladen sind, die zurückübersetzte. Gezeigt wird die
+// zurückübersetzte, sobald es sie gibt — sie ist der Grund, aus dem jemand die
+// Karten hochgeladen hat. Umschalten bleibt trotzdem möglich: eine Karte aus
+// einem anderen Bauvorgang liefert plausible falsche Zeilen, und der einzige Weg,
+// das zu merken, ist der Vergleich mit dem, was gemeldet wurde.
+export default function StackTrace({ exceptions, symbolication, t }) {
+    const translated = symbolication?.exceptions ?? [];
+    const hasTranslation = translated.length > 0;
+
+    const [original, setOriginal] = useState(false);
+    const shown = hasTranslation && !original ? translated : exceptions;
+
     return (
-        <div className="space-y-6">
-            {exceptions.map((exception, index) => (
-                <Exception key={index} exception={exception} t={t} />
-            ))}
+        <div className="space-y-4">
+            {symbolication && (
+                <SymbolicationBar
+                    symbolication={symbolication}
+                    original={original}
+                    onToggle={hasTranslation ? () => setOriginal((value) => !value) : null}
+                    t={t}
+                />
+            )}
+
+            <div className="space-y-6">
+                {shown.map((exception, index) => (
+                    <Exception key={index} exception={exception} t={t} />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// Der Kopf über dem Stacktrace: welche Fassung zu sehen ist, wie weit die
+// Übersetzung kam — und warum sie nicht weiter kam.
+//
+// **Die Diagnose ist hier der wichtigere Teil.** „Nichts übersetzt" ohne
+// Begründung sieht genauso aus wie „niemand hat Quellkarten hochgeladen", und die
+// Ursache liegt fast immer in der Bauumgebung: eine Karte, die nicht ausgeliefert
+// wurde, ein Pfad, der nicht zur geladenen Adresse passt.
+function SymbolicationBar({ symbolication, original, onToggle, t }) {
+    const { status, mappedFrames, totalFrames, diagnostics } = symbolication;
+
+    const tone =
+        status === 'mapped'
+            ? 'text-emerald-700 dark:text-emerald-300'
+            : status === 'failed'
+              ? 'text-rose-700 dark:text-rose-300'
+              : 'text-gray-600 dark:text-gray-400';
+
+    return (
+        <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-900/40">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span className={`font-medium ${tone}`}>
+                    {status === 'pending'
+                        ? t('issues.detail.symbolication.pending')
+                        : t('issues.detail.symbolication.counted', {
+                              mapped: mappedFrames,
+                              total: totalFrames,
+                          })}
+                </span>
+
+                {onToggle !== null && (
+                    <button
+                        type="button"
+                        onClick={onToggle}
+                        aria-pressed={original}
+                        className="rounded border border-gray-300 px-1.5 py-0.5 font-medium text-gray-700 hover:bg-white dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
+                    >
+                        {original
+                            ? t('issues.detail.symbolication.show_source')
+                            : t('issues.detail.symbolication.show_minified')}
+                    </button>
+                )}
+            </div>
+
+            {diagnostics.length > 0 && (
+                <ul className="mt-1.5 space-y-0.5 text-gray-500 dark:text-gray-400">
+                    {diagnostics.map((diagnosis, index) => (
+                        <li key={index}>
+                            {diagnosis.reasonLabel}
+                            {diagnosis.detail && (
+                                <span className="ms-1 font-mono break-all">{diagnosis.detail}</span>
+                            )}
+                            <span className="ms-1">
+                                {t('issues.detail.symbolication.frame_count', {
+                                    count: diagnosis.count,
+                                })}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     );
 }
@@ -141,7 +229,8 @@ function ForeignFrames({ frames, t }) {
 // einen fremden Rahmen aufklappt, will die Liste sehen, nicht vierzig
 // Quelltextausschnitte.
 function Frame({ frame, open: initiallyOpen, t }) {
-    const hasDetails = frame.context.length > 0 || frame.vars !== null;
+    const minified = frame.minified ?? null;
+    const hasDetails = frame.context.length > 0 || frame.vars !== null || minified !== null;
     const [open, setOpen] = useState(initiallyOpen && hasDetails);
 
     const location = [
@@ -179,6 +268,8 @@ function Frame({ frame, open: initiallyOpen, t }) {
 
             {open && (
                 <div className="border-t border-gray-100 px-4 py-3 dark:border-gray-700">
+                    {minified !== null && <MinifiedOrigin minified={minified} t={t} />}
+
                     {frame.context.length > 0 && <CodeContext lines={frame.context} />}
 
                     {frame.vars !== null && (
@@ -212,6 +303,25 @@ function FrameTitle({ frame, location, t }) {
             )}
             {location && <span className="ms-2 text-xs whitespace-nowrap">{location}</span>}
         </>
+    );
+}
+
+// Woher ein zurückübersetzter Rahmen kam: die minimierte Stelle.
+//
+// Sie steht klein und einzeilig da und ist trotzdem nicht Beiwerk: stimmt die
+// Übersetzung nicht, ist diese Zeile die einzige Stelle, an der es auffällt.
+function MinifiedOrigin({ minified, t }) {
+    const position = [minified.lineno, minified.colno].filter((value) => value !== null).join(':');
+
+    return (
+        <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+            {t('issues.detail.symbolication.from')}{' '}
+            <span className="font-mono break-all">
+                {minified.filename ?? t('issues.detail.frames.unknown_file')}
+                {position && `:${position}`}
+                {minified.function && ` — ${minified.function}`}
+            </span>
+        </p>
     );
 }
 

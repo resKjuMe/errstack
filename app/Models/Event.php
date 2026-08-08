@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -58,6 +59,7 @@ use Illuminate\Support\Carbon;
  * @property array<string, mixed>|null $extra
  * @property array<string, mixed>|null $sdk
  * @property array<string, string>|null $modules
+ * @property array<string, mixed>|null $debug_meta
  * @property array<string, mixed>|null $unknown
  * @property array{truncated?: list<string>, invalid?: list<string>}|null $notes
  * @property array{source: string, values: list<string>, components: list<array{name: string, value: string}>, rule_id: int|null}|null $grouping
@@ -112,6 +114,7 @@ class Event extends Model
                 'extra' => $event->extra,
                 'sdk' => $event->sdk,
                 'modules' => $event->modules === [] ? null : $event->modules,
+                'debug_meta' => $event->debugMeta,
                 'unknown' => $event->unknown,
                 'notes' => $event->notes,
             ],
@@ -245,6 +248,20 @@ class Event extends Model
     }
 
     /**
+     * Der zurückübersetzte Stacktrace (R5).
+     *
+     * Eine eigene Zeile und nicht ein Fach an dieser: das Ereignis bleibt, wie es
+     * ankam — die Übersetzung ist eine zusätzliche Sicht und ein
+     * Zwischenspeicher, der weggeworfen werden darf.
+     *
+     * @return HasOne<EventSymbolication, $this>
+     */
+    public function symbolication(): HasOne
+    {
+        return $this->hasOne(EventSymbolication::class);
+    }
+
+    /**
      * @var list<string>
      */
     protected $fillable = [
@@ -279,6 +296,7 @@ class Event extends Model
         'extra',
         'sdk',
         'modules',
+        'debug_meta',
         'unknown',
         'notes',
     ];
@@ -304,6 +322,7 @@ class Event extends Model
             'extra' => 'array',
             'sdk' => 'array',
             'modules' => 'array',
+            'debug_meta' => 'array',
             'unknown' => 'array',
             'notes' => 'array',
             'grouping' => 'array',

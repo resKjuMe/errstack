@@ -59,7 +59,11 @@ export default function Show({ issue, event, navigation, rawHref, activity, acti
                         title={t('issues.detail.exception.title')}
                         when={event.exceptions.length > 0}
                     >
-                        <StackTrace exceptions={event.exceptions} t={t} />
+                        <StackTrace
+                            exceptions={event.exceptions}
+                            symbolication={event.symbolication}
+                            t={t}
+                        />
                     </Section>
 
                     <Section

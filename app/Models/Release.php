@@ -38,6 +38,7 @@ use Illuminate\Support\Str;
  * @property CarbonImmutable|null $released_at
  * @property CarbonImmutable|null $first_event_at
  * @property CarbonImmutable|null $last_event_at
+ * @property int|null $artifacts_count Nur gesetzt, wenn die Abfrage mitgezählt hat.
  */
 class Release extends Model
 {
@@ -217,6 +218,16 @@ class Release extends Model
     public function currentIssues(): HasMany
     {
         return $this->hasMany(Issue::class, 'last_release_id');
+    }
+
+    /**
+     * Die hochgeladenen Bauartefakte dieser Version — Bundle und Quellkarte (R5).
+     *
+     * @return HasMany<ReleaseArtifact, $this>
+     */
+    public function artifacts(): HasMany
+    {
+        return $this->hasMany(ReleaseArtifact::class);
     }
 
     /**
