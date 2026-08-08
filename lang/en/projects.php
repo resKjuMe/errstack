@@ -72,6 +72,12 @@ return [
         'manage' => 'View cron jobs',
     ],
 
+    'alerts' => [
+        'title' => 'Alerts',
+        'description' => 'Threshold alerts on metrics: error count, failure rate, throughput and response times. They speak up when a metric leaves its range — and again once it is back.',
+        'manage' => 'View alerts',
+    ],
+
     'sampling' => [
         'title' => 'Sampling',
         'description' => 'Only a configurable share of the response times is stored; the evaluations scale it back up. Error reports are untouched by this.',

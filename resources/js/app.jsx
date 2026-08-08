@@ -19,6 +19,7 @@ import TagsIndex from './shell/pages/tags/Index.jsx';
 import ProjectsIndex from './shell/pages/projects/Index.jsx';
 import ProjectsShow from './shell/pages/projects/Show.jsx';
 import ProjectsKeys from './shell/pages/projects/Keys.jsx';
+import ProjectsAlerts from './shell/pages/projects/Alerts.jsx';
 import ProjectsCrons from './shell/pages/projects/Crons.jsx';
 import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
 import ProjectsFilters from './shell/pages/projects/Filters.jsx';
@@ -57,6 +58,7 @@ const pages = {
     'projects/Index': ProjectsIndex,
     'projects/Show': ProjectsShow,
     'projects/Keys': ProjectsKeys,
+    'projects/Alerts': ProjectsAlerts,
     'projects/Crons': ProjectsCrons,
     'projects/Grouping': ProjectsGrouping,
     'projects/Filters': ProjectsFilters,

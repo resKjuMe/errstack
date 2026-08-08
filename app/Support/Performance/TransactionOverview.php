@@ -173,7 +173,7 @@ final class TransactionOverview
                 'sumUs' => (int) ($row['duration_sum_us'] ?? 0),
                 'minUs' => isset($row['duration_min_us']) ? (int) $row['duration_min_us'] : null,
                 'maxUs' => isset($row['duration_max_us']) ? (int) $row['duration_max_us'] : null,
-                'histogram' => self::histogramOf($row),
+                'histogram' => DurationHistogram::fromRowSums($row),
             ];
         }
 
@@ -219,7 +219,7 @@ final class TransactionOverview
 
             $metrics[$key] = [
                 'count' => (int) ($row['measured_count'] ?? 0),
-                'histogram' => self::histogramOf($row),
+                'histogram' => DurationHistogram::fromRowSums($row),
             ];
         }
 
@@ -285,7 +285,7 @@ final class TransactionOverview
         $selects = array_merge(
             ['sum(transaction_count) as measured_count'],
             $aggregates,
-            self::bucketExpressions(),
+            DurationHistogram::sumExpressions(),
         );
 
         $rows = $query
@@ -318,59 +318,6 @@ final class TransactionOverview
         }
 
         return $grouped;
-    }
-
-    /**
-     * Je Klasse der Verteilung eine Summe.
-     *
-     * `JSON_EXTRACT` gibt es in MySQL wie in SQLite, und die Klassen sind
-     * bekannt und endlich — 31 Ausdrücke, aus der Konstanten erzeugt statt
-     * einunddreißigmal hingeschrieben. Der Pfad steht in Anführungszeichen
-     * (`$."7"`), weil eine reine Ziffer als Feldname sonst in keiner der beiden
-     * Datenbanken zu deuten ist; dass dort eine Zahl aus einer Schleife steht
-     * und keine Eingabe, macht die Zeichenkette unbedenklich.
-     *
-     * Dass die Verteilung dabei immer ein JSON-**Objekt** ist und nie eine
-     * Liste, stellt {@see TransactionAggregate::getJsonCastFlags()} sicher —
-     * ohne diese Festlegung träfe der Pfad die Klasse 0 in manchen Zeilen nicht.
-     *
-     * @return list<string>
-     */
-    private static function bucketExpressions(): array
-    {
-        $expressions = [];
-
-        for ($bucket = 0; $bucket <= DurationHistogram::MAX_BUCKET; $bucket++) {
-            $expressions[] = sprintf(
-                'sum(coalesce(json_extract(duration_histogram, \'$."%d"\'), 0)) as bucket_%d',
-                $bucket,
-                $bucket,
-            );
-        }
-
-        return $expressions;
-    }
-
-    /**
-     * Baut aus den Klassensummen einer Zeile wieder eine Verteilung.
-     *
-     * @param  array<string, mixed>  $row
-     */
-    private static function histogramOf(array $row): DurationHistogram
-    {
-        $buckets = [];
-
-        for ($bucket = 0; $bucket <= DurationHistogram::MAX_BUCKET; $bucket++) {
-            // Als Zeichenkette, wenn MySQL antwortet, und als Zahl bei SQLite —
-            // die Summe einer Spalte kommt je nach Treiber verschieden zurück.
-            $count = (int) ($row['bucket_'.$bucket] ?? 0);
-
-            if ($count > 0) {
-                $buckets[$bucket] = $count;
-            }
-        }
-
-        return DurationHistogram::fromStored($buckets);
     }
 
     /**
