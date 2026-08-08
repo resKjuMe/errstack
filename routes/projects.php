@@ -17,6 +17,7 @@
 use App\Http\Controllers\CronMonitorController;
 use App\Http\Controllers\EnvironmentController;
 use App\Http\Controllers\FingerprintRuleController;
+use App\Http\Controllers\IssueAlertRuleController;
 use App\Http\Controllers\MetricAlertController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectFilterController;
@@ -155,6 +156,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('projects.alerts.toggle');
             Route::delete('{project}/alarme/{metric_alert}', [MetricAlertController::class, 'destroy'])
                 ->name('projects.alerts.destroy');
+
+            // Alarm-Regeln für Fehler. Der Parametername ist
+            // `issue_alert_rule` — aus demselben Grund wie bei den
+            // Schwellwert-Alarmen: `scopeBindings` leitet daraus die Beziehung
+            // am Projekt ab (`issueAlertRules()`), und mit einem freieren Namen
+            // wäre eine Regel über jedes Projekt erreichbar.
+            Route::get('{project}/alarmregeln', [IssueAlertRuleController::class, 'index'])
+                ->name('projects.issue-alerts.index');
+            Route::post('{project}/alarmregeln', [IssueAlertRuleController::class, 'store'])
+                ->name('projects.issue-alerts.store');
+            // Die Vorschau ändert nichts, ist aber ein POST: sie bezieht sich
+            // auf eine Regel, die noch nicht gespeichert ist, und trägt deshalb
+            // den ganzen Entwurf im Rumpf.
+            Route::post('{project}/alarmregeln/vorschau', [IssueAlertRuleController::class, 'preview'])
+                ->name('projects.issue-alerts.preview');
+            Route::patch('{project}/alarmregeln/{issue_alert_rule}', [IssueAlertRuleController::class, 'update'])
+                ->name('projects.issue-alerts.update');
+            Route::post('{project}/alarmregeln/{issue_alert_rule}/zustand', [IssueAlertRuleController::class, 'toggle'])
+                ->name('projects.issue-alerts.toggle');
+            Route::delete('{project}/alarmregeln/{issue_alert_rule}', [IssueAlertRuleController::class, 'destroy'])
+                ->name('projects.issue-alerts.destroy');
 
             // Stichproben-Regeln der Antwortzeiten. Der Parametername ist
             // `sampling_rule` — aus demselben Grund wie bei den

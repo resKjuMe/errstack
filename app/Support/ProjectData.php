@@ -111,6 +111,10 @@ final class ProjectData
                 // Alarme scharf sind, ist die erste Frage, wenn etwas **nicht**
                 // gemeldet wurde — und die stellt nicht nur die Verwaltung.
                 'alertsHref' => route('projects.alerts.index', [$organization, $project]),
+                // Und die Alarm-Regeln für Fehler daneben, aus demselben Grund:
+                // sie beantworten die Frage, warum eine Meldung kam — oder eben
+                // nicht kam.
+                'issueAlertsHref' => route('projects.issue-alerts.index', [$organization, $project]),
                 // Die Stichproben aus demselben Grund ohne Bedingung: sie
                 // erklären, warum in der Performance-Übersicht mehr Aufrufe
                 // stehen, als Messungen gespeichert sind.

@@ -288,6 +288,44 @@ return [
         'after_month' => 'Nach 30 Tagen ohne neues Auftreten',
     ],
 
+    'issue_alert_condition' => [
+        'new_issue' => 'Neuer Fehler',
+        'regression' => 'Rückfall (erledigter Fehler tritt wieder auf)',
+        'escalation' => 'Eskalation (stummgeschalteter Fehler wacht auf)',
+        'frequency' => 'Tritt öfter als X-mal in Y Minuten auf',
+        'user_frequency' => 'Betrifft mehr als X Nutzer in Y Minuten',
+        'percent_change' => 'Nimmt um X % gegenüber der Vorwoche zu',
+    ],
+
+    'issue_alert_filter' => [
+        'level' => 'Grad',
+        'age' => 'Alter des Fehlers (Minuten)',
+        'times_seen' => 'Bisher gesehen',
+        'tag' => 'Merkmal',
+        'release' => 'Fassung',
+        'environment' => 'Umgebung',
+    ],
+
+    'issue_alert_comparison' => [
+        'eq' => 'ist gleich',
+        'ne' => 'ist ungleich',
+        'contains' => 'enthält',
+        'gte' => 'mindestens',
+        'lte' => 'höchstens',
+        'older' => 'älter als',
+        'newer' => 'jünger als',
+    ],
+
+    'issue_alert_action' => [
+        'channel' => 'An einen Benachrichtigungsweg',
+        'members' => 'An die Mitglieder der Organisation',
+    ],
+
+    'issue_alert_match' => [
+        'all' => 'alle zutreffen',
+        'any' => 'eine zutrifft',
+    ],
+
     'issue_status' => [
         'unresolved' => 'Offen',
         'resolved' => 'Erledigt',

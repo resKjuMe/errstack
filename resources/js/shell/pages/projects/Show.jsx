@@ -79,6 +79,7 @@ export default function Show({
                 {project.keysHref && <ClientKeys project={project} />}
 
                 <MetricAlerts project={project} />
+                <IssueAlerts project={project} />
 
                 <CronMonitors project={project} />
 
@@ -403,6 +404,24 @@ function MetricAlerts({ project }) {
         <Card title={t('projects.alerts.title')} description={t('projects.alerts.description')}>
             <Link href={project.alertsHref}>
                 <SecondaryButton type="button">{t('projects.alerts.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zu den Alarm-Regeln für Fehler. Aus demselben Grund ohne Bedingung wie
+// die Schwellwert-Alarme: sie beantworten die Frage, warum eine Meldung kam —
+// oder eben nicht kam.
+function IssueAlerts({ project }) {
+    const t = useT();
+
+    return (
+        <Card
+            title={t('projects.issue_alerts.title')}
+            description={t('projects.issue_alerts.description')}
+        >
+            <Link href={project.issueAlertsHref}>
+                <SecondaryButton type="button">{t('projects.issue_alerts.manage')}</SecondaryButton>
             </Link>
         </Card>
     );

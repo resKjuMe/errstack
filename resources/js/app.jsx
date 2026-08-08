@@ -25,6 +25,7 @@ import ProjectsShow from './shell/pages/projects/Show.jsx';
 import ProjectsSetup from './shell/pages/projects/Setup.jsx';
 import ProjectsKeys from './shell/pages/projects/Keys.jsx';
 import ProjectsAlerts from './shell/pages/projects/Alerts.jsx';
+import ProjectsIssueAlerts from './shell/pages/projects/IssueAlerts.jsx';
 import ProjectsCrons from './shell/pages/projects/Crons.jsx';
 import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
 import ProjectsFilters from './shell/pages/projects/Filters.jsx';
@@ -82,6 +83,7 @@ const pages = {
     'projects/Setup': ProjectsSetup,
     'projects/Keys': ProjectsKeys,
     'projects/Alerts': ProjectsAlerts,
+    'projects/IssueAlerts': ProjectsIssueAlerts,
     'projects/Crons': ProjectsCrons,
     'projects/Grouping': ProjectsGrouping,
     'projects/Filters': ProjectsFilters,

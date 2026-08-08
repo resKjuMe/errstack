@@ -78,6 +78,12 @@ return [
         'manage' => 'View alerts',
     ],
 
+    'issue_alerts' => [
+        'title' => 'Alert rules',
+        'description' => 'Who gets notified when: new issues, regressions, escalations and frequencies — narrowed down by level, environment, release or tag, with a rate limit against notification floods.',
+        'manage' => 'View alert rules',
+    ],
+
     'sampling' => [
         'title' => 'Sampling',
         'description' => 'Only a configurable share of the response times is stored; the evaluations scale it back up. Error reports are untouched by this.',
