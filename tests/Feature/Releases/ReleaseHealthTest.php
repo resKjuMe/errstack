@@ -48,8 +48,8 @@ class ReleaseHealthTest extends TestCase
     {
         $project = Project::factory()->create();
 
-        $this->session($project, ['sid' => 'a1', 'init' => true, 'status' => 'ok', 'seq' => 0]);
-        $this->session($project, ['sid' => 'a1', 'status' => 'crashed', 'seq' => 1]);
+        $this->sendSession($project, ['sid' => 'a1', 'init' => true, 'status' => 'ok', 'seq' => 0]);
+        $this->sendSession($project, ['sid' => 'a1', 'status' => 'crashed', 'seq' => 1]);
 
         $counts = ReleaseSessionCount::query()->sole();
 
@@ -65,10 +65,10 @@ class ReleaseHealthTest extends TestCase
     {
         $project = Project::factory()->create();
 
-        $this->session($project, ['sid' => 'a1', 'init' => true, 'status' => 'ok', 'seq' => 0]);
-        $this->session($project, ['sid' => 'a1', 'status' => 'crashed', 'seq' => 7]);
+        $this->sendSession($project, ['sid' => 'a1', 'init' => true, 'status' => 'ok', 'seq' => 0]);
+        $this->sendSession($project, ['sid' => 'a1', 'status' => 'crashed', 'seq' => 7]);
         // Die Zwischenmeldung von vorhin, die sich unterwegs verspätet hat.
-        $this->session($project, ['sid' => 'a1', 'status' => 'ok', 'seq' => 3]);
+        $this->sendSession($project, ['sid' => 'a1', 'status' => 'ok', 'seq' => 3]);
 
         $counts = ReleaseSessionCount::query()->sole();
 
@@ -84,7 +84,7 @@ class ReleaseHealthTest extends TestCase
     {
         $project = Project::factory()->create();
 
-        $this->session($project, ['sid' => 'a1', 'status' => 'exited', 'errors' => 2, 'seq' => 1]);
+        $this->sendSession($project, ['sid' => 'a1', 'status' => 'exited', 'errors' => 2, 'seq' => 1]);
 
         $counts = ReleaseSessionCount::query()->sole();
 
@@ -97,7 +97,7 @@ class ReleaseHealthTest extends TestCase
     {
         $project = Project::factory()->create();
 
-        $this->sessions($project, [
+        $this->sendBatch($project, [
             'attrs' => ['release' => '1.4.2', 'environment' => 'production'],
             'aggregates' => [[
                 'started' => Carbon::now()->subMinutes(5)->toIso8601String(),
@@ -125,7 +125,7 @@ class ReleaseHealthTest extends TestCase
     {
         $project = Project::factory()->create();
 
-        $this->session($project, ['sid' => 'a1', 'status' => 'crashed'], release: null);
+        $this->sendSession($project, ['sid' => 'a1', 'status' => 'crashed'], release: null);
 
         $this->assertSame(0, ReleaseSessionCount::query()->count());
         $this->assertSame(0, Release::query()->count());
@@ -136,11 +136,11 @@ class ReleaseHealthTest extends TestCase
         $project = Project::factory()->create();
 
         // Eine Person mit drei Sitzungen, von denen eine abstürzt …
-        $this->session($project, ['sid' => 'a1', 'status' => 'exited', 'did' => 'ida']);
-        $this->session($project, ['sid' => 'a2', 'status' => 'exited', 'did' => 'ida']);
-        $this->session($project, ['sid' => 'a3', 'status' => 'crashed', 'did' => 'ida']);
+        $this->sendSession($project, ['sid' => 'a1', 'status' => 'exited', 'did' => 'ida']);
+        $this->sendSession($project, ['sid' => 'a2', 'status' => 'exited', 'did' => 'ida']);
+        $this->sendSession($project, ['sid' => 'a3', 'status' => 'crashed', 'did' => 'ida']);
         // … und eine, bei der alles gut geht.
-        $this->session($project, ['sid' => 'b1', 'status' => 'exited', 'did' => 'bo']);
+        $this->sendSession($project, ['sid' => 'b1', 'status' => 'exited', 'did' => 'bo']);
 
         $summary = $this->summary(Release::query()->sole());
 
@@ -170,10 +170,10 @@ class ReleaseHealthTest extends TestCase
     {
         $project = Project::factory()->create();
 
-        $this->session($project, ['sid' => 'a1', 'did' => 'ida'], release: '1.0.0');
-        $this->session($project, ['sid' => 'b1', 'did' => 'bo'], release: '2.0.0');
-        $this->session($project, ['sid' => 'c1', 'did' => 'cem'], release: '2.0.0');
-        $this->session($project, ['sid' => 'd1', 'did' => 'dana'], release: '2.0.0');
+        $this->sendSession($project, ['sid' => 'a1', 'did' => 'ida'], release: '1.0.0');
+        $this->sendSession($project, ['sid' => 'b1', 'did' => 'bo'], release: '2.0.0');
+        $this->sendSession($project, ['sid' => 'c1', 'did' => 'cem'], release: '2.0.0');
+        $this->sendSession($project, ['sid' => 'd1', 'did' => 'dana'], release: '2.0.0');
 
         $newest = Release::query()->where('version', '2.0.0')->sole();
 
@@ -187,8 +187,8 @@ class ReleaseHealthTest extends TestCase
     {
         $project = Project::factory()->create();
 
-        $this->session($project, ['sid' => 'a1', 'status' => 'crashed'], release: '1.0.0');
-        $this->session($project, ['sid' => 'b1', 'status' => 'exited'], release: '1.1.0');
+        $this->sendSession($project, ['sid' => 'a1', 'status' => 'crashed'], release: '1.0.0');
+        $this->sendSession($project, ['sid' => 'b1', 'status' => 'exited'], release: '1.1.0');
 
         $newest = Release::query()->where('version', '1.1.0')->sole();
 
@@ -198,10 +198,13 @@ class ReleaseHealthTest extends TestCase
             CarbonImmutable::now()->addMinute(),
         );
 
+        $previous = $comparison['previous'];
+
+        $this->assertNotNull($previous);
         $this->assertSame('1.1.0', $comparison['current']->release->version);
-        $this->assertSame('1.0.0', $comparison['previous']?->release->version);
+        $this->assertSame('1.0.0', $previous->release->version);
         $this->assertSame(100.0, $comparison['current']->crashFreeSessions());
-        $this->assertSame(0.0, $comparison['previous']?->crashFreeSessions());
+        $this->assertSame(0.0, $previous->crashFreeSessions());
     }
 
     /**
@@ -212,10 +215,10 @@ class ReleaseHealthTest extends TestCase
     {
         $project = Project::factory()->create();
 
-        $this->session($project, ['sid' => 'a1', 'status' => 'exited', 'did' => 'ida']);
-        $this->session($project, ['sid' => 'a2', 'status' => 'exited', 'did' => 'ida']);
-        $this->session($project, ['sid' => 'a3', 'status' => 'exited', 'did' => 'bo']);
-        $this->session($project, ['sid' => 'a4', 'status' => 'crashed', 'did' => 'bo']);
+        $this->sendSession($project, ['sid' => 'a1', 'status' => 'exited', 'did' => 'ida']);
+        $this->sendSession($project, ['sid' => 'a2', 'status' => 'exited', 'did' => 'ida']);
+        $this->sendSession($project, ['sid' => 'a3', 'status' => 'exited', 'did' => 'bo']);
+        $this->sendSession($project, ['sid' => 'a4', 'status' => 'crashed', 'did' => 'bo']);
 
         $alert = MetricAlert::factory()->for($project)->metric(AlertMetric::CrashFreeSessions)->create();
         $window = MetricWindow::endingAt(CarbonImmutable::now()->addMinute(), 60);
@@ -259,7 +262,7 @@ class ReleaseHealthTest extends TestCase
      *
      * @param  array<string, mixed>  $body
      */
-    private function session(Project $project, array $body, ?string $release = '1.0.0'): void
+    private function sendSession(Project $project, array $body, ?string $release = '1.0.0'): void
     {
         $body += [
             'started' => Carbon::now()->subMinutes(10)->toIso8601String(),
@@ -279,7 +282,7 @@ class ReleaseHealthTest extends TestCase
      *
      * @param  array<string, mixed>  $body
      */
-    private function sessions(Project $project, array $body): void
+    private function sendBatch(Project $project, array $body): void
     {
         $this->ingest($project, $body, IngestType::Sessions);
     }

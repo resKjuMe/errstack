@@ -63,9 +63,13 @@ trait TalliesSessions
      * Folgemeldung aber noch eintrifft. Der Zähler ist dann um eins daneben —
      * die Aufnahme läuft weiter.
      *
+     * Nicht `private`: die Methode wird über `static::` aufgerufen, und eine
+     * private Methode wäre dort nur zufällig erreichbar — in einer abgeleiteten
+     * Klasse liefe der Aufruf ins Leere.
+     *
      * @return array<string, mixed>
      */
-    private static function sessionIncrements(SessionTally $delta): array
+    protected static function sessionIncrements(SessionTally $delta): array
     {
         $increments = ['updated_at' => now()];
 
