@@ -27,6 +27,8 @@ import ProjectsCrons from './shell/pages/projects/Crons.jsx';
 import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
 import ProjectsFilters from './shell/pages/projects/Filters.jsx';
 import ProjectsSampling from './shell/pages/projects/Sampling.jsx';
+import ProfilingIndex from './shell/pages/profiling/Index.jsx';
+import ProfilingShow from './shell/pages/profiling/Show.jsx';
 import PrivacyIndex from './shell/pages/privacy/Index.jsx';
 import InvitationsAccept from './shell/pages/invitations/Accept.jsx';
 import ApiTokensIndex from './shell/pages/api-tokens/Index.jsx';
@@ -74,6 +76,12 @@ const pages = {
     'projects/Grouping': ProjectsGrouping,
     'projects/Filters': ProjectsFilters,
     'projects/Sampling': ProjectsSampling,
+    // Übersicht und Einzelprofil sind zwei Seiten und nicht eine: die Übersicht
+    // legt viele Profile übereinander, das Einzelprofil zeigt genau einen
+    // Aufruf. Dieselbe Seite mit einer Weiche wäre an jeder zweiten Stelle eine
+    // Abfrage „welcher Fall ist das gerade".
+    'profiling/Index': ProfilingIndex,
+    'profiling/Show': ProfilingShow,
     // Eine Seite für beide Ebenen — Projekt und Organisation liefern dieselbe
     // Nutzlast mit unterschiedlichem `scope`.
     'privacy/Index': PrivacyIndex,

@@ -148,6 +148,7 @@ return [
         'sampled' => 'not part of the sample',
         'scrubbed' => 'not stored for privacy reasons',
         'filtered' => 'discarded by an inbound filter',
+        'orphaned' => 'no matching event',
     ],
 
     'inbound_filter_kind' => [

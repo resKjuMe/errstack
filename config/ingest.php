@@ -5,6 +5,7 @@ use App\Support\Ingest\Processing\Steps\DecodePayload;
 use App\Support\Ingest\Processing\Steps\FilterEvent;
 use App\Support\Ingest\Processing\Steps\GroupEvent;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
+use App\Support\Ingest\Processing\Steps\RecordProfile;
 use App\Support\Ingest\Processing\Steps\RecordRelease;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
 use App\Support\Ingest\Processing\Steps\SampleTransaction;
@@ -107,9 +108,17 @@ return [
     |   3. Scrubbing     — personenbezogene Daten entfernen (I7)
     |   4. Stichprobe    — Sampling für Performance-Daten (I9)
     |   5. Antwortzeiten — Transaktionen und ihre Schritte ablegen (PF1)
-    |   6. Normalisierung — Sentry-Schema in unser Modell (I4)
-    |   7. Grouping      — Fingerabdruck und Gruppe bestimmen (I5)
-    |   8. Aggregation   — Zähler und Issue fortschreiben (I6)
+    |   6. Profile       — Sample-Profile an ihrer Transaktion ablegen (M4)
+    |   7. Normalisierung — Sentry-Schema in unser Modell (I4)
+    |   8. Grouping      — Fingerabdruck und Gruppe bestimmen (I5)
+    |   9. Aggregation   — Zähler und Issue fortschreiben (I6)
+    |
+    | Die Profile stehen unmittelbar hinter den Antwortzeiten, und das ist keine
+    | Frage der Ordnung, sondern eine Voraussetzung: ein Profil wird an der
+    | Transaktion abgelegt, die es vermessen hat, und ohne sie verworfen. Beide
+    | kommen allerdings als zwei Elemente mit je einem eigenen Job — die
+    | Reihenfolge innerhalb dieser Kette hilft dort nicht weiter, weshalb der Job
+    | eines Profils zusätzlich einen Vorsprung bekommt (siehe „Profile" unten).
     |
     | Die Antwortzeiten stehen deshalb an fünfter Stelle und nicht früher: der
     | Schritt **schreibt**, und was er schreibt, darf keine personenbezogenen
@@ -150,6 +159,7 @@ return [
             ScrubEvent::class,
             SampleTransaction::class,
             RecordTransaction::class,
+            RecordProfile::class,
             NormalizeEvent::class,
             GroupEvent::class,
             AggregateIssue::class,
@@ -337,6 +347,40 @@ return [
         'apdex_threshold_us' => (int) env('PERFORMANCE_APDEX_THRESHOLD_US', 300_000),
 
         'misery_factor' => (int) env('PERFORMANCE_MISERY_FACTOR', 4),
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Profile
+    |--------------------------------------------------------------------------
+    |
+    | Ein Sample-Profil sagt, welche Funktionen die Rechenzeit einer Transaktion
+    | verbraucht haben. Es kommt als eigenes Envelope-Element neben der
+    | Transaktion — und damit als eigener Job, dem von der Reihenfolge her nichts
+    | zugesichert ist.
+    |
+    |   dispatch_delay_seconds — wie lange der Job eines Profils wartet, bevor er
+    |                            anläuft. Das ist die einzige Reihenfolge-Zusage,
+    |                            die es zwischen zwei unabhängigen Jobs geben
+    |                            kann: das Profil sucht seine Transaktion, und
+    |                            ohne Vorsprung sucht es sie mitunter, bevor sie
+    |                            abgelegt ist. Fünf Sekunden reichen für den
+    |                            Regelfall und sind kurz genug, dass niemand auf
+    |                            den Flamegraph wartet. Wer keine Verzögerung
+    |                            will — etwa mit einem einzelnen Arbeiter, der
+    |                            die Reihenfolge ohnehin einhält —, setzt Null.
+    |
+    | Was trotzdem keine Transaktion findet, wird verworfen und als `orphaned`
+    | gezählt. Liegenlassen wäre die schlechtere Antwort: ein Profil ohne den
+    | Aufruf, den es vermessen hat, sagt, dass irgendwo gerechnet wurde, aber
+    | nicht wofür.
+    |
+    */
+
+    'profiling' => [
+
+        'dispatch_delay_seconds' => (int) env('INGEST_PROFILE_DELAY_SECONDS', 5),
 
     ],
 
