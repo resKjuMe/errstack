@@ -83,6 +83,11 @@ return [
         'unsubscribe_title' => 'Unsubscribe from everything',
         'unsubscribe_description' => 'Switches off all non-critical notifications — in one go and without losing the individual settings.',
         'unsubscribe' => 'Unsubscribe from everything',
+        'digest_title' => 'Bundle notifications',
+        'digest_description_on' => 'Bursts reach you as a single digest, provided the project has set a time window for it. Urgent notifications still arrive immediately and on their own.',
+        'digest_description_off' => 'You receive every notification individually — even where the project bundles them.',
+        'digest_disable' => 'Turn bundling off',
+        'digest_enable' => 'Turn bundling on',
     ],
 
     'unsubscribe' => [
@@ -111,6 +116,8 @@ return [
         'delivery_retried' => 'Delivery queued again.',
         'preferences_saved' => 'Notifications saved.',
         'quiet_hours_saved' => 'Quiet hours saved.',
+        'digest_enabled' => 'Bundling switched on. Bursts will arrive as a digest from now on.',
+        'digest_disabled' => 'Bundling switched off. You receive every notification individually.',
         'unsubscribed' => 'Unsubscribed from everything. Critical alerts still arrive.',
         'resubscribed' => 'Notifications switched back on.',
         'unsubscribed_all' => 'Unsubscribed. Critical alerts still arrive — everything else does not.',

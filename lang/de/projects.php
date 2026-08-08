@@ -39,6 +39,15 @@ return [
         'retention' => 'Datenaufbewahrung (Tage)',
         'retention_label' => 'Datenaufbewahrung',
         'retention_value' => ':days Tage',
+
+        // Der Schalter zu den verdächtigen Commits (R4).
+        'auto_assign' => 'Verdächtige Commits automatisch zuweisen',
+        'auto_assign_hint' => 'Ein neuer Fehler geht von selbst an den Autor des '
+            .'verdächtigsten Commits — sofern er hier ein Konto hat und der Fehler '
+            .'noch niemandem gehört. Angezeigt werden die Verdächtigen ohnehin; '
+            .'dieser Schalter entscheidet nur, ob daraus eine Zuständigkeit wird.',
+        'auto_assign_on' => 'An',
+        'auto_assign_off' => 'Aus',
         'resolution' => 'Auflösungs-Verhalten',
         'submit' => 'Speichern',
     ],
@@ -112,6 +121,12 @@ return [
         'title' => 'Eingangsfilter',
         'description' => 'Bekanntes Rauschen — Browser-Erweiterungen, Crawler, lokale Entwicklung — wird beim Eingang verworfen und nur noch gezählt.',
         'manage' => 'Filter einstellen',
+    ],
+
+    'digest' => [
+        'title' => 'Meldungen bündeln',
+        'description' => 'Bei einer Fehlerwelle kommen sonst dutzende Einzel-Mails. Ein Zeitfenster fasst sie zu einer Sammelnachricht zusammen; dringende Meldungen bleiben davon unberührt.',
+        'manage' => 'Bündelung einstellen',
     ],
 
     'privacy' => [

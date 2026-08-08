@@ -8,6 +8,7 @@ import Breadcrumbs from './detail/Breadcrumbs.jsx';
 import EventNav from './detail/EventNav.jsx';
 import RawData from './detail/RawData.jsx';
 import StackTrace from './detail/StackTrace.jsx';
+import SuspectCommits from './detail/SuspectCommits.jsx';
 import { hasContent, KeyValues, Section } from './detail/Sections.jsx';
 import IssueActions from './IssueActions.jsx';
 
@@ -23,7 +24,16 @@ import IssueActions from './IssueActions.jsx';
 // Die Reihenfolge der Abschnitte folgt dem, wonach jemand sucht: erst der
 // Stacktrace, dann die letzten Schritte, dann der Kontext. Abschnitte ohne
 // Inhalt erscheinen nicht.
-export default function Show({ issue, event, navigation, rawHref, activity, comments, actions }) {
+export default function Show({
+    issue,
+    event,
+    navigation,
+    rawHref,
+    suspects,
+    activity,
+    comments,
+    actions,
+}) {
     const { shell } = usePage().props;
     const t = useT();
 
@@ -64,6 +74,20 @@ export default function Show({ issue, event, navigation, rawHref, activity, comm
                             symbolication={event.symbolication}
                             t={t}
                         />
+                    </Section>
+
+                    {/* Direkt hinter dem Stacktrace: „wo ist es passiert" und
+                        „welche Änderung war das" sind dieselbe Frage in zwei
+                        Schritten. Ohne verbundenes Repository ist die Liste
+                        leer, und der Abschnitt fehlt dann ganz — ein leerer
+                        Kasten mit Erklärung wäre auf jeder Seite zu sehen, auf
+                        der nie jemand Commits übergeben wird. */}
+                    <Section
+                        title={t('issues.suspects.title')}
+                        description={t('issues.suspects.description')}
+                        when={suspects.length > 0}
+                    >
+                        <SuspectCommits suspects={suspects} t={t} />
                     </Section>
 
                     <Section

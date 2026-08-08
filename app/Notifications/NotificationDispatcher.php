@@ -12,6 +12,7 @@ use App\Models\NotificationDelivery;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
+use App\Support\Digests\DigestBundler;
 use Illuminate\Support\Collection;
 
 /**
@@ -25,7 +26,10 @@ use Illuminate\Support\Collection;
  */
 final class NotificationDispatcher
 {
-    public function __construct(private readonly NotificationPreferences $preferences) {}
+    public function __construct(
+        private readonly NotificationPreferences $preferences,
+        private readonly DigestBundler $digests,
+    ) {}
 
     /**
      * Meldung an alle aktiven Kanäle einer Organisation.
@@ -85,6 +89,13 @@ final class NotificationDispatcher
      * erlaubt sind: die E-Mail reiht diese Methode selbst ein, das Postfach in
      * der Anwendung liest den Rest.
      *
+     * **Die Mail geht nicht zwingend jetzt hinaus.** Bündelt das Projekt (A6),
+     * legt sich die Meldung stattdessen in den Wartekorb und verlässt ihn
+     * später zusammen mit ihren Nachbarn. Am Rückgabewert ändert das nichts:
+     * die Frage „darf diese Meldung ihn per Mail erreichen?" ist dieselbe, nur
+     * die Antwort auf „wann?" ist eine andere. Zurückgehalten wird deshalb auch
+     * nur, was der Empfänger ohnehin bekommen würde.
+     *
      * @return list<NotificationTransport>
      */
     public function sendToUser(
@@ -96,7 +107,11 @@ final class NotificationDispatcher
     ): array {
         $transports = $this->preferences->transportsFor($user, $event, $project, $organization);
 
-        if (in_array(NotificationTransport::Mail, $transports, true)) {
+        if (! in_array(NotificationTransport::Mail, $transports, true)) {
+            return $transports;
+        }
+
+        if (! $this->digests->hold($user, $message, $event, $project, $organization)) {
             DeliverPersonalNotification::dispatch($user, $message, $event, $project, $organization);
         }
 

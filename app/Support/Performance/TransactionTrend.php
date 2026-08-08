@@ -55,6 +55,19 @@ final class TransactionTrend
     ) {}
 
     /**
+     * Kein Vergleich möglich, ohne dass etwas fehlt.
+     *
+     * Nicht dasselbe wie `between(null, 0, null, 0)`: das hieße „im Vorzeitraum
+     * nicht gemessen" und damit „neu". Wo es in **beiden** Zeiträumen nichts
+     * gibt, ist nichts neu — die Auskunft ist, dass sich nichts vergleichen
+     * lässt.
+     */
+    public static function unknown(): self
+    {
+        return new self(TrendDirection::Unknown, null);
+    }
+
+    /**
      * @param  int|null  $currentUs  p95 des gewählten Zeitraums
      * @param  int  $currentSamples  Messungen darin (nicht hochgerechnet — die
      *                               Hochrechnung sagt nichts darüber, wie

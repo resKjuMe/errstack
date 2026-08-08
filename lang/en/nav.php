@@ -9,6 +9,19 @@ return [
     'sign_out' => 'Sign out',
     'menu' => 'Menu',
 
+    'sidebar' => [
+        'collapse' => 'Collapse sidebar',
+        'expand' => 'Expand sidebar',
+    ],
+
+    // Headings of the navigation groups in the sidebar.
+    'groups' => [
+        'monitor' => 'Monitor',
+        'investigate' => 'Investigate',
+        'ship' => 'Ship',
+        'manage' => 'Manage',
+    ],
+
     'links' => [
         'dashboard' => 'Overview',
         'issues' => 'Issues',
@@ -17,6 +30,7 @@ return [
         'releases' => 'Releases',
         'performance' => 'Performance',
         'performance_issues' => 'Performance issues',
+        'web_vitals' => 'Web Vitals',
         'profiling' => 'Profiles',
         'projects' => 'Projects',
         'organizations' => 'Organizations',

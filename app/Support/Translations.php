@@ -55,6 +55,7 @@ final class Translations
         'tags',
         'teams',
         'traces',
+        'web_vitals',
     ];
 
     /**

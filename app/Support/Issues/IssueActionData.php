@@ -32,7 +32,14 @@ final class IssueActionData
             // (S7). Als Adresse und nicht als fertige Liste — die Mitglieder
             // einer Organisation wären in jeder Seitenlast ein Vielfaches der
             // Seite selbst, für ein Feld, das die meisten Aufrufe nie anfassen.
-            'assignSuggestHref' => route('issues.assignment.suggest'),
+            //
+            // Steht ein einzelner Fehler fest, reist seine Kennung mit: dann
+            // führen die Autoren der verdächtigen Commits die Liste an (R4). In
+            // der Fehlerliste fehlt sie — eine Sammelaktion über zwölf Einträge
+            // hat keinen Stacktrace, gegen den sich etwas abgleichen ließe.
+            'assignSuggestHref' => $issue === null
+                ? route('issues.assignment.suggest')
+                : route('issues.assignment.suggest', ['issue' => $issue->id]),
             // Die Stufen zur Auswahl — mit „automatisch" an erster Stelle. Es
             // ist keine vierte Stufe, sondern der Weg zurück: wer von Hand
             // eingeordnet hat, muss die Ableitung wieder zulassen können, und

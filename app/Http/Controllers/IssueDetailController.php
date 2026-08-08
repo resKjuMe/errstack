@@ -13,6 +13,8 @@ use App\Support\Issues\EventNavigation;
 use App\Support\Issues\IssueActionData;
 use App\Support\Issues\IssueActivityFeed;
 use App\Support\Issues\IssueHeader;
+use App\Support\Releases\SuspectCommitData;
+use App\Support\Releases\SuspectCommits;
 use App\Support\SourceMaps\Symbolicator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -75,6 +77,12 @@ class IssueDetailController extends Controller
             'event' => $event === null ? null : EventDetail::present($event),
             'navigation' => $event === null ? null : EventNavigation::links($issue, $event),
             'rawHref' => $event === null ? null : route('issues.events.raw', [$issue, $event]),
+            // Welche Änderung den Fehler verursacht haben könnte (R4). Berechnet
+            // und nicht gespeichert: der Abgleich hängt an der angezeigten
+            // Meldung, und die wechselt beim Blättern. Ohne verbundenes
+            // Repository kommt eine leere Liste heraus — dann fehlt der Bereich,
+            // statt leer dazustehen.
+            'suspects' => SuspectCommitData::present(SuspectCommits::forEvent($issue, $event)),
             // Was mit diesem Fehler geschehen ist (S6) und was dazu gesagt
             // wurde (S10). Der Verlauf steht auf der Detailseite und nicht im
             // Änderungsprotokoll der Organisation: die Frage „warum ist der

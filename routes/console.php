@@ -91,3 +91,19 @@ Schedule::command('issues:prioritize')->everyFifteenMinutes()->withoutOverlappin
 // Stunde brauchen kann: zwei gleichzeitige Läufe würden dieselben Brüche
 // feststellen und um dieselbe Zeile ringen.
 Schedule::command('performance:trends')->hourlyAt(5)->withoutOverlapping();
+
+// Fällige Sammelnachrichten der Bündelung verschicken (A6).
+//
+// Minütlich, weil das Fenster in Minuten eingestellt wird: ein gröberer Takt
+// wäre eine zweite, unsichtbare Wartezeit oben drauf — wer fünf Minuten
+// einstellt, bekäme dann bis zu zehn. `withoutOverlapping` gegen den doppelten
+// Versand: zwei gleichzeitige Durchläufe könnten denselben Korb greifen, bevor
+// der erste ihn abgeräumt hat.
+Schedule::command('notifications:flush-digests')->everyMinute()->withoutOverlapping();
+
+// Der Wochenbericht je Projekt (A6).
+//
+// Montagmorgen und nicht Sonntagnacht: der Bericht ist zum Lesen da, und
+// gelesen wird er am Anfang der Woche. Berichtet wird die abgeschlossene
+// Vorwoche ({@see App\Console\Commands\SendWeeklyReportsCommand}).
+Schedule::command('reports:weekly')->weeklyOn(1, '08:00');

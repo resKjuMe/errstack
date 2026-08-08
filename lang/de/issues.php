@@ -426,6 +426,30 @@ return [
             .'bereits als erledigt.',
     ],
 
+    // Welche Änderung diesen Fehler verursacht haben könnte (R4). Der Abgleich
+    // vergleicht die Dateien und Zeilen des Stacktrace mit denen, die die
+    // Commits der betroffenen Auslieferungen angefasst haben
+    // (app/Support/Releases/SuspectCommits).
+    'suspects' => [
+
+        'title' => 'Verdächtige Commits',
+        'description' => 'Änderungen aus den betroffenen Auslieferungen, die die '
+            .'Dateien dieses Stacktrace angefasst haben. Ein Verdacht und kein '
+            .'Nachweis — die Begründung steht daneben.',
+
+        'line_badge' => 'Zeile getroffen',
+
+        'reason_line' => 'Hat :path geändert, darunter Zeile :line aus dem Stacktrace.',
+        'reason_file' => 'Hat :path geändert — eine Datei aus dem Stacktrace.',
+
+        'author' => 'Von :name',
+        'author_unknown' => 'Ohne Autorenangabe',
+        'author_no_account' => '(kein Konto hier)',
+
+        'suggestion' => 'Verdächtiger Commit :sha',
+
+    ],
+
     'live' => [
         'new_one' => 'Ein neuer Fehler',
         'new_many' => ':count neue Fehler',
