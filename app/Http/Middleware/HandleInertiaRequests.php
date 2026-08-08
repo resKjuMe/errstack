@@ -51,6 +51,11 @@ class HandleInertiaRequests extends Middleware
             // `null` heißt „hier keine Leiste": geliefert wird sie genau dann,
             // wenn die Seite den Filter angefordert hat ({@see CurrentFilter}) —
             // Einstellungen, Profil und Verwaltung tun das nicht.
+            //
+            // `filter` ist damit ein belegter Name: eine Seite, die eine eigene
+            // Eigenschaft so nennt, überschreibt diese hier (Seiten-Props
+            // gewinnen) und der Rahmen zeichnet die Leiste aus fremder Nutzlast.
+            // Ein seitenbezogener Filter heißt deshalb anders (`alertFilter`).
             'filter' => fn () => ($filter = CurrentFilter::of($request)) === null
                 ? null
                 : FilterData::bar($filter),

@@ -15,7 +15,7 @@ import AlertHistoryChart from './AlertHistoryChart.jsx';
 export default function AlertOverview({
     project,
     organization,
-    filter,
+    alertFilter,
     rows,
     history,
     chart,
@@ -59,7 +59,7 @@ export default function AlertOverview({
                     </p>
                 </Card>
 
-                <AlertFilterBar filter={filter} href={project.overviewHref} />
+                <AlertFilterBar filter={alertFilter} href={project.overviewHref} />
 
                 <Card title={t('alert_overview.chart.title')}>
                     <AlertHistoryChart chart={chart} t={t} />
