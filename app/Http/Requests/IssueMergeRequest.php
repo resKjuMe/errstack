@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\IssueCategory;
 use App\Models\Issue;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
@@ -67,6 +68,16 @@ class IssueMergeRequest extends FormRequest
 
             if ($issues->pluck('project_id')->unique()->count() > 1) {
                 $validator->errors()->add('issues', __('issues.merge.error.mixed_projects'));
+            }
+
+            if ($issues->contains(fn (Issue $issue): bool => $issue->category !== IssueCategory::Error)) {
+                // Zusammenführen ist eine Sache der Fehlerliste. Ein
+                // Leistungsproblem (PF6) steht in derselben Tabelle, aber in
+                // einer anderen Liste — und die lässt beigetretene Einträge
+                // nicht aus ({@see App\Support\Performance\Detection\PerformanceIssueList}).
+                // Ein zusammengeführtes Leistungsproblem stünde dort weiter
+                // einzeln da, mit Zahlen, die schon im Kopf enthalten sind.
+                $validator->errors()->add('issues', __('issues.merge.error.only_errors'));
             }
 
             if ($issues->contains(fn (Issue $issue): bool => $issue->isMerged())) {

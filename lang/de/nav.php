@@ -15,6 +15,7 @@ return [
         'tags' => 'Merkmale',
         'releases' => 'Versionen',
         'performance' => 'Leistung',
+        'performance_issues' => 'Leistungsprobleme',
         'profiling' => 'Profile',
         'projects' => 'Projekte',
         'organizations' => 'Organisationen',

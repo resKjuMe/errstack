@@ -224,6 +224,20 @@ class Project extends Model
     }
 
     /**
+     * Die abweichenden Schwellen der Leistungserkennung.
+     *
+     * Ausdrücklich nur die **Abweichungen**: ein Projekt ohne eine einzige
+     * Zeile hier ist eines mit den Vorgabewerten, nicht eines ohne Erkennung
+     * ({@see PerformanceSetting}).
+     *
+     * @return HasMany<PerformanceSetting, $this>
+     */
+    public function performanceSettings(): HasMany
+    {
+        return $this->hasMany(PerformanceSetting::class);
+    }
+
+    /**
      * Eigene Datenschutz-Regeln dieses Projekts.
      *
      * Nur die eigenen — die organisationsweiten hängen an der Organisation und

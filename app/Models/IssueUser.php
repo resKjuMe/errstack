@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Performance\Detection\PerformanceIssues;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -44,8 +45,25 @@ class IssueUser extends Model
      */
     public static function record(Issue $issue, Event $event): bool
     {
-        $key = self::keyFor($event);
+        return self::note($issue, self::keyFor($event), $event->occurred_at);
+    }
 
+    /**
+     * Dasselbe mit einem fertigen Streuwert.
+     *
+     * Der Weg für alles, was kein Ereignis ist — bei einem Leistungsproblem
+     * kommt der Betroffene aus der Transaktion, und die führt eine einzelne
+     * Kennung mit statt eines Nutzer-Feldes mit mehreren Angaben zur Auswahl
+     * ({@see PerformanceIssues}).
+     *
+     * `null` heißt „nicht bekannt" und ist kein Sonderfall: nicht jede Meldung
+     * trägt einen Nutzer, und ein erfundener Streuwert dafür würde die Zahl der
+     * Betroffenen erfinden.
+     *
+     * @return bool `true`, wenn dieser Nutzer neu war.
+     */
+    public static function note(Issue $issue, ?string $key, mixed $firstSeen): bool
+    {
         if ($key === null) {
             return false;
         }
@@ -55,7 +73,7 @@ class IssueUser extends Model
         $inserted = self::query()->insertOrIgnore([
             'issue_id' => $issue->id,
             'user_key' => $key,
-            'first_seen' => $event->occurred_at,
+            'first_seen' => $firstSeen,
             'created_at' => $now,
             'updated_at' => $now,
         ]);

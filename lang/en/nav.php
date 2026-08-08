@@ -15,6 +15,7 @@ return [
         'tags' => 'Tags',
         'releases' => 'Releases',
         'performance' => 'Performance',
+        'performance_issues' => 'Performance issues',
         'profiling' => 'Profiles',
         'projects' => 'Projects',
         'organizations' => 'Organizations',

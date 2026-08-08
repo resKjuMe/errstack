@@ -2,6 +2,7 @@
 
 namespace App\Support\Issues;
 
+use App\Enums\IssueCategory;
 use App\Enums\IssueSort;
 use App\Enums\IssueStatus;
 use App\Models\Issue;
@@ -82,6 +83,13 @@ final class IssueList
             // eine Abfrage, und die Untergruppen selbst braucht die Liste nicht:
             // sie zeigt nur, dass es welche gibt.
             ->withCount('mergedSources');
+
+        // Nur Fehler. Seit PF6 teilen sich Fehler und Leistungsprobleme die
+        // Tabelle, und ohne diese Zeile stünden langsame Abfragen zwischen den
+        // Ausnahmen. Sie steht hier und nicht im Aufrufer, damit es die
+        // **Fehlerliste** ist, die keine Leistungsprobleme zeigt, und nicht
+        // jede Ansicht, die zufällig daran gedacht hat.
+        $query->ofCategory(IssueCategory::Error);
 
         $filter->overlapping($query);
 

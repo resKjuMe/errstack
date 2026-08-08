@@ -118,7 +118,15 @@ final class ShellData
             [
                 'label' => __('nav.links.performance'),
                 'route' => 'performance.index',
-                'activePattern' => 'performance.*',
+                // Nicht `performance.*`: darunter läge auch die
+                // Leistungsproblem-Liste, und beide Einträge stünden dann
+                // gleichzeitig hervorgehoben in der Kopfzeile.
+                'activePattern' => 'performance.index',
+            ],
+            [
+                'label' => __('nav.links.performance_issues'),
+                'route' => 'performance.issues.index',
+                'activePattern' => 'performance.issues.*',
             ],
             [
                 'label' => __('nav.links.profiling'),

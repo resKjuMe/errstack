@@ -97,6 +97,7 @@ return [
 
         'error' => [
             'mixed_projects' => 'Zusammenführen geht nur innerhalb eines Projekts.',
+            'only_errors' => 'Zusammenführen geht nur bei Fehlern, nicht bei Leistungsproblemen.',
             'already_merged' => 'Mindestens einer der gewählten Fehler ist bereits eine '
                 .'Untergruppe. Er muss zuerst herausgelöst werden.',
         ],

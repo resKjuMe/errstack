@@ -4,6 +4,7 @@ namespace Tests\Feature\Issues;
 
 use App\Enums\CountPeriod;
 use App\Enums\EventLevel;
+use App\Enums\IssueCategory;
 use App\Models\Event;
 use App\Models\EventGroup;
 use App\Models\Issue;
@@ -409,6 +410,27 @@ class IssueMergeTest extends TestCase
 
         $this->assertSame($head->id, $member->fresh()->merged_into_id);
         $this->assertNull($third->fresh()->merged_into_id);
+    }
+
+    public function test_performance_issues_cannot_be_merged(): void
+    {
+        [$user, , $project] = $this->context();
+
+        $error = $this->issue($project, 'Fehler', ['times_seen' => 10]);
+        $slow = $this->issue($project, 'Langsame Abfrage', [
+            'times_seen' => 5,
+            'category' => IssueCategory::Performance,
+        ]);
+
+        // Leistungsprobleme (PF6) stehen in derselben Tabelle, aber in einer
+        // Liste, die beigetretene Einträge nicht auslässt — dort stünde ein
+        // zusammengeführtes weiter einzeln da.
+        $this->actingAs($user)
+            ->post(route('issues.merge.store'), ['issues' => [$error->id, $slow->id]])
+            ->assertSessionHasErrors('issues');
+
+        $this->assertNull($error->fresh()->merged_into_id);
+        $this->assertNull($slow->fresh()->merged_into_id);
     }
 
     public function test_a_single_issue_is_not_a_merge(): void

@@ -96,6 +96,7 @@ return [
 
         'error' => [
             'mixed_projects' => 'Issues can only be merged within a single project.',
+            'only_errors' => 'Only errors can be merged, not performance issues.',
             'already_merged' => 'At least one of the selected issues is already a '
                 .'subgroup. It has to be split off first.',
         ],

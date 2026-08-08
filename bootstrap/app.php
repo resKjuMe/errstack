@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureApiOrganization;
 use App\Http\Middleware\EnsureApiScope;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\ReportSecurityViolations;
 use App\Http\Middleware\ResolveApiToken;
 use App\Http\Middleware\ResolveIngestKey;
 use App\Http\Middleware\SetLocale;
@@ -28,6 +29,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             SetLocale::class,
             HandleInertiaRequests::class,
+            // Sagt dem Browser, wohin er Sicherheitsverstöße melden soll — an
+            // die eigene Aufnahme. Ohne DSN tut die Zeile nichts.
+            ReportSecurityViolations::class,
         ]);
 
         // Kurznamen für die Routen der öffentlichen Schnittstelle:

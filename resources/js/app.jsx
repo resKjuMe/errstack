@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
+import { startSelfMonitoring } from './selfmonitoring.js';
 import AppShell from './shell/AppShell.jsx';
 import Dashboard from './shell/pages/Dashboard.jsx';
 import Performance from './shell/pages/Performance.jsx';
@@ -27,6 +28,9 @@ import ProjectsCrons from './shell/pages/projects/Crons.jsx';
 import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
 import ProjectsFilters from './shell/pages/projects/Filters.jsx';
 import ProjectsSampling from './shell/pages/projects/Sampling.jsx';
+import ProjectsPerformance from './shell/pages/projects/Performance.jsx';
+import PerformanceIssues from './shell/pages/performance/Issues.jsx';
+import PerformanceIssueDetail from './shell/pages/performance/IssueDetail.jsx';
 import ProfilingIndex from './shell/pages/profiling/Index.jsx';
 import ProfilingShow from './shell/pages/profiling/Show.jsx';
 import PrivacyIndex from './shell/pages/privacy/Index.jsx';
@@ -76,6 +80,9 @@ const pages = {
     'projects/Grouping': ProjectsGrouping,
     'projects/Filters': ProjectsFilters,
     'projects/Sampling': ProjectsSampling,
+    'projects/Performance': ProjectsPerformance,
+    'performance/Issues': PerformanceIssues,
+    'performance/IssueDetail': PerformanceIssueDetail,
     // Übersicht und Einzelprofil sind zwei Seiten und nicht eine: die Übersicht
     // legt viele Profile übereinander, das Einzelprofil zeigt genau einen
     // Aufruf. Dieselbe Seite mit einer Weiche wäre an jeder zweiten Stelle eine
@@ -108,6 +115,10 @@ createInertiaApp({
         return page;
     },
     setup({ el, App, props }) {
+        // Vor dem Zeichnen und ohne `await`: die Überwachung soll den ersten
+        // Bildaufbau nicht aufhalten, aber schon stehen, wenn er schiefgeht.
+        startSelfMonitoring(props.initialPage.props.selfMonitoring);
+
         createRoot(el).render(<App {...props} />);
     },
     progress: { color: '#f43f5e' },

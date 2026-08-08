@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\IssueCategory;
 use App\Models\Event;
 use App\Models\Issue;
 use App\Support\Issues\EventDetail;
@@ -30,6 +31,8 @@ class IssueDetailController extends Controller
     public function show(Issue $issue, ?Event $event = null): InertiaResponse
     {
         Gate::authorize('view', $issue);
+
+        $this->errorsOnly($issue);
 
         // Der Kopf verlinkt das Projekt, und die Adresse dorthin führt über die
         // Organisation. Ohne das Nachladen wären das zwei Abfragen mitten in der
@@ -67,6 +70,8 @@ class IssueDetailController extends Controller
     {
         Gate::authorize('view', $issue);
 
+        $this->errorsOnly($issue);
+
         if (! EventNavigation::belongsTo($issue, $event)) {
             throw new NotFoundHttpException;
         }
@@ -102,5 +107,21 @@ class IssueDetailController extends Controller
         }
 
         return $event;
+    }
+
+    /**
+     * Diese Seite zeigt Fehler und nur Fehler.
+     *
+     * Seit PF6 stehen zwei Arten von Einträgen in derselben Tabelle, und die
+     * Kennung in der Adresszeile unterscheidet sie nicht. Ein Leistungsproblem
+     * hier zu öffnen, ergäbe eine Seite ohne Stacktrace und ohne Meldung —
+     * dieselbe Überlegung, aus der die Gegenrichtung ({@see
+     * PerformanceIssueController}) Fehler abweist.
+     */
+    private function errorsOnly(Issue $issue): void
+    {
+        if ($issue->category !== IssueCategory::Error) {
+            throw new NotFoundHttpException;
+        }
     }
 }
