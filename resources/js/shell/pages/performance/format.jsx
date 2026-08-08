@@ -2,7 +2,8 @@ import React from 'react';
 import { formatDuration } from '../../duration.js';
 import { formatNumber } from '../../i18n.js';
 
-// Die Schreibweisen, die sich Übersicht und Detailanalyse teilen.
+// Die Schreibweisen, die sich Übersicht, Detailanalyse und die
+// Leistungsprobleme teilen.
 //
 // Sie stehen hier und nicht zweimal, weil eine Antwortzeit auf beiden Seiten
 // gleich aussehen muss: „1,2 s" auf der einen und „1200 ms" auf der anderen
@@ -30,4 +31,27 @@ export function duration(microseconds, t, formats) {
 
 export function percent(ratio, formats) {
     return `${formatNumber(ratio * 100, formats, { maximumFractionDigits: 2 })} %`;
+}
+
+// Größen in Bytes, in der Einheit, die zur Größenordnung passt — dieselbe
+// Überlegung wie bei den Dauern. 1024 und nicht 1000, weil Browser und
+// Betriebssystem es ebenso rechnen.
+export function bytes(value, t, formats) {
+    if (value === null || value === undefined) {
+        return <Missing />;
+    }
+
+    if (value < 1024) {
+        return `${formatNumber(value, formats)} ${t('performance.units.bytes')}`;
+    }
+
+    if (value < 1024 * 1024) {
+        return `${formatNumber(value / 1024, formats, { maximumFractionDigits: 0 })} ${t(
+            'performance.units.kilobytes'
+        )}`;
+    }
+
+    return `${formatNumber(value / (1024 * 1024), formats, { maximumFractionDigits: 1 })} ${t(
+        'performance.units.megabytes'
+    )}`;
 }

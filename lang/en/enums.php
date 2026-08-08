@@ -38,6 +38,7 @@ return [
         'message' => 'Message',
         'fallback' => 'Title and culprit',
         'empty' => 'Nothing to tell them apart',
+        'performance' => 'Performance detection',
     ],
 
     'api_scope' => [
@@ -296,6 +297,51 @@ return [
         'flat' => 'Unchanged',
         'better' => 'Got faster',
         'worse' => 'Got slower',
+    ],
+
+    'issue_category' => [
+        'error' => 'Error',
+        'performance' => 'Performance issue',
+    ],
+
+    'performance_problem' => [
+        'n_plus_one_queries' => 'N+1 queries',
+        'consecutive_queries' => 'Consecutive similar queries',
+        'duplicate_queries' => 'Duplicate queries',
+        'slow_http_call' => 'Slow HTTP call',
+        'oversized_asset' => 'Oversized or uncompressed asset',
+        'render_blocking_asset' => 'Render-blocking resource',
+        'main_thread_block' => 'Main thread block',
+        'cache_misses' => 'Cache misses',
+    ],
+
+    'performance_problem_description' => [
+        'n_plus_one_queries' => 'One query fetches a list, then each entry is looked '
+            .'up separately. A join or eager loading replaces the whole series with a '
+            .'single query.',
+        'consecutive_queries' => 'The same query shape runs several times in a row, '
+            .'each waiting for the previous one. Batched or concurrent, it costs the '
+            .'wait only once.',
+        'duplicate_queries' => 'The same query with the same values runs more than '
+            .'once in a single trace. Every repetition returns the same answer and can '
+            .'simply be dropped.',
+        'slow_http_call' => 'A call to an external service takes longer than the '
+            .'configured threshold.',
+        'oversized_asset' => 'A file is very large or served uncompressed — visible '
+            .'from the transferred and decoded sizes being the same.',
+        'render_blocking_asset' => 'A script or stylesheet holds up the browser before '
+            .'it can display anything at all.',
+        'main_thread_block' => 'A piece of work keeps the browser busy long enough '
+            .'that it cannot respond to input.',
+        'cache_misses' => 'Cache lookups repeatedly come back empty — usually a badly '
+            .'built key or an entry that is never written.',
+    ],
+
+    'performance_threshold' => [
+        'min_count' => 'Minimum count',
+        'min_total_ms' => 'Minimum total in ms',
+        'min_duration_ms' => 'Minimum duration in ms',
+        'min_size_kb' => 'Minimum size in KB',
     ],
 
 ];
