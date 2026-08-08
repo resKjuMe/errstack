@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\IssueSort;
 use App\Enums\IssueStatus;
+use App\Support\Tags\TagFilter;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 
@@ -35,8 +36,23 @@ class IssueListRequest extends GlobalFilterRequest
             // eigener Wert und nicht der leere Text: der steht in einer
             // Adresszeile für „Feld vergessen" und nicht für „ausdrücklich alle".
             'status' => ['nullable', Rule::in([self::STATUS_ANY, ...array_column(IssueStatus::cases(), 'value')])],
+            // Ein Merkmalswert in der Schreibweise `browser:Chrome 124` — die
+            // Einschränkung, die aus einem Klick in der Verteilung entsteht.
+            // Geprüft wird nur die Länge; was darin steht, liest
+            // {@see TagFilter::parse()}, und Unbrauchbares wird dort übergangen.
+            'tag' => ['nullable', 'string', 'max:601'],
             'page' => ['nullable', 'integer', 'min:1'],
         ];
+    }
+
+    /**
+     * Die gewählte Merkmal-Einschränkung, oder `null`.
+     */
+    public function tag(): ?TagFilter
+    {
+        $tag = $this->validated('tag');
+
+        return TagFilter::parse(is_string($tag) ? $tag : null);
     }
 
     /**
@@ -68,15 +84,24 @@ class IssueListRequest extends GlobalFilterRequest
     /**
      * Die Werte, wie die Oberfläche sie in ihren Feldern führt.
      *
-     * @return array{sort: string, status: string}
+     * @return array{sort: string, status: string, tag: array{key: string, value: string, query: string}|null}
      */
     public function listValues(): array
     {
         $status = $this->status();
+        $tag = $this->tag();
 
         return [
             'sort' => $this->sort()->value,
             'status' => $status === null ? self::STATUS_ANY : $status->value,
+            // Die Einschränkung kommt zerlegt **und** in der Schreibweise der
+            // Adresszeile: die Oberfläche zeigt Name und Wert getrennt an,
+            // braucht aber die ungeteilte Angabe, um sie wieder abzuwählen.
+            'tag' => $tag === null ? null : [
+                'key' => $tag->key,
+                'value' => $tag->value,
+                'query' => $tag->toQuery(),
+            ],
         ];
     }
 }
