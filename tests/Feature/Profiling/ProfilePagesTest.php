@@ -67,8 +67,12 @@ class ProfilePagesTest extends TestCase
         $page = $response->viewData('page');
         $props = is_array($page) ? ($page['props'] ?? []) : [];
 
+        if (! is_array($props)) {
+            return [];
+        }
+
         /** @var array<string, mixed> $props */
-        return is_array($props) ? $props : [];
+        return $props;
     }
 
     /**
