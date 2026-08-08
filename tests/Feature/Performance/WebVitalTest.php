@@ -230,12 +230,12 @@ class WebVitalTest extends TestCase
         $this->assertTrue($detail['hasData']);
         $this->assertSame(6, $detail['sampledTransactions']);
 
-        $facets = collect($detail['facets'])->keyBy('key');
+        $facets = self::keyed($detail['facets'], 'key');
 
-        $this->assertTrue($facets->has('device'));
-        $this->assertTrue($facets->has('browser'));
+        $this->assertArrayHasKey('device', $facets);
+        $this->assertArrayHasKey('browser', $facets);
 
-        $devices = collect($facets['device']['values'])->keyBy('value');
+        $devices = self::keyed($facets['device']['values'], 'value');
 
         // Das Handy ist schlecht, der Rechner ist gut — genau die Auskunft, die
         // ein Gesamtwert verschweigt.
@@ -473,6 +473,28 @@ class WebVitalTest extends TestCase
         $props = is_array($props) ? $props : [];
 
         return $props;
+    }
+
+    /**
+     * Eine Liste aus der Nutzlast, nach einem ihrer Felder aufgeschlüsselt.
+     *
+     * Von Hand und nicht über `collect()`: die Nutzlast einer Inertia-Antwort ist
+     * für die statische Analyse `mixed`, und eine Sammlung darüber hätte keinen
+     * Typ, den sie auflösen könnte.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    private static function keyed(mixed $rows, string $key): array
+    {
+        $keyed = [];
+
+        foreach (is_array($rows) ? $rows : [] as $row) {
+            if (is_array($row) && isset($row[$key]) && is_scalar($row[$key])) {
+                $keyed[(string) $row[$key]] = $row;
+            }
+        }
+
+        return $keyed;
     }
 
     /**
