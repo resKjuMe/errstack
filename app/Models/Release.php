@@ -143,6 +143,59 @@ class Release extends Model
     }
 
     /**
+     * Ist diese Auslieferung jünger als jene?
+     *
+     * **Dieselbe Rangfolge wie in der Liste** ({@see newestFirst()}), Stufe für
+     * Stufe — und das ist der Zweck dieser Methode. Die Rückfallerkennung (S8)
+     * fragt „ist eine **neuere** Fassung betroffen?", und die Antwort darf nicht
+     * davon abhängen, wer fragt: eine zweite Vorstellung von „neuer" wäre eine,
+     * die der Versionsliste eines Tages widerspricht — dieselben zwei Angaben
+     * stünden dann in der Liste in der einen und in der Erkennung in der anderen
+     * Reihenfolge.
+     *
+     * Die Zeit entscheidet erst zuletzt und trägt dort alles, was keine Nummer
+     * hat: ein Commit-Hash hat keine Rangfolge, aber die Auslieferung, aus der
+     * die erste Meldung später eintraf, ist die spätere. Genommen wird dafür das
+     * **erste** Ereignis und nicht das letzte, mit dem die Liste ihren
+     * Gleichstand auflöst — das letzte wandert bei jeder eingehenden Meldung,
+     * und eine Erkennung, die heute „neuer" sagt und morgen „älter", wäre keine.
+     */
+    public function isNewerThan(self $other): bool
+    {
+        return self::rank($this) > self::rank($other);
+    }
+
+    /**
+     * Der Rang einer Auslieferung als vergleichbare Liste.
+     *
+     * PHP vergleicht Listen von links nach rechts, Feld für Feld — dieselbe
+     * Ordnung, die `order by` aus mehreren Spalten macht. Die Werte sind
+     * deshalb so gewählt, dass **größer** überall „neuer" heißt, auch dort, wo
+     * die Abfrage absteigend sortiert.
+     *
+     * Die beiden Marken (`hat eine Nummer`, `ist endgültig`) stehen als eigene
+     * Felder da und nicht als Kunstgriff im Text daneben: „endgültig vor Vorab"
+     * über ein vorangestelltes Zeichen zu lösen hinge daran, dass kein
+     * Vorabteil dieses Zeichen enthält — und was ein SDK als Version schickt,
+     * ist nicht verhandelbar.
+     *
+     * @return list<int|string>
+     */
+    private static function rank(self $release): array
+    {
+        return [
+            $release->sort_major === null ? 0 : 1,
+            $release->sort_major ?? 0,
+            $release->sort_minor ?? 0,
+            $release->sort_patch ?? 0,
+            $release->sort_prerelease === null ? 1 : 0,
+            $release->sort_prerelease ?? '',
+            $release->first_event_at?->getTimestamp() ?? 0,
+            $release->id,
+        ];
+    }
+
+    /**
      * Vereinheitlicht eine gemeldete Versionsangabe, damit „1.0.0" und
      * „ 1.0.0 " nicht zwei Auslieferungen ergeben.
      *

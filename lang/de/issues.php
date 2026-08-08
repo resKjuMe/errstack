@@ -173,6 +173,7 @@ return [
         'ignored_state' => 'Stummgeschaltet :condition — :done von :total.',
         'resolved_in' => 'Erledigt in Version :release.',
         'resolved_next' => 'Erledigt mit der nächsten Auslieferung.',
+        'resolved_next_after' => 'Erledigt mit der nächsten Auslieferung nach Version :release.',
 
         'confirm' => [
             'delete' => 'Diese Fehler löschen? Die Zähler sind danach weg. Tritt der '
@@ -225,6 +226,8 @@ return [
 
         'resolved' => 'Erledigt (:condition)',
         'unresolved' => 'Wieder geöffnet',
+        'regressed' => 'Wieder aufgetreten und automatisch geöffnet',
+        'regressed_in' => 'Wieder aufgetreten in Version :release und automatisch geöffnet',
         'ignored' => 'Stummgeschaltet (:condition)',
         'ignore_expired' => 'Stummschaltung beendet — die Bedingung ist eingetreten',
         'bookmarked' => 'Gemerkt',
@@ -309,6 +312,21 @@ return [
             'merged' => ':count Fehler zu einem zusammengeführt.',
             'unmerged' => 'Untergruppe wieder herausgelöst.',
         ],
+    ],
+
+    // Der Rückfall (S8): ein erledigter Fehler, der wieder aufgetreten ist und
+    // sich dadurch von selbst wieder geöffnet hat
+    // (app/Support/Ingest/Processing/Steps/DetectRegression).
+    'regression' => [
+        'badge' => [
+            'label' => 'Wieder aufgetreten',
+            'hint' => 'Dieser Fehler galt schon einmal als erledigt und ist wieder '
+                .'aufgetreten. Er hat sich deshalb von selbst wieder geöffnet.',
+        ],
+
+        'state' => 'Wieder aufgetreten am :at — der Fehler galt bereits als erledigt.',
+        'state_in' => 'Wieder aufgetreten in Version :release am :at — der Fehler galt '
+            .'bereits als erledigt.',
     ],
 
     'live' => [

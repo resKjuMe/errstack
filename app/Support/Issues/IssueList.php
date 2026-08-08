@@ -168,6 +168,12 @@ final class IssueList
             // anders als einer mit einem, und der Unterschied ist nichts, was
             // man erst auf der Detailseite erfahren sollte.
             'mergedCount' => $issue->merged_sources_count ?? 0,
+            // Von selbst zurückgekommen (S8). Die Marke gehört in die Zeile und
+            // nicht erst auf die Detailseite: ein Fehler, der schon einmal als
+            // behoben galt, ist eine andere Nachricht als einer, der noch nie
+            // erledigt war — und die Zeile ist die Stelle, an der jemand
+            // entscheidet, was er sich zuerst ansieht.
+            'regressed' => $issue->hasRegressed(),
             'series' => $series,
         ];
     }

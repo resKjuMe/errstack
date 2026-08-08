@@ -80,6 +80,8 @@ use Illuminate\Support\Facades\DB;
  * @property int|null $ignore_users
  * @property int|null $ignore_times_seen
  * @property int|null $ignore_users_seen
+ * @property CarbonImmutable|null $regressed_at
+ * @property int|null $regressed_in_release_id
  * @property int|null $merged_sources_count nur nach `withCount('mergedSources')`
  */
 class Issue extends Model
@@ -696,6 +698,42 @@ class Issue extends Model
     }
 
     /**
+     * Die Version, in der der Eintrag zurückgekommen ist (S8).
+     *
+     * `null`, solange es keinen Rückfall gab — und auch dann, wenn es einen gab,
+     * die Meldung aber keine Versionsangabe trug. Ein Rückfall ohne Version ist
+     * einer; nur nennen kann ihn der Verlauf dann nicht.
+     *
+     * @return BelongsTo<Release, $this>
+     */
+    public function regressedInRelease(): BelongsTo
+    {
+        return $this->belongsTo(Release::class, 'regressed_in_release_id');
+    }
+
+    /**
+     * Ist dieser Eintrag von selbst wieder aufgegangen?
+     *
+     * Die Marke und nicht der Zustand: „wieder aufgetreten" ist eine Herkunft,
+     * kein vierter Zustand — der Eintrag ist offen wie jeder andere offene auch
+     * (siehe die Migration).
+     */
+    public function hasRegressed(): bool
+    {
+        return $this->regressed_at !== null;
+    }
+
+    /**
+     * Nur die Einträge, die zurückgekommen sind — `is:regressed`.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeRegressed(Builder $query): void
+    {
+        $query->whereNotNull('regressed_at');
+    }
+
+    /**
      * Wer den Eintrag stummgeschaltet hat.
      *
      * @return BelongsTo<User, $this>
@@ -798,6 +836,8 @@ class Issue extends Model
         'ignore_users',
         'ignore_times_seen',
         'ignore_users_seen',
+        'regressed_at',
+        'regressed_in_release_id',
     ];
 
     /**
@@ -827,6 +867,7 @@ class Issue extends Model
             'ignore_users' => 'integer',
             'ignore_times_seen' => 'integer',
             'ignore_users_seen' => 'integer',
+            'regressed_at' => 'immutable_datetime',
         ];
     }
 }

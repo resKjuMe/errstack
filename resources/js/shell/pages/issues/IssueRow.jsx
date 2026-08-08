@@ -41,6 +41,19 @@ export default function IssueRow({ issue, selected, onToggle, showProject, trend
                             {t('issues.merge.badge.label', { count: issue.mergedCount + 1 })}
                         </span>
                     )}
+
+                    {/* Von selbst wieder aufgegangen (S8): der Fehler galt
+                        schon einmal als behoben. Warnfarbe und nicht grau — er
+                        steht zwischen lauter offenen Einträgen, und genau das
+                        ist die Information, die ihn heraushebt. */}
+                    {issue.regressed && (
+                        <span
+                            title={t('issues.regression.badge.hint')}
+                            className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
+                        >
+                            {t('issues.regression.badge.label')}
+                        </span>
+                    )}
                 </div>
 
                 <p className="mt-0.5 truncate text-sm text-gray-500 dark:text-gray-400">

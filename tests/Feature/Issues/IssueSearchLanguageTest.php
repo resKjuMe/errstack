@@ -507,10 +507,36 @@ class IssueSearchLanguageTest extends TestCase
         $this->issue($project, 'Erledigt', ['status' => IssueStatus::Resolved]);
 
         $this->actingAs($user)
-            ->get(route('issues.index', ['q' => 'is:unresolved or is:regressed', 'status' => 'alle']))
+            ->get(route('issues.index', ['q' => 'is:unresolved or is:for_review', 'status' => 'alle']))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->has('issues.data', 2)
-                ->where('unavailableTerms', ['is:regressed'])
+                ->where('unavailableTerms', ['is:for_review'])
+                ->etc()
+            );
+    }
+
+    /**
+     * `is:regressed` fragt nicht nach dem Zustand, sondern danach, wie der
+     * Eintrag hineinkam: er ist offen wie jeder andere offene auch — und
+     * trotzdem eine andere Nachricht.
+     */
+    public function test_regressed_finds_the_issues_that_came_back(): void
+    {
+        [$user, $project] = $this->context();
+
+        $this->issue($project, 'Offen', ['status' => IssueStatus::Unresolved]);
+        $this->issue($project, 'Zurück', [
+            'status' => IssueStatus::Unresolved,
+            'regressed_at' => now()->subHour(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('issues.index', ['q' => 'is:regressed', 'status' => 'alle']))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->has('issues.data', 1)
+                ->where('issues.data.0.title', 'Zurück')
+                ->where('issues.data.0.regressed', true)
+                ->where('unavailableTerms', [])
                 ->etc()
             );
     }

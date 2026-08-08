@@ -41,11 +41,11 @@ use Illuminate\Support\Facades\Date;
  *     Ereignisse überleben.
  *
  * **Was es noch nicht gibt, wird benannt und nicht erfunden.** `assigned:`,
- * `bookmarks:`, `is:for_review` und `is:regressed` gehören zur Sprache, aber die
- * Zuständigkeit (S7), die Merkzettel (S6) und die Rückfallerkennung (S8) sind
- * eigene Aufgaben. Sie schränken deshalb nichts ein und werden zurückgemeldet —
- * eine Liste, die so tut, als hätte sie „mir zugewiesen" ausgewertet, ist
- * schlimmer als eine, die sagt, dass sie es nicht konnte.
+ * `bookmarks:` und `is:for_review` gehören zur Sprache, aber die Zuständigkeit
+ * (S7) und die Merkzettel (S6) sind eigene Aufgaben. Sie schränken deshalb
+ * nichts ein und werden zurückgemeldet — eine Liste, die so tut, als hätte sie
+ * „mir zugewiesen" ausgewertet, ist schlimmer als eine, die sagt, dass sie es
+ * nicht konnte.
  */
 final class IssueFields implements FieldResolver
 {
@@ -68,11 +68,24 @@ final class IssueFields implements FieldResolver
     ];
 
     /**
+     * Zustände, die nicht an `status` hängen.
+     *
+     * `is:regressed` fragt nicht, woran der Eintrag ist, sondern **wie** er
+     * dorthin kam: er ist offen wie jeder andere offene, aber von selbst und
+     * nicht durch eine Entscheidung (S8). Deshalb steht er in einer eigenen
+     * Spalte und nicht als vierter Fall in {@see IssueStatus} — die Begründung
+     * dazu in der Migration `add_issue_regression`.
+     *
+     * @var list<string>
+     */
+    private const MARKER_STATES = ['regressed'];
+
+    /**
      * Zustände, die es in der Sprache gibt und in den Daten noch nicht.
      *
      * @var list<string>
      */
-    private const PENDING_STATES = ['assigned', 'unassigned', 'for_review', 'regressed'];
+    private const PENDING_STATES = ['assigned', 'unassigned', 'for_review'];
 
     /**
      * Felder, die es in der Sprache gibt und in den Daten noch nicht.
@@ -187,6 +200,15 @@ final class IssueFields implements FieldResolver
             return null;
         }
 
+        if ($value === 'regressed') {
+            self::rejectComparator($condition);
+
+            // Der Zeitpunkt **ist** die Marke: „wieder aufgetreten" und „wann"
+            // stehen in einer Spalte (siehe die Migration). Ein Vergleich auf
+            // `null` ist deshalb die ganze Bedingung.
+            return static fn (Builder $query) => $query->whereNotNull('regressed_at');
+        }
+
         $status = self::STATES[$value] ?? null;
 
         if ($status === null) {
@@ -194,7 +216,7 @@ final class IssueFields implements FieldResolver
                 __('search.errors.unknown_value', [
                     'field' => $condition->field,
                     'value' => $condition->value,
-                    'allowed' => implode(', ', [...array_keys(self::STATES), ...self::PENDING_STATES]),
+                    'allowed' => implode(', ', [...array_keys(self::STATES), ...self::MARKER_STATES, ...self::PENDING_STATES]),
                 ]),
                 $condition->valuePosition,
                 $condition->value,

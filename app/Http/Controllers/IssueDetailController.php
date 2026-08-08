@@ -53,6 +53,7 @@ class IssueDetailController extends Controller
             'project.organization',
             'resolvedBy',
             'resolvedInRelease',
+            'regressedInRelease',
             'ignoredBy',
             'mergedSources.groups',
             'mergedInto',

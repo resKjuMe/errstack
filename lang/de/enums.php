@@ -354,6 +354,7 @@ return [
     'issue_activity' => [
         'resolved' => 'Erledigt',
         'unresolved' => 'Wieder geöffnet',
+        'regressed' => 'Wieder aufgetreten',
         'ignored' => 'Stummgeschaltet',
         'ignore_expired' => 'Stummschaltung beendet',
         'bookmarked' => 'Gemerkt',

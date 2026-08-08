@@ -173,6 +173,7 @@ return [
         'ignored_state' => 'Ignored :condition — :done of :total.',
         'resolved_in' => 'Resolved in release :release.',
         'resolved_next' => 'Resolved with the next release.',
+        'resolved_next_after' => 'Resolved with the next release after :release.',
 
         'confirm' => [
             'delete' => 'Delete these issues? The counters are gone afterwards. If the '
@@ -225,6 +226,8 @@ return [
 
         'resolved' => 'Resolved (:condition)',
         'unresolved' => 'Reopened',
+        'regressed' => 'Occurred again and reopened automatically',
+        'regressed_in' => 'Occurred again in release :release and reopened automatically',
         'ignored' => 'Ignored (:condition)',
         'ignore_expired' => 'Ignoring ended — the condition was met',
         'bookmarked' => 'Bookmarked',
@@ -309,6 +312,20 @@ return [
             'merged' => ':count issues merged into one.',
             'unmerged' => 'Subgroup split off again.',
         ],
+    ],
+
+    // Regressions (S8): a resolved issue that occurred again and reopened
+    // itself (app/Support/Ingest/Processing/Steps/DetectRegression).
+    'regression' => [
+        'badge' => [
+            'label' => 'Regressed',
+            'hint' => 'This issue was already considered resolved and occurred again. '
+                .'It has therefore reopened itself.',
+        ],
+
+        'state' => 'Occurred again on :at — this issue was already considered resolved.',
+        'state_in' => 'Occurred again in release :release on :at — this issue was already '
+            .'considered resolved.',
     ],
 
     'live' => [

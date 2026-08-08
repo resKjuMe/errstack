@@ -362,6 +362,11 @@ class SavedSearchTest extends TestCase
                 // S7 — die Ansicht steht trotzdem da und sagt es.
                 ->where('savedSearches.views.1.key', 'for_review')
                 ->where('savedSearches.views.1.available', false)
+                // „Wieder aufgetreten" antwortet seit S8 — die Ansicht ist
+                // damit von selbst nutzbar geworden, ohne dass hier etwas
+                // umgestellt werden musste.
+                ->where('savedSearches.views.2.key', 'regressed')
+                ->where('savedSearches.views.2.available', true)
                 ->where('savedSearches.project.slug', 'webshop'));
     }
 

@@ -100,6 +100,45 @@ class IssueActivityFeedTest extends TestCase
         );
     }
 
+    /**
+     * Der Rückfall (S8) nennt die Version, in der der Fehler zurückkam — und
+     * kommt ohne sie aus, wo die Meldung keine trug.
+     */
+    public function test_ein_rueckfall_nennt_die_version_und_haelt_ohne_sie_den_satz(): void
+    {
+        [$user, , $issue] = $this->context();
+
+        IssueActivity::factory()->create([
+            'issue_id' => $issue->id,
+            'project_id' => $issue->project_id,
+            'type' => IssueActivityType::Regressed,
+            'user_id' => null,
+            'actor_name' => null,
+            'data' => ['release' => '1.10.0'],
+            'created_at' => Carbon::parse('2026-03-10 11:00:00'),
+        ]);
+
+        IssueActivity::factory()->create([
+            'issue_id' => $issue->id,
+            'project_id' => $issue->project_id,
+            'type' => IssueActivityType::Regressed,
+            'user_id' => null,
+            'actor_name' => null,
+            'data' => null,
+            'created_at' => Carbon::parse('2026-03-10 09:00:00'),
+        ]);
+
+        $entries = IssueActivityFeed::forIssue($issue, $user)->items();
+
+        $this->assertStringContainsString('1.10.0', $entries[0]['text']);
+        $this->assertNull($entries[0]['actor']);
+
+        // Ohne Version bleibt kein Platzhalter stehen: „in Version " wäre ein
+        // halber Satz.
+        $this->assertStringNotContainsString(':release', $entries[1]['text']);
+        $this->assertStringNotContainsString('Version', $entries[1]['text']);
+    }
+
     public function test_ein_kommentar_kommt_in_abschnitten_mit_hervorgehobener_nennung(): void
     {
         [$user, , $issue] = $this->context();

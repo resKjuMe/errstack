@@ -257,6 +257,21 @@ function StateNote({ issue, t }) {
         );
     }
 
+    // „Im nächsten Release" wird zuerst geprüft, obwohl auch dort eine Version
+    // steht: sie ist dort der Bezugspunkt und nicht das Ziel — behoben ist der
+    // Fehler in dem, was nach ihr kommt.
+    if (issue.resolution?.nextRelease) {
+        return (
+            <p className="mt-4 rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
+                {issue.resolution.release
+                    ? t('issues.actions.resolved_next_after', {
+                          release: issue.resolution.release,
+                      })
+                    : t('issues.actions.resolved_next')}
+            </p>
+        );
+    }
+
     if (issue.resolution?.release) {
         return (
             <p className="mt-4 rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
@@ -265,10 +280,18 @@ function StateNote({ issue, t }) {
         );
     }
 
-    if (issue.resolution?.nextRelease) {
+    // Zurückgekommen (S8). Der Hinweis steht am Ende, weil er den **offenen**
+    // Eintrag betrifft: die Fälle darüber schließen sich mit ihm aus, und wo
+    // beides zuträfe, ist die laufende Bedingung die dringendere Auskunft.
+    if (issue.regression) {
         return (
-            <p className="mt-4 rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
-                {t('issues.actions.resolved_next')}
+            <p className="mt-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-900/30 dark:text-amber-100">
+                {issue.regression.release
+                    ? t('issues.regression.state_in', {
+                          release: issue.regression.release,
+                          at: issue.regression.atLabel,
+                      })
+                    : t('issues.regression.state', { at: issue.regression.atLabel })}
             </p>
         );
     }
