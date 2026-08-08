@@ -69,6 +69,19 @@ enum DiscardReason: string
      */
     case Filtered = 'filtered';
 
+    /**
+     * Die Meldung, auf die sich das Element bezieht, gibt es nicht.
+     *
+     * Bislang genau ein Fall: ein Sample-Profil, dessen Transaktion nicht
+     * ankam — weil das SDK sie nicht geschickt hat, weil die Stichprobe sie
+     * aussortiert hat oder weil ihre Verarbeitung noch in einer Wiederholung
+     * hängt (M4). Ein eigener Grund und nicht `unreadable`, weil die Antwort
+     * darauf eine andere ist: an einem unlesbaren Rumpf ist etwas kaputt, hier
+     * fehlt die Gegenseite — und wer die Zahlen ansieht, muss das
+     * auseinanderhalten können.
+     */
+    case Orphaned = 'orphaned';
+
     public function label(): string
     {
         return __('enums.discard_reason.'.$this->value);

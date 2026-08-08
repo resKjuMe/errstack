@@ -39,6 +39,7 @@ final class Translations
         'performance',
         'privacy',
         'profile',
+        'profiling',
         'project_keys',
         'projects',
         'releases',

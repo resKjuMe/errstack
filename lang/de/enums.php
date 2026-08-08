@@ -148,6 +148,7 @@ return [
         'sampled' => 'nicht in die Stichprobe gefallen',
         'scrubbed' => 'aus Datenschutzgründen nicht gespeichert',
         'filtered' => 'vom Eingangsfilter aussortiert',
+        'orphaned' => 'ohne zugehörige Meldung',
     ],
 
     'inbound_filter_kind' => [
