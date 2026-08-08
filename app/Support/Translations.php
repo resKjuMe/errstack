@@ -37,6 +37,7 @@ final class Translations
         'notifications',
         'organizations',
         'performance',
+        'performance_issues',
         'privacy',
         'profile',
         'profiling',
@@ -46,6 +47,7 @@ final class Translations
         'sampling',
         'tags',
         'teams',
+        'traces',
     ];
 
     /**

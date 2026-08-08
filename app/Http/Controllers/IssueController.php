@@ -8,6 +8,7 @@ use App\Events\IssueCreated;
 use App\Http\Requests\IssueListRequest;
 use App\Support\FilterData;
 use App\Support\Formats;
+use App\Support\Issues\IssueActionData;
 use App\Support\Issues\IssueList;
 use App\Support\Issues\IssueSeries;
 use Inertia\Inertia;
@@ -51,6 +52,11 @@ class IssueController extends Controller
             'totalLabel' => Formats::number($issues->total()),
             'sortOptions' => IssueSort::options(),
             'statusOptions' => self::statusOptions(),
+            // Die Sammelaktionen (S6). Sie brauchen dieselben Filterfelder, mit
+            // denen diese Seite gebaut wurde: „alle 12.480" meint genau die
+            // Menge, die hier steht, und die Oberfläche schickt sie dafür aus
+            // der Adresszeile mit zurück.
+            'actions' => IssueActionData::forViewer(),
             // Was an der Eingabe nicht aufging. Beides stillschweigend zu
             // übergehen wäre die schlechtere Wahl: die Liste sähe aus, als hätte
             // sie die Frage beantwortet.

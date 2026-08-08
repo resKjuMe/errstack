@@ -110,6 +110,11 @@ final class ProjectData
                 // erklären, warum in der Performance-Übersicht mehr Aufrufe
                 // stehen, als Messungen gespeichert sind.
                 'samplingHref' => route('projects.sampling.index', [$organization, $project]),
+                // Die Schwellen der Leistungserkennung ebenfalls ohne
+                // Bedingung: sie erklären, warum ein bekanntes Problem **nicht**
+                // in der Liste der Leistungsprobleme steht — und diese Frage
+                // stellt sich der, der das Problem kennt, nicht die Verwaltung.
+                'performanceHref' => route('projects.performance.index', [$organization, $project]),
                 // Ebenso ohne Bedingung: was von einer Meldung gespeichert wird,
                 // geht jeden an, der mit den Daten arbeitet.
                 'privacyHref' => route('projects.privacy.index', [$organization, $project]),

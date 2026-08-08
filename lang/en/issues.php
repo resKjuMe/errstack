@@ -70,7 +70,110 @@ return [
         'select_all' => 'Select all :count issues',
         'all_selected' => 'All :count issues of this selection are selected.',
         'clear' => 'Clear selection',
-        'no_actions' => 'Bulk actions arrive with one of the next tasks.',
+        'no_actions' => 'No action available.',
+    ],
+
+    // The state actions (S6): App\Http\Controllers\IssueActionController,
+    // resources/js/shell/pages/issues/IssueActions.jsx.
+    'actions' => [
+
+        'title' => 'Actions',
+        'menu' => 'More actions',
+        'selected' => 'Action on :count selected issues',
+
+        'resolve' => 'Resolve',
+        'unresolve' => 'Reopen',
+        'ignore' => 'Ignore',
+        'bookmark' => 'Bookmark',
+        'unbookmark' => 'Remove bookmark',
+        'subscribe' => 'Subscribe',
+        'unsubscribe' => 'Unsubscribe',
+        'delete' => 'Delete',
+        'discard' => 'Delete and discard from now on',
+
+        'apply' => 'Apply',
+        'cancel' => 'Cancel',
+        'threshold' => 'Count',
+
+        'window' => [
+            'label' => 'Time window',
+            'none' => 'Without a time window',
+            'hour' => 'within an hour',
+            'day' => 'within a day',
+            'week' => 'within a week',
+        ],
+
+        // An ignore condition in words — it appears in the message, in the
+        // header of the detail page and in the history.
+        'condition' => [
+            'count' => 'until :count more events',
+            'count_window' => 'until :count more events within :minutes minutes',
+            'users' => 'until :count more affected users',
+        ],
+
+        'ignored_state' => 'Ignored :condition — :done of :total.',
+        'resolved_in' => 'Resolved in release :release.',
+        'resolved_next' => 'Resolved with the next release.',
+
+        'confirm' => [
+            'delete' => 'Delete these issues? The counters are gone afterwards. If the '
+                .'error happens again, a new issue is created.',
+            'discard' => 'Delete these issues and discard future reports? Reports of '
+                .'the same kind will no longer be accepted until discarding is '
+                .'lifted.',
+        ],
+
+        'undo' => [
+            'default' => 'Undo',
+            // For a deletion the way back only lifts the discarding — the issue
+            // itself is gone. The label says so instead of promising "undo" and
+            // doing half of it.
+            'discard' => 'Stop discarding',
+        ],
+
+        'flash' => [
+            'resolved' => ':count issues resolved (:condition).',
+            'unresolve' => ':count issues reopened.',
+            'ignored' => ':count issues ignored (:condition).',
+            'bookmark' => ':count issues bookmarked.',
+            'unbookmark' => 'Bookmark removed for :count issues.',
+            'subscribe' => 'Subscribed to :count issues.',
+            'unsubscribe' => 'Unsubscribed from :count issues.',
+            'delete' => ':count issues deleted.',
+            'discard' => ':count issues deleted; reports of the same kind will be '
+                .'discarded from now on.',
+            'none' => 'No issue affected — the selection is gone by now.',
+            'undone' => 'The action has been undone.',
+            'undo_expired' => 'This can no longer be undone.',
+        ],
+
+        'validation' => [
+            'no_target' => 'No issue selected.',
+            'mode' => 'Please choose a condition.',
+            'count' => 'Please enter a count.',
+            'window' => 'A time window only applies to an event threshold.',
+        ],
+
+    ],
+
+    // The activity history of an issue
+    // (App\Support\Issues\IssueActivityFeed).
+    'activity' => [
+        'title' => 'History',
+        'empty' => 'Nothing has happened yet.',
+        'by' => 'by :actor',
+        'system' => 'automatic',
+
+        'resolved' => 'Resolved (:condition)',
+        'unresolved' => 'Reopened',
+        'ignored' => 'Ignored (:condition)',
+        'ignore_expired' => 'Ignoring ended — the condition was met',
+        'bookmarked' => 'Bookmarked',
+        'unbookmarked' => 'Bookmark removed',
+        'subscribed' => 'Subscribed',
+        'unsubscribed' => 'Unsubscribed',
+        'deleted' => 'Deleted',
+        'discarded' => 'Deleted; reports of the same kind will be discarded from now on',
     ],
 
     'live' => [

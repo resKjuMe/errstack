@@ -84,6 +84,12 @@ return [
         'manage' => 'Regeln ansehen',
     ],
 
+    'performance' => [
+        'title' => 'Leistungserkennung',
+        'description' => 'Ab wann N+1-Abfragen, langsame Aufrufe oder blockierende Ressourcen als Leistungsproblem gelten. Die Erkennung läuft im Hintergrund über gespeicherte Abläufe.',
+        'manage' => 'Schwellen ansehen',
+    ],
+
     'grouping' => [
         'title' => 'Gruppierung',
         'description' => 'Gleichartige Meldungen werden zu einem Eintrag zusammengefasst. Greift das im Einzelfall zu grob oder zu fein, korrigieren projektweite Regeln es.',

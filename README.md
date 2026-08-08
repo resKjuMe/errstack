@@ -55,6 +55,15 @@ is required." statt „Das Passwort ist erforderlich.").
 `composer dev` startet neben Server und Vite auch den Queue-Worker, den
 Websocket-Server (Reverb) und den Zeitplan.
 
+## Selbstüberwachung
+
+Errstack meldet seine eigenen Fehler, Antwortzeiten, Browser-Probleme,
+CSP-Verstöße und das Lebenszeichen seines Zeitplans an eine
+Errstack-Installation — über dieselben Wege, die eine fremde Anwendung nimmt.
+Alles hängt an `ERRSTACK_DSN`; ohne diese Angabe meldet nichts. Einrichtung und
+die einzelnen Meldewege stehen in
+[docs/selbstueberwachung.md](docs/selbstueberwachung.md).
+
 ## Automatische Prüfungen
 
 Jeder Pull Request löst den Workflow `.github/workflows/ci.yml` aus. Die Jobs
@@ -100,7 +109,7 @@ drei, in dieser Priorität: **`ingest`** (eingehende Fehlermeldungen) vor
 Reihenfolge steht in `App\Enums\QueueName` und gehört in jeden Worker-Aufruf:
 
 ```bash
-php artisan queue:work --queue=ingest,notifications,default --tries=3
+php artisan queue:work --queue=ingest,notifications,performance,default --tries=3
 ```
 
 | Befehl | Zweck |

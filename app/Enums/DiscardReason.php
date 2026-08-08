@@ -70,6 +70,19 @@ enum DiscardReason: string
     case Filtered = 'filtered';
 
     /**
+     * Der Fehler wurde gelöscht, und künftige Meldungen desselben
+     * Fingerabdrucks sollen verworfen werden (S6).
+     *
+     * Ein eigener Grund und nicht `filtered`, obwohl beide dasselbe tun: der
+     * Eingangsfilter ist eine Einstellung des Projekts, die jemand in der
+     * Verwaltung nachlesen kann. Dieser hier entsteht aus **einer** Handlung an
+     * **einem** Fehler — und wer sich fragt, warum eine bekannte Meldung nicht
+     * mehr ankommt, findet die Antwort nur, wenn die Zählung beide
+     * auseinanderhält.
+     */
+    case Discarded = 'discarded';
+
+    /**
      * Die Meldung, auf die sich das Element bezieht, gibt es nicht.
      *
      * Bislang genau ein Fall: ein Sample-Profil, dessen Transaktion nicht

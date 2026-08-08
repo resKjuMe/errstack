@@ -7,6 +7,7 @@ import Pagination from '../../components/Pagination.jsx';
 import { Checkbox, InputLabel, SecondaryButton, SelectInput } from '../../components/Form.jsx';
 import { TableSkeleton } from '../../components/Skeleton.jsx';
 import { useT } from '../../i18n.js';
+import IssueActions from './IssueActions.jsx';
 import IssueRow from './IssueRow.jsx';
 import SearchInput from './SearchInput.jsx';
 import useIssueSelection from './useIssueSelection.js';
@@ -34,6 +35,7 @@ export default function Index({
     unavailableTerms = [],
     tagsHref,
     suggestHref,
+    actions,
 }) {
     const { shell } = usePage().props;
     const t = useT();
@@ -194,6 +196,7 @@ export default function Index({
                                     total={issues.total}
                                     totalLabel={totalLabel}
                                     pageSize={ids.length}
+                                    actions={actions}
                                     t={t}
                                 />
 
@@ -231,7 +234,7 @@ export default function Index({
 // „Alle auf dieser Seite" und „alle 12.480" sind bewusst zwei Schritte: die
 // zweite Aussage soll man ausdrücklich treffen und nicht durch einen Klick auf
 // dieselbe Stelle.
-function ListHeader({ selection, total, totalLabel, pageSize, t }) {
+function ListHeader({ selection, total, totalLabel, pageSize, actions, t }) {
     const some = selection.allMatching || selection.selected.size > 0;
 
     return (
@@ -264,9 +267,26 @@ function ListHeader({ selection, total, totalLabel, pageSize, t }) {
                         {t('issues.selection.clear')}
                     </SecondaryButton>
 
-                    <span className="ms-auto text-xs text-gray-500 dark:text-gray-400">
-                        {t('issues.selection.no_actions')}
-                    </span>
+                    {/* Die Sammelaktionen. Sie stehen in derselben Zeile wie die
+                        Auswahl und nicht in einem eigenen Streifen: was
+                        ausgewählt ist und was damit geschehen soll, gehört
+                        zusammen — und ein zweiter Streifen wäre derselbe Inhalt
+                        mit doppelter Höhe.
+
+                        `allMatching` schickt statt der Kennungen einen
+                        Schalter: „alle 12.480" ist serverseitig ein `where` und
+                        wäre als Liste von Zahlen weder übertragbar noch
+                        prüfbar. */}
+                    <IssueActions
+                        actions={actions}
+                        target={
+                            selection.allMatching
+                                ? { all: true }
+                                : { issues: [...selection.selected] }
+                        }
+                        compact
+                        t={t}
+                    />
                 </div>
             ) : (
                 <>

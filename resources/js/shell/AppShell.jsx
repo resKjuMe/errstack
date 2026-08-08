@@ -22,7 +22,13 @@ export default function AppShell({ children }) {
                     liegt außerhalb und bleibt persistent. */}
                 <div key={url} className="es-page-enter">
                     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                        <Flash status={flash?.status} error={flash?.error} errors={errors} />
+                        <Flash
+                            status={flash?.status}
+                            error={flash?.error}
+                            errors={errors}
+                            undo={flash?.undo}
+                            undoHref={shell?.undoHref}
+                        />
                         {children}
                     </main>
                 </div>

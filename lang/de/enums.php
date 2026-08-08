@@ -38,6 +38,7 @@ return [
         'message' => 'Meldungstext',
         'fallback' => 'Titel und Fehlerstelle',
         'empty' => 'Ohne unterscheidbaren Inhalt',
+        'performance' => 'Leistungserkennung',
     ],
 
     'api_scope' => [
@@ -148,6 +149,7 @@ return [
         'sampled' => 'nicht in die Stichprobe gefallen',
         'scrubbed' => 'aus Datenschutzgründen nicht gespeichert',
         'filtered' => 'vom Eingangsfilter aussortiert',
+        'discarded' => 'gelöschter Fehler, künftig verworfen',
         'orphaned' => 'ohne zugehörige Meldung',
     ],
 
@@ -285,6 +287,32 @@ return [
         'low' => 'Niedrig',
     ],
 
+    'issue_resolve_mode' => [
+        'now' => 'Sofort',
+        'current_release' => 'In dieser Version',
+        'next_release' => 'Mit der nächsten Auslieferung',
+    ],
+
+    'issue_ignore_mode' => [
+        'forever' => 'Dauerhaft',
+        'until_recurrence' => 'Bis er wieder auftritt',
+        'until_count' => 'Bis zu einer Anzahl Ereignisse',
+        'until_users' => 'Bis zu einer Anzahl Betroffener',
+    ],
+
+    'issue_activity' => [
+        'resolved' => 'Erledigt',
+        'unresolved' => 'Wieder geöffnet',
+        'ignored' => 'Stummgeschaltet',
+        'ignore_expired' => 'Stummschaltung beendet',
+        'bookmarked' => 'Gemerkt',
+        'unbookmarked' => 'Vormerkung aufgehoben',
+        'subscribed' => 'Abonniert',
+        'unsubscribed' => 'Abbestellt',
+        'discarded' => 'Gelöscht und verworfen',
+        'deleted' => 'Gelöscht',
+    ],
+
     'count_period' => [
         'hour' => 'Stündlich',
         'day' => 'Täglich',
@@ -296,6 +324,53 @@ return [
         'flat' => 'Unverändert',
         'better' => 'Schneller geworden',
         'worse' => 'Langsamer geworden',
+    ],
+
+    'issue_category' => [
+        'error' => 'Fehler',
+        'performance' => 'Leistungsproblem',
+    ],
+
+    'performance_problem' => [
+        'n_plus_one_queries' => 'N+1-Abfragen',
+        'consecutive_queries' => 'Aufeinanderfolgende gleichartige Abfragen',
+        'duplicate_queries' => 'Doppelte Abfragen',
+        'slow_http_call' => 'Langsamer HTTP-Aufruf',
+        'oversized_asset' => 'Übergroße oder unkomprimierte Datei',
+        'render_blocking_asset' => 'Render-blockierende Ressource',
+        'main_thread_block' => 'Hauptthread-Blockade',
+        'cache_misses' => 'Cache-Fehlgriffe',
+    ],
+
+    'performance_problem_description' => [
+        'n_plus_one_queries' => 'Eine Abfrage holt eine Liste, danach wird für jeden '
+            .'Eintrag einzeln nachgefragt. Ein Join oder ein Vorabladen ersetzt die '
+            .'ganze Serie durch eine Abfrage.',
+        'consecutive_queries' => 'Dieselbe Abfrageform läuft mehrfach nacheinander, '
+            .'jede wartet auf die vorige. Gebündelt oder nebenläufig kostet sie nur '
+            .'einmal Wartezeit.',
+        'duplicate_queries' => 'Dieselbe Abfrage mit denselben Werten läuft mehrfach '
+            .'in einem Ablauf. Jede Wiederholung nach der ersten liefert dieselbe '
+            .'Antwort und ist ersatzlos zu streichen.',
+        'slow_http_call' => 'Ein Aufruf an einen fremden Dienst dauert länger als die '
+            .'eingestellte Schwelle.',
+        'oversized_asset' => 'Eine Datei ist sehr groß oder wird unkomprimiert '
+            .'ausgeliefert — erkennbar daran, dass übertragene und entpackte Größe '
+            .'übereinstimmen.',
+        'render_blocking_asset' => 'Ein Skript oder Stylesheet hält den Browser auf, '
+            .'bevor er überhaupt etwas anzeigen kann.',
+        'main_thread_block' => 'Ein Stück Arbeit beschäftigt den Browser so lange, '
+            .'dass er in der Zeit auf keine Eingabe reagiert.',
+        'cache_misses' => 'Nachschläge im Zwischenspeicher gehen wiederholt ins Leere '
+            .'— meist ein falsch gebauter Schlüssel oder ein Eintrag, der nie '
+            .'geschrieben wird.',
+    ],
+
+    'performance_threshold' => [
+        'min_count' => 'Mindestanzahl',
+        'min_total_ms' => 'Mindestsumme in ms',
+        'min_duration_ms' => 'Mindestdauer in ms',
+        'min_size_kb' => 'Mindestgröße in KB',
     ],
 
 ];

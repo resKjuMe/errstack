@@ -70,7 +70,110 @@ return [
         'select_all' => 'Alle :count Fehler auswählen',
         'all_selected' => 'Alle :count Fehler der Auswahl sind ausgewählt.',
         'clear' => 'Auswahl aufheben',
-        'no_actions' => 'Sammelaktionen kommen mit einer der nächsten Aufgaben.',
+        'no_actions' => 'Keine Aktion möglich.',
+    ],
+
+    // Die Zustandsaktionen (S6): App\Http\Controllers\IssueActionController,
+    // resources/js/shell/pages/issues/IssueActions.jsx.
+    'actions' => [
+
+        'title' => 'Aktionen',
+        'menu' => 'Weitere Aktionen',
+        'selected' => 'Aktion auf :count ausgewählte Fehler',
+
+        'resolve' => 'Erledigen',
+        'unresolve' => 'Wieder öffnen',
+        'ignore' => 'Stummschalten',
+        'bookmark' => 'Merken',
+        'unbookmark' => 'Vormerkung aufheben',
+        'subscribe' => 'Abonnieren',
+        'unsubscribe' => 'Abbestellen',
+        'delete' => 'Löschen',
+        'discard' => 'Löschen und künftig verwerfen',
+
+        'apply' => 'Ausführen',
+        'cancel' => 'Abbrechen',
+        'threshold' => 'Anzahl',
+
+        'window' => [
+            'label' => 'Zeitfenster',
+            'none' => 'Ohne Zeitfenster',
+            'hour' => 'in einer Stunde',
+            'day' => 'an einem Tag',
+            'week' => 'in einer Woche',
+        ],
+
+        // Die Bedingung einer Stummschaltung in Worten — sie steht in der
+        // Meldung, im Kopf der Detailseite und im Verlauf.
+        'condition' => [
+            'count' => 'bis :count weitere Ereignisse',
+            'count_window' => 'bis :count weitere Ereignisse in :minutes Minuten',
+            'users' => 'bis :count weitere Betroffene',
+        ],
+
+        'ignored_state' => 'Stummgeschaltet :condition — :done von :total.',
+        'resolved_in' => 'Erledigt in Version :release.',
+        'resolved_next' => 'Erledigt mit der nächsten Auslieferung.',
+
+        'confirm' => [
+            'delete' => 'Diese Fehler löschen? Die Zähler sind danach weg. Tritt der '
+                .'Fehler erneut auf, entsteht ein neuer Eintrag.',
+            'discard' => 'Diese Fehler löschen und künftige Meldungen verwerfen? '
+                .'Gleichartige Meldungen werden ab sofort nicht mehr angenommen, '
+                .'bis das Verwerfen aufgehoben wird.',
+        ],
+
+        'undo' => [
+            'default' => 'Rückgängig',
+            // Beim Löschen nimmt der Rückweg nur die Verwerfung zurück — der
+            // Eintrag selbst ist weg. Die Beschriftung sagt das, statt
+            // "Rückgängig" zu versprechen und die Hälfte zu tun.
+            'discard' => 'Verwerfen aufheben',
+        ],
+
+        'flash' => [
+            'resolved' => ':count Fehler erledigt (:condition).',
+            'unresolve' => ':count Fehler wieder geöffnet.',
+            'ignored' => ':count Fehler stummgeschaltet (:condition).',
+            'bookmark' => ':count Fehler gemerkt.',
+            'unbookmark' => 'Vormerkung für :count Fehler aufgehoben.',
+            'subscribe' => ':count Fehler abonniert.',
+            'unsubscribe' => ':count Fehler abbestellt.',
+            'delete' => ':count Fehler gelöscht.',
+            'discard' => ':count Fehler gelöscht; gleichartige Meldungen werden '
+                .'künftig verworfen.',
+            'none' => 'Kein Fehler betroffen — die Auswahl ist inzwischen nicht mehr da.',
+            'undone' => 'Die Aktion wurde zurückgenommen.',
+            'undo_expired' => 'Das lässt sich nicht mehr zurücknehmen.',
+        ],
+
+        'validation' => [
+            'no_target' => 'Kein Fehler ausgewählt.',
+            'mode' => 'Bitte eine Bedingung wählen.',
+            'count' => 'Bitte eine Anzahl angeben.',
+            'window' => 'Ein Zeitfenster gibt es nur bei einer Ereignis-Schwelle.',
+        ],
+
+    ],
+
+    // Der Aktivitätsverlauf eines Fehlers
+    // (App\Support\Issues\IssueActivityFeed).
+    'activity' => [
+        'title' => 'Verlauf',
+        'empty' => 'Noch nichts geschehen.',
+        'by' => 'von :actor',
+        'system' => 'automatisch',
+
+        'resolved' => 'Erledigt (:condition)',
+        'unresolved' => 'Wieder geöffnet',
+        'ignored' => 'Stummgeschaltet (:condition)',
+        'ignore_expired' => 'Stummschaltung beendet — die Bedingung ist eingetreten',
+        'bookmarked' => 'Gemerkt',
+        'unbookmarked' => 'Vormerkung aufgehoben',
+        'subscribed' => 'Abonniert',
+        'unsubscribed' => 'Abbestellt',
+        'deleted' => 'Gelöscht',
+        'discarded' => 'Gelöscht; gleichartige Meldungen werden künftig verworfen',
     ],
 
     'live' => [
