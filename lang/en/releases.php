@@ -40,4 +40,28 @@ return [
     'environment_ignored' => 'The selected environment has no effect here: a release is '
         .'shipped as a whole and does not belong to one environment.',
 
+    // The detail page of a release (R2): what is in it.
+    'detail' => [
+        'title' => 'Release :version',
+        'help' => 'What went out with this release. Commits come from a connected '
+            .'repository or are handed over through the API at deploy time — a release '
+            .'that only came into being through events has none.',
+        'commits' => 'Commits',
+        'commit_count' => ':count commits',
+        'truncated' => 'Showing :shown of :total commits.',
+        'empty' => 'No commits were handed over for this release.',
+        'empty_hint' => 'A build can hand them over at deploy time, even without a '
+            .'GitHub or GitLab integration.',
+        'files' => ':count files',
+        'no_files' => 'No files given',
+        'author_unknown' => 'Author unknown',
+        'author_member_hint' => 'This address belongs to an account in this organization.',
+        'new_issues' => 'Issues first seen in this release',
+        'back' => 'Back to releases',
+        'released_at' => 'Shipped: :value',
+        'first_event' => 'First seen: :value',
+        'last_event' => 'Last seen: :value',
+        'ref' => 'Ref: :value',
+    ],
+
 ];

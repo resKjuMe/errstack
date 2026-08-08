@@ -99,6 +99,17 @@ class Organization extends Model
     }
 
     /**
+     * Die verbundenen Repositories (R2). An der Organisation und nicht am
+     * Projekt: dasselbe Repository versorgt in aller Regel mehrere Projekte.
+     *
+     * @return HasMany<Repository, $this>
+     */
+    public function repositories(): HasMany
+    {
+        return $this->hasMany(Repository::class);
+    }
+
+    /**
      * @return HasMany<OrganizationInvitation, $this>
      */
     public function invitations(): HasMany

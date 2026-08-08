@@ -422,6 +422,12 @@ return [
         'min_size_kb' => 'Minimum size in KB',
     ],
 
+    'commit_file_change' => [
+        'A' => 'Added',
+        'M' => 'Modified',
+        'D' => 'Removed',
+    ],
+
     'release_artifact_kind' => [
         'bundle' => 'Bundle',
         'source_map' => 'Source map',

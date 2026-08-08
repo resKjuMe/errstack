@@ -424,6 +424,12 @@ return [
         'min_size_kb' => 'Mindestgröße in KB',
     ],
 
+    'commit_file_change' => [
+        'A' => 'Hinzugefügt',
+        'M' => 'Geändert',
+        'D' => 'Gelöscht',
+    ],
+
     'release_artifact_kind' => [
         'bundle' => 'Bundle',
         'source_map' => 'Quellkarte',

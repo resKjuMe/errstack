@@ -19,8 +19,17 @@
 */
 
 use App\Http\Controllers\ReleaseController;
+use App\Http\Controllers\ReleaseDetailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('versionen', ReleaseController::class)->name('releases.index');
+
+    // Die Detailseite hängt an der Kennung und nicht an Projekt und
+    // Versionsangabe: die Angabe ist nur innerhalb ihres Projekts eindeutig,
+    // und beides in der Adresse hieße, dieselbe Sache zweimal zu nennen — mit
+    // der Möglichkeit, dass sie nicht zusammenpassen. Anders als die Liste hat
+    // diese Seite damit keine Vorauswahl über die Filterleiste; die
+    // Rechteprüfung steht deshalb im Controller.
+    Route::get('versionen/{release}', ReleaseDetailController::class)->name('releases.show');
 });

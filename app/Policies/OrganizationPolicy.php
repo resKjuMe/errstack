@@ -88,6 +88,19 @@ class OrganizationPolicy
     }
 
     /**
+     * Repositories verbinden und wieder lösen (R2).
+     *
+     * Ab der Verwaltung, und aus demselben Grund wie bei den Projekten: ein
+     * Repository ist die Herkunft des Codes einer Organisation, und wer es löst,
+     * nimmt allen Auslieferungen ihre Commits. Ansehen darf die Liste dagegen
+     * jedes Mitglied — sie steht auch auf jeder Versionsseite.
+     */
+    public function manageRepositories(User $user, Organization $organization): bool
+    {
+        return $this->atLeast($user, $organization, OrganizationRole::Admin);
+    }
+
+    /**
      * Das Änderungsprotokoll einsehen und ausgeben. Es zeigt, wer wann was
      * getan hat, samt IP-Adresse — das geht nur die Verwaltung etwas an, nicht
      * jedes Mitglied.
