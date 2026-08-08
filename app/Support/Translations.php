@@ -40,6 +40,7 @@ final class Translations
         'notifications',
         'operations',
         'organizations',
+        'ownership',
         'performance',
         'performance_issues',
         'performance_trends',

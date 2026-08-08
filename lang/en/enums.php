@@ -163,6 +163,13 @@ return [
         'release' => 'Release blocklist',
     ],
 
+    'ownership_matcher' => [
+        'path' => 'Path',
+        'url' => 'URL',
+        'module' => 'Module',
+        'tag' => 'Tag',
+    ],
+
     'event_level' => [
         'fatal' => 'Fatal',
         'error' => 'Error',

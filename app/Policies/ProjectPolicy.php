@@ -127,4 +127,24 @@ class ProjectPolicy
     {
         return $user->can('manageProjects', $project->organization);
     }
+
+    /**
+     * Zuständigkeits-Regeln pflegen und die automatische Zuweisung schalten.
+     *
+     * Dasselbe Recht wie für die übrigen Einstellungen. Der Einwand, eine
+     * Zuweisung sei harmloser als eine Quote und dürfe deshalb jedem offenstehen,
+     * geht an der Sache vorbei: eine Regel verteilt keine Daten, sondern Arbeit —
+     * und zwar die anderer Leute. Wer festlegen darf, dass die Kasse ab morgen
+     * jeden Fehler aus `src/billing/*` bekommt, trifft eine Aussage über deren
+     * Woche.
+     *
+     * **Ansehen darf sie jedes Mitglied** (dafür genügt `view`), und das ist
+     * kein Widerspruch: die Liste ist die Antwort auf „warum steht mein Name an
+     * diesem Fehler?", und diese Frage stellt gerade der, der sie nicht ändern
+     * darf.
+     */
+    public function manageOwnership(User $user, Project $project): bool
+    {
+        return $user->can('manageProjects', $project->organization);
+    }
 }

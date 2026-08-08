@@ -21,6 +21,7 @@ use App\Http\Controllers\EnvironmentController;
 use App\Http\Controllers\FingerprintRuleController;
 use App\Http\Controllers\IssueAlertRuleController;
 use App\Http\Controllers\MetricAlertController;
+use App\Http\Controllers\OwnershipRuleController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectDigestController;
 use App\Http\Controllers\ProjectFilterController;
@@ -228,6 +229,34 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('projects.sampling.toggle');
             Route::delete('{project}/stichproben/{sampling_rule}', [SamplingRuleController::class, 'destroy'])
                 ->name('projects.sampling.destroy');
+
+            // Zuständigkeits-Regeln (R6). Der Parametername ist
+            // `ownership_rule` — aus demselben Grund wie bei den übrigen
+            // Regellisten: `scopeBindings` leitet daraus die Beziehung am
+            // Projekt ab (`ownershipRules()`), und eine Regel eines fremden
+            // Projekts läuft damit in ein 404 statt in eine Prüfung, die
+            // jemand vergessen kann.
+            //
+            // Die Vorschau und der Import stehen **vor** den Routen mit
+            // Regel-Kennung: `zustaendigkeit/vorschau` hat dieselbe Form wie
+            // `zustaendigkeit/{ownership_rule}`, und „vorschau" wäre dort eine
+            // Kennung.
+            Route::get('{project}/zustaendigkeit', [OwnershipRuleController::class, 'index'])
+                ->name('projects.ownership.index');
+            Route::post('{project}/zustaendigkeit/vorschau', [OwnershipRuleController::class, 'preview'])
+                ->name('projects.ownership.preview');
+            Route::post('{project}/zustaendigkeit/import', [OwnershipRuleController::class, 'import'])
+                ->name('projects.ownership.import');
+            Route::patch('{project}/zustaendigkeit/automatik', [OwnershipRuleController::class, 'autoAssign'])
+                ->name('projects.ownership.auto-assign');
+            Route::post('{project}/zustaendigkeit', [OwnershipRuleController::class, 'store'])
+                ->name('projects.ownership.store');
+            Route::patch('{project}/zustaendigkeit/{ownership_rule}', [OwnershipRuleController::class, 'update'])
+                ->name('projects.ownership.update');
+            Route::post('{project}/zustaendigkeit/{ownership_rule}/zustand', [OwnershipRuleController::class, 'toggle'])
+                ->name('projects.ownership.toggle');
+            Route::delete('{project}/zustaendigkeit/{ownership_rule}', [OwnershipRuleController::class, 'destroy'])
+                ->name('projects.ownership.destroy');
 
             // Datenschutz. Die Seite darf jedes Mitglied ansehen — was von einer
             // Meldung übrig bleibt, muss jeder wissen, der mit den Daten

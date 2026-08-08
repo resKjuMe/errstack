@@ -1,6 +1,7 @@
 <?php
 
 use App\Support\Ingest\Processing\Steps\AggregateIssue;
+use App\Support\Ingest\Processing\Steps\AssignOwner;
 use App\Support\Ingest\Processing\Steps\AssignSuspectCommit;
 use App\Support\Ingest\Processing\Steps\DecodePayload;
 use App\Support\Ingest\Processing\Steps\DetectRegression;
@@ -187,6 +188,12 @@ return [
             NormalizeEvent::class,
             GroupEvent::class,
             AggregateIssue::class,
+            // Die Zuständigkeit (R6) direkt hinter dem Fortschreiben: sie
+            // braucht den Eintrag **und** die Auskunft, ob er neu ist — nur
+            // beim ersten Auftreten wird zugewiesen. Vor den Alarmen, damit
+            // eine Meldung über einen neuen Fehler schon weiß, wer sich
+            // kümmert.
+            AssignOwner::class,
             RecordRelease::class,
             DetectRegression::class,
             RecordUserReport::class,
