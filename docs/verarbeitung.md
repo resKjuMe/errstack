@@ -15,8 +15,8 @@ POST /api/{projekt}/envelope/     ─┴─▶ ingest_payloads (Rohdaten)
                                      ProcessingPipeline
                                      ├ Entpacken      (Rahmen)
                                      ├ Eingangsfilter (I8)
-                                     ├ Stichprobe     (I9)
                                      ├ Scrubbing      (I7)
+                                     ├ Stichprobe     (I9)
                                      ├ Antwortzeiten  (PF1) ─▶ transactions
                                      ├ Normalisierung (I4)  ─▶ events
                                      ├ Grouping       (I5)
