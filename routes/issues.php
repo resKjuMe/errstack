@@ -27,6 +27,7 @@ use App\Http\Controllers\IssueDetailController;
 use App\Http\Controllers\IssueMergeController;
 use App\Http\Controllers\IssueSearchController;
 use App\Http\Controllers\IssueTagController;
+use App\Http\Controllers\SavedSearchController;
 use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,6 +39,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // und „suche" wäre dort eine Fehlerkennung.
     Route::get('fehler/suche/vorschlaege', [IssueSearchController::class, 'suggest'])
         ->name('issues.search.suggest');
+
+    // Die gespeicherten Suchen (S5). Sie stehen aus demselben Grund wie die
+    // Vorschläge **vor** den Fehler-Routen: `fehler/{issue}` würde „suchen"
+    // sonst für eine Fehlerkennung halten.
+    //
+    // Sie liegen unter „fehler" und nicht unter einem Projekt, obwohl sich eine
+    // davon als Einstieg **eines** Projekts festlegen lässt: gespeichert wird
+    // eine Ansicht der Fehlerliste, und die gehört keinem einzelnen Projekt.
+    // Welches Projekt beim Festlegen gemeint ist, steht deshalb im Rumpf — wie
+    // bei den Sammelaktionen und aus demselben Grund.
+    //
+    // Eine Route zum **Anwenden** gibt es nicht: eine Suche ist ein Ausdruck und
+    // eine Sortierung, und beides steht in der Adresszeile der Liste. Der Link
+    // dorthin ist die Anwendung.
+    Route::post('fehler/suchen', [SavedSearchController::class, 'store'])
+        ->name('issues.searches.store');
+    Route::patch('fehler/suchen/{search}', [SavedSearchController::class, 'update'])
+        ->name('issues.searches.update');
+    Route::delete('fehler/suchen/{search}', [SavedSearchController::class, 'destroy'])
+        ->name('issues.searches.destroy');
+    Route::put('fehler/suchen/{search}/standard', [SavedSearchController::class, 'setDefault'])
+        ->name('issues.searches.default.store');
+    Route::delete('fehler/suchen/{search}/standard', [SavedSearchController::class, 'clearDefault'])
+        ->name('issues.searches.default.destroy');
 
     // Die Zustandsaktionen (S6) — eine Adresse für einen Fehler wie für
     // zwölftausend. Sie steht **neben** der Liste und nicht unter einem

@@ -9,6 +9,7 @@ import { TableSkeleton } from '../../components/Skeleton.jsx';
 import { useT } from '../../i18n.js';
 import IssueActions from './IssueActions.jsx';
 import IssueRow from './IssueRow.jsx';
+import SavedSearches from './SavedSearches.jsx';
 import SearchInput from './SearchInput.jsx';
 import useIssueSelection from './useIssueSelection.js';
 import useLiveIssues from './useLiveIssues.js';
@@ -37,6 +38,7 @@ export default function Index({
     mergeHref,
     suggestHref,
     actions,
+    savedSearches,
 }) {
     const { shell } = usePage().props;
     const t = useT();
@@ -93,6 +95,17 @@ export default function Index({
             )}
 
             <Card className="mb-4">
+                {/* Die Ansichten stehen **über** dem Suchfeld und nicht daneben:
+                    sie sind der Einstieg, das Feld die Verfeinerung. Wer eine
+                    Ansicht anklickt, findet ihren Ausdruck danach im Feld
+                    wieder und arbeitet dort weiter. */}
+                <SavedSearches
+                    data={savedSearches}
+                    current={list}
+                    sortOptions={sortOptions}
+                    t={t}
+                />
+
                 <div className="flex flex-wrap items-end gap-4">
                     <SearchInput
                         value={q}
