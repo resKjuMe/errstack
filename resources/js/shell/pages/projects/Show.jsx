@@ -74,6 +74,8 @@ export default function Show({
 
                 <Environments environments={environments} canManage={permissions.update} />
 
+                {project.setupHref && <Setup project={project} />}
+
                 {project.keysHref && <ClientKeys project={project} />}
 
                 <MetricAlerts project={project} />
@@ -346,6 +348,21 @@ function Environments({ environments, canManage }) {
                     ))}
                 </ul>
             )}
+        </Card>
+    );
+}
+
+// Der Weg zurück in den Einrichtungs-Assistenten. Er steht über den Schlüsseln,
+// weil er die Frage beantwortet, für die man die Schlüssel überhaupt aufsucht:
+// wie schließe ich eine Anwendung an?
+function Setup({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('setup.card.title')} description={t('setup.card.description')}>
+            <Link href={project.setupHref}>
+                <SecondaryButton type="button">{t('setup.card.open')}</SecondaryButton>
+            </Link>
         </Card>
     );
 }
