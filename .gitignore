@@ -13,6 +13,11 @@
 /.vscode
 /.zed
 /auth.json
+# Beispiele und Mitschnitt der SDK-Verträglichkeit (docs/compat)
+/docs/compat/aufnahme/rohdaten
+/docs/compat/sentry-node/node_modules
+/docs/compat/sentry-node/package-lock.json
+/docs/compat/sentry-python/.venv
 /node_modules
 /public/build
 /public/fonts-manifest.dev.json
