@@ -98,6 +98,32 @@ class NotificationPreferenceController extends Controller
         ));
     }
 
+    /**
+     * Die Bündelung für sich abschalten oder wieder einschalten (A6).
+     *
+     * Die Gegenrichtung zur Einstellung am Projekt: dort wird entschieden, **ob**
+     * gebündelt wird, hier widerspricht der Einzelne für sich. Er kann sie nicht
+     * einschalten, wo das Projekt sie nicht will — es gäbe kein Fenster, an dem
+     * sich sein Wunsch ausrichten könnte.
+     *
+     * Was bereits im Wartekorb liegt, bleibt dort und geht als Sammelnachricht
+     * hinaus: die Meldungen sind angenommen und würden beim Abschalten sonst
+     * verschwinden. Ab der nächsten Meldung wirkt die Entscheidung.
+     */
+    public function digest(Request $request, NotificationPreferences $preferences): RedirectResponse
+    {
+        $enabled = $request->boolean('digest_enabled');
+        $user = $this->viewer($request);
+
+        $user->ensureNotificationSetting()->update(['digest_enabled' => $enabled]);
+
+        $preferences->forget($user);
+
+        return back()->with('status', __(
+            $enabled ? 'notifications.flash.digest_enabled' : 'notifications.flash.digest_disabled',
+        ));
+    }
+
     private function viewer(Request $request): User
     {
         $user = $request->user();

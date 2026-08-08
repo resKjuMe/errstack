@@ -83,6 +83,11 @@ return [
         'unsubscribe_title' => 'Alles abbestellen',
         'unsubscribe_description' => 'Schaltet alle nicht-kritischen Benachrichtigungen ab — auf einen Schlag und ohne die einzelnen Einstellungen zu verlieren.',
         'unsubscribe' => 'Alles abbestellen',
+        'digest_title' => 'Meldungen bündeln',
+        'digest_description_on' => 'Häufungen erreichen dich als eine Sammelnachricht, sofern das Projekt ein Zeitfenster dafür eingestellt hat. Dringende Meldungen kommen weiterhin sofort und einzeln.',
+        'digest_description_off' => 'Du bekommst jede Meldung einzeln — auch dann, wenn das Projekt bündelt.',
+        'digest_disable' => 'Bündelung abschalten',
+        'digest_enable' => 'Bündelung einschalten',
     ],
 
     'unsubscribe' => [
@@ -111,6 +116,8 @@ return [
         'delivery_retried' => 'Zustellung erneut eingereiht.',
         'preferences_saved' => 'Benachrichtigungen gespeichert.',
         'quiet_hours_saved' => 'Ruhezeiten gespeichert.',
+        'digest_enabled' => 'Bündelung eingeschaltet. Häufungen kommen künftig als Sammelnachricht.',
+        'digest_disabled' => 'Bündelung abgeschaltet. Du bekommst jede Meldung einzeln.',
         'unsubscribed' => 'Alles abbestellt. Kritische Alarme kommen weiterhin an.',
         'resubscribed' => 'Benachrichtigungen wieder eingeschaltet.',
         'unsubscribed_all' => 'Abgemeldet. Kritische Alarme kommen weiterhin an — alles andere nicht mehr.',

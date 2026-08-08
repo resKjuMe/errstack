@@ -64,6 +64,9 @@ final class NotificationPreferenceData
                 'timezones' => timezone_identifiers_list(),
                 'activeUntil' => $settings->quietUntilLabel(Date::now()),
             ],
+            // Die Bündelung (A6): das Projekt entscheidet, ob gebündelt wird,
+            // der Einzelne darf hier für sich widersprechen.
+            'digestEnabled' => $settings->digest_enabled,
             'unsubscribedAt' => Formats::dateTime($settings->unsubscribed_at),
             // Kritische Alarme dürfen ausgeschaltet werden — aber nie
             // unbemerkt. Was hier steht, zeigt die Oberfläche als Warnung.
@@ -72,6 +75,7 @@ final class NotificationPreferenceData
                 'update' => route('notifications.preferences.update'),
                 'quietHours' => route('notifications.preferences.quiet-hours'),
                 'subscription' => route('notifications.preferences.subscription'),
+                'digest' => route('notifications.preferences.digest'),
             ],
         ];
     }

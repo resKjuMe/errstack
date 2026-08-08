@@ -51,6 +51,19 @@ ScheduleCheckIn::attach($sweep);
 // der länger als eine Minute braucht, würde sonst vom nächsten überholt.
 Schedule::command('alerts:sweep')->everyMinute()->withoutOverlapping();
 
+// Nachsehen, ob die eigene Verarbeitung mitkommt (O5).
+//
+// Der dritte Fall derselben Art: ein Rückstand meldet sich nicht von selbst.
+// Ein Fehler meldet sich, ein Ausfall fällt auf — eine Warteschlange, die
+// volläuft, sieht von außen aus wie Betrieb, bis Nutzer fragen, warum ihre
+// Fehler fehlen.
+//
+// Minütlich, weil die Frist bis zur Warnung in Minuten gerechnet wird
+// ({@see App\Support\Operations\BacklogWatch}) und ein gröberer Takt sie
+// verwässern würde. `withoutOverlapping` gegen das Auflaufen: die Prüfung liest
+// den Rückstand, und genau der macht Abfragen langsam.
+Schedule::command('ops:watch')->everyMinute()->withoutOverlapping();
+
 // Die Wichtigkeit der Fehler fortschreiben und eskalierte Stummschaltungen
 // erkennen (S11).
 //
@@ -64,3 +77,19 @@ Schedule::command('alerts:sweep')->everyMinute()->withoutOverlapping();
 // als der Abstand zum nächsten: zwei gleichzeitige Durchläufe würden dieselbe
 // Eskalation zweimal melden.
 Schedule::command('issues:prioritize')->everyFifteenMinutes()->withoutOverlapping();
+
+// Fällige Sammelnachrichten der Bündelung verschicken (A6).
+//
+// Minütlich, weil das Fenster in Minuten eingestellt wird: ein gröberer Takt
+// wäre eine zweite, unsichtbare Wartezeit oben drauf — wer fünf Minuten
+// einstellt, bekäme dann bis zu zehn. `withoutOverlapping` gegen den doppelten
+// Versand: zwei gleichzeitige Durchläufe könnten denselben Korb greifen, bevor
+// der erste ihn abgeräumt hat.
+Schedule::command('notifications:flush-digests')->everyMinute()->withoutOverlapping();
+
+// Der Wochenbericht je Projekt (A6).
+//
+// Montagmorgen und nicht Sonntagnacht: der Bericht ist zum Lesen da, und
+// gelesen wird er am Anfang der Woche. Berichtet wird die abgeschlossene
+// Vorwoche ({@see App\Console\Commands\SendWeeklyReportsCommand}).
+Schedule::command('reports:weekly')->weeklyOn(1, '08:00');

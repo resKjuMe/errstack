@@ -34,6 +34,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $source
  * @property string|null $status
  * @property string|null $platform
+ * @property string|null $browser
+ * @property string|null $device
+ * @property string|null $country
  * @property string $environment
  * @property string|null $release
  * @property string|null $user_identifier

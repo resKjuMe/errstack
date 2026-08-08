@@ -123,6 +123,12 @@ return [
         'manage' => 'Filter einstellen',
     ],
 
+    'digest' => [
+        'title' => 'Meldungen bündeln',
+        'description' => 'Bei einer Fehlerwelle kommen sonst dutzende Einzel-Mails. Ein Zeitfenster fasst sie zu einer Sammelnachricht zusammen; dringende Meldungen bleiben davon unberührt.',
+        'manage' => 'Bündelung einstellen',
+    ],
+
     'privacy' => [
         'title' => 'Datenschutz',
         'description' => 'Passwörter, Nachweise und Kartennummern werden bei jeder Meldung entfernt, bevor etwas gespeichert wird. Was darüber hinaus verschwinden soll, steht auf einer eigenen Seite.',

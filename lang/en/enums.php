@@ -214,6 +214,11 @@ return [
         'expect-staple' => 'OCSP stapling failure',
     ],
 
+    'health_state' => [
+        'ok' => 'ok',
+        'failed' => 'failing',
+    ],
+
     'processing_state' => [
         'pending' => 'awaiting processing',
         'processed' => 'processed',
@@ -459,6 +464,29 @@ return [
         'no_mapping_for_position' => 'The source map has no entry for this position:',
         'frame_limit_reached' => 'Beyond the per-event limit of translated frames:',
         'no_source_content' => 'The source map does not embed the source text:',
+    ],
+    'web_vital' => [
+        'lcp' => 'LCP',
+        'inp' => 'INP',
+        'cls' => 'CLS',
+        'fcp' => 'FCP',
+        'ttfb' => 'TTFB',
+        'fid' => 'FID',
+    ],
+
+    'web_vital_description' => [
+        'lcp' => 'When the largest visible content had rendered',
+        'inp' => 'How sluggishly the page responds to input',
+        'cls' => 'How much the content shifts while loading',
+        'fcp' => 'When anything at all became visible',
+        'ttfb' => 'When the first byte of the response arrived',
+        'fid' => 'Delay of the first input (predecessor of INP)',
+    ],
+
+    'vital_rating' => [
+        'good' => 'Good',
+        'needs_improvement' => 'Needs improvement',
+        'poor' => 'Poor',
     ],
 
 ];

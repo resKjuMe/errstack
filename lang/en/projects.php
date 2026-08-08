@@ -123,6 +123,12 @@ return [
         'manage' => 'Configure filters',
     ],
 
+    'digest' => [
+        'title' => 'Bundle notifications',
+        'description' => 'An error wave otherwise produces dozens of individual mails. A time window combines them into one digest; urgent notifications are unaffected.',
+        'manage' => 'Configure bundling',
+    ],
+
     'privacy' => [
         'title' => 'Privacy',
         'description' => 'Passwords, credentials and card numbers are removed from every report before anything is stored. Whatever should disappear on top of that has its own page.',

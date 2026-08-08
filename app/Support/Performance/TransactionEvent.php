@@ -53,6 +53,9 @@ final class TransactionEvent
         public readonly ?string $source,
         public readonly ?string $status,
         public readonly ?string $platform,
+        public readonly ?string $browser,
+        public readonly ?string $device,
+        public readonly ?string $country,
         public readonly ?string $environment,
         public readonly ?string $release,
         public readonly ?string $userIdentifier,
@@ -111,6 +114,12 @@ final class TransactionEvent
             source: PayloadReader::text($transactionInfo['source'] ?? null, 32),
             status: PayloadReader::text($trace['status'] ?? null, 32),
             platform: PayloadReader::text($data['platform'] ?? null, 32),
+            browser: PayloadReader::text(
+                PayloadReader::map($contexts['browser'] ?? null)['name'] ?? null,
+                64,
+            ),
+            device: self::device($contexts['device'] ?? null),
+            country: self::country($data['user'] ?? null),
             environment: PayloadReader::text($data['environment'] ?? null, 64),
             release: PayloadReader::text($data['release'] ?? null, 255),
             userIdentifier: self::userIdentifier($data['user'] ?? null),
@@ -206,6 +215,58 @@ final class TransactionEvent
         }
 
         return null;
+    }
+
+    /**
+     * Das Gerät, auf dem gemessen wurde.
+     *
+     * Bevorzugt die **Familie** (`iPhone`, `Pixel`) und nicht das Modell
+     * (`iPhone15,3`): gefragt ist „welche Art Gerät ist langsam", und mit dem
+     * Modell wäre jede Aufschlüsselung eine Liste aus Dutzenden Zeilen, die
+     * dasselbe sagen. Erst wenn die Familie fehlt, tritt das Modell an ihre
+     * Stelle — eine ungenaue Angabe ist besser als gar keine.
+     */
+    private static function device(mixed $device): ?string
+    {
+        $device = PayloadReader::map($device);
+
+        if ($device === null) {
+            return null;
+        }
+
+        foreach (['family', 'model', 'brand'] as $field) {
+            $value = PayloadReader::text($device[$field] ?? null, 64);
+
+            if ($value !== null) {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Das Land, aus dem gemessen wurde.
+     *
+     * Steht im Nutzer-Abschnitt und nicht im Kontext — dort trägt es das Schema.
+     * Erwartet wird das zweistellige Kürzel (ISO 3166-1 alpha-2); alles andere
+     * fällt weg, statt eine zu lange Angabe auf zwei Zeichen zu kürzen und
+     * damit aus „Deutschland" das Land „De" zu machen.
+     */
+    private static function country(mixed $user): ?string
+    {
+        $user = PayloadReader::map($user);
+        $geo = PayloadReader::map($user['geo'] ?? null);
+
+        if ($geo === null) {
+            return null;
+        }
+
+        $code = PayloadReader::text($geo['country_code'] ?? null, 8);
+
+        return $code !== null && preg_match('/^[A-Za-z]{2}$/', $code) === 1
+            ? strtoupper($code)
+            : null;
     }
 
     /**

@@ -38,6 +38,7 @@ final class Translations
         'issues',
         'nav',
         'notifications',
+        'operations',
         'organizations',
         'performance',
         'performance_issues',
@@ -53,6 +54,7 @@ final class Translations
         'tags',
         'teams',
         'traces',
+        'web_vitals',
     ];
 
     /**
