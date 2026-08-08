@@ -10,5 +10,6 @@ return [
     'no_content' => 'The report has no content.',
     'not_decodable' => 'The report could not be decompressed.',
     'envelope_header' => 'The envelope does not start with a JSON header line.',
+    'security_unknown' => 'Not a known security report — expected csp-report, expect-ct-report or expect-staple-report.',
 
 ];

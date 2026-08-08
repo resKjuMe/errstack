@@ -160,12 +160,23 @@ Alles hier Genannte betrifft den Klon; kein Punkt verlangt eine Änderung an ein
 SDK.
 
 **Endpunkte.** Angenommen werden `POST /api/{projekt}/store/`,
-`POST /api/{projekt}/envelope/` und die Lebenszeichen unter
-`/api/{projekt}/cron/{monitor}/{key}`. Sentry hat darüber hinaus `/security/`
-(CSP- und Expect-CT-Berichte des Browsers), `/minidump/`, `/unreal/` und
-`/nel/` — diese Wege fehlen und antworten mit `404`. Betroffen ist, wer Berichte
-ohne SDK direkt vom Browser schickt (`report-uri` in der Content-Security-Policy)
-oder Abstürze nativer Anwendungen meldet.
+`POST /api/{projekt}/envelope/`, die Sicherheitsberichte des Browsers unter
+`POST /api/{projekt}/security/` und die Lebenszeichen unter
+`/api/{projekt}/cron/{monitor}/{key}`. Sentry hat darüber hinaus `/minidump/`,
+`/unreal/` und `/nel/` — diese Wege fehlen und antworten mit `404`. Betroffen
+ist, wer Abstürze nativer Anwendungen oder Berichte der neueren Reporting-API
+(`application/reports+json`) meldet.
+
+**Sicherheitsberichte.** `/security/` nimmt `csp-report`, `expect-ct-report` und
+`expect-staple-report` an — mit dem Schlüssel im Abfrageteil
+(`?sentry_key=…`), weil in einer `report-uri` nur eine Adresse Platz hat, und
+ohne Prüfung des Content-Type, weil die Browser drei verschiedene schicken. Die
+Antwort ist `201` mit leerem Rumpf, wie bei Sentry. Aus jedem Bericht wird ein
+gewöhnliches Ereignis; gruppiert wird beim CSP-Bericht nach verletzter Direktive
+und blockierter Quelle (auf ihren Ursprung gekürzt), bei den beiden anderen nach
+Rechnername. Berichte aus Browser-Erweiterungen werden **vor** dem Ablegen
+verworfen und als `filtered`/`browser_extension` gezählt — anders als bei
+SDK-Meldungen, wo derselbe Filter je Projekt einschaltbar ist.
 
 **Element-Typen ohne Auswertung.** Angenommen und unverändert abgelegt, aber
 noch nicht ausgewertet werden `session`, `sessions` (Release Health),
