@@ -80,6 +80,7 @@ export default function Show({
 
                 <MetricAlerts project={project} />
                 <IssueAlerts project={project} />
+                <AlertOverview project={project} />
 
                 <CronMonitors project={project} />
 
@@ -422,6 +423,27 @@ function IssueAlerts({ project }) {
         >
             <Link href={project.issueAlertsHref}>
                 <SecondaryButton type="button">{t('projects.issue_alerts.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zur Alarm-Übersicht. Sie steht neben den beiden Einstellungsseiten und
+// nicht in ihnen: dort wird eingerichtet, hier nachgesehen — und wer nach einer
+// Störung nachsieht, will nicht erst wissen, ob es ein Schwellwert-Alarm oder
+// eine Fehler-Regel war.
+function AlertOverview({ project }) {
+    const t = useT();
+
+    return (
+        <Card
+            title={t('projects.alert_overview.title')}
+            description={t('projects.alert_overview.description')}
+        >
+            <Link href={project.alertOverviewHref}>
+                <SecondaryButton type="button">
+                    {t('projects.alert_overview.manage')}
+                </SecondaryButton>
             </Link>
         </Card>
     );

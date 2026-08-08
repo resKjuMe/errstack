@@ -25,6 +25,11 @@ use Illuminate\Support\Carbon;
  * **Die Entwarnung ist kein Beiwerk.** Wer nur das Auslösen meldet, zwingt jeden
  * Empfänger, selbst nachzusehen, ob es sich erledigt hat — und genau das
  * unterbleibt dann.
+ *
+ * **Die Stummschaltung greift hier** ({@see AlertMute}) und nicht eine Stufe
+ * früher: der Zustandswechsel ist bereits festgestellt und steht im Verlauf,
+ * wenn dieser Weg beschritten wird. Wer Ruhe wollte, bekommt sie — und
+ * anschließend trotzdem die Auskunft, was in dieser Zeit passiert ist.
  */
 final class MetricAlertNotifier
 {
@@ -32,6 +37,18 @@ final class MetricAlertNotifier
 
     public function send(MetricAlert $alert, MetricAlertTransition $transition): void
     {
+        // Stummgeschaltet (A4): der Wechsel steht bereits im Verlauf, nur der
+        // Versand unterbleibt. Die Prüfung steht hier und nicht in der
+        // Auswertung — genau darin liegt die Zusage, dass eine Stummschaltung
+        // die Überwachung nicht abschaltet.
+        //
+        // Gefragt wird ohne Person: ein Schwellwert-Alarm meldet an die
+        // gemeinsamen Kanäle der Organisation und an niemanden persönlich. Eine
+        // persönliche Stummschaltung kann daran nichts leiser machen.
+        if (AlertMute::for($alert)->mutes()) {
+            return;
+        }
+
         $project = $alert->project;
 
         $this->dispatcher->send($project->organization, new NotificationMessage(
@@ -48,7 +65,7 @@ final class MetricAlertNotifier
             context: $this->context($alert, $transition),
             // Dieselbe Kennung über alle Meldungen eines Alarms: erst dadurch
             // lassen sich Auslösen und Entwarnung im Kanal einander zuordnen.
-            reference: 'ALERT-'.$alert->id,
+            reference: AlertReference::forMetricAlert($alert),
             // Als veränderliches Carbon: die Nachricht nimmt genau das, und ein
             // unveränderliches ist kein Untertyp davon.
             occurredAt: Carbon::parse($transition->occurred_at),

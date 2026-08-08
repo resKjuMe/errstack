@@ -115,6 +115,12 @@ final class ProjectData
                 // sie beantworten die Frage, warum eine Meldung kam — oder eben
                 // nicht kam.
                 'issueAlertsHref' => route('projects.issue-alerts.index', [$organization, $project]),
+                // Die Alarm-Übersicht (A4) führt beide Arten zusammen: sie ist
+                // die Seite für „was hat heute Nacht gefeuert?", während die
+                // beiden darüber die Seiten zum Einrichten sind. Ebenfalls ohne
+                // Bedingung — sie beantwortet dieselbe Frage wie jene, nur
+                // rückblickend.
+                'alertOverviewHref' => route('projects.alert-overview.index', [$organization, $project]),
                 // Die Stichproben aus demselben Grund ohne Bedingung: sie
                 // erklären, warum in der Performance-Übersicht mehr Aufrufe
                 // stehen, als Messungen gespeichert sind.
