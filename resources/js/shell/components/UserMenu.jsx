@@ -1,10 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { ChevronDownIcon, MenuIcon } from '../icons.jsx';
+import ThemeToggle from './ThemeToggle.jsx';
+import useDismiss from './useDismiss.js';
 
-// Nutzer-Dropdown (Name + Menü). Klick außerhalb und Escape schließen; ein Klick
-// auf einen Eintrag schließt ebenfalls. Der Logout ist ein echtes POST-Formular
-// (CSRF).
+// Nutzer-Dropdown (Name + Menü: Profil, Design, Abmelden). Klick außerhalb und
+// Escape schließen; ein Klick auf einen Eintrag schließt ebenfalls. Der Logout
+// ist ein echtes POST-Formular (CSRF).
 //
 // Es steht im Fuß der Seitenleiste. Weil dort unten kein Platz nach unten ist,
 // klappt es nach oben auf; `compact` zeigt in der eingeklappten Leiste nur das
@@ -16,26 +18,7 @@ export default function UserMenu({ shell, compact = false }) {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
 
-    useEffect(() => {
-        if (!open) {
-            return undefined;
-        }
-
-        const onDocClick = (e) => {
-            if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-        };
-        const onKey = (e) => {
-            if (e.key === 'Escape') setOpen(false);
-        };
-
-        document.addEventListener('click', onDocClick);
-        document.addEventListener('keydown', onKey);
-
-        return () => {
-            document.removeEventListener('click', onDocClick);
-            document.removeEventListener('keydown', onKey);
-        };
-    }, [open]);
+    useDismiss(open, ref, setOpen);
 
     const name = shell.user?.name ?? shell.labels.guest;
 
@@ -80,6 +63,15 @@ export default function UserMenu({ shell, compact = false }) {
                                 {item.label}
                             </Link>
                         ))}
+
+                        {/* Design zwischen Profil und Abmelden. stopPropagation:
+                            der Umschalter durchläuft hell → dunkel → System, und
+                            das soll man ohne erneutes Aufklappen können — ohne das
+                            schlösse der onClick des Wrappers nach dem ersten
+                            Schritt. */}
+                        <div onClick={(e) => e.stopPropagation()}>
+                            <ThemeToggle labels={shell.labels.theme} variant="row" />
+                        </div>
 
                         {shell.user && shell.logoutHref && (
                             /* stopPropagation: der Klick darf NICHT bis zum onClick des
