@@ -371,4 +371,10 @@ return [
         'min_size_kb' => 'Minimum size in KB',
     ],
 
+    'commit_file_change' => [
+        'A' => 'Added',
+        'M' => 'Modified',
+        'D' => 'Removed',
+    ],
+
 ];

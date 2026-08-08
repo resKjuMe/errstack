@@ -58,6 +58,10 @@ final class OrganizationData
             // Änderungsprotokoll enthalten sie keine Angaben über Personen,
             // sondern nur, welche Angaben nicht gespeichert werden.
             'privacyHref' => route('organizations.privacy.index', $organization),
+            // Woher der Code kommt (R2). Wie die Datenschutz-Regeln darf jedes
+            // Mitglied die Liste ansehen: sie sagt nur, aus welchen Repositories
+            // die Auslieferungen dieser Organisation stammen.
+            'repositoriesHref' => route('organizations.repositories.index', $organization),
             'members' => $organization->memberships
                 ->sortBy(fn (Membership $membership): string => (string) $membership->user->name)
                 ->values()

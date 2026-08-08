@@ -44,6 +44,7 @@ final class Translations
         'project_keys',
         'projects',
         'releases',
+        'repositories',
         'sampling',
         'tags',
         'teams',

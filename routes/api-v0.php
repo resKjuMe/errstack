@@ -24,7 +24,9 @@
 
 use App\Http\Controllers\Api\V0\OrganizationController;
 use App\Http\Controllers\Api\V0\ProjectController;
+use App\Http\Controllers\Api\V0\ReleaseCommitController;
 use App\Http\Controllers\Api\V0\ReleaseController;
+use App\Http\Controllers\Api\V0\RepositoryController;
 use App\Http\Controllers\Api\V0\RootController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,6 +49,19 @@ Route::prefix((string) config('api.version'))
         Route::patch('organizations/{organization}', [OrganizationController::class, 'update'])
             ->middleware('scope:org:write')
             ->name('organizations.update');
+
+        // Verbundene Repositories (R2). An der Organisation und nicht am
+        // Projekt: dasselbe Repository versorgt in aller Regel mehrere
+        // Projekte, und der Bezug zu einem entsteht über die Auslieferung, in
+        // der seine Commits stecken. `repos` und nicht `repositories`, weil
+        // vorhandene Werkzeuge diese Adresse ansprechen.
+        Route::get('organizations/{organization}/repos', [RepositoryController::class, 'index'])
+            ->middleware('scope:org:read')
+            ->name('repositories.index');
+
+        Route::post('organizations/{organization}/repos', [RepositoryController::class, 'store'])
+            ->middleware('scope:org:write')
+            ->name('repositories.store');
 
         // `scopeBindings`: der Projekt-Slug ist nur innerhalb der Organisation
         // eindeutig, ein Projekt darf also nur über seine eigene aufgelöst werden.
@@ -87,5 +102,21 @@ Route::prefix((string) config('api.version'))
                     ->where('version', '[^/]+')
                     ->middleware('scope:project:read')
                     ->name('releases.show');
+
+                // Was in einer Auslieferung steckt (R2). Der Weg für eine
+                // Bauumgebung ohne Anbindung: sie kennt die Commits ihres
+                // Bereichs ohnehin und übergibt sie beim Ausliefern. Dieselbe
+                // Liste lässt sich auch gleich beim Ankündigen der Version
+                // mitschicken — dieser Endpunkt ist der Weg, sie später zu
+                // ändern.
+                Route::get('{project}/releases/{version}/commits', [ReleaseCommitController::class, 'index'])
+                    ->where('version', '[^/]+')
+                    ->middleware('scope:project:read')
+                    ->name('releases.commits.index');
+
+                Route::post('{project}/releases/{version}/commits', [ReleaseCommitController::class, 'store'])
+                    ->where('version', '[^/]+')
+                    ->middleware('scope:project:write')
+                    ->name('releases.commits.store');
             });
     });
