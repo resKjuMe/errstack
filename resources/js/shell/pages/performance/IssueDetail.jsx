@@ -3,7 +3,7 @@ import { Link, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
 import { useTranslations } from '../../i18n.js';
-import { bytes, duration, Missing } from '../../durations.jsx';
+import { bytes, duration, Missing } from './format.jsx';
 import { ProblemBadge } from './Issues.jsx';
 
 // Ein einzelnes Leistungsproblem: was es ist, was es kostet — und vor allem, wo

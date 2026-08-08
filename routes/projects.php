@@ -17,6 +17,7 @@
 use App\Http\Controllers\CronMonitorController;
 use App\Http\Controllers\EnvironmentController;
 use App\Http\Controllers\FingerprintRuleController;
+use App\Http\Controllers\MetricAlertController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectFilterController;
 use App\Http\Controllers\ProjectKeyController;
@@ -121,6 +122,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('projects.filters.rules.toggle');
             Route::delete('{project}/filter/eintraege/{inbound_filter_rule}', [ProjectFilterController::class, 'destroy'])
                 ->name('projects.filters.rules.destroy');
+
+            // Schwellwert-Alarme auf Kennzahlen. Der Parametername ist
+            // `metric_alert` — aus demselben Grund wie bei den Fingerprint- und
+            // Stichproben-Regeln: `scopeBindings` leitet daraus die Beziehung am
+            // Projekt ab (`metricAlerts()`), und mit einem freieren Namen wäre
+            // ein Alarm über jedes Projekt erreichbar.
+            Route::get('{project}/alarme', [MetricAlertController::class, 'index'])
+                ->name('projects.alerts.index');
+            Route::post('{project}/alarme', [MetricAlertController::class, 'store'])
+                ->name('projects.alerts.store');
+            // Die Vorschau ändert nichts, ist aber ein POST: sie bezieht sich
+            // auf eine Einstellung, die noch nicht gespeichert ist, und trägt
+            // deshalb den ganzen Entwurf im Rumpf.
+            Route::post('{project}/alarme/vorschau', [MetricAlertController::class, 'preview'])
+                ->name('projects.alerts.preview');
+            Route::patch('{project}/alarme/{metric_alert}', [MetricAlertController::class, 'update'])
+                ->name('projects.alerts.update');
+            Route::post('{project}/alarme/{metric_alert}/zustand', [MetricAlertController::class, 'toggle'])
+                ->name('projects.alerts.toggle');
+            Route::delete('{project}/alarme/{metric_alert}', [MetricAlertController::class, 'destroy'])
+                ->name('projects.alerts.destroy');
 
             // Stichproben-Regeln der Antwortzeiten. Der Parametername ist
             // `sampling_rule` — aus demselben Grund wie bei den

@@ -86,6 +86,19 @@ class ProjectPolicy
     }
 
     /**
+     * Schwellwert-Alarme anlegen, ändern, abschalten und löschen.
+     *
+     * Getrennt vom Ansehen: welche Alarme scharf sind, soll jedes Mitglied
+     * sehen — das ist die erste Frage, wenn etwas **nicht** gemeldet wurde. Eine
+     * Schwelle zu verstellen heißt dagegen, die Überwachung leiser zu drehen,
+     * und das ist eine Verwaltungsentscheidung.
+     */
+    public function manageAlerts(User $user, Project $project): bool
+    {
+        return $user->can('manageProjects', $project->organization);
+    }
+
+    /**
      * Stichproben-Regeln anlegen, ändern und löschen.
      *
      * Dasselbe Recht wie für die übrigen Einstellungen, und hier wöge eine

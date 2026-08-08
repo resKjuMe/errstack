@@ -111,6 +111,11 @@ final class ShellData
                 'activePattern' => 'tags.*',
             ],
             [
+                'label' => __('nav.links.releases'),
+                'route' => 'releases.index',
+                'activePattern' => 'releases.*',
+            ],
+            [
                 'label' => __('nav.links.performance'),
                 'route' => 'performance.index',
                 // Nicht `performance.*`: darunter läge auch die
@@ -122,6 +127,11 @@ final class ShellData
                 'label' => __('nav.links.performance_issues'),
                 'route' => 'performance.issues.index',
                 'activePattern' => 'performance.issues.*',
+            ],
+            [
+                'label' => __('nav.links.profiling'),
+                'route' => 'profiling.index',
+                'activePattern' => 'profiling.*',
             ],
             [
                 'label' => __('nav.links.projects'),

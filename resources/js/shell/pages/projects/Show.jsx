@@ -76,6 +76,8 @@ export default function Show({
 
                 {project.keysHref && <ClientKeys project={project} />}
 
+                <MetricAlerts project={project} />
+
                 <CronMonitors project={project} />
 
                 <Grouping project={project} />
@@ -369,6 +371,21 @@ function CronMonitors({ project }) {
         <Card title={t('projects.crons.title')} description={t('projects.crons.description')}>
             <Link href={project.cronsHref}>
                 <SecondaryButton type="button">{t('projects.crons.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zu den Schwellwert-Alarmen. Ohne Bedingung: welche Alarme scharf sind,
+// ist die erste Frage, wenn etwas **nicht** gemeldet wurde — und die stellt
+// nicht nur die Verwaltung.
+function MetricAlerts({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.alerts.title')} description={t('projects.alerts.description')}>
+            <Link href={project.alertsHref}>
+                <SecondaryButton type="button">{t('projects.alerts.manage')}</SecondaryButton>
             </Link>
         </Card>
     );

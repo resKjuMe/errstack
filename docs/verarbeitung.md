@@ -21,7 +21,8 @@ POST /api/{projekt}/envelope/     ─┴─▶ ingest_payloads (Rohdaten)
                                      ├ Leistungssuche (PF6) ─▶ Warteschlange „performance"
                                      ├ Normalisierung (I4)  ─▶ events
                                      ├ Grouping       (I5)
-                                     └ Aggregation    (I6)
+                                     ├ Aggregation    (I6)
+                                     └ Version        (R1) ─▶ releases
 ```
 
 Was der Eingangsfilter aussortiert — und was von einer aussortierten Meldung
@@ -34,7 +35,9 @@ Meldungsarten an und kommen sich nicht in die Quere. Was danach in den
 gespeicherten Abläufen gesucht wird — N+1-Abfragen, doppelte Abfragen, langsame
 Aufrufe —, steht in [leistungsprobleme.md](leistungsprobleme.md); der Schritt
 `ScanPerformance` reiht dafür nur einen Auftrag ein und arbeitet selbst nichts
-ab.
+ab. Wie aus der Angabe `release` einer Meldung eine ausgelieferte Version wird —
+und warum dieser Schritt am Ende der Kette steht —, steht in
+[versionen.md](versionen.md).
 
 Was am Eingang ankommen **muss**, damit die Original-SDKs ohne Änderung hierher
 melden, steht in [compat/README.md](compat/README.md) — samt der Abweichungen zur

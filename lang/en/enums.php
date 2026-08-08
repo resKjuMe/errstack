@@ -4,6 +4,32 @@
 // stored value so the reference stays readable in exports as well.
 return [
 
+    'alert_status' => [
+        'ok' => 'OK',
+        'warning' => 'Warning',
+        'critical' => 'Critical',
+    ],
+
+    'alert_direction' => [
+        'above' => 'Rises above the threshold',
+        'below' => 'Falls below the threshold',
+    ],
+
+    'alert_comparison' => [
+        'absolute' => 'Value itself',
+        'percent_change_week' => 'Change against the previous week',
+    ],
+
+    'alert_metric' => [
+        'error_count' => 'Error reports',
+        'transaction_throughput' => 'Throughput (calls)',
+        'transaction_failure_rate' => 'Failure rate of calls',
+        'transaction_duration_avg' => 'Response time (average)',
+        'transaction_duration_p50' => 'Response time (p50)',
+        'transaction_duration_p95' => 'Response time (p95)',
+        'transaction_duration_p99' => 'Response time (p99)',
+    ],
+
     'grouping_source' => [
         'rule' => 'Project rule',
         'custom' => 'Fingerprint sent by the SDK',
@@ -123,6 +149,7 @@ return [
         'sampled' => 'not part of the sample',
         'scrubbed' => 'not stored for privacy reasons',
         'filtered' => 'discarded by an inbound filter',
+        'orphaned' => 'no matching event',
     ],
 
     'inbound_filter_kind' => [
@@ -165,6 +192,12 @@ return [
         'profile' => 'Profile',
         'client_report' => 'Client report of the SDK',
         'user_report' => 'User feedback',
+    ],
+
+    'security_report_type' => [
+        'csp' => 'Content Security Policy violation',
+        'expect-ct' => 'Certificate Transparency violation',
+        'expect-staple' => 'OCSP stapling failure',
     ],
 
     'processing_state' => [

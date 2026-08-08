@@ -1,8 +1,6 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\PerformanceController;
-use App\Http\Controllers\PerformanceIssueController;
 use App\Jobs\ProcessDemoIngest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -19,21 +17,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Die Übersicht ist die erste Seite mit der globalen Filterleiste; ihr
     // Zustand steht in der Adresszeile und wird serverseitig aufgelöst.
     Route::get('/', DashboardController::class)->name('dashboard');
-
-    // Die erste Auswertungsseite: Antwortzeiten, Durchsatz und Fehlerrate je
-    // Transaktion. Sie nutzt dieselbe Filterleiste und ergänzt sie um Suche,
-    // Sortierung und Seitenzahl — alles in der Adresszeile.
-    Route::get('/leistung', PerformanceController::class)->name('performance.index');
-
-    // Die Leistungsprobleme (PF6). Eine eigene Adresse und nicht ein Filter auf
-    // der Fehlerliste: sie beantworten eine andere Frage („was kostet Zeit?"
-    // statt „was ist kaputt?") und zeigen deshalb andere Spalten. Wie die
-    // Fehlerliste hängen sie nicht an einem Projekt in der Adresszeile —
-    // welche gemeint sind, sagt die globale Filterleiste.
-    Route::get('/leistungsprobleme', [PerformanceIssueController::class, 'index'])
-        ->name('performance.issues.index');
-    Route::get('/leistungsprobleme/{issue}', [PerformanceIssueController::class, 'show'])
-        ->name('performance.issues.show');
 
     Route::get('/bausteine', fn () => Inertia::render('Components'))->name('components');
 });
@@ -53,4 +36,7 @@ require __DIR__.'/organizations.php';
 require __DIR__.'/notifications.php';
 require __DIR__.'/projects.php';
 require __DIR__.'/issues.php';
+require __DIR__.'/performance.php';
+require __DIR__.'/releases.php';
+require __DIR__.'/profiling.php';
 require __DIR__.'/api-tokens.php';

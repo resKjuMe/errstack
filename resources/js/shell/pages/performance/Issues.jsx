@@ -6,7 +6,7 @@ import FilterBar from '../../components/FilterBar.jsx';
 import Pagination from '../../components/Pagination.jsx';
 import { InputLabel, SelectInput } from '../../components/Form.jsx';
 import { useTranslations } from '../../i18n.js';
-import { duration } from '../../durations.jsx';
+import { duration } from './format.jsx';
 import Sparkline from '../issues/Sparkline.jsx';
 
 // Die Leistungsprobleme: was die Erkennung in gespeicherten Abläufen gefunden

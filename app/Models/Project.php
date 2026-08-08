@@ -194,6 +194,21 @@ class Project extends Model
     }
 
     /**
+     * Die Schwellwert-Alarme dieses Projekts (A3).
+     *
+     * `cascadeOnDelete` an der Fremdschlüssel-Beziehung: ein gelöschtes Projekt
+     * nimmt seine Alarme mit. Sie beziehen sich auf Kennzahlen, die es dann
+     * nicht mehr gibt — eine verwaiste Regel würde jede Minute eine leere
+     * Auswertung rechnen.
+     *
+     * @return HasMany<MetricAlert, $this>
+     */
+    public function metricAlerts(): HasMany
+    {
+        return $this->hasMany(MetricAlert::class);
+    }
+
+    /**
      * Die projektweiten Regeln, nach denen von den Antwortzeiten eine Stichprobe
      * behalten wird (I9).
      *

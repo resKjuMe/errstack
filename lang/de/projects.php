@@ -72,6 +72,12 @@ return [
         'manage' => 'Cronjobs ansehen',
     ],
 
+    'alerts' => [
+        'title' => 'Alarme',
+        'description' => 'Schwellwert-Alarme auf Kennzahlen: Fehleranzahl, Fehlerquote, Durchsatz und Antwortzeiten. Sie melden sich, wenn eine Kennzahl aus dem Rahmen fällt — und wieder, wenn sie sich normalisiert hat.',
+        'manage' => 'Alarme ansehen',
+    ],
+
     'sampling' => [
         'title' => 'Stichproben',
         'description' => 'Von den Antwortzeiten wird nur ein einstellbarer Anteil gespeichert und in den Auswertungen hochgerechnet. Fehlermeldungen bleiben davon unberührt.',

@@ -56,6 +56,10 @@ use Illuminate\Support\Facades\DB;
  * @property int $time_lost_us
  * @property CarbonImmutable $first_seen
  * @property CarbonImmutable $last_seen
+ * @property int|null $first_release_id
+ * @property CarbonImmutable|null $first_release_at
+ * @property int|null $last_release_id
+ * @property CarbonImmutable|null $last_release_at
  */
 class Issue extends Model
 {
@@ -340,6 +344,54 @@ class Issue extends Model
     }
 
     /**
+     * Vermerkt, in welcher Version dieser Fehler gesehen wurde.
+     *
+     * Zwei Angaben in einer Anweisung: die **erste** Version, in der er auftrat,
+     * und die **letzte**. Sie stehen am Eintrag und nicht in einer Abfrage über
+     * die Ereignisse, weil letztere ein `min`/`max` über die größte Tabelle
+     * dieser Anwendung wäre — bei jedem Aufschlagen einer Fehlerseite.
+     *
+     * Entschieden wird über die eigenen Zeitstempel (`first_release_at`,
+     * `last_release_at`) und nicht über `first_seen`/`last_seen`. Der
+     * Unterschied ist nicht Genauigkeit, sondern Bedeutung: die beiden stehen
+     * für **alle** Meldungen, diese hier nur für die mit Versionsangabe. Ein
+     * SDK, das die Version erst seit gestern mitschickt, hat einen Eintrag, der
+     * seit Wochen läuft und dessen erste bekannte Version von gestern ist —
+     * gegen `first_seen` verglichen käme dagegen nie eine erste Version zustande.
+     *
+     * Sperrfrei und mit `case when` wie {@see bump()} und aus denselben zwei
+     * Gründen: bei einem Ausfall schreiben alle Arbeiter auf dieselbe Zeile,
+     * und Meldungen kommen nicht in ihrer zeitlichen Reihenfolge an. Eine
+     * nachgereichte alte Meldung darf die zuletzt betroffene Version nicht
+     * zurückdrehen — wohl aber die zuerst betroffene, denn genau dafür ist sie
+     * da.
+     *
+     * Die beiden Vergleiche sind bewusst nicht spiegelbildlich: die letzte
+     * Version wird bei Gleichstand (`<=`) ersetzt, die erste nicht (`>`).
+     * Treffen zwei Meldungen mit demselben Zeitstempel aus verschiedenen
+     * Versionen ein, bleibt damit die zuerst gesehene die erste, und die zuletzt
+     * verarbeitete wird die letzte — beides die Antwort, die man erwartet. Eine
+     * Rangfolge nach Versionsnummer wäre hier falsch: welche Auslieferung zuerst
+     * lief, sagt die Uhr und nicht die Nummer.
+     */
+    public function linkRelease(Release $release, CarbonImmutable $occurred): void
+    {
+        $at = $occurred->utc()->format('Y-m-d H:i:s');
+        $now = Carbon::now()->format('Y-m-d H:i:s');
+
+        DB::update(
+            'update '.$this->getTable().' set '
+            .'first_release_id = case when first_release_at is null or first_release_at > ? then ? else first_release_id end, '
+            .'first_release_at = case when first_release_at is null or first_release_at > ? then ? else first_release_at end, '
+            .'last_release_id = case when last_release_at is null or last_release_at <= ? then ? else last_release_id end, '
+            .'last_release_at = case when last_release_at is null or last_release_at <= ? then ? else last_release_at end, '
+            .'updated_at = ? '
+            .'where id = ?',
+            [$at, $release->id, $at, $at, $at, $release->id, $at, $at, $now, $this->id],
+        );
+    }
+
+    /**
      * Die Art des Fehlers: bei einer Ausnahme deren Klasse.
      *
      * Die **letzte** Ausnahme der Ursachenkette, nicht die erste: die Kette ist
@@ -423,6 +475,30 @@ class Issue extends Model
     }
 
     /**
+     * Die Version, in der dieser Fehler zum ersten Mal auftrat.
+     *
+     * `null`, solange keine Meldung eine Version mitgebracht hat — und das ist
+     * kein Sonderfall, sondern der Normalzustand bei einem SDK ohne
+     * `release`-Angabe.
+     *
+     * @return BelongsTo<Release, $this>
+     */
+    public function firstRelease(): BelongsTo
+    {
+        return $this->belongsTo(Release::class, 'first_release_id');
+    }
+
+    /**
+     * Die Version, in der dieser Fehler zuletzt auftrat.
+     *
+     * @return BelongsTo<Release, $this>
+     */
+    public function lastRelease(): BelongsTo
+    {
+        return $this->belongsTo(Release::class, 'last_release_id');
+    }
+
+    /**
      * Die Fehlerliste, wie sie aufgeschlagen wird: zuletzt Aufgetretenes zuerst.
      *
      * @param  Builder<self>  $query
@@ -474,6 +550,10 @@ class Issue extends Model
         'time_lost_us',
         'first_seen',
         'last_seen',
+        'first_release_id',
+        'first_release_at',
+        'last_release_id',
+        'last_release_at',
     ];
 
     /**
@@ -493,6 +573,8 @@ class Issue extends Model
             // einer geteilten Instanz nicht den Eintrag selbst verschiebt.
             'first_seen' => 'immutable_datetime',
             'last_seen' => 'immutable_datetime',
+            'first_release_at' => 'immutable_datetime',
+            'last_release_at' => 'immutable_datetime',
         ];
     }
 }
