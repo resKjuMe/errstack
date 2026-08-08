@@ -78,16 +78,25 @@ class PerformanceDetection extends Model
         }
     }
 
+    /**
+     * @return BelongsTo<Issue, $this>
+     */
     public function issue(): BelongsTo
     {
         return $this->belongsTo(Issue::class);
     }
 
+    /**
+     * @return BelongsTo<Transaction, $this>
+     */
     public function transaction(): BelongsTo
     {
         return $this->belongsTo(Transaction::class);
     }
 
+    /**
+     * @return BelongsTo<Project, $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);

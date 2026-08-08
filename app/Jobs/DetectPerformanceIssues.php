@@ -61,6 +61,8 @@ class DetectPerformanceIssues implements ShouldQueue
      * Doppelte ohnehin ab. Sie erspart nur die Arbeit: zwei Arbeiter, die
      * dieselben fünfhundert Schritte vergleichen, um am Ende beide dasselbe
      * „gibt es schon" zu bekommen.
+     *
+     * @return list<object>
      */
     public function middleware(): array
     {
@@ -71,6 +73,9 @@ class DetectPerformanceIssues implements ShouldQueue
         ];
     }
 
+    /**
+     * @return list<int>
+     */
     public function backoff(): array
     {
         return [30, 300];

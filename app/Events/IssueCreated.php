@@ -54,6 +54,7 @@ class IssueCreated implements ShouldBroadcast
             // braucht — und er fällt genau so oft an wie diese Meldung selbst.
             organizationId: (int) $issue->project()->value('organization_id'),
             projectId: $issue->project_id,
+            category: $issue->category->value,
             title: (string) ($issue->title ?? $issue->culprit ?? ''),
             level: $issue->level->value,
             occurredAt: $issue->first_seen->toIso8601String(),
@@ -100,6 +101,11 @@ class IssueCreated implements ShouldBroadcast
             // Die Ansicht filtert damit auf die Projekte, die gerade gewählt
             // sind — der Kanal trägt die ganze Organisation.
             'projectId' => $this->projectId,
+            // Und die Kategorie: derselbe Kanal trägt seit PF6 auch die
+            // Leistungsprobleme, die auf demselben Weg entstehen. Die
+            // Fehlerliste sortiert sie damit aus, statt für eine langsame
+            // Abfrage „neuer Fehler" zu melden.
+            'category' => $this->category,
             'title' => $this->title,
             'level' => $this->level,
             'occurredAt' => $this->occurredAt,
