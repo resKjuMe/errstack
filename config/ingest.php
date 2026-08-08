@@ -2,6 +2,7 @@
 
 use App\Support\Ingest\Processing\Steps\AggregateIssue;
 use App\Support\Ingest\Processing\Steps\DecodePayload;
+use App\Support\Ingest\Processing\Steps\FilterEvent;
 use App\Support\Ingest\Processing\Steps\GroupEvent;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
@@ -101,8 +102,8 @@ return [
     | mitbringt:
     |
     |   1. Entpacken     — Rohdaten zu Feld-Baum (Rahmen, hier)
-    |   2. Scrubbing     — personenbezogene Daten entfernen (I7)
-    |   3. Eingangsfilter — uninteressante Meldungen aussortieren (I8)
+    |   2. Eingangsfilter — uninteressante Meldungen aussortieren (I8)
+    |   3. Scrubbing     — personenbezogene Daten entfernen (I7)
     |   4. Stichprobe    — Sampling für Performance-Daten (I9)
     |   5. Antwortzeiten — Transaktionen und ihre Schritte ablegen (PF1)
     |   6. Normalisierung — Sentry-Schema in unser Modell (I4)
@@ -116,22 +117,24 @@ return [
     | Sentry-Schema arbeitet und nicht mit unserem Fehler-Modell — mit dem hat
     | eine Transaktion nichts zu tun.
     |
-    | Das Scrubbing steht vor allem, was schreibt — und zwar auch vor den beiden
-    | Schritten, die bloß aussortieren (Eingangsfilter, Stichprobe). Käme es
-    | hinter ihnen, würde eine aussortierte Meldung zwar nie gespeichert, eine
-    | behaltene aber erst nach zwei weiteren Schritten bereinigt — und jeder davon
-    | wäre eine Stelle, an der versehentlich etwas abgelegt wird.
-    |
-    | Der zweite, schwerer wiegende Grund für diese Reihenfolge: das Scrubbing
-    | schreibt die bereinigte Fassung über die Rohdaten in der Eingangsablage
-    | zurück. Stünde die Stichprobe davor, blöbe der Rumpf einer ausgesiebten
-    | Messung dauerhaft **unbereinigt** liegen — die Kette endet an einem `drop()`,
-    | und das Scrubbing käme nie an sie heran. Deshalb siebt die Stichprobe erst
-    | aus, nachdem bereinigt ist; die zwei gesparten Regelwerk-Durchläufe je
+    | Das Scrubbing steht vor allem, was schreibt — und die Stichprobe steht
+    | deshalb dahinter und nicht davor: das Scrubbing schreibt die bereinigte
+    | Fassung über die Rohdaten in der Eingangsablage zurück. Stünde die
+    | Stichprobe davor, bliebe der Rumpf einer ausgesiebten Messung dauerhaft
+    | **unbereinigt** liegen — die Kette endet an einem `drop()`, und das
+    | Scrubbing käme nie an sie heran. Die zwei gesparten Regelwerk-Durchläufe je
     | verworfener Messung sind der Preis dafür, und er ist der richtige.
     |
-    | Solange ein Schritt fehlt (derzeit der Eingangsfilter), ist die Liste kürzer
-    | als der Plan: er wird an seiner Stelle eingefügt, nicht angehängt.
+    | Der Eingangsfilter ist die eine Ausnahme davon und steht **vor** dem
+    | Scrubbing: die Absender-Sperrliste vergleicht Adressen, und ein Projekt,
+    | das Adressen nicht speichert, könnte sonst nach ihnen nicht filtern. Er
+    | arbeitet damit bewusst auf ungeschwärzten Daten. Der Einwand von oben gilt
+    | auch für ihn — was er verwirft, bleibt unbereinigt in der Eingangsablage
+    | liegen —, nur lässt er sich hier nicht durch Umsortieren auflösen: hinter
+    | dem Scrubbing wäre der Filter um sein wichtigstes Merkmal gebracht. Es
+    | bleibt ein bewusst in Kauf genommener Rest, und er ist auf die
+    | Eingangsablage begrenzt: gespeichert wird aus einer gefilterten Meldung
+    | sonst nichts.
     |
     | Ein neuer Schritt ist eine neue Klasse und eine neue Zeile. Ein
     | bestehender Schritt wird dafür nicht angefasst — auch nicht der Rahmen.
@@ -142,6 +145,7 @@ return [
 
         'steps' => [
             DecodePayload::class,
+            FilterEvent::class,
             ScrubEvent::class,
             SampleTransaction::class,
             RecordTransaction::class,

@@ -84,6 +84,12 @@ return [
         'manage' => 'Regeln ansehen',
     ],
 
+    'filters' => [
+        'title' => 'Eingangsfilter',
+        'description' => 'Bekanntes Rauschen — Browser-Erweiterungen, Crawler, lokale Entwicklung — wird beim Eingang verworfen und nur noch gezählt.',
+        'manage' => 'Filter einstellen',
+    ],
+
     'privacy' => [
         'title' => 'Datenschutz',
         'description' => 'Passwörter, Nachweise und Kartennummern werden bei jeder Meldung entfernt, bevor etwas gespeichert wird. Was darüber hinaus verschwinden soll, steht auf einer eigenen Seite.',

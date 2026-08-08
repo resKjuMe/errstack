@@ -84,6 +84,12 @@ return [
         'manage' => 'View rules',
     ],
 
+    'filters' => [
+        'title' => 'Inbound filters',
+        'description' => 'Known noise — browser extensions, crawlers, local development — is discarded on arrival and only counted.',
+        'manage' => 'Configure filters',
+    ],
+
     'privacy' => [
         'title' => 'Privacy',
         'description' => 'Passwords, credentials and card numbers are removed from every report before anything is stored. Whatever should disappear on top of that has its own page.',

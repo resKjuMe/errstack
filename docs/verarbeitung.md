@@ -15,14 +15,16 @@ POST /api/{projekt}/envelope/     ─┴─▶ ingest_payloads (Rohdaten)
                                      ProcessingPipeline
                                      ├ Entpacken      (Rahmen)
                                      ├ Eingangsfilter (I8)
-                                     ├ Stichprobe     (I9)
                                      ├ Scrubbing      (I7)
+                                     ├ Stichprobe     (I9)
                                      ├ Antwortzeiten  (PF1) ─▶ transactions
                                      ├ Normalisierung (I4)  ─▶ events
                                      ├ Grouping       (I5)
                                      └ Aggregation    (I6)
 ```
 
+Was der Eingangsfilter aussortiert — und was von einer aussortierten Meldung
+bleibt —, steht in [eingangsfilter.md](eingangsfilter.md).
 Was die Normalisierung aus einer Meldung macht — und warum sie nichts
 aussortiert —, steht in [normalisierung.md](normalisierung.md). Wie
 Transaktionen und ihre Einzelschritte abgelegt werden, steht in
