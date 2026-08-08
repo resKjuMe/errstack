@@ -19,6 +19,9 @@ return [
         'position' => 'Rang :position',
     ],
 
+    // Die Begründung, die ein Vorschlag im Zuweisungs-Dialog mitbringt (R6).
+    'suggestion' => 'Regel :pattern',
+
     'matcher' => [
         'path' => 'Pfad',
         'url' => 'Adresse',

@@ -170,13 +170,6 @@ export default function IssueActions({ actions, target, status, state = {}, comp
             {open === 'assign' && (
                 <AssigneePicker
                     suggestHref={actions.assignSuggestHref}
-                    // Die Kennung nur, wenn genau **ein** Fehler gemeint ist —
-                    // sie steht ohnehin schon in `target`, und ein zweiter Weg,
-                    // sie hierher zu bringen, wäre einer zu viel. Bei „alle
-                    // 12.480" gibt es keine, und dann bleiben die Vorschläge aus
-                    // dem Regelwerk (R6) aus: sie gälten für einen Fehler und
-                    // nicht für die Auswahl.
-                    issueId={target.issues?.length === 1 ? target.issues[0] : null}
                     current={state.assignee?.term ?? null}
                     onCancel={() => setOpen(null)}
                     // `null` heißt „niemand" — der Server liest daraus dieselbe

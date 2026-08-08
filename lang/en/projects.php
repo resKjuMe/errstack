@@ -39,6 +39,15 @@ return [
         'retention' => 'Data retention (days)',
         'retention_label' => 'Data retention',
         'retention_value' => ':days days',
+
+        // The suspect commits switch (R4).
+        'auto_assign' => 'Assign suspect commits automatically',
+        'auto_assign_hint' => 'A new issue goes to the author of the most suspect commit '
+            .'by itself — provided they have an account here and the issue is not '
+            .'assigned yet. Suspect commits are shown either way; this switch only '
+            .'decides whether they also become an assignment.',
+        'auto_assign_on' => 'On',
+        'auto_assign_off' => 'Off',
         'resolution' => 'Resolution behaviour',
         'submit' => 'Save',
     ],
@@ -118,6 +127,12 @@ return [
         'title' => 'Inbound filters',
         'description' => 'Known noise — browser extensions, crawlers, local development — is discarded on arrival and only counted.',
         'manage' => 'Configure filters',
+    ],
+
+    'digest' => [
+        'title' => 'Bundle notifications',
+        'description' => 'An error wave otherwise produces dozens of individual mails. A time window combines them into one digest; urgent notifications are unaffected.',
+        'manage' => 'Configure bundling',
     ],
 
     'privacy' => [

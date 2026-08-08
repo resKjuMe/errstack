@@ -46,99 +46,106 @@ class ShellTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page->component('Components'));
     }
 
-    public function test_the_navigation_marks_the_current_page_as_active(): void
+    /**
+     * Die Navigation der Seitenleiste, flach gelesen: Beschriftung => aktiv.
+     * Die Tests unten fragen nach dem Eintrag, nicht nach seiner Position —
+     * eine neue Gruppe verschiebt sonst jede Erwartung.
+     *
+     * @return array<string, bool>
+     */
+    private function navState(AssertableInertia $page): array
+    {
+        $state = [];
+
+        foreach ($page->toArray()['props']['shell']['nav'] as $group) {
+            foreach ($group['links'] as $link) {
+                $state[$link['label']] = $link['active'];
+            }
+        }
+
+        return $state;
+    }
+
+    public function test_the_navigation_is_grouped_by_topic(): void
     {
         $this->signIn();
 
         $this->get('/')
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('shell.links.0.label', 'Übersicht')
-                ->where('shell.links.0.active', true)
-                ->where('shell.links.1.label', 'Fehler')
-                ->where('shell.links.1.active', false)
-                ->where('shell.links.2.label', 'Merkmale')
-                ->where('shell.links.2.active', false)
-                ->where('shell.links.3.label', 'Rückmeldungen')
-                ->where('shell.links.3.active', false)
-                ->where('shell.links.4.label', 'Versionen')
-                ->where('shell.links.4.active', false)
-                ->where('shell.links.5.label', 'Leistung')
-                ->where('shell.links.5.active', false)
-                ->where('shell.links.6.label', 'Leistungsprobleme')
-                ->where('shell.links.6.active', false)
-                ->where('shell.links.7.label', 'Ladeerlebnis')
-                ->where('shell.links.7.active', false)
-                ->where('shell.links.8.label', 'Profile')
-                ->where('shell.links.8.active', false)
-                ->where('shell.links.9.label', 'Projekte')
-                ->where('shell.links.9.active', false)
-                ->where('shell.links.10.label', 'Organisationen')
-                ->where('shell.links.10.active', false)
-                ->where('shell.links.11.label', 'Bausteine')
-                ->where('shell.links.11.active', false)
-            );
+            ->assertInertia(function (AssertableInertia $page) {
+                $nav = $page->toArray()['props']['shell']['nav'];
 
-        $this->get('/bausteine')
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('shell.links.0.active', false)
-                ->where('shell.links.11.active', true)
-            );
+                // Die Übersicht ist der Einstieg und steht ohne Überschrift
+                // über den Gruppen.
+                $this->assertNull($nav[0]['label']);
+                $this->assertSame(['Übersicht'], array_column($nav[0]['links'], 'label'));
 
-        // Die Merkmal-Übersicht markiert sich selbst — über ihr Muster
-        // `tags.*` und nicht über die Adresse.
-        $this->get('/merkmale')
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('shell.links.0.active', false)
-                ->where('shell.links.2.active', true)
-            );
+                $groups = [];
 
-        // Die Auswertungsseite markiert sich selbst — über ihr Muster
-        // `performance.index` und nicht über die Adresse. `performance.*` wäre
-        // hier falsch: darunter lägen auch die Leistungsprobleme.
-        $this->get('/leistung')
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('shell.links.0.active', false)
-                ->where('shell.links.5.active', true)
-                ->where('shell.links.6.active', false)
-            );
+                foreach (array_slice($nav, 1) as $group) {
+                    $groups[$group['label']] = array_column($group['links'], 'label');
+                }
 
-        // Die Leistungsprobleme sind ein eigener Eintrag und nicht die
-        // Auswertungsseite: beide gleichzeitig hervorgehoben wäre die Antwort
-        // auf die Frage, wo man gerade ist, in doppelter Ausführung.
-        $this->get('/leistungsprobleme')
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('shell.links.5.active', false)
-                ->where('shell.links.6.active', true)
-            );
+                $this->assertSame([
+                    'Überwachen' => ['Fehler', 'Rückmeldungen', 'Merkmale'],
+                    'Untersuchen' => ['Leistung', 'Leistungsprobleme', 'Ladeerlebnis', 'Profile'],
+                    'Ausliefern' => ['Versionen'],
+                    'Verwalten' => ['Projekte', 'Organisationen', 'Bausteine'],
+                ], $groups);
+            });
+    }
 
-        // Das Ladeerlebnis ist ein dritter eigener Eintrag: es misst, was der
-        // Besucher erlebt, und nicht, was der Server braucht.
-        $this->get('/ladeerlebnis')
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('shell.links.5.active', false)
-                ->where('shell.links.7.active', true)
-            );
+    public function test_every_navigation_entry_carries_an_icon(): void
+    {
+        // Eingeklappt zeigt die Leiste nur Symbole — ein Eintrag ohne Icon wäre
+        // dort ein leeres Kästchen.
+        $this->signIn();
 
-        // Die Profile liegen unterhalb von `/leistung`, gehören aber zu ihrem
-        // eigenen Muster `profiling.*`: die Adresse allein würde hier zwei
-        // Einträge gleichzeitig markieren.
-        $this->get('/leistung/profile')
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('shell.links.5.active', false)
-                ->where('shell.links.8.active', true)
-            );
+        $this->get('/')
+            ->assertInertia(function (AssertableInertia $page) {
+                foreach ($page->toArray()['props']['shell']['nav'] as $group) {
+                    foreach ($group['links'] as $link) {
+                        $this->assertArrayHasKey('icon', $link, "Ohne Icon: {$link['label']}");
+                    }
+                }
+            });
+    }
 
-        $this->get('/versionen')
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('shell.links.0.active', false)
-                ->where('shell.links.4.active', true)
-            );
+    public function test_the_navigation_marks_the_current_page_as_active(): void
+    {
+        $this->signIn();
 
-        $this->get('/rueckmeldungen')
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('shell.links.0.active', false)
-                ->where('shell.links.3.active', true)
-            );
+        // Genau ein Eintrag ist hervorgehoben — die Antwort auf die Frage, wo
+        // man gerade ist, gibt es nicht in doppelter Ausführung.
+        $expectations = [
+            '/' => 'Übersicht',
+            '/bausteine' => 'Bausteine',
+            // Die Merkmal-Übersicht markiert sich selbst über ihr Muster
+            // `tags.*` und nicht über die Adresse.
+            '/merkmale' => 'Merkmale',
+            // Die Auswertungsseite markiert sich über `performance.index`;
+            // `performance.*` wäre hier falsch, darunter lägen auch die
+            // Leistungsprobleme.
+            '/leistung' => 'Leistung',
+            '/leistungsprobleme' => 'Leistungsprobleme',
+            // Das Ladeerlebnis ist ein eigener Eintrag: es misst, was der
+            // Besucher erlebt, und nicht, was der Server braucht.
+            '/ladeerlebnis' => 'Ladeerlebnis',
+            // Die Profile liegen unterhalb von `/leistung`, gehören aber zu
+            // ihrem eigenen Muster `profiling.*`: die Adresse allein würde hier
+            // zwei Einträge gleichzeitig markieren.
+            '/leistung/profile' => 'Profile',
+            '/versionen' => 'Versionen',
+            '/rueckmeldungen' => 'Rückmeldungen',
+        ];
+
+        foreach ($expectations as $url => $expected) {
+            $this->get($url)
+                ->assertInertia(function (AssertableInertia $page) use ($url, $expected) {
+                    $active = array_keys(array_filter($this->navState($page)));
+
+                    $this->assertSame([$expected], $active, "Hervorgehoben auf {$url}");
+                });
+        }
     }
 
     public function test_the_shell_knows_the_signed_in_user_and_the_account_menu(): void

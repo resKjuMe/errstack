@@ -9,6 +9,19 @@ return [
     'sign_out' => 'Abmelden',
     'menu' => 'Menü',
 
+    'sidebar' => [
+        'collapse' => 'Leiste einklappen',
+        'expand' => 'Leiste ausklappen',
+    ],
+
+    // Überschriften der Navigationsgruppen in der Seitenleiste.
+    'groups' => [
+        'monitor' => 'Überwachen',
+        'investigate' => 'Untersuchen',
+        'ship' => 'Ausliefern',
+        'manage' => 'Verwalten',
+    ],
+
     'links' => [
         'dashboard' => 'Übersicht',
         'issues' => 'Fehler',

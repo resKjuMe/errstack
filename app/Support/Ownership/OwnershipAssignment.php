@@ -37,14 +37,19 @@ final class OwnershipAssignment
 
     /**
      * Die Zuständigen, die für diese Meldung in Frage kommen — der gewinnenden
-     * Regel zuerst.
+     * Regel zuerst, jeweils mit der Regel, die sie benannt hat.
      *
      * Die Reihenfolge ist umgekehrt zur Liste: es gewinnt die **zuletzt**
      * passende Regel, und die gehört im Dialog nach oben. Was weiter unten
      * steht, ist das, was sie überstimmt hat — brauchbar als zweite Wahl und
      * deshalb nicht weggeworfen.
      *
-     * @return list<IssueAssignee>
+     * **Die Regel reist mit**, weil der Vorschlag ohne sie nicht zu erklären
+     * wäre: im Zuweisungs-Dialog steht sie als Begründung daneben („Regel
+     * `path:src/billing/*`"), und ein Name, der oben steht und nicht sagt,
+     * warum, sieht aus wie eine willkürliche Sortierung.
+     *
+     * @return list<array{assignee: IssueAssignee, rule: OwnershipRule}>
      */
     public function suggest(OwnershipSubjects $subjects, Project $project): array
     {
@@ -62,8 +67,10 @@ final class OwnershipAssignment
             foreach ($this->owners($rule, $organization) as $assignee) {
                 // Über Regelgrenzen hinweg entdoppelt: dieselbe Person steht in
                 // einer allgemeinen und in einer engeren Regel, und zweimal
-                // derselbe Eintrag im Dialog sieht nach einem Fehler aus.
-                $found[$assignee->term()] ??= $assignee;
+                // derselbe Eintrag im Dialog sieht nach einem Fehler aus. Es
+                // bleibt der Treffer der **gewinnenden** Regel stehen — die
+                // Begründung soll die sein, die auch gilt.
+                $found[$assignee->term()] ??= ['assignee' => $assignee, 'rule' => $rule];
             }
         }
 

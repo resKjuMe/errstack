@@ -26,6 +26,10 @@ use Illuminate\Support\Str;
  * @property string $default_environment
  * @property ResolutionBehavior $resolution_behavior
  * @property int $retention_days
+ * @property int $digest_window_minutes
+ * @property int $digest_min_events
+ * @property int $digest_max_events
+ * @property bool $auto_assign_suspect_commits
  * @property bool $scrub_ip_addresses
  * @property bool $scrub_user_data
  * @property bool $scrub_attachments
@@ -44,6 +48,10 @@ use Illuminate\Support\Str;
     'default_environment',
     'resolution_behavior',
     'retention_days',
+    'digest_window_minutes',
+    'digest_min_events',
+    'digest_max_events',
+    'auto_assign_suspect_commits',
     'scrub_ip_addresses',
     'scrub_user_data',
     'scrub_attachments',
@@ -332,6 +340,10 @@ class Project extends Model
             'platform' => Platform::class,
             'resolution_behavior' => ResolutionBehavior::class,
             'retention_days' => 'integer',
+            'digest_window_minutes' => 'integer',
+            'digest_min_events' => 'integer',
+            'digest_max_events' => 'integer',
+            'auto_assign_suspect_commits' => 'boolean',
             'scrub_ip_addresses' => 'boolean',
             'scrub_user_data' => 'boolean',
             'scrub_attachments' => 'boolean',

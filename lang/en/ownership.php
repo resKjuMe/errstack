@@ -19,6 +19,9 @@ return [
         'position' => 'Rank :position',
     ],
 
+    // The reason a suggestion carries into the assignment dialog (R6).
+    'suggestion' => 'Rule :pattern',
+
     'matcher' => [
         'path' => 'Path',
         'url' => 'URL',

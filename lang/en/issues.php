@@ -237,7 +237,6 @@ return [
         'search' => 'Search for a person or a team',
         'nobody' => 'Nobody',
         'team' => 'Team',
-        'suggested' => 'suggested',
         'no_match' => 'No account and no team by that name.',
 
         'state' => ':name is responsible, since :at.',
@@ -422,6 +421,27 @@ return [
         'state' => 'Occurred again on :at — this issue was already considered resolved.',
         'state_in' => 'Occurred again in release :release on :at — this issue was already '
             .'considered resolved.',
+    ],
+
+    // Which change may have caused this issue (R4).
+    'suspects' => [
+
+        'title' => 'Suspect commits',
+        'description' => 'Changes from the affected releases that touched the files in '
+            .'this stack trace. A suspicion, not a proof — the reason is stated next '
+            .'to each one.',
+
+        'line_badge' => 'Line matched',
+
+        'reason_line' => 'Changed :path, including line :line from the stack trace.',
+        'reason_file' => 'Changed :path — a file from the stack trace.',
+
+        'author' => 'By :name',
+        'author_unknown' => 'No author recorded',
+        'author_no_account' => '(no account here)',
+
+        'suggestion' => 'Suspect commit :sha',
+
     ],
 
     'live' => [

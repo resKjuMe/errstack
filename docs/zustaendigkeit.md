@@ -98,9 +98,16 @@ Zuweisungs-Dialog.
 ## Vorschläge im Zuweisungs-Dialog
 
 Öffnet man die Zuweisung an **einem** Fehler, führen die Regeln die Liste an
-(`kind: 'ownership'`, in der Oberfläche als „vorgeschlagen" gekennzeichnet).
-Ausgewertet wird gegen das **zuletzt** gesehene Ereignis des Eintrags: nach
-einem Umbau steht im ältesten ein Pfad, den es nicht mehr gibt.
+(`kind: 'ownership'`) — mit der Regel als Begründung daneben („Regel
+`path:src/billing/*`"). Ausgewertet wird gegen das **zuletzt** gesehene Ereignis
+des Eintrags: nach einem Umbau steht im ältesten ein Pfad, den es nicht mehr
+gibt.
+
+Darunter stehen die Autoren der verdächtigen Commits (R4). Die Rangfolge ist
+kein Zufall: eine Regel ist eine Entscheidung, ein Abgleich mit einem Commit ist
+eine Vermutung. Dieselbe Rangfolge gilt beim automatischen Zuweisen — dort steht
+`AssignOwner` vor `AssignSuspectCommit` in der Verarbeitungskette, und weil jeder
+Schritt nur zuweist, was niemandem gehört, hat der erste entschieden.
 
 Bei einer Sammelaktion über mehrere Fehler bleibt es bei der reinen
 Auswahlliste — eine Zuständigkeit, die für den einen gilt, gilt nicht für die

@@ -2,6 +2,7 @@
 
 use App\Support\Ingest\Processing\Steps\AggregateIssue;
 use App\Support\Ingest\Processing\Steps\AssignOwner;
+use App\Support\Ingest\Processing\Steps\AssignSuspectCommit;
 use App\Support\Ingest\Processing\Steps\DecodePayload;
 use App\Support\Ingest\Processing\Steps\DetectRegression;
 use App\Support\Ingest\Processing\Steps\EvaluateIssueAlerts;
@@ -197,6 +198,10 @@ return [
             DetectRegression::class,
             RecordUserReport::class,
             QueueSymbolication::class,
+            // Der verdächtige Commit (R4) braucht die Auslieferung des ersten
+            // Auftretens und die des Rückfalls — beide stehen erst hinter den
+            // Schritten darüber fest.
+            AssignSuspectCommit::class,
             // Ganz zum Schluss: die Alarm-Regeln (A2) beziehen sich auf den
             // fortgeschriebenen Eintrag und auf die Fassung, in der er auftrat
             // — beides steht erst hinter den Schritten darüber fest.

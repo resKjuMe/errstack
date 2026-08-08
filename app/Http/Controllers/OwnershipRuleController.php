@@ -198,8 +198,11 @@ class OwnershipRuleController extends Controller
             // gewinnenden Regel. Er steht getrennt von den Treffern, weil das
             // die eigentliche Frage ist: eine Regel kann zutreffen und trotzdem
             // niemanden benennen, den es hier noch gibt.
-            'assignee' => $suggestions === [] ? null : self::assignee($suggestions[0]),
-            'suggestions' => array_map(self::assignee(...), $suggestions),
+            'assignee' => $suggestions === [] ? null : self::assignee($suggestions[0]['assignee']),
+            'suggestions' => array_map(
+                static fn (array $match): array => self::assignee($match['assignee']),
+                $suggestions,
+            ),
             'autoAssign' => $project->ownership_auto_assign,
         ]);
     }

@@ -90,6 +90,11 @@ final class ProjectData
                 'defaultEnvironment' => $project->default_environment,
                 'resolutionBehavior' => $project->resolution_behavior->value,
                 'retentionDays' => $project->retention_days,
+                // Ob ein neuer Fehler von selbst an den Autor des
+                // verdächtigsten Commits geht (R4). Angezeigt werden die
+                // Verdächtigen immer; das hier ist die Frage, ob daraus auch
+                // eine Zuständigkeit wird.
+                'autoAssignSuspectCommits' => $project->auto_assign_suspect_commits,
                 'href' => route('projects.show', [$organization, $project]),
                 // Die DSN steht auf der Schlüssel-Seite; hier verweist nur der
                 // Link darauf, und auch der nur für die Verwaltung.
@@ -133,6 +138,11 @@ final class ProjectData
                 // Ebenso ohne Bedingung: was von einer Meldung gespeichert wird,
                 // geht jeden an, der mit den Daten arbeitet.
                 'privacyHref' => route('projects.privacy.index', [$organization, $project]),
+                // Die Bündelung der Benachrichtigungen (A6) ebenfalls ohne
+                // Bedingung: sie erklärt, warum eine Meldung erst mit
+                // Verzögerung kam — und das fragt sich der, der auf sie
+                // gewartet hat.
+                'digestHref' => route('projects.digest.index', [$organization, $project]),
                 // Und ebenso die Eingangsfilter: wer eine Meldung vermisst, muss
                 // nachsehen können, ob ein Filter sie genommen hat.
                 'filtersHref' => route('projects.filters.index', [$organization, $project]),

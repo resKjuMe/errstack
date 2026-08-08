@@ -13,20 +13,7 @@ import { SecondaryButton, TextInput } from '../../components/Form.jsx';
 // `#Team` — genau die Schreibweise, die auch ins Suchfeld passt. Der Server löst
 // sie an einer Stelle auf (App\Support\Issues\IssueAssignee); eine Kennung zu
 // schicken wäre der zweite Weg, denselben Zuständigen zu benennen.
-//
-// **`issueId` ist freiwillig und ändert den Inhalt der Liste.** Ist genau ein
-// Fehler gemeint, führen die Zuständigkeits-Regeln (R6) die Vorschläge an —
-// erkennbar an `kind: 'ownership'`. Bei einer Sammelaktion fehlt die Kennung,
-// und die Liste bleibt die reine Auswahl: was für den einen Fehler gilt, gilt
-// nicht für die anderen 12.479.
-export default function AssigneePicker({
-    suggestHref,
-    issueId = null,
-    current = null,
-    onApply,
-    onCancel,
-    t,
-}) {
+export default function AssigneePicker({ suggestHref, current = null, onApply, onCancel, t }) {
     const [term, setTerm] = useState('');
     const [suggestions, setSuggestions] = useState([]);
 
@@ -38,10 +25,6 @@ export default function AssigneePicker({
         const timer = setTimeout(() => {
             const url = new URL(suggestHref, window.location.origin);
             url.searchParams.set('q', term);
-
-            if (issueId !== null) {
-                url.searchParams.set('issue', issueId);
-            }
 
             fetch(url, {
                 signal: controller.signal,
@@ -59,7 +42,7 @@ export default function AssigneePicker({
             clearTimeout(timer);
             controller.abort();
         };
-    }, [suggestHref, issueId, term]);
+    }, [suggestHref, term]);
 
     return (
         <div className="w-full rounded-md bg-gray-50 p-3 dark:bg-gray-900/50">
@@ -87,17 +70,13 @@ export default function AssigneePicker({
                     <Option
                         key={`${suggestion.kind}:${suggestion.value}`}
                         label={suggestion.label}
-                        // Ein Vorschlag aus dem Regelwerk wird als solcher
-                        // ausgewiesen: „das Regelwerk sagt die Kasse" ist eine
-                        // andere Auskunft als „die Kasse gibt es", und ohne die
-                        // Kennzeichnung stünde ein Name oben, dessen Rang
-                        // niemand erklären könnte.
+                        // Der Verdächtige bringt seine Begründung selbst mit
+                        // (R4) — ein Vorschlag, der ganz oben steht und nicht
+                        // sagt, warum, sieht aus wie eine willkürliche
+                        // Sortierung.
                         hint={
-                            suggestion.kind === 'ownership'
-                                ? t('issues.assignment.suggested')
-                                : suggestion.kind === 'team'
-                                  ? t('issues.assignment.team')
-                                  : null
+                            suggestion.hint ??
+                            (suggestion.kind === 'team' ? t('issues.assignment.team') : null)
                         }
                         active={current === suggestion.value}
                         onSelect={() => onApply(suggestion.value)}

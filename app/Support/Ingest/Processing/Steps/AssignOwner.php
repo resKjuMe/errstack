@@ -35,6 +35,13 @@ use Closure;
  * Vor den Alarmen (A2) steht er, damit eine Benachrichtigung über einen neuen
  * Fehler bereits weiß, wer sich kümmert.
  *
+ * **Und vor dem verdächtigen Commit** ({@see AssignSuspectCommit}), womit die
+ * Rangfolge zwischen beiden festliegt: eine Regel ist eine Entscheidung, ein
+ * Abgleich mit einem Commit ist eine Vermutung — und eine Vermutung überstimmt
+ * keine Entscheidung. Durchgesetzt wird das ohne Absprache zwischen den beiden
+ * Schritten: jeder weist nur zu, was **niemandem** gehört, und wer zuerst
+ * kommt, hat damit entschieden.
+ *
  * **Fehlschläge sind still.** Eine nicht auflösbare Regel, ein gelöschtes Team,
  * ein Projekt ohne Organisation — nichts davon darf die Aufnahme einer Meldung
  * abbrechen. Der Fehler ist dann eben nicht zugewiesen, und das ist ein
