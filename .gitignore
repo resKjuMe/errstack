@@ -26,6 +26,10 @@
 /storage/*.key
 /storage/pail
 /vendor
+# Die ausgelieferte Version, vom Deploy-Skript geschrieben (siehe
+# App\Support\SelfMonitoring\Release). Eingecheckt wäre sie ab dem nächsten
+# Commit falsch.
+/VERSION
 _ide_helper.php
 Homestead.json
 Homestead.yaml

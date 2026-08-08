@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
+import { startSelfMonitoring } from './selfmonitoring.js';
 import AppShell from './shell/AppShell.jsx';
 import Dashboard from './shell/pages/Dashboard.jsx';
 import Performance from './shell/pages/Performance.jsx';
@@ -114,6 +115,10 @@ createInertiaApp({
         return page;
     },
     setup({ el, App, props }) {
+        // Vor dem Zeichnen und ohne `await`: die Überwachung soll den ersten
+        // Bildaufbau nicht aufhalten, aber schon stehen, wenn er schiefgeht.
+        startSelfMonitoring(props.initialPage.props.selfMonitoring);
+
         createRoot(el).render(<App {...props} />);
     },
     progress: { color: '#f43f5e' },
