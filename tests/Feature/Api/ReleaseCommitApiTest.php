@@ -191,6 +191,14 @@ class ReleaseCommitApiTest extends TestCase
 
         $this->assertSame(['cccc333'], $release->commits()->pluck('sha')->all());
         $this->assertSame(3, Commit::query()->count());
+
+        // Und was beim zweiten Mal nicht mitkam, bleibt stehen: die zweite
+        // Übergabe rückt die **Liste** zurecht und ist keine Aussage darüber,
+        // was über einen Commit bekannt ist.
+        $this->assertSame(
+            'Abhängigkeiten aktualisiert',
+            Commit::query()->where('sha', 'cccc333')->sole()->message,
+        );
     }
 
     /**

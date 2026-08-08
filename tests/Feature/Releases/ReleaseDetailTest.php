@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\Release;
 use App\Models\Repository;
 use App\Models\User;
+use App\Support\Releases\ReleaseDetail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Inertia\Testing\AssertableInertia;
@@ -135,6 +136,35 @@ class ReleaseDetailTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('commits.0.author.name', $user->name)
                 ->where('commits.0.author.isMember', true)
+            );
+    }
+
+    /**
+     * Eine gekürzte Liste sähe aus wie die ganze — und wer einen bestimmten
+     * Commit sucht, hielte ihn für nicht ausgeliefert.
+     */
+    public function test_a_very_long_commit_list_is_cut_off_and_says_so(): void
+    {
+        [$user, $organization, , $release] = $this->context();
+
+        $repository = Repository::factory()->for($organization)->create();
+
+        $commits = Commit::factory()
+            ->count(ReleaseDetail::MAX_COMMITS + 2)
+            ->for($repository)
+            ->create();
+
+        foreach ($commits as $position => $commit) {
+            $release->commits()->attach($commit->id, ['position' => $position]);
+        }
+
+        $this->actingAs($user)
+            ->get(route('releases.show', $release))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->has('commits', ReleaseDetail::MAX_COMMITS)
+                ->where('commitsTruncated', true)
+                // Die volle Zahl, nicht die der gezeigten Zeilen.
+                ->where('commitsLabel', (string) (ReleaseDetail::MAX_COMMITS + 2))
             );
     }
 

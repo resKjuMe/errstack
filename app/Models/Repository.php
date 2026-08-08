@@ -133,7 +133,9 @@ class Repository extends Model
             return null;
         }
 
-        return rtrim($url, '/').'/commit/'.$sha;
+        // Die Klon-Adresse endet auf `.git`; sie ist das, was jemand aus dem
+        // Repository kopiert, und daran angehängt führte der Link ins Leere.
+        return Str::chopEnd(rtrim($url, '/'), '.git').'/commit/'.$sha;
     }
 
     /**

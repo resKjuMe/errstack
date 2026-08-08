@@ -10,7 +10,13 @@ import { useT } from '../../i18n.js';
 // dahinter — **was** wurde ausgeliefert und von wem. Der Vergleich zur
 // Vorversion samt Übersichtszahlen ist R8, die Gesundheit R7; hier steht nur
 // der Inhalt dieser einen Auslieferung.
-export default function Show({ release, commits, commitsLabel }) {
+export default function Show({
+    release,
+    commits,
+    commitsLabel,
+    commitsTruncated,
+    commitsShownLabel,
+}) {
     const { shell } = usePage().props;
     const t = useT();
 
@@ -88,6 +94,18 @@ export default function Show({ release, commits, commitsLabel }) {
             <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                 <div className="border-b border-gray-100 px-4 py-2 text-xs font-medium uppercase text-gray-500 dark:border-gray-700 dark:text-gray-400">
                     {t('releases.detail.commit_count', { count: commitsLabel })}
+
+                    {/* Eine gekürzte Liste sähe sonst aus wie die ganze — und
+                        wer einen bestimmten Commit sucht, hielte ihn für nicht
+                        ausgeliefert. */}
+                    {commitsTruncated && (
+                        <span className="ml-2 normal-case">
+                            {t('releases.detail.truncated', {
+                                shown: commitsShownLabel,
+                                total: commitsLabel,
+                            })}
+                        </span>
+                    )}
                 </div>
 
                 {commits.length === 0 ? (

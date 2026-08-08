@@ -129,21 +129,31 @@ final class CommitImport
         return DB::transaction(function () use ($release, $commits, $defaultRepository, $organization, $authors): array {
             $stored = [];
             $links = [];
+            $position = 0;
 
-            foreach ($commits as $position => $payload) {
+            // Ein eigener Zähler und nicht der Schlüssel der Übergabe: als JSON
+            // darf `commits` auch ein Objekt sein, und dann wären die Schlüssel
+            // Zeichenketten — eine davon in der Spalte `position` ließe den
+            // ganzen Aufruf an der Datenbank scheitern. Er zählt außerdem nur
+            // die tatsächlich übernommenen, damit übersprungene Einträge keine
+            // Lücken hinterlassen.
+            foreach ($commits as $payload) {
                 $commit = self::one($organization, $payload, $defaultRepository, $authors);
 
                 if ($commit === null) {
                     continue;
                 }
 
-                $stored[] = $commit;
+                // Nach Kennung abgelegt und nicht angehängt: schickt eine
+                // Bauumgebung denselben Commit zweimal (ein Cherry-Pick, der
+                // zweimal im Bereich landet), ist das keine zweite Zuordnung —
+                // und in der Antwort soll er auch nur einmal stehen.
+                if (array_key_exists($commit->id, $links)) {
+                    continue;
+                }
 
-                // Nach Kennung und nicht als Liste: schickt eine Bauumgebung
-                // denselben Commit zweimal (ein Cherry-Pick, der zweimal im
-                // Bereich landet), gäbe `sync()` mit doppeltem Schlüssel einen
-                // Fehler auf einer Zuordnung, die längst stimmt.
-                $links[$commit->id] = ['position' => $position];
+                $stored[] = $commit;
+                $links[$commit->id] = ['position' => $position++];
             }
 
             $release->commits()->sync($links);
@@ -195,24 +205,46 @@ final class CommitImport
 
         $repository = Repository::forName($organization, $repositoryName);
 
-        $email = self::normalizeEmail($payload['author_email'] ?? null);
+        // Nur ausdrücklich mitgeschickte Felder — wie beim Ankündigen einer
+        // Version und aus demselben Grund. Der Unterschied zeigt sich bei der
+        // zweiten Übergabe: eine Pipeline, die beim ersten Lauf die vollen
+        // Angaben geschickt hat und beim zweiten nur noch die Hashes (weil sie
+        // die Liste einer Auslieferung zurechtrückt), würde Nachricht, Autor
+        // und Zeitpunkt sonst wieder leeren. Ein Commit ist Geschichte des
+        // Repositories — was einmal über ihn bekannt war, geht nicht dadurch
+        // verloren, dass jemand ihn erneut nennt.
+        $values = [];
+
+        if (array_key_exists('message', $payload)) {
+            $values['message'] = self::text($payload['message']);
+        }
+
+        if (array_key_exists('author_name', $payload)) {
+            $values['author_name'] = self::limited($payload['author_name'], 200);
+        }
+
+        if (array_key_exists('author_email', $payload)) {
+            $email = self::normalizeEmail($payload['author_email']);
+
+            $values['author_email'] = $email;
+            // Die Zuordnung geschieht beim Übernehmen und nicht beim Anzeigen:
+            // sie ist eine Aussage über den Stand der Mitgliedschaften zu
+            // diesem Zeitpunkt, und beim Anzeigen wäre sie eine Abfrage je
+            // Zeile. Sie hängt an der Adresse und wird deshalb genau dann neu
+            // gefällt, wenn die Adresse mitkommt.
+            $values['author_id'] = self::matchAuthor($authors, $email);
+        }
+
+        if (array_key_exists('timestamp', $payload)) {
+            $values['committed_at'] = self::timestamp($payload['timestamp']);
+        }
 
         $commit = Commit::query()->updateOrCreate(
             [
                 'repository_id' => $repository->id,
                 'sha' => $sha,
             ],
-            [
-                'message' => self::text($payload['message'] ?? null),
-                'author_name' => self::limited($payload['author_name'] ?? null, 200),
-                'author_email' => $email,
-                // Die Zuordnung geschieht beim Übernehmen und nicht beim
-                // Anzeigen: sie ist eine Aussage über den Stand der
-                // Mitgliedschaften zu diesem Zeitpunkt, und beim Anzeigen wäre
-                // sie eine Abfrage je Zeile.
-                'author_id' => self::matchAuthor($authors, $email),
-                'committed_at' => self::timestamp($payload['timestamp'] ?? null),
-            ],
+            $values,
         );
 
         self::storeFiles($commit, $payload['patch_set'] ?? null);

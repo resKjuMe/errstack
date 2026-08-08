@@ -23,6 +23,21 @@ use App\Support\Formats;
 final class ReleaseDetail
 {
     /**
+     * Höchstens so viele Commits stehen auf der Seite.
+     *
+     * Der Regelfall sind ein paar Dutzend. Der Ausreißer ist die erste
+     * Auslieferung nach einer langen Pause oder ein zusammengeführter
+     * Entwicklungszweig — dort sind es Tausende, jeder mit seiner Dateiliste,
+     * und die Seite wäre weder zu laden noch zu lesen.
+     *
+     * Abgeschnitten wird deshalb, aber **sichtbar**: die Oberfläche nennt die
+     * volle Zahl daneben. Eine stillschweigend gekürzte Liste sähe aus wie die
+     * ganze — und wer nach einem bestimmten Commit sucht, käme zu dem Schluss,
+     * er sei nicht ausgeliefert worden.
+     */
+    public const MAX_COMMITS = 250;
+
+    /**
      * Die Auslieferung samt ihrer Commits, fertig für die Oberfläche.
      *
      * Alles in **einem** Satz Abfragen: die Commits mit ihrem Repository, ihren
@@ -36,8 +51,11 @@ final class ReleaseDetail
     {
         $release->loadMissing('project.organization');
 
+        $total = $release->commits()->count();
+
         $commits = $release->commits()
             ->with(['repository', 'files', 'author:id,name,email'])
+            ->limit(self::MAX_COMMITS)
             ->get();
 
         return [
@@ -65,7 +83,12 @@ final class ReleaseDetail
                 'indexHref' => route('releases.index'),
             ],
             'commits' => $commits->map(fn (Commit $commit): array => self::commit($commit))->all(),
-            'commitsLabel' => Formats::number($commits->count()),
+            // Die volle Zahl und nicht die der gezeigten Zeilen: sie ist die
+            // Auskunft über die Auslieferung, die Liste darunter nur ein
+            // Ausschnitt davon.
+            'commitsLabel' => Formats::number($total),
+            'commitsTruncated' => $total > $commits->count(),
+            'commitsShownLabel' => Formats::number($commits->count()),
         ];
     }
 

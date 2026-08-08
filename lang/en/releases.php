@@ -46,6 +46,7 @@ return [
             .'that only came into being through events has none.',
         'commits' => 'Commits',
         'commit_count' => ':count commits',
+        'truncated' => 'Showing :shown of :total commits.',
         'empty' => 'No commits were handed over for this release.',
         'empty_hint' => 'A build can hand them over at deploy time, even without a '
             .'GitHub or GitLab integration.',

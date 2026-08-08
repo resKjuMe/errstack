@@ -27,17 +27,6 @@ class CommitFile extends Model
     public $timestamps = false;
 
     /**
-     * Der Dateiname ohne Verzeichnis — was in einer Liste zuerst gelesen wird.
-     */
-    public function basename(): string
-    {
-        $path = rtrim($this->path, '/');
-        $slash = strrpos($path, '/');
-
-        return $slash === false ? $path : substr($path, $slash + 1);
-    }
-
-    /**
      * @return BelongsTo<Commit, $this>
      */
     public function commit(): BelongsTo

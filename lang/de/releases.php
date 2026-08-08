@@ -47,6 +47,7 @@ return [
             .'entstanden ist, hat keine.',
         'commits' => 'Commits',
         'commit_count' => ':count Commits',
+        'truncated' => 'Es werden :shown von :total Commits gezeigt.',
         'empty' => 'Für diese Version wurden keine Commits übergeben.',
         'empty_hint' => 'Eine Bauumgebung kann sie beim Ausliefern übergeben, auch '
             .'ohne Anbindung an GitHub oder GitLab.',
