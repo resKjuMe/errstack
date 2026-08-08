@@ -7,8 +7,11 @@ use App\Models\Event;
 use App\Models\Issue;
 use App\Support\Issues\EventDetail;
 use App\Support\Issues\EventNavigation;
+use App\Support\Issues\IssueActionData;
+use App\Support\Issues\IssueActivityFeed;
 use App\Support\Issues\IssueHeader;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -28,7 +31,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class IssueDetailController extends Controller
 {
-    public function show(Issue $issue, ?Event $event = null): InertiaResponse
+    public function show(Request $request, Issue $issue, ?Event $event = null): InertiaResponse
     {
         Gate::authorize('view', $issue);
 
@@ -36,16 +39,23 @@ class IssueDetailController extends Controller
 
         // Der Kopf verlinkt das Projekt, und die Adresse dorthin führt über die
         // Organisation. Ohne das Nachladen wären das zwei Abfragen mitten in der
-        // Darstellung.
-        $issue->loadMissing('project.organization');
+        // Darstellung. Wer erledigt bzw. stummgeschaltet hat und in welcher
+        // Version, steht im Kopf daneben — dieselbe Rechnung.
+        $issue->loadMissing('project.organization', 'resolvedBy', 'resolvedInRelease', 'ignoredBy');
 
         $event = $this->resolve($issue, $event);
 
         return Inertia::render('issues/Show', [
-            'issue' => IssueHeader::present($issue),
+            'issue' => IssueHeader::present($issue, $request->user()),
             'event' => $event === null ? null : EventDetail::present($event),
             'navigation' => $event === null ? null : EventNavigation::links($issue, $event),
             'rawHref' => $event === null ? null : route('issues.events.raw', [$issue, $event]),
+            // Was mit diesem Fehler geschehen ist (S6). Der Verlauf steht auf
+            // der Detailseite und nicht im Änderungsprotokoll der Organisation:
+            // die Frage „warum ist der wieder offen?" stellt sich hier und
+            // nirgends sonst.
+            'activity' => IssueActivityFeed::forIssue($issue),
+            'actions' => IssueActionData::forViewer($issue),
         ]);
     }
 

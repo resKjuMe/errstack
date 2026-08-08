@@ -1,4 +1,5 @@
 import React from 'react';
+import { router } from '@inertiajs/react';
 
 // Flash-Meldungen: Erfolg (status), Fehler (error) und Validierungsfehler
 // (errors). Die Werte kommen als Shared-Props von Inertia (Session-Flash bzw.
@@ -13,14 +14,34 @@ function messagesOf(errors) {
     );
 }
 
-export default function Flash({ status, error, errors }) {
+export default function Flash({ status, error, errors, undo, undoHref }) {
     const errorList = messagesOf(errors);
 
     return (
         <>
             {status && (
-                <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300">
-                    {status}
+                <div className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300">
+                    <span>{status}</span>
+
+                    {/* Der Rückweg zur letzten Aktion (S6). Die Seite kennt nur
+                        eine Kennmarke; was dahintersteht, weiß allein der
+                        Server — sonst könnte man beim Klick bestimmen, was
+                        zurückgenommen wird. */}
+                    {undo && undoHref && (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                router.post(
+                                    undoHref,
+                                    { token: undo.token },
+                                    { preserveScroll: true }
+                                )
+                            }
+                            className="font-semibold underline hover:text-green-900 dark:hover:text-green-100"
+                        >
+                            {undo.label}
+                        </button>
+                    )}
                 </div>
             )}
 

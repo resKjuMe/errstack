@@ -37,6 +37,10 @@ class HandleInertiaRequests extends Middleware
             'flash' => fn () => [
                 'status' => $request->session()->get('status'),
                 'error' => $request->session()->get('error'),
+                // Der Rückweg zur letzten Aktion (S6): nur Kennmarke und
+                // Beschriftung. Was dahintersteht, bleibt auf dem Server —
+                // sonst könnte die Seite bestimmen, was zurückgenommen wird.
+                'undo' => $request->session()->get('undo'),
             ],
             // Womit sich die Oberfläche bei der Selbstüberwachung meldet.
             // `null`, solange keine DSN eingerichtet ist — dann lädt die Seite

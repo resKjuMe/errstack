@@ -31,6 +31,11 @@ final class ShellData
                 'email' => $user->email,
             ],
             'logoHref' => route('dashboard'),
+            // Der Rückweg zur zuletzt ausgeführten Aktion (S6). Er steht in der
+            // Hülle und nicht an der Seite, weil die Meldung samt Schaltfläche
+            // in der Hülle erscheint — und weil eine Aktion aus der Liste auf
+            // der Detailseite landen kann und umgekehrt.
+            'undoHref' => route('issues.actions.undo'),
             'logoutHref' => Route::has('logout') ? route('logout') : null,
             'loginHref' => Route::has('login') ? route('login') : null,
             'csrf' => csrf_token(),
