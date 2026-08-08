@@ -40,9 +40,9 @@ final class IssueList
      *
      * @return LengthAwarePaginator<int, array<string, mixed>>
      */
-    public static function paginate(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?TagFilter $tag = null): LengthAwarePaginator
+    public static function paginate(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?IssueSearch $search = null, ?TagFilter $tag = null): LengthAwarePaginator
     {
-        $page = self::query($filter, $sort, $status, $tag)
+        $page = self::query($filter, $sort, $status, $search, $tag)
             ->paginate(self::PER_PAGE)
             ->withQueryString();
 
@@ -67,15 +67,24 @@ final class IssueList
      *
      * @return Builder<Issue>
      */
-    public static function query(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?TagFilter $tag = null): Builder
+    public static function query(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?IssueSearch $search = null, ?TagFilter $tag = null): Builder
     {
-        $query = Issue::query()->with(['project:id,name,slug,organization_id', 'project.organization:id,slug']);
+        $query = Issue::query()->with([
+            'project:id,name,slug,organization_id',
+            'project.organization:id,slug',
+            // Die beiden Versionen mitgeladen: ohne sie wäre „zuerst gesehen
+            // in" je Zeile eine Abfrage, also fünfzig für eine Seite.
+            'firstRelease:id,version',
+            'lastRelease:id,version',
+        ]);
 
         $filter->overlapping($query);
 
         if ($status !== null) {
             $query->where('status', $status);
         }
+
+        $search?->apply($query);
 
         // Die Merkmal-Einschränkung liest die vorberechneten Zähler und nicht
         // die Ereignisse — dieselbe Zusage wie für den Rest dieser Liste.
@@ -121,6 +130,11 @@ final class IssueList
             'firstSeenLabel' => Formats::dateTime($issue->first_seen),
             'lastSeen' => $issue->last_seen->toIso8601String(),
             'lastSeenLabel' => Formats::dateTime($issue->last_seen),
+            // Die betroffenen Versionen. `null`, solange keine Meldung eine
+            // mitgebracht hat — der Normalfall bei einem SDK ohne
+            // `release`-Angabe, und deshalb kein Fehlerfall für die Oberfläche.
+            'firstRelease' => $issue->firstRelease?->version,
+            'lastRelease' => $issue->lastRelease?->version,
             'project' => self::project($issue),
             // Der Weg zu den Merkmalen dieses Fehlers — welche Browser, welche
             // Fassungen, welche Server ihn betrifft (S3).

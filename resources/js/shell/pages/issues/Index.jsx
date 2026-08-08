@@ -4,7 +4,13 @@ import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
 import FilterBar from '../../components/FilterBar.jsx';
 import Pagination from '../../components/Pagination.jsx';
-import { Checkbox, InputLabel, SecondaryButton, SelectInput } from '../../components/Form.jsx';
+import {
+    Checkbox,
+    InputLabel,
+    SecondaryButton,
+    SelectInput,
+    TextInput,
+} from '../../components/Form.jsx';
 import { TableSkeleton } from '../../components/Skeleton.jsx';
 import { useT } from '../../i18n.js';
 import IssueRow from './IssueRow.jsx';
@@ -29,6 +35,7 @@ export default function Index({
     live: liveConfig,
     environmentIgnored,
     totalLabel,
+    unsupportedTerms = [],
     tagLabel,
     tagsHref,
 }) {
@@ -73,6 +80,16 @@ export default function Index({
         router.get(`${window.location.pathname}?${query.toString()}`, {}, { preserveState: true });
     };
 
+    // Das Suchfeld ist ein eigener Zustand, weil es beim Tippen noch nicht
+    // suchen soll: eine Abfrage je Tastenanschlag wäre bei einer Liste dieser
+    // Größe eine Last ohne Nutzen. Abgeschickt wird mit der Eingabetaste.
+    const [q, setQ] = useState(list.q ?? '');
+
+    // Kommt eine neue Seite vom Server — Verlauf zurück, gespeicherter Link —,
+    // folgt das Feld ihr. Ohne das stünde im Feld die alte Eingabe und in der
+    // Liste die neue Auswahl.
+    useEffect(() => setQ(list.q ?? ''), [list.q]);
+
     const showProject = filter.value.projects.length !== 1;
     const trendLabel = t('issues.trend.label', { period: series.periodLabel });
 
@@ -90,6 +107,24 @@ export default function Index({
 
             <Card className="mb-4">
                 <div className="flex flex-wrap items-end gap-4">
+                    <form
+                        className="min-w-64 flex-1"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            go({ q });
+                        }}
+                    >
+                        <InputLabel htmlFor="issue_q" value={t('issues.filter.search')} />
+                        <TextInput
+                            id="issue_q"
+                            type="search"
+                            className="mt-1 block w-full"
+                            value={q}
+                            placeholder={t('issues.filter.search_placeholder')}
+                            onChange={(e) => setQ(e.target.value)}
+                        />
+                    </form>
+
                     <div>
                         <InputLabel htmlFor="issue_sort" value={t('issues.filter.sort')} />
                         <SelectInput
@@ -146,6 +181,14 @@ export default function Index({
                     </div>
                 )}
             </Card>
+
+            {unsupportedTerms.length > 0 && (
+                <p className="mb-4 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+                    {t('issues.filter.search_unsupported', {
+                        terms: unsupportedTerms.join(', '),
+                    })}
+                </p>
+            )}
 
             {live.pending > 0 && (
                 <button

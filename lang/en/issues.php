@@ -39,6 +39,17 @@ return [
         'sort' => 'Sort by',
         'status' => 'Status',
         'any_status' => 'All',
+        'search' => 'Search',
+        'search_placeholder' => 'e.g. release:1.1.0 or firstRelease:1.0.0',
+        'search_unsupported' => 'Not applied: :terms. The full search syntax arrives with '
+            .'one of the next tasks; until then only release: and firstRelease: take effect.',
+    ],
+
+    // The affected versions on a row of the list.
+    'release' => [
+        'first' => 'First in',
+        'last' => 'Last in',
+        'only' => 'In',
     ],
 
     'trend' => [
