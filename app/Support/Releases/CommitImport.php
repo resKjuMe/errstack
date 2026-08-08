@@ -85,6 +85,17 @@ final class CommitImport
             // Änderung, die sich später nicht mehr von einer echten
             // unterscheiden ließe.
             'commits.*.patch_set.*.type' => ['nullable', Rule::in(['A', 'M', 'D', 'a', 'm', 'd'])],
+
+            // Wo in der Datei geändert wurde — die Angabe, ohne die der
+            // verdächtige Commit (R4) nur Dateinamen vergleichen kann. Zwei
+            // Wege, weil die Absender Verschiedenes zur Hand haben: eine
+            // Anbindung (X1/X2) reicht den Unterschied durch, wie GitHub und
+            // GitLab ihn je Datei liefern; ein Auslieferungs-Skript rechnet die
+            // Bereiche selbst aus (siehe {@see PatchLines}). Beides ist
+            // freiwillig — sentry-cli schickt weder das eine noch das andere,
+            // und eine Pflichtangabe hier hieße, vorhandene Skripte abzuweisen.
+            'commits.*.patch_set.*.patch' => ['nullable', 'string'],
+            'commits.*.patch_set.*.lines' => ['nullable', 'array'],
         ];
     }
 
@@ -173,7 +184,9 @@ final class CommitImport
      *   message     die vollständige Commit-Nachricht
      *   author_name, author_email
      *   timestamp   wann der Commit entstand
-     *   patch_set   Liste aus {path, type} — die berührten Dateien
+     *   patch_set   Liste aus {path, type} — die berührten Dateien; dazu
+     *               wahlweise `patch` (der Unterschied im üblichen Format) oder
+     *               `lines` (fertige Bereiche) für den Abgleich nach Zeile (R4)
      *
      * @param  array<string, mixed>  $payload
      * @param  Collection<int, User>  $authors
@@ -283,12 +296,18 @@ final class CommitImport
             // Nach Pfad abgelegt und nicht angehängt: dieselbe Datei zweimal in
             // einem Commit gibt es nicht, und der eindeutige Index würde die
             // Übergabe sonst mitten im Schreiben abweisen.
+            $lines = PatchLines::fromEntry($entry);
+
             $rows[$path] = [
                 'commit_id' => $commit->id,
                 'path' => $path,
                 'change_type' => CommitFileChange::fromInput(
                     is_string($entry['type'] ?? null) ? $entry['type'] : null,
                 )->value,
+                // Von Hand verpackt: der Sammel-Einsatz unten geht an der
+                // Umwandlung des Modells vorbei — sie greift beim Speichern
+                // einer Instanz, und hier wird keine gebaut.
+                'line_ranges' => $lines === null ? null : json_encode($lines),
             ];
         }
 

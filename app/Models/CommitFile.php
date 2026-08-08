@@ -21,10 +21,47 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $commit_id
  * @property string $path
  * @property CommitFileChange $change_type
+ * @property list<array{int, int}>|null $line_ranges
  */
 class CommitFile extends Model
 {
     public $timestamps = false;
+
+    /**
+     * Liegt diese Zeile in einem der geänderten Bereiche?
+     *
+     * `false` auch dann, wenn die Bereiche unbekannt sind — die Frage ist in
+     * dem Fall nicht mit „nein" beantwortet, sondern gar nicht, und der
+     * Abgleich muss beides unterscheiden. Deshalb steht daneben
+     * {@see hasLineRanges()}: wer hier `false` bekommt, sieht dort nach, ob das
+     * eine Aussage war.
+     */
+    public function touchesLine(?int $line): bool
+    {
+        if ($line === null || $this->line_ranges === null) {
+            return false;
+        }
+
+        foreach ($this->line_ranges as $range) {
+            if ($line >= $range[0] && $line <= $range[1]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Weiß diese Zeile überhaupt, welche Zeilen angefasst wurden?
+     *
+     * Bei sentry-cli ist die Antwort nein: dessen `patch_set` nennt nur Pfad
+     * und Art der Änderung. Eine **leere** Liste ist dagegen eine Auskunft —
+     * „an dieser Datei wurde keine Zeile geändert", also eine Umbenennung.
+     */
+    public function hasLineRanges(): bool
+    {
+        return $this->line_ranges !== null;
+    }
 
     /**
      * @return BelongsTo<Commit, $this>
@@ -41,6 +78,7 @@ class CommitFile extends Model
         'commit_id',
         'path',
         'change_type',
+        'line_ranges',
     ];
 
     /**
@@ -50,6 +88,7 @@ class CommitFile extends Model
     {
         return [
             'change_type' => CommitFileChange::class,
+            'line_ranges' => 'array',
         ];
     }
 }

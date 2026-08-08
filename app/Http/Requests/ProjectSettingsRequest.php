@@ -27,6 +27,11 @@ class ProjectSettingsRequest extends FormRequest
             'default_environment' => ['required', 'string', 'max:50', 'regex:/^[a-z0-9][a-z0-9._-]*$/'],
             'resolution_behavior' => ['required', Rule::enum(ResolutionBehavior::class)],
             'retention_days' => ['required', 'integer', 'min:1', 'max:365'],
+            // Ob der Autor des verdächtigsten Commits einen neuen Fehler von
+            // selbst bekommt (R4). `boolean` ohne `required`: ein Häkchen, das
+            // niemand gesetzt hat, kommt in einem Formular gar nicht an — mit
+            // `required` ließe sich der Schalter nie wieder ausschalten.
+            'auto_assign_suspect_commits' => ['boolean'],
         ];
     }
 
