@@ -15,6 +15,7 @@ import NotificationsIndex from './shell/pages/notifications/Index.jsx';
 import NotificationsPreferences from './shell/pages/notifications/Preferences.jsx';
 import NotificationsUnsubscribe from './shell/pages/notifications/Unsubscribe.jsx';
 import IssuesIndex from './shell/pages/issues/Index.jsx';
+import IssuesShow from './shell/pages/issues/Show.jsx';
 import IssuesTags from './shell/pages/issues/Tags.jsx';
 import TagsIndex from './shell/pages/tags/Index.jsx';
 import ProjectsIndex from './shell/pages/projects/Index.jsx';
@@ -55,6 +56,7 @@ const pages = {
     'notifications/Preferences': NotificationsPreferences,
     'notifications/Unsubscribe': NotificationsUnsubscribe,
     'issues/Index': IssuesIndex,
+    'issues/Show': IssuesShow,
     // Eine Seite für Übersicht und Merkmal-Detail — der Unterschied ist eine
     // Liste, nicht ein Bildschirm.
     'issues/Tags': IssuesTags,
