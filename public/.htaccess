@@ -14,6 +14,13 @@
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
     # Redirect Trailing Slashes If Not A Folder...
+    # Ausgenommen ist die Datenaufnahme unter /api/<Projektnummer>/: die SDKs
+    # haengen dort einen Schraegstrich an (".../api/4/envelope/"), folgen einer
+    # Umleitung aber nicht — Sentrys HTTP-Client setzt CURLOPT_FOLLOWLOCATION
+    # nicht. Jede 301 an dieser Stelle ist eine verlorene Meldung, und zwar
+    # stillschweigend. Beim Entwicklungsserver faellt das nicht auf, der liest
+    # diese Datei nicht.
+    RewriteCond %{REQUEST_URI} !^/api/[0-9]+/
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
