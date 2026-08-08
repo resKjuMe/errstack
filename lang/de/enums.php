@@ -193,6 +193,19 @@ return [
         'profile' => 'Laufzeitmessung',
         'client_report' => 'Verworfen-Meldung des SDK',
         'user_report' => 'Nutzer-Rückmeldung',
+        'feedback' => 'Nutzer-Rückmeldung (neue Form)',
+    ],
+
+    'user_report_status' => [
+        'new' => 'neu',
+        'in_progress' => 'in Arbeit',
+        'done' => 'erledigt',
+        'spam' => 'Spam',
+    ],
+
+    'user_report_source' => [
+        'crash_report' => 'zu einem Ereignis',
+        'standalone' => 'freie Zuschrift',
     ],
 
     'security_report_type' => [
@@ -273,6 +286,44 @@ return [
         'manual' => 'Nur von Hand auflösen',
         'after_week' => 'Nach 7 Tagen ohne neues Auftreten',
         'after_month' => 'Nach 30 Tagen ohne neues Auftreten',
+    ],
+
+    'issue_alert_condition' => [
+        'new_issue' => 'Neuer Fehler',
+        'regression' => 'Rückfall (erledigter Fehler tritt wieder auf)',
+        'escalation' => 'Eskalation (stummgeschalteter Fehler wacht auf)',
+        'frequency' => 'Tritt öfter als X-mal in Y Minuten auf',
+        'user_frequency' => 'Betrifft mehr als X Nutzer in Y Minuten',
+        'percent_change' => 'Nimmt um X % gegenüber der Vorwoche zu',
+    ],
+
+    'issue_alert_filter' => [
+        'level' => 'Grad',
+        'age' => 'Alter des Fehlers (Minuten)',
+        'times_seen' => 'Bisher gesehen',
+        'tag' => 'Merkmal',
+        'release' => 'Fassung',
+        'environment' => 'Umgebung',
+    ],
+
+    'issue_alert_comparison' => [
+        'eq' => 'ist gleich',
+        'ne' => 'ist ungleich',
+        'contains' => 'enthält',
+        'gte' => 'mindestens',
+        'lte' => 'höchstens',
+        'older' => 'älter als',
+        'newer' => 'jünger als',
+    ],
+
+    'issue_alert_action' => [
+        'channel' => 'An einen Benachrichtigungsweg',
+        'members' => 'An die Mitglieder der Organisation',
+    ],
+
+    'issue_alert_match' => [
+        'all' => 'alle zutreffen',
+        'any' => 'eine zutrifft',
     ],
 
     'issue_status' => [
@@ -377,6 +428,33 @@ return [
         'A' => 'Hinzugefügt',
         'M' => 'Geändert',
         'D' => 'Gelöscht',
+    ],
+
+    'release_artifact_kind' => [
+        'bundle' => 'Bundle',
+        'source_map' => 'Quellkarte',
+    ],
+
+    'symbolication_status' => [
+        'pending' => 'Wird zurückübersetzt',
+        'mapped' => 'Vollständig zurückübersetzt',
+        'partial' => 'Teilweise zurückübersetzt',
+        'unmapped' => 'Nicht zurückübersetzt',
+        'failed' => 'Rückübersetzung gescheitert',
+    ],
+
+    'symbolication_diagnosis' => [
+        'no_artifacts' => 'Zu dieser Version wurden keine Artefakte hochgeladen:',
+        'no_release' => 'Die Meldung nennt keine Version — ohne sie ist keine Quellkarte zuzuordnen.',
+        'artifact_not_found' => 'Kein Artefakt zu diesem Pfad:',
+        'unknown_debug_id' => 'Kein Artefakt zu dieser Debug-Kennung:',
+        'no_source_map_reference' => 'Das Bundle verweist auf keine Quellkarte:',
+        'source_map_missing' => 'Die verwiesene Quellkarte wurde nicht hochgeladen:',
+        'invalid_source_map' => 'Die Quellkarte ist unlesbar:',
+        'no_position' => 'Der Rahmen nennt keine Zeile:',
+        'no_mapping_for_position' => 'Die Quellkarte kennt diese Stelle nicht:',
+        'frame_limit_reached' => 'Über der Grenze übersetzter Rahmen je Meldung:',
+        'no_source_content' => 'Die Quellkarte enthält den Quelltext nicht:',
     ],
 
 ];

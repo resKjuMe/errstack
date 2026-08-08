@@ -24,6 +24,7 @@
 
 use App\Http\Controllers\Api\V0\OrganizationController;
 use App\Http\Controllers\Api\V0\ProjectController;
+use App\Http\Controllers\Api\V0\ReleaseArtifactController;
 use App\Http\Controllers\Api\V0\ReleaseCommitController;
 use App\Http\Controllers\Api\V0\ReleaseController;
 use App\Http\Controllers\Api\V0\RepositoryController;
@@ -118,5 +119,39 @@ Route::prefix((string) config('api.version'))
                     ->where('version', '[^/]+')
                     ->middleware('scope:project:write')
                     ->name('releases.commits.store');
+
+                // Die Bauartefakte einer Version: Bundle und Quellkarte. Sie sind
+                // die Voraussetzung dafür, einen minimierten JavaScript-Stacktrace
+                // wieder lesbar zu machen (R5) — und sie entstehen in einer
+                // Bauumgebung, weshalb dieser Weg der einzige hinein ist.
+                //
+                // `files` wie bei Sentry: `sentry-cli releases files … upload`
+                // spricht diese Adresse an, und ein eigener Name hier hieße, ein
+                // vorhandenes Werkzeug umbauen zu müssen.
+                Route::get('{project}/releases/{version}/files', [ReleaseArtifactController::class, 'index'])
+                    ->where('version', '[^/]+')
+                    ->middleware('scope:project:read')
+                    ->name('releases.files.index');
+
+                Route::post('{project}/releases/{version}/files', [ReleaseArtifactController::class, 'store'])
+                    ->where('version', '[^/]+')
+                    ->middleware('scope:project:write')
+                    ->name('releases.files.store');
+
+                // Löschen mit demselben Geltungsbereich wie das Hochladen: ein
+                // Artefakt ist ein Nebenprodukt des Bauens, und wer es ersetzen
+                // darf, darf es auch wegnehmen. Ein eigener Verwaltungs-Bereich
+                // hätte zur Folge, dass eine Pipeline zwei Tokens braucht, um eine
+                // falsch hochgeladene Datei zu berichtigen.
+                //
+                // Das Artefakt **ist** ein Modell-Parameter, und `scopeBindings`
+                // greift hier: es wird über `Project::artifacts()` aufgelöst und
+                // damit gar nicht erst gefunden, wenn die Kennung zu einem fremden
+                // Projekt gehört. Dass sie auch zur Version in der Adresse gehört,
+                // prüft der Controller.
+                Route::delete('{project}/releases/{version}/files/{artifact}', [ReleaseArtifactController::class, 'destroy'])
+                    ->where('version', '[^/]+')
+                    ->middleware('scope:project:write')
+                    ->name('releases.files.destroy');
             });
     });

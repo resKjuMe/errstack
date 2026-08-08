@@ -68,6 +68,22 @@ enum EventLevel: string
     }
 
     /**
+     * Wie dringend eine Benachrichtigung über ein Ereignis dieses Grades ist.
+     *
+     * Drei Stufen für fünf Grade: die Benachrichtigung soll sagen, ob jemand
+     * aufstehen muss, und dafür ist der Unterschied zwischen `info` und `debug`
+     * keiner.
+     */
+    public function notificationLevel(): NotificationLevel
+    {
+        return match ($this) {
+            self::Fatal, self::Error => NotificationLevel::Error,
+            self::Warning => NotificationLevel::Warning,
+            self::Info, self::Debug => NotificationLevel::Info,
+        };
+    }
+
+    /**
      * Rang für Sortierung und Schwellen („ab Warnung benachrichtigen"). Größer
      * heißt dringender; die Zahlen sind Abstände, keine Kennungen, und dürfen
      * deshalb nicht in der Datenbank landen.

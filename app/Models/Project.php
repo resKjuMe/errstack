@@ -209,6 +209,20 @@ class Project extends Model
     }
 
     /**
+     * Die Alarm-Regeln für Fehler (A2).
+     *
+     * `cascadeOnDelete` wie bei den Schwellwert-Alarmen: ein gelöschtes Projekt
+     * nimmt seine Regeln mit. Sie beziehen sich auf Fehler, die es dann nicht
+     * mehr gibt.
+     *
+     * @return HasMany<IssueAlertRule, $this>
+     */
+    public function issueAlertRules(): HasMany
+    {
+        return $this->hasMany(IssueAlertRule::class);
+    }
+
+    /**
      * Die projektweiten Regeln, nach denen von den Antwortzeiten eine Stichprobe
      * behalten wird (I9).
      *
@@ -261,6 +275,20 @@ class Project extends Model
     public function inboundFilterRules(): HasMany
     {
         return $this->hasMany(InboundFilterRule::class);
+    }
+
+    /**
+     * Die hochgeladenen Bauartefakte aller Versionen dieses Projekts (R5).
+     *
+     * Sie hängen an einer Version und stehen trotzdem hier: die Beziehung ist
+     * das, was die Schnittstelle beim Löschen prüfen lässt, ob eine Kennung aus
+     * der Adresszeile überhaupt zu diesem Projekt gehört.
+     *
+     * @return HasMany<ReleaseArtifact, $this>
+     */
+    public function artifacts(): HasMany
+    {
+        return $this->hasMany(ReleaseArtifact::class);
     }
 
     /**

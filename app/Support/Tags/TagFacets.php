@@ -274,20 +274,30 @@ final class TagFacets
         return Formats::number(self::share($count, $total), 1).' %';
     }
 
+    /**
+     * Die Merkmale eines Eintrags — samt denen seiner Untergruppen.
+     *
+     * Summiert wie bei mehreren Projekten und aus demselben Grund: ein von Hand
+     * zusammengeführter Eintrag (S9) steht für seine Untergruppen mit, und deren
+     * Merkmale bleiben beim Beitritt dort stehen, wo sie gezählt wurden.
+     * „Chrome" ist dann die Summe über alle und nicht die der ersten.
+     */
     private static function issueKeys(Issue $issue): Builder
     {
         return DB::table((new IssueTagKey)->getTable())
-            ->where('issue_id', $issue->id)
-            ->orderByDesc('times_seen')
+            ->whereIn('issue_id', $issue->memberIds())
+            ->groupBy('tag_key')
+            ->orderByDesc(DB::raw('sum(times_seen)'))
             ->orderBy('tag_key')
-            ->select(['tag_key', 'times_seen', 'value_count']);
+            ->select(['tag_key', DB::raw('sum(times_seen) as times_seen'), DB::raw('sum(value_count) as value_count')]);
     }
 
     private static function issueValues(Issue $issue): Builder
     {
         return DB::table((new IssueTag)->getTable())
-            ->where('issue_id', $issue->id)
-            ->select(['tag_key', 'tag_value', 'times_seen']);
+            ->whereIn('issue_id', $issue->memberIds())
+            ->groupBy('tag_key', 'tag_value')
+            ->select(['tag_key', 'tag_value', DB::raw('sum(times_seen) as times_seen')]);
     }
 
     /**

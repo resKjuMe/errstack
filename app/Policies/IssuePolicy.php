@@ -60,6 +60,21 @@ class IssuePolicy
     }
 
     /**
+     * Fehler von Hand zusammenführen und wieder auftrennen (S9).
+     *
+     * Dasselbe Recht wie das Ansehen und ausdrücklich **kein**
+     * Verwaltungsrecht: die automatische Gruppierung zurechtzurücken ist die
+     * tägliche Arbeit an der Fehlerliste und keine Einstellung am Projekt.
+     * Tragen kann diese Entscheidung, dass nichts dabei verloren geht — das
+     * Zusammenführen bewegt keine Meldung und lässt sich Untergruppe für
+     * Untergruppe wieder auflösen.
+     */
+    public function merge(User $user, Issue $issue): bool
+    {
+        return $this->view($user, $issue);
+    }
+
+    /**
      * Die Einträge, an denen dieser Betrachter arbeiten darf — als Abfrage.
      *
      * Der Weg für Sammelaktionen: eine Rechteprüfung je Kennung wären bei 200

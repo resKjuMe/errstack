@@ -6,6 +6,7 @@ use App\Models\Commit;
 use App\Models\CommitFile;
 use App\Models\Release;
 use App\Support\Formats;
+use App\Support\Search\SearchQuery;
 
 /**
  * Die Detailseite einer Auslieferung: was drinsteckt.
@@ -78,7 +79,7 @@ final class ReleaseDetail
                 // wie in der Übersicht: „was ist mit dieser Auslieferung
                 // dazugekommen?"
                 'issuesHref' => route('issues.index', [
-                    'q' => 'firstRelease:'.self::searchValue($release->version),
+                    'q' => SearchQuery::term('firstRelease', $release->version),
                 ]),
                 'indexHref' => route('releases.index'),
             ],
@@ -151,15 +152,5 @@ final class ReleaseDetail
             'email' => $commit->author_email,
             'isMember' => $account !== null,
         ];
-    }
-
-    /**
-     * Eine Versionsangabe, wie die Suche sie annimmt — wie in
-     * {@see ReleaseList}: mit Leerzeichen gehört sie in Anführungszeichen,
-     * sonst zerfällt sie in der Suchleiste.
-     */
-    private static function searchValue(string $version): string
-    {
-        return str_contains($version, ' ') ? '"'.$version.'"' : $version;
     }
 }

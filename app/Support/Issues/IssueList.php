@@ -9,7 +9,7 @@ use App\Models\Issue;
 use App\Models\Project;
 use App\Support\Filters\GlobalFilter;
 use App\Support\Formats;
-use App\Support\Tags\TagFilter;
+use App\Support\Search\SearchExpression;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -24,6 +24,12 @@ use Illuminate\Pagination\LengthAwarePaginator;
  * gelesen. Ein `count(*)` über die Ereignisse an dieser Stelle sähe in einem
  * Testbestand harmlos aus und wäre im Betrieb der Grund, warum die Seite nicht
  * mehr aufgeht.
+ *
+ * **Die einzige Ausnahme trägt der Suchende selbst ein.** `user.email:` fragt
+ * nach etwas, das nur am Ereignis steht, und geht deshalb dorthin
+ * ({@see IssueFields}). Sie kostet, was eine solche Frage kostet — aber nur, wer
+ * sie stellt, bezahlt sie: ohne diesen Begriff bleibt die Liste eine Abfrage auf
+ * den Zählern.
  */
 final class IssueList
 {
@@ -41,9 +47,9 @@ final class IssueList
      *
      * @return LengthAwarePaginator<int, array<string, mixed>>
      */
-    public static function paginate(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?IssueSearch $search = null, ?TagFilter $tag = null): LengthAwarePaginator
+    public static function paginate(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?SearchExpression $search = null): LengthAwarePaginator
     {
-        $page = self::query($filter, $sort, $status, $search, $tag)
+        $page = self::query($filter, $sort, $status, $search)
             ->paginate(self::PER_PAGE)
             ->withQueryString();
 
@@ -68,7 +74,7 @@ final class IssueList
      *
      * @return Builder<Issue>
      */
-    public static function query(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?IssueSearch $search = null, ?TagFilter $tag = null): Builder
+    public static function query(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?SearchExpression $search = null): Builder
     {
         $query = Issue::query()->with([
             'project:id,name,slug,organization_id',
@@ -77,7 +83,12 @@ final class IssueList
             // in" je Zeile eine Abfrage, also fünfzig für eine Seite.
             'firstRelease:id,version',
             'lastRelease:id,version',
-        ]);
+        ])
+            // Die Zahl der von Hand zusammengeführten Untergruppen (S9) — als
+            // Unterabfrage in derselben Anweisung. Sie mitzuladen wäre je Zeile
+            // eine Abfrage, und die Untergruppen selbst braucht die Liste nicht:
+            // sie zeigt nur, dass es welche gibt.
+            ->withCount('mergedSources');
 
         // Nur Fehler. Seit PF6 teilen sich Fehler und Leistungsprobleme die
         // Tabelle, und ohne diese Zeile stünden langsame Abfragen zwischen den
@@ -88,15 +99,16 @@ final class IssueList
 
         $filter->overlapping($query);
 
+        // Untergruppen stehen nicht für sich: ihre Zahlen sind im Kopf
+        // enthalten, und daneben ein zweites Mal einzeln zu erscheinen wäre
+        // genau die Doppelzählung, gegen die jemand sie zusammengeführt hat (S9).
+        $query->standalone();
+
         if ($status !== null) {
             $query->where('status', $status);
         }
 
         $search?->apply($query);
-
-        // Die Merkmal-Einschränkung liest die vorberechneten Zähler und nicht
-        // die Ereignisse — dieselbe Zusage wie für den Rest dieser Liste.
-        $tag?->apply($query);
 
         $sort->apply($query);
 
@@ -150,6 +162,12 @@ final class IssueList
             // Der Weg zu den Merkmalen dieses Fehlers — welche Browser, welche
             // Fassungen, welche Server ihn betrifft (S3).
             'tagsHref' => route('issues.tags.index', $issue),
+            // Wie viele Untergruppen von Hand zusammengeführt wurden (S9). Die
+            // Zahl steht in der Zeile, weil die Zahlen daneben sonst
+            // unerklärlich wären: ein Eintrag mit drei Fingerabdrücken zählt
+            // anders als einer mit einem, und der Unterschied ist nichts, was
+            // man erst auf der Detailseite erfahren sollte.
+            'mergedCount' => $issue->merged_sources_count ?? 0,
             'series' => $series,
         ];
     }

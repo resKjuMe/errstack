@@ -40,10 +40,75 @@ return [
         'status' => 'Zustand',
         'any_status' => 'Alle',
         'search' => 'Suche',
-        'search_placeholder' => 'z. B. release:1.1.0 oder firstRelease:1.0.0',
-        'search_unsupported' => 'Nicht ausgewertet: :terms. Die vollständige Suchsprache '
-            .'kommt mit einer der nächsten Aufgaben; bis dahin wirken nur '
-            .'release: und firstRelease:.',
+        'search_placeholder' => 'z. B. is:unresolved browser:Chrome timesSeen:>100',
+        'search_hint' => 'Feld:Wert, mehrere Begriffe sind ein Und. `!` verneint, '
+            .'`or` und Klammern verknüpfen, `*` steht für beliebige Zeichen.',
+        'search_error' => 'Der Suchausdruck wurde nicht verstanden: :message '
+            .'Gezeigt wird deshalb die ungefilterte Liste.',
+        'search_error_at' => 'an dieser Stelle: :excerpt',
+        'search_unavailable' => 'Noch nicht auswertbar: :terms. Diese Begriffe gehören zur '
+            .'Suchsprache, aber die Daten dazu kommen erst mit einer späteren Aufgabe — '
+            .'sie schränken die Liste nicht ein.',
+        'search_suggestions' => 'Vorschläge',
+    ],
+
+    // Die Standard-Ansichten (S5): App\Support\Issues\IssueViews.
+    'views' => [
+        'unresolved' => 'Offen',
+        'for_review' => 'Zur Prüfung',
+        'regressed' => 'Wieder aufgetreten',
+        'assigned' => 'Mir zugewiesen',
+        'new_24h' => 'Neu (24 Stunden)',
+        'ignored' => 'Stummgeschaltet',
+    ],
+
+    // Die gespeicherten Suchen (S5): App\Http\Controllers\SavedSearchController,
+    // resources/js/shell/pages/issues/SavedSearches.jsx.
+    'saved' => [
+
+        'title' => 'Ansichten',
+        'views' => 'Standard-Ansichten',
+        'own' => 'Gespeicherte Suchen',
+        'empty' => 'Noch keine eigene Suche gespeichert.',
+        'unavailable' => 'Diese Ansicht ist noch nicht vollständig auswertbar.',
+        'shared_by' => 'freigegeben von :name',
+        'default_badge' => 'Standard',
+        'manage' => 'Verwalten',
+        'close' => 'Schließen',
+
+        'save' => 'Suche speichern',
+        'save_hint' => 'Gespeichert werden Suchtext und Sortierung — nicht Zeitraum, '
+            .'Projektauswahl und Umgebung. Die bleiben so, wie die Filterleiste sie zeigt.',
+        'name' => 'Name',
+        'name_placeholder' => 'z. B. Kritische offene Fehler',
+        'query' => 'Suchtext',
+        'sort' => 'Sortierung',
+        'shared' => 'Für die Organisation freigeben',
+        'shared_hint' => 'Freigegebene Suchen sehen alle in dieser Organisation. '
+            .'Ändern und löschen kannst nur du sie.',
+        'submit' => 'Speichern',
+        'cancel' => 'Abbrechen',
+
+        'rename' => 'Umbenennen',
+        'delete' => 'Löschen',
+        'confirm_delete' => 'Diese gespeicherte Suche löschen?',
+        'set_default' => 'Standard für :project',
+        'clear_default' => 'Nicht mehr Standard für :project',
+        'default_hint' => 'Die Fehlerliste geht mit dieser Suche auf, wenn nur :project '
+            .'gewählt ist. Nur für dich.',
+
+        'flash' => [
+            'created' => 'Die Suche wurde gespeichert.',
+            'updated' => 'Die Suche wurde geändert.',
+            'deleted' => 'Die Suche wurde gelöscht.',
+            'default_set' => 'Diese Suche ist jetzt dein Standard für :project.',
+            'default_cleared' => 'Der Standard wurde aufgehoben.',
+        ],
+
+        'errors' => [
+            'too_many' => 'Mehr als :limit gespeicherte Suchen je Organisation sind nicht '
+                .'vorgesehen. Lösche eine, die du nicht mehr brauchst.',
+        ],
     ],
 
     // Die betroffenen Versionen an einer Zeile der Liste.
@@ -170,6 +235,82 @@ return [
         'discarded' => 'Gelöscht; gleichartige Meldungen werden künftig verworfen',
     ],
 
+    // Die Kommentare an einem Fehler (App\Support\Issues\IssueComments,
+    // resources/js/shell/pages/issues/detail/Comments.jsx).
+    'comments' => [
+        'title' => 'Kommentar schreiben',
+        'placeholder' => 'Was ist zu diesem Fehler zu sagen? Mit @ eine Person oder ein Team nennen.',
+        'hint' => 'Mit @ eine Person oder ein Team nennen — die Genannten werden benachrichtigt.',
+        'submit' => 'Kommentieren',
+        'edited' => 'bearbeitet',
+        'edited_at' => 'bearbeitet am :at',
+        'edit' => 'Bearbeiten',
+        'save' => 'Speichern',
+        'cancel' => 'Abbrechen',
+        'delete' => 'Löschen',
+        'delete_confirm' => 'Diesen Kommentar löschen? Das lässt sich nicht rückgängig machen.',
+        'no_suggestions' => 'Niemand gefunden.',
+
+        // Woran man in der Vorschlagsliste erkennt, was man nennt.
+        'kind' => [
+            'user' => 'Person',
+            'team' => 'Team',
+        ],
+
+        'flash' => [
+            'created' => 'Kommentar geschrieben.',
+            'updated' => 'Kommentar geändert.',
+            'deleted' => 'Kommentar gelöscht.',
+        ],
+
+        'notification' => [
+            'title' => ':actor hat dich in :project genannt',
+            'context_project' => 'Projekt',
+            'context_issue' => 'Fehler',
+        ],
+    ],
+
+    // Fehler von Hand zusammenführen und wieder auftrennen (S9,
+    // app/Support/Issues/IssueMerging).
+    'merge' => [
+        'action' => ':count Fehler zusammenführen',
+        'hint' => 'Die gewählten Fehler werden zu einem Eintrag. Der mit der größten '
+            .'Häufigkeit wird der Kopf, die übrigen werden zu Untergruppen und lassen '
+            .'sich einzeln wieder herauslösen. Es geht dabei keine Meldung verloren.',
+        'merged_into' => 'Dieser Fehler ist eine Untergruppe von',
+
+        'badge' => [
+            'label' => ':count zusammengeführt',
+            'hint' => 'Dieser Fehler ist von Hand aus mehreren zusammengeführt. Die Zahlen '
+                .'gelten für alle Untergruppen zusammen.',
+        ],
+
+        'sources' => [
+            'title' => 'Untergruppen (:count)',
+            'description' => 'Von Hand zusammengeführte Fehler. Ihre Zahlen sind die des '
+                .'Zusammenführens — was danach aufgetreten ist, zählt am Fehler darüber.',
+            'figures' => ':count Mal · :first bis :last',
+        ],
+
+        'split' => [
+            'action' => 'Herauslösen',
+            'hint' => 'Diese Untergruppe steht danach wieder als eigener Fehler in der '
+                .'Liste, mit den Zahlen, die sie beim Zusammenführen hatte.',
+        ],
+
+        'error' => [
+            'mixed_projects' => 'Zusammenführen geht nur innerhalb eines Projekts.',
+            'only_errors' => 'Zusammenführen geht nur bei Fehlern, nicht bei Leistungsproblemen.',
+            'already_merged' => 'Mindestens einer der gewählten Fehler ist bereits eine '
+                .'Untergruppe. Er muss zuerst herausgelöst werden.',
+        ],
+
+        'flash' => [
+            'merged' => ':count Fehler zu einem zusammengeführt.',
+            'unmerged' => 'Untergruppe wieder herausgelöst.',
+        ],
+    ],
+
     'live' => [
         'new_one' => 'Ein neuer Fehler',
         'new_many' => ':count neue Fehler',
@@ -177,7 +318,8 @@ return [
     ],
 
     'environment_ignored' => 'Die gewählte Umgebung schränkt diese Liste nicht ein: '
-        .'ein Fehler wird über alle Umgebungen hinweg gezählt.',
+        .'ein Fehler wird über alle Umgebungen hinweg gezählt. Wer nur die Fehler '
+        .'einer Umgebung sehen will, sucht nach environment:production.',
 
     // Die Detailseite (app/Http/Controllers/IssueDetailController,
     // resources/js/shell/pages/issues/Show.jsx und issues/detail/*).
@@ -250,6 +392,15 @@ return [
             'hide' => 'Ausblenden',
             'vars' => 'Variablen',
             'toggle' => 'Rahmen auf- und zuklappen',
+        ],
+
+        'symbolication' => [
+            'pending' => 'Stacktrace wird über die Quellkarten zurückübersetzt …',
+            'counted' => ':mapped von :total Rahmen zurückübersetzt',
+            'show_minified' => 'Minimierte Fassung zeigen',
+            'show_source' => 'Originalquelle zeigen',
+            'frame_count' => '(:count×)',
+            'from' => 'Gemeldet als',
         ],
 
         'breadcrumbs' => [

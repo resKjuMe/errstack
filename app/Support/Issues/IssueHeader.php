@@ -3,6 +3,7 @@
 namespace App\Support\Issues;
 
 use App\Enums\IssueStatus;
+use App\Models\EventGroup;
 use App\Models\Issue;
 use App\Models\Project;
 use App\Models\User;
@@ -60,6 +61,76 @@ final class IssueHeader
             // die Meinung des Letzten festhalten.
             'bookmarked' => $viewer !== null && $issue->bookmarkedBy()->whereKey($viewer->id)->exists(),
             'subscribed' => $viewer !== null && $issue->subscribers()->whereKey($viewer->id)->exists(),
+
+            // Woraus dieser Eintrag besteht und wozu er gehört (S9). Beides ist
+            // leer bzw. `null`, solange niemand von Hand zusammengeführt hat —
+            // der Regelfall, und deshalb kein eigener Abschnitt in der Anzeige.
+            'merged' => self::merged($issue),
+            'mergedInto' => self::mergedInto($issue),
+        ];
+    }
+
+    /**
+     * Die Untergruppen: die Einträge, die diesem beigetreten sind.
+     *
+     * Sie stehen mit ihren **eigenen** Zahlen da und nicht mit einem Anteil am
+     * Ganzen. Das ist die Auskunft, wegen der jemand hinschaut: „diese
+     * Untergruppe ist zehnmal aufgetreten, jene zehntausendmal" beantwortet die
+     * Frage, ob das Zusammenführen richtig war — ein Anteil am Kopf täte das
+     * nicht.
+     *
+     * Die Fingerabdrücke gehören dazu, denn sie sind der Grund, warum es zwei
+     * Einträge gab. Gezeigt wird ihr Anfang: der ganze Streuwert ist eine lange
+     * Zeichenkette ohne Aussage, die ersten zwölf Zeichen unterscheiden
+     * zuverlässig genug.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private static function merged(Issue $issue): array
+    {
+        return $issue->mergedSources
+            ->sortByDesc('times_seen')
+            ->values()
+            ->map(fn (Issue $source): array => [
+                'id' => $source->id,
+                'title' => $source->title ?? $source->culprit ?? __('issues.list.untitled'),
+                'culprit' => $source->culprit,
+                'type' => $source->type,
+                'timesSeen' => $source->times_seen,
+                'timesSeenLabel' => Formats::number($source->times_seen),
+                'firstSeenLabel' => Formats::dateTime($source->first_seen),
+                'lastSeenLabel' => Formats::dateTime($source->last_seen),
+                'href' => route('issues.show', $source),
+                'unmergeHref' => route('issues.merge.destroy', $source),
+                'fingerprints' => $source->groups
+                    ->map(fn (EventGroup $group): string => mb_substr($group->fingerprint, 0, 12))
+                    ->all(),
+            ])
+            ->all();
+    }
+
+    /**
+     * Der Eintrag, dem dieser beigetreten ist.
+     *
+     * Ein beigetretener Eintrag bleibt aufrufbar — Lesezeichen und alte Links
+     * zeigen weiter auf ihn —, aber seine Zahlen stehen still: gezählt wird ab
+     * dem Beitritt am Kopf. Ohne diesen Hinweis sähe das aus wie ein Fehler, der
+     * aufgehört hat.
+     *
+     * @return array{id: int, title: string, href: string}|null
+     */
+    private static function mergedInto(Issue $issue): ?array
+    {
+        $head = $issue->mergedInto;
+
+        if (! $head instanceof Issue) {
+            return null;
+        }
+
+        return [
+            'id' => $head->id,
+            'title' => $head->title ?? $head->culprit ?? __('issues.list.untitled'),
+            'href' => route('issues.show', $head),
         ];
     }
 

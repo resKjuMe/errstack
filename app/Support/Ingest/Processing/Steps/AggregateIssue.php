@@ -44,6 +44,19 @@ final class AggregateIssue implements ProcessingStep
      */
     public const RESULT = 'issue';
 
+    /**
+     * Die beiden Feststellungen, die **nur hier** zu treffen sind.
+     *
+     * „Zum ersten Mal aufgetreten" gilt für den Augenblick, in dem der Eintrag
+     * entsteht; danach ist er nicht mehr neu. „Aus der Stummschaltung
+     * aufgewacht" entscheidet die bedingte Anweisung darunter, und sie trifft
+     * genau einmal. Beides wäre einen Schritt später nur noch zu raten —
+     * deshalb wird es weitergereicht statt neu hergeleitet.
+     */
+    public const WAS_NEW = 'issue_was_new';
+
+    public const ESCALATED = 'issue_escalated';
+
     public function handle(ProcessingContext $context, Closure $next): void
     {
         $group = $context->get(GroupEvent::RESULT);
@@ -76,11 +89,13 @@ final class AggregateIssue implements ProcessingStep
         // der Datenbank fort, die Instanz im Speicher ist danach veraltet. Die
         // zusätzliche Abfrage trifft nur stummgeschaltete Einträge; für alle
         // übrigen kostet dieser Block einen Vergleich.
+        $escalated = false;
+
         if ($counted && $issue->status === IssueStatus::Ignored) {
             $current = $issue->fresh();
 
             if ($current !== null) {
-                IssueActions::expireIgnore($current, $current->times_seen, $current->users_seen);
+                $escalated = IssueActions::expireIgnore($current, $current->times_seen, $current->users_seen);
             }
         }
 
@@ -98,6 +113,8 @@ final class AggregateIssue implements ProcessingStep
         // braucht, holt sie mit `fresh()`; das hier ist der Eintrag, um den es
         // ging, und für die folgenden Schritte genügt das.
         $context->with(self::RESULT, $issue);
+        $context->with(self::WAS_NEW, $isNew);
+        $context->with(self::ESCALATED, $escalated);
 
         $next($context);
     }

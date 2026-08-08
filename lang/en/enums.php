@@ -193,6 +193,19 @@ return [
         'profile' => 'Profile',
         'client_report' => 'Client report of the SDK',
         'user_report' => 'User feedback',
+        'feedback' => 'User feedback (new form)',
+    ],
+
+    'user_report_status' => [
+        'new' => 'new',
+        'in_progress' => 'in progress',
+        'done' => 'done',
+        'spam' => 'spam',
+    ],
+
+    'user_report_source' => [
+        'crash_report' => 'about an event',
+        'standalone' => 'standalone',
     ],
 
     'security_report_type' => [
@@ -273,6 +286,44 @@ return [
         'manual' => 'Resolve manually only',
         'after_week' => 'After 7 days without a new occurrence',
         'after_month' => 'After 30 days without a new occurrence',
+    ],
+
+    'issue_alert_condition' => [
+        'new_issue' => 'A new issue appears',
+        'regression' => 'Regression (a resolved issue occurs again)',
+        'escalation' => 'Escalation (an ignored issue wakes up)',
+        'frequency' => 'Seen more than X times in Y minutes',
+        'user_frequency' => 'Affects more than X users in Y minutes',
+        'percent_change' => 'Increases by X % compared to last week',
+    ],
+
+    'issue_alert_filter' => [
+        'level' => 'Level',
+        'age' => 'Issue age (minutes)',
+        'times_seen' => 'Times seen',
+        'tag' => 'Tag',
+        'release' => 'Release',
+        'environment' => 'Environment',
+    ],
+
+    'issue_alert_comparison' => [
+        'eq' => 'equals',
+        'ne' => 'does not equal',
+        'contains' => 'contains',
+        'gte' => 'at least',
+        'lte' => 'at most',
+        'older' => 'older than',
+        'newer' => 'newer than',
+    ],
+
+    'issue_alert_action' => [
+        'channel' => 'To a notification channel',
+        'members' => 'To the members of the organisation',
+    ],
+
+    'issue_alert_match' => [
+        'all' => 'all match',
+        'any' => 'any matches',
     ],
 
     'issue_status' => [
@@ -375,6 +426,33 @@ return [
         'A' => 'Added',
         'M' => 'Modified',
         'D' => 'Removed',
+    ],
+
+    'release_artifact_kind' => [
+        'bundle' => 'Bundle',
+        'source_map' => 'Source map',
+    ],
+
+    'symbolication_status' => [
+        'pending' => 'Being translated',
+        'mapped' => 'Fully translated',
+        'partial' => 'Partially translated',
+        'unmapped' => 'Not translated',
+        'failed' => 'Translation failed',
+    ],
+
+    'symbolication_diagnosis' => [
+        'no_artifacts' => 'No artifacts were uploaded for this release:',
+        'no_release' => 'The event carries no release — without one, no source map can be matched.',
+        'artifact_not_found' => 'No artifact for this path:',
+        'unknown_debug_id' => 'No artifact for this debug ID:',
+        'no_source_map_reference' => 'The bundle does not reference a source map:',
+        'source_map_missing' => 'The referenced source map was not uploaded:',
+        'invalid_source_map' => 'The source map cannot be read:',
+        'no_position' => 'The frame carries no line number:',
+        'no_mapping_for_position' => 'The source map has no entry for this position:',
+        'frame_limit_reached' => 'Beyond the per-event limit of translated frames:',
+        'no_source_content' => 'The source map does not embed the source text:',
     ],
 
 ];

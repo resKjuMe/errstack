@@ -131,6 +131,15 @@ function ReleaseRow({ release, showProject, t }) {
                             </Link>
                         </>
                     )}
+
+                    {/* Ob zu dieser Version Quellkarten hochgeladen sind (R5). Die
+                        Angabe steht hier, weil ihr Fehlen sonst erst auf einer
+                        Fehlerseite auffällt — also dann, wenn der Bauvorgang längst
+                        vorbei ist. */}
+                    <span className="mx-2">·</span>
+                    {release.artifacts > 0
+                        ? t('releases.list.artifacts', { count: release.artifacts })
+                        : t('releases.list.no_artifacts')}
                 </p>
             </div>
 

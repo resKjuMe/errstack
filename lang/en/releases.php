@@ -18,6 +18,8 @@ return [
         'first_event' => 'First seen: :value',
         'no_events' => 'No event yet',
         'released_at' => 'Shipped: :value',
+        'artifacts' => ':count artifacts',
+        'no_artifacts' => 'No source maps',
     ],
 
     'columns' => [

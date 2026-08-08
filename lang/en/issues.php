@@ -40,9 +40,75 @@ return [
         'status' => 'Status',
         'any_status' => 'All',
         'search' => 'Search',
-        'search_placeholder' => 'e.g. release:1.1.0 or firstRelease:1.0.0',
-        'search_unsupported' => 'Not applied: :terms. The full search syntax arrives with '
-            .'one of the next tasks; until then only release: and firstRelease: take effect.',
+        'search_placeholder' => 'e.g. is:unresolved browser:Chrome timesSeen:>100',
+        'search_hint' => 'field:value, several terms are an AND. `!` negates, '
+            .'`or` and brackets combine, `*` stands for any characters.',
+        'search_error' => 'The search expression was not understood: :message '
+            .'The unfiltered list is shown instead.',
+        'search_error_at' => 'at this spot: :excerpt',
+        'search_unavailable' => 'Not applicable yet: :terms. These terms belong to the search '
+            .'language, but the data behind them arrives with a later task — they do not '
+            .'narrow the list.',
+        'search_suggestions' => 'Suggestions',
+    ],
+
+    // The built-in views (S5): App\Support\Issues\IssueViews.
+    'views' => [
+        'unresolved' => 'Unresolved',
+        'for_review' => 'For review',
+        'regressed' => 'Regressed',
+        'assigned' => 'Assigned to me',
+        'new_24h' => 'New (24 hours)',
+        'ignored' => 'Ignored',
+    ],
+
+    // The saved searches (S5): App\Http\Controllers\SavedSearchController,
+    // resources/js/shell/pages/issues/SavedSearches.jsx.
+    'saved' => [
+
+        'title' => 'Views',
+        'views' => 'Built-in views',
+        'own' => 'Saved searches',
+        'empty' => 'No saved search yet.',
+        'unavailable' => 'This view cannot be answered in full yet.',
+        'shared_by' => 'shared by :name',
+        'default_badge' => 'Default',
+        'manage' => 'Manage',
+        'close' => 'Close',
+
+        'save' => 'Save search',
+        'save_hint' => 'Saved are the search text and the sort order — not the period, '
+            .'the project selection or the environment. Those stay as the filter bar shows them.',
+        'name' => 'Name',
+        'name_placeholder' => 'e.g. Critical unresolved errors',
+        'query' => 'Search text',
+        'sort' => 'Sort by',
+        'shared' => 'Share with the organization',
+        'shared_hint' => 'Shared searches are visible to everyone in this organization. '
+            .'Only you can change or delete them.',
+        'submit' => 'Save',
+        'cancel' => 'Cancel',
+
+        'rename' => 'Rename',
+        'delete' => 'Delete',
+        'confirm_delete' => 'Delete this saved search?',
+        'set_default' => 'Default for :project',
+        'clear_default' => 'No longer default for :project',
+        'default_hint' => 'The issue list opens with this search when only :project is '
+            .'selected. For you only.',
+
+        'flash' => [
+            'created' => 'The search was saved.',
+            'updated' => 'The search was changed.',
+            'deleted' => 'The search was deleted.',
+            'default_set' => 'This search is now your default for :project.',
+            'default_cleared' => 'The default was cleared.',
+        ],
+
+        'errors' => [
+            'too_many' => 'More than :limit saved searches per organization are not '
+                .'provided for. Delete one you no longer need.',
+        ],
     ],
 
     // The affected versions on a row of the list.
@@ -169,6 +235,82 @@ return [
         'discarded' => 'Deleted; reports of the same kind will be discarded from now on',
     ],
 
+    // Comments on an issue (App\Support\Issues\IssueComments,
+    // resources/js/shell/pages/issues/detail/Comments.jsx).
+    'comments' => [
+        'title' => 'Write a comment',
+        'placeholder' => 'What is there to say about this issue? Use @ to mention a person or a team.',
+        'hint' => 'Use @ to mention a person or a team — everyone mentioned is notified.',
+        'submit' => 'Comment',
+        'edited' => 'edited',
+        'edited_at' => 'edited on :at',
+        'edit' => 'Edit',
+        'save' => 'Save',
+        'cancel' => 'Cancel',
+        'delete' => 'Delete',
+        'delete_confirm' => 'Delete this comment? This cannot be undone.',
+        'no_suggestions' => 'Nobody found.',
+
+        // How the suggestion list shows what is being mentioned.
+        'kind' => [
+            'user' => 'Person',
+            'team' => 'Team',
+        ],
+
+        'flash' => [
+            'created' => 'Comment written.',
+            'updated' => 'Comment changed.',
+            'deleted' => 'Comment deleted.',
+        ],
+
+        'notification' => [
+            'title' => ':actor mentioned you in :project',
+            'context_project' => 'Project',
+            'context_issue' => 'Issue',
+        ],
+    ],
+
+    // Merging and splitting issues by hand (S9,
+    // app/Support/Issues/IssueMerging).
+    'merge' => [
+        'action' => 'Merge :count issues',
+        'hint' => 'The selected issues become one. The one seen most often becomes the '
+            .'head, the others become subgroups and can be split off again one by one. '
+            .'No event is lost in the process.',
+        'merged_into' => 'This issue is a subgroup of',
+
+        'badge' => [
+            'label' => ':count merged',
+            'hint' => 'This issue was merged by hand from several. The figures cover all '
+                .'subgroups together.',
+        ],
+
+        'sources' => [
+            'title' => 'Subgroups (:count)',
+            'description' => 'Issues merged by hand. Their figures are the ones from the '
+                .'merge — whatever happened afterwards counts towards the issue above.',
+            'figures' => ':count times · :first to :last',
+        ],
+
+        'split' => [
+            'action' => 'Split off',
+            'hint' => 'This subgroup returns to the list as an issue of its own, with the '
+                .'figures it had when it was merged.',
+        ],
+
+        'error' => [
+            'mixed_projects' => 'Issues can only be merged within a single project.',
+            'only_errors' => 'Only errors can be merged, not performance issues.',
+            'already_merged' => 'At least one of the selected issues is already a '
+                .'subgroup. It has to be split off first.',
+        ],
+
+        'flash' => [
+            'merged' => ':count issues merged into one.',
+            'unmerged' => 'Subgroup split off again.',
+        ],
+    ],
+
     'live' => [
         'new_one' => 'One new issue',
         'new_many' => ':count new issues',
@@ -176,7 +318,8 @@ return [
     ],
 
     'environment_ignored' => 'The selected environment does not narrow this list: '
-        .'an issue is counted across all environments.',
+        .'an issue is counted across all environments. To see the issues of one '
+        .'environment only, search for environment:production.',
 
     // The detail page (app/Http/Controllers/IssueDetailController,
     // resources/js/shell/pages/issues/Show.jsx and issues/detail/*).
@@ -249,6 +392,15 @@ return [
             'hide' => 'Hide',
             'vars' => 'Variables',
             'toggle' => 'Expand and collapse frame',
+        ],
+
+        'symbolication' => [
+            'pending' => 'Translating the stack trace using source maps …',
+            'counted' => ':mapped of :total frames translated',
+            'show_minified' => 'Show minified version',
+            'show_source' => 'Show original source',
+            'frame_count' => '(:count×)',
+            'from' => 'Reported as',
         ],
 
         'breadcrumbs' => [

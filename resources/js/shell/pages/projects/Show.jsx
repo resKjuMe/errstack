@@ -74,9 +74,12 @@ export default function Show({
 
                 <Environments environments={environments} canManage={permissions.update} />
 
+                {project.setupHref && <Setup project={project} />}
+
                 {project.keysHref && <ClientKeys project={project} />}
 
                 <MetricAlerts project={project} />
+                <IssueAlerts project={project} />
 
                 <CronMonitors project={project} />
 
@@ -350,6 +353,21 @@ function Environments({ environments, canManage }) {
     );
 }
 
+// Der Weg zurück in den Einrichtungs-Assistenten. Er steht über den Schlüsseln,
+// weil er die Frage beantwortet, für die man die Schlüssel überhaupt aufsucht:
+// wie schließe ich eine Anwendung an?
+function Setup({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('setup.card.title')} description={t('setup.card.description')}>
+            <Link href={project.setupHref}>
+                <SecondaryButton type="button">{t('setup.card.open')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
 function ClientKeys({ project }) {
     const t = useT();
 
@@ -386,6 +404,24 @@ function MetricAlerts({ project }) {
         <Card title={t('projects.alerts.title')} description={t('projects.alerts.description')}>
             <Link href={project.alertsHref}>
                 <SecondaryButton type="button">{t('projects.alerts.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zu den Alarm-Regeln für Fehler. Aus demselben Grund ohne Bedingung wie
+// die Schwellwert-Alarme: sie beantworten die Frage, warum eine Meldung kam —
+// oder eben nicht kam.
+function IssueAlerts({ project }) {
+    const t = useT();
+
+    return (
+        <Card
+            title={t('projects.issue_alerts.title')}
+            description={t('projects.issue_alerts.description')}
+        >
+            <Link href={project.issueAlertsHref}>
+                <SecondaryButton type="button">{t('projects.issue_alerts.manage')}</SecondaryButton>
             </Link>
         </Card>
     );

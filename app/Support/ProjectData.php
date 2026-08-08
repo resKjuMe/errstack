@@ -94,6 +94,11 @@ final class ProjectData
                 // Die DSN steht auf der Schlüssel-Seite; hier verweist nur der
                 // Link darauf, und auch der nur für die Verwaltung.
                 'keysHref' => $mayManageKeys ? route('projects.keys.index', [$organization, $project]) : null,
+                // Der Einrichtungs-Assistent (O8) — aus demselben Grund an
+                // dieselbe Bedingung geknüpft: er zeigt die DSN. Er steht hier,
+                // damit der Ablauf jederzeit erneut aufrufbar ist und nicht nur
+                // in der Minute nach dem Anlegen.
+                'setupHref' => $mayManageKeys ? route('projects.setup.index', [$organization, $project]) : null,
                 // Die Cronjob-Überwachung darf jedes Mitglied ansehen — der
                 // Link steht deshalb ohne Bedingung da, anders als der zu den
                 // Schlüsseln.
@@ -106,6 +111,10 @@ final class ProjectData
                 // Alarme scharf sind, ist die erste Frage, wenn etwas **nicht**
                 // gemeldet wurde — und die stellt nicht nur die Verwaltung.
                 'alertsHref' => route('projects.alerts.index', [$organization, $project]),
+                // Und die Alarm-Regeln für Fehler daneben, aus demselben Grund:
+                // sie beantworten die Frage, warum eine Meldung kam — oder eben
+                // nicht kam.
+                'issueAlertsHref' => route('projects.issue-alerts.index', [$organization, $project]),
                 // Die Stichproben aus demselben Grund ohne Bedingung: sie
                 // erklären, warum in der Performance-Übersicht mehr Aufrufe
                 // stehen, als Messungen gespeichert sind.

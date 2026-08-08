@@ -21,14 +21,48 @@
 */
 
 use App\Http\Controllers\IssueActionController;
+use App\Http\Controllers\IssueCommentController;
 use App\Http\Controllers\IssueController;
 use App\Http\Controllers\IssueDetailController;
+use App\Http\Controllers\IssueMergeController;
+use App\Http\Controllers\IssueSearchController;
 use App\Http\Controllers\IssueTagController;
+use App\Http\Controllers\SavedSearchController;
 use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('fehler', IssueController::class)->name('issues.index');
+
+    // Die Vorschläge des Suchfeldes. Sie stehen **vor** den Fehler-Routen, und
+    // das ist keine Ordnungsfrage: `fehler/{issue}/merkmale` hat dieselbe Form,
+    // und „suche" wäre dort eine Fehlerkennung.
+    Route::get('fehler/suche/vorschlaege', [IssueSearchController::class, 'suggest'])
+        ->name('issues.search.suggest');
+
+    // Die gespeicherten Suchen (S5). Sie stehen aus demselben Grund wie die
+    // Vorschläge **vor** den Fehler-Routen: `fehler/{issue}` würde „suchen"
+    // sonst für eine Fehlerkennung halten.
+    //
+    // Sie liegen unter „fehler" und nicht unter einem Projekt, obwohl sich eine
+    // davon als Einstieg **eines** Projekts festlegen lässt: gespeichert wird
+    // eine Ansicht der Fehlerliste, und die gehört keinem einzelnen Projekt.
+    // Welches Projekt beim Festlegen gemeint ist, steht deshalb im Rumpf — wie
+    // bei den Sammelaktionen und aus demselben Grund.
+    //
+    // Eine Route zum **Anwenden** gibt es nicht: eine Suche ist ein Ausdruck und
+    // eine Sortierung, und beides steht in der Adresszeile der Liste. Der Link
+    // dorthin ist die Anwendung.
+    Route::post('fehler/suchen', [SavedSearchController::class, 'store'])
+        ->name('issues.searches.store');
+    Route::patch('fehler/suchen/{search}', [SavedSearchController::class, 'update'])
+        ->name('issues.searches.update');
+    Route::delete('fehler/suchen/{search}', [SavedSearchController::class, 'destroy'])
+        ->name('issues.searches.destroy');
+    Route::put('fehler/suchen/{search}/standard', [SavedSearchController::class, 'setDefault'])
+        ->name('issues.searches.default.store');
+    Route::delete('fehler/suchen/{search}/standard', [SavedSearchController::class, 'clearDefault'])
+        ->name('issues.searches.default.destroy');
 
     // Die Zustandsaktionen (S6) — eine Adresse für einen Fehler wie für
     // zwölftausend. Sie steht **neben** der Liste und nicht unter einem
@@ -46,11 +80,40 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Fehler" verlinkbar, ohne dass der Link auf ein Ereignis zeigt, das morgen
     // nicht mehr das neueste ist — und ein Link auf **diese** eine Meldung ist
     // trotzdem möglich.
+    // Das Zusammenführen steht **über** der Detailseite und nicht unter einem
+    // Eintrag: welcher Eintrag der Kopf wird, entscheidet sich erst beim
+    // Zusammenführen — eine Adresse `fehler/{issue}/zusammenfuehren` würde das
+    // Ergebnis vorwegnehmen. Das Auftrennen dagegen meint genau eine
+    // Untergruppe und steht deshalb unter ihr.
+    Route::post('fehler/zusammenfuehren', [IssueMergeController::class, 'store'])
+        ->name('issues.merge.store');
+    Route::delete('fehler/{issue}/zusammenfuehrung', [IssueMergeController::class, 'destroy'])
+        ->name('issues.merge.destroy');
+
     Route::get('fehler/{issue}', [IssueDetailController::class, 'show'])->name('issues.show');
     Route::get('fehler/{issue}/ereignisse/{event}', [IssueDetailController::class, 'show'])
         ->name('issues.events.show');
     Route::get('fehler/{issue}/ereignisse/{event}/rohdaten', [IssueDetailController::class, 'raw'])
         ->name('issues.events.raw');
+
+    // Die Kommentare eines Fehlers (S10). Sie stehen unter ihm, weil sie ihm
+    // gehören — anders als die Zustandsaktionen, die auch eine ganze Auswahl
+    // meinen können. Die Kennung des Fehlers steht auch im Pfad des einzelnen
+    // Kommentars: sie ist dort keine Verzierung, sondern wird geprüft (siehe
+    // IssueCommentController), damit eine vertauschte Adresszeile keinen
+    // fremden Kommentar unter fremdem Fehler ändert.
+    //
+    // Die Vorschläge fürs `@` stehen **vor** der Kommentarkennung, aus
+    // demselben Grund wie die Suchvorschläge oben: „vorschlaege" wäre dort
+    // sonst eine Kennung.
+    Route::get('fehler/{issue}/kommentare/vorschlaege', [IssueCommentController::class, 'suggest'])
+        ->name('issues.comments.suggest');
+    Route::post('fehler/{issue}/kommentare', [IssueCommentController::class, 'store'])
+        ->name('issues.comments.store');
+    Route::patch('fehler/{issue}/kommentare/{comment}', [IssueCommentController::class, 'update'])
+        ->name('issues.comments.update');
+    Route::delete('fehler/{issue}/kommentare/{comment}', [IssueCommentController::class, 'destroy'])
+        ->name('issues.comments.destroy');
 
     // Die Merkmale eines Fehlers (S3). Sie hängen am Eintrag und stehen deshalb
     // unter ihm — anders als die Liste, die keinen einzelnen Eintrag meint.

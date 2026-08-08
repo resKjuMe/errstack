@@ -78,6 +78,12 @@ return [
         'manage' => 'Alarme ansehen',
     ],
 
+    'issue_alerts' => [
+        'title' => 'Alarm-Regeln',
+        'description' => 'Wann soll wer benachrichtigt werden: neue Fehler, Rückfälle, Eskalationen und Häufigkeiten — eingeschränkt auf Grad, Umgebung, Fassung oder Merkmal, mit Begrenzung gegen Benachrichtigungs-Fluten.',
+        'manage' => 'Alarm-Regeln ansehen',
+    ],
+
     'sampling' => [
         'title' => 'Stichproben',
         'description' => 'Von den Antwortzeiten wird nur ein einstellbarer Anteil gespeichert und in den Auswertungen hochgerechnet. Fehlermeldungen bleiben davon unberührt.',
