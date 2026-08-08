@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enums\TransactionSort;
 use App\Http\Requests\PerformanceOverviewRequest;
-use App\Support\FilterData;
 use App\Support\Performance\TransactionOverview;
 use App\Support\Performance\TransactionOverviewRow;
 use Inertia\Inertia;
@@ -35,7 +34,6 @@ class PerformanceController extends Controller
             ->page($request->page());
 
         return Inertia::render('Performance', [
-            'filter' => FilterData::bar($filter),
             'rows' => array_map(
                 fn (TransactionOverviewRow $row): array => $row->toArray(),
                 $result->rows,

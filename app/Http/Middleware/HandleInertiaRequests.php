@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\FilterData;
+use App\Support\Filters\CurrentFilter;
 use App\Support\SelfMonitoring\BrowserConfig;
 use App\Support\ShellData;
 use App\Support\Translations;
@@ -42,6 +44,16 @@ class HandleInertiaRequests extends Middleware
                 // sonst könnte die Seite bestimmen, was zurückgenommen wird.
                 'undo' => $request->session()->get('undo'),
             ],
+            // Die globale Filterleiste gehört zum Rahmen und nicht zur Seite:
+            // sie steht auf jeder Auswertungsseite an derselben Stelle, und eine
+            // neue Auswertungsseite bekommt sie, ohne sie einzubinden.
+            //
+            // `null` heißt „hier keine Leiste": geliefert wird sie genau dann,
+            // wenn die Seite den Filter angefordert hat ({@see CurrentFilter}) —
+            // Einstellungen, Profil und Verwaltung tun das nicht.
+            'filter' => fn () => ($filter = CurrentFilter::of($request)) === null
+                ? null
+                : FilterData::bar($filter),
             // Womit sich die Oberfläche bei der Selbstüberwachung meldet.
             // `null`, solange keine DSN eingerichtet ist — dann lädt die Seite
             // das SDK gar nicht erst ({@see resources/js/selfmonitoring.js}).

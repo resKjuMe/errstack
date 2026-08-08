@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TransactionDetailRequest;
-use App\Support\FilterData;
 use App\Support\Performance\TransactionDetail;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -31,7 +30,6 @@ class TransactionDetailController extends Controller
         $detail = (new TransactionDetail($filter, $request->name(), $request->op()))->result();
 
         return Inertia::render('performance/Transaction', [
-            'filter' => FilterData::bar($filter),
             'detail' => $detail->toArray(),
             // Der Weg zurück in die Übersicht, mit derselben Projektauswahl und
             // demselben Zeitraum. Ohne ihn führte der Zurück-Link auf die

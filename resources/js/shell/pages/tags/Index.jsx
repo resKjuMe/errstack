@@ -1,7 +1,6 @@
 import React from 'react';
 import { usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
-import FilterBar from '../../components/FilterBar.jsx';
 import { useT } from '../../i18n.js';
 import { TagDetail, TagFacets, TagsEmpty } from './TagBreakdown.jsx';
 
@@ -11,7 +10,7 @@ import { TagDetail, TagFacets, TagsEmpty } from './TagBreakdown.jsx';
 // Eine Seite für beide Tiefen: ohne `detail` die Übersicht über alle Merkmale,
 // mit `detail` alle Werte eines einzelnen. Zwei Seiten wären derselbe Rahmen
 // zweimal — der Unterschied ist eine Liste, nicht ein Bildschirm.
-export default function Index({ filter, facets, detail, overviewHref, valueLimit }) {
+export default function Index({ facets, detail, overviewHref, valueLimit }) {
     const { shell } = usePage().props;
     const t = useT();
 
@@ -22,8 +21,6 @@ export default function Index({ filter, facets, detail, overviewHref, valueLimit
                 appName={shell.appName}
                 help={t('tags.help')}
             />
-
-            <FilterBar filter={filter} />
 
             {/* Der Zeitraum steht in der Leiste und wirkt hier nicht — das wird
                 gesagt und nicht stillschweigend übergangen. */}

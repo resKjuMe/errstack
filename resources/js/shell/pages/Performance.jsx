@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import PageHead from '../components/PageHead.jsx';
 import Card from '../components/Card.jsx';
-import FilterBar from '../components/FilterBar.jsx';
 import { InputLabel, PrimaryButton, SecondaryButton, TextInput } from '../components/Form.jsx';
+import useFilter from '../filters/useFilter.js';
 import { filterQuery } from '../filters/useGlobalFilter.js';
 import { formatNumber, useTranslations } from '../i18n.js';
 import { duration, Missing, percent } from './performance/format.jsx';
@@ -18,7 +18,6 @@ import { duration, Missing, percent } from './performance/format.jsx';
 // lässt sich als Link teilen — „schau dir mal an, was hier oben steht" ist die
 // häufigste Verwendung dieser Seite.
 export default function Performance({
-    filter,
     rows,
     columns,
     sort,
@@ -29,6 +28,7 @@ export default function Performance({
     groupLimit,
 }) {
     const { shell } = usePage().props;
+    const filter = useFilter();
     const { t, formats } = useTranslations();
 
     // Die Sucheingabe ist der einzige Zustand, der **nicht** sofort in die
@@ -103,8 +103,6 @@ export default function Performance({
                     </ul>
                 }
             />
-
-            <FilterBar filter={filter} />
 
             <Card>
                 <form onSubmit={submitSearch} className="mb-4 flex flex-wrap items-end gap-2">
