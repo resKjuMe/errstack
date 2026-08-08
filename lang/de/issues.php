@@ -52,6 +52,65 @@ return [
         'search_suggestions' => 'Vorschläge',
     ],
 
+    // Die Standard-Ansichten (S5): App\Support\Issues\IssueViews.
+    'views' => [
+        'unresolved' => 'Offen',
+        'for_review' => 'Zur Prüfung',
+        'regressed' => 'Wieder aufgetreten',
+        'assigned' => 'Mir zugewiesen',
+        'new_24h' => 'Neu (24 Stunden)',
+        'ignored' => 'Stummgeschaltet',
+    ],
+
+    // Die gespeicherten Suchen (S5): App\Http\Controllers\SavedSearchController,
+    // resources/js/shell/pages/issues/SavedSearches.jsx.
+    'saved' => [
+
+        'title' => 'Ansichten',
+        'views' => 'Standard-Ansichten',
+        'own' => 'Gespeicherte Suchen',
+        'empty' => 'Noch keine eigene Suche gespeichert.',
+        'unavailable' => 'Diese Ansicht ist noch nicht vollständig auswertbar.',
+        'shared_by' => 'freigegeben von :name',
+        'default_badge' => 'Standard',
+        'manage' => 'Verwalten',
+        'close' => 'Schließen',
+
+        'save' => 'Suche speichern',
+        'save_hint' => 'Gespeichert werden Suchtext und Sortierung — nicht Zeitraum, '
+            .'Projektauswahl und Umgebung. Die bleiben so, wie die Filterleiste sie zeigt.',
+        'name' => 'Name',
+        'name_placeholder' => 'z. B. Kritische offene Fehler',
+        'query' => 'Suchtext',
+        'sort' => 'Sortierung',
+        'shared' => 'Für die Organisation freigeben',
+        'shared_hint' => 'Freigegebene Suchen sehen alle in dieser Organisation. '
+            .'Ändern und löschen kannst nur du sie.',
+        'submit' => 'Speichern',
+        'cancel' => 'Abbrechen',
+
+        'rename' => 'Umbenennen',
+        'delete' => 'Löschen',
+        'confirm_delete' => 'Diese gespeicherte Suche löschen?',
+        'set_default' => 'Standard für :project',
+        'clear_default' => 'Nicht mehr Standard für :project',
+        'default_hint' => 'Die Fehlerliste geht mit dieser Suche auf, wenn nur :project '
+            .'gewählt ist. Nur für dich.',
+
+        'flash' => [
+            'created' => 'Die Suche wurde gespeichert.',
+            'updated' => 'Die Suche wurde geändert.',
+            'deleted' => 'Die Suche wurde gelöscht.',
+            'default_set' => 'Diese Suche ist jetzt dein Standard für :project.',
+            'default_cleared' => 'Der Standard wurde aufgehoben.',
+        ],
+
+        'errors' => [
+            'too_many' => 'Mehr als :limit gespeicherte Suchen je Organisation sind nicht '
+                .'vorgesehen. Lösche eine, die du nicht mehr brauchst.',
+        ],
+    ],
+
     // Die betroffenen Versionen an einer Zeile der Liste.
     'release' => [
         'first' => 'Zuerst in',

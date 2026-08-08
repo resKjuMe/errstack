@@ -52,6 +52,65 @@ return [
         'search_suggestions' => 'Suggestions',
     ],
 
+    // The built-in views (S5): App\Support\Issues\IssueViews.
+    'views' => [
+        'unresolved' => 'Unresolved',
+        'for_review' => 'For review',
+        'regressed' => 'Regressed',
+        'assigned' => 'Assigned to me',
+        'new_24h' => 'New (24 hours)',
+        'ignored' => 'Ignored',
+    ],
+
+    // The saved searches (S5): App\Http\Controllers\SavedSearchController,
+    // resources/js/shell/pages/issues/SavedSearches.jsx.
+    'saved' => [
+
+        'title' => 'Views',
+        'views' => 'Built-in views',
+        'own' => 'Saved searches',
+        'empty' => 'No saved search yet.',
+        'unavailable' => 'This view cannot be answered in full yet.',
+        'shared_by' => 'shared by :name',
+        'default_badge' => 'Default',
+        'manage' => 'Manage',
+        'close' => 'Close',
+
+        'save' => 'Save search',
+        'save_hint' => 'Saved are the search text and the sort order — not the period, '
+            .'the project selection or the environment. Those stay as the filter bar shows them.',
+        'name' => 'Name',
+        'name_placeholder' => 'e.g. Critical unresolved errors',
+        'query' => 'Search text',
+        'sort' => 'Sort by',
+        'shared' => 'Share with the organization',
+        'shared_hint' => 'Shared searches are visible to everyone in this organization. '
+            .'Only you can change or delete them.',
+        'submit' => 'Save',
+        'cancel' => 'Cancel',
+
+        'rename' => 'Rename',
+        'delete' => 'Delete',
+        'confirm_delete' => 'Delete this saved search?',
+        'set_default' => 'Default for :project',
+        'clear_default' => 'No longer default for :project',
+        'default_hint' => 'The issue list opens with this search when only :project is '
+            .'selected. For you only.',
+
+        'flash' => [
+            'created' => 'The search was saved.',
+            'updated' => 'The search was changed.',
+            'deleted' => 'The search was deleted.',
+            'default_set' => 'This search is now your default for :project.',
+            'default_cleared' => 'The default was cleared.',
+        ],
+
+        'errors' => [
+            'too_many' => 'More than :limit saved searches per organization are not '
+                .'provided for. Delete one you no longer need.',
+        ],
+    ],
+
     // The affected versions on a row of the list.
     'release' => [
         'first' => 'First in',

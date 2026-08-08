@@ -6,11 +6,16 @@ use App\Enums\IssueSort;
 use App\Enums\IssueStatus;
 use App\Events\IssueCreated;
 use App\Http\Requests\IssueListRequest;
+use App\Models\Project;
 use App\Support\FilterData;
+use App\Support\Filters\GlobalFilter;
 use App\Support\Formats;
 use App\Support\Issues\IssueActionData;
 use App\Support\Issues\IssueList;
 use App\Support\Issues\IssueSeries;
+use App\Support\Issues\IssueViews;
+use App\Support\Issues\SavedSearchData;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -25,9 +30,16 @@ use Inertia\Response as InertiaResponse;
  */
 class IssueController extends Controller
 {
-    public function __invoke(IssueListRequest $request): InertiaResponse
+    public function __invoke(IssueListRequest $request): InertiaResponse|RedirectResponse
     {
         $filter = $request->filter();
+
+        $default = $this->defaultSearch($request, $filter);
+
+        if ($default !== null) {
+            return redirect()->to($default);
+        }
+
         $period = IssueSeries::periodFor($filter);
 
         $search = $request->search();
@@ -56,6 +68,11 @@ class IssueController extends Controller
             'totalLabel' => Formats::number($issues->total()),
             'sortOptions' => IssueSort::options(),
             'statusOptions' => self::statusOptions(),
+            // Die Standard-Ansichten und die gespeicherten Suchen (S5). Sie
+            // hängen an jeder Fehlerliste, weil sie der Einstieg in sie sind —
+            // eine eigene Seite dafür wäre der Umweg, den man nimmt, um dorthin
+            // zurückzukehren, wo man schon war.
+            'savedSearches' => SavedSearchData::bar($filter, $request->user()),
             // Die Sammelaktionen (S6). Sie brauchen dieselben Filterfelder, mit
             // denen diese Seite gebaut wurde: „alle 12.480" meint genau die
             // Menge, die hier steht, und die Oberfläche schickt sie dafür aus
@@ -92,6 +109,52 @@ class IssueController extends Controller
             // die Seite es.
             'environmentIgnored' => $filter->environment !== null,
         ]);
+    }
+
+    /**
+     * Die Adresse der Suche, mit der dieses Projekt für diesen Betrachter
+     * aufgeht — oder `null`, wenn die Liste so bleibt, wie sie angefragt wurde.
+     *
+     * **Weitergeleitet und nicht stillschweigend angewendet.** Die Liste legt
+     * ihren ganzen Zustand in der Adresszeile ab; eine Voreinstellung, die nur
+     * serverseitig wirkt, wäre die eine Ausnahme davon — und damit eine Seite,
+     * deren Adresse etwas anderes zeigt als der Bildschirm. Nach der
+     * Weiterleitung steht die Suche im Feld, die Sortierung im Auswahlfeld und
+     * beides in der Adresse, die man weitergeben kann.
+     *
+     * Drei Bedingungen, und jede hat einen Grund:
+     *
+     *   - **Es steht kein `q` in der Adresszeile.** Nicht „`q` ist leer": ein
+     *     ausdrücklich geleertes Suchfeld ist eine Aussage („zeig mir alles"),
+     *     und sie zu übergehen hieße, dass man den eigenen Einstieg nicht mehr
+     *     verlassen kann. Das ist zugleich das, was eine Schleife verhindert —
+     *     nach der Weiterleitung steht `q` in der Adresse.
+     *   - **Genau ein Projekt steht in der Auswahl.** Der Einstieg gehört einem
+     *     Projekt; bei dreien wäre nicht zu entscheiden, welcher gilt.
+     *   - **Es ist ein gewöhnlicher Seitenaufruf.** Teilaufrufe (das
+     *     Live-Nachladen holt nur `issues`) und alles, was kein `GET` ist,
+     *     bleiben außen vor: eine Weiterleitung mitten in einem Teilaufruf
+     *     tauschte die Seite unter den Händen des Betrachters aus.
+     */
+    private function defaultSearch(IssueListRequest $request, GlobalFilter $filter): ?string
+    {
+        if ($request->has('q') || ! $request->isMethod('GET') || $request->header('X-Inertia-Partial-Data') !== null) {
+            return null;
+        }
+
+        if ($filter->projects->count() !== 1) {
+            return null;
+        }
+
+        $project = $filter->projects->first();
+
+        if (! $project instanceof Project) {
+            return null;
+        }
+
+        $search = SavedSearchData::defaultSearch($request->user(), $project);
+
+        return $search === null ? null : IssueViews::href($filter, $search->query, $search->sort);
     }
 
     /**
