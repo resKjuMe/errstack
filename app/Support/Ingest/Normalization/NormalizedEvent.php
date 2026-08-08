@@ -4,6 +4,7 @@ namespace App\Support\Ingest\Normalization;
 
 use App\Enums\EventLevel;
 use App\Enums\Platform;
+use App\Models\Event;
 use Illuminate\Support\Carbon;
 
 /**
@@ -102,6 +103,42 @@ final class NormalizedEvent
     public function hasException(): bool
     {
         return $this->exceptions !== [];
+    }
+
+    /**
+     * Die Spur, zu der die Meldung gehört — die Kennung des Ablaufs über alle
+     * beteiligten Dienste hinweg.
+     *
+     * Sie steht im Fach `trace` der Umgebungsangaben, das die Normalisierung
+     * eigens mit festen Feldern versieht ({@see Sections\Contexts}). Abgelegt
+     * wird sie zusätzlich in einer eigenen Spalte ({@see Event::store()}),
+     * weil die Trace-Ansicht danach sucht; gelesen wird sie ausschließlich hier,
+     * damit es eine einzige Stelle gibt, die weiß, wo sie steht.
+     */
+    public function traceId(): ?string
+    {
+        return $this->traceValue('trace_id');
+    }
+
+    /**
+     * Der Schritt innerhalb der Spur, in dem die Meldung entstand.
+     */
+    public function traceSpanId(): ?string
+    {
+        return $this->traceValue('span_id');
+    }
+
+    private function traceValue(string $field): ?string
+    {
+        $trace = $this->contexts['trace'] ?? null;
+
+        if (! is_array($trace)) {
+            return null;
+        }
+
+        $value = $trace[$field] ?? null;
+
+        return is_string($value) && $value !== '' ? $value : null;
     }
 
     /**
