@@ -13,6 +13,7 @@ use App\Support\Performance\DurationHistogram;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
@@ -97,6 +98,7 @@ class PerformanceOverviewTest extends TestCase
      * `assertInertia`-Zusicherungen: hier werden Zahlen geprüft, und die
      * vergleichen sich als PHP-Werte genauer und lesbarer.
      *
+     * @param  TestResponse<Response>  $response
      * @return array<string, mixed>
      */
     private function page(TestResponse $response): array
@@ -112,6 +114,7 @@ class PerformanceOverviewTest extends TestCase
     }
 
     /**
+     * @param  TestResponse<Response>  $response
      * @return array<string, mixed>
      */
     private function props(TestResponse $response): array
@@ -125,16 +128,15 @@ class PerformanceOverviewTest extends TestCase
     }
 
     /**
+     * @param  TestResponse<Response>  $response
      * @return list<array<string, mixed>>
      */
     private function rows(TestResponse $response): array
     {
         $rows = $this->props($response)['rows'] ?? [];
 
-        /** @var list<array<string, mixed>> $rows */
-        $rows = is_array($rows) ? array_values($rows) : [];
-
-        return $rows;
+        /** @var list<array<string, mixed>> */
+        return is_array($rows) ? array_values($rows) : [];
     }
 
     /**
@@ -435,12 +437,14 @@ class PerformanceOverviewTest extends TestCase
 
         $queries = [];
         $this->actingAs($user)->get($this->url())->assertOk();
+        /** @var list<string> $small */
         $small = $queries;
 
         $this->fillWithAggregates($project, 190, 10);
 
         $queries = [];
         $this->actingAs($user)->get($this->url())->assertOk();
+        /** @var list<string> $large */
         $large = $queries;
 
         $this->assertSame(
@@ -558,7 +562,7 @@ class PerformanceOverviewTest extends TestCase
         $names = array_column($rows, 'name');
         sort($names);
 
-        return array_values($names);
+        return $names;
     }
 
     /**
