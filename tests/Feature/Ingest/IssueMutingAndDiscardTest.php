@@ -15,6 +15,7 @@ use App\Models\Issue;
 use App\Models\IssueActivity;
 use App\Models\IssueDiscard;
 use App\Models\Project;
+use App\Models\ProjectKey;
 use App\Support\Issues\IssueActions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -35,14 +36,32 @@ class IssueMutingAndDiscardTest extends TestCase
     use RefreshDatabase;
 
     /**
+     * Ein Schlüssel je Projekt, wiederverwendet: die Zählung des Verworfenen
+     * führt ihn mit, und zwei Schlüssel im selben Test würden sie aufteilen.
+     *
+     * @var array<int, ProjectKey>
+     */
+    private array $keys = [];
+
+    /**
+     * Nimmt eine Meldung an und lässt sie durch die Kette laufen.
+     *
+     * Mit Schlüssel, und das ist hier keine Beiwerk-Angabe: Verworfenes wird je
+     * Projekt **und** Schlüssel gezählt, und ohne ihn fällt die Zählung
+     * stillschweigend aus (ProcessIngestPayload::recordDiscard()). Genau die
+     * Zählung ist aber die Antwort auf „warum kommt der Fehler nicht mehr an?".
+     *
      * @param  array<mixed>  $data
      */
     private function ingest(Project $project, array $data, ?Carbon $at = null): Event
     {
         $eventId = IngestPayload::freshEventId();
 
+        $key = $this->keys[$project->id] ??= ProjectKey::factory()->for($project)->create();
+
         $payload = IngestPayload::factory()->create([
             'project_id' => $project->id,
+            'project_key_id' => $key->id,
             'event_id' => $eventId,
             'payload' => (string) json_encode($data + [
                 'event_id' => $eventId,
