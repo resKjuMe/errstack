@@ -2,6 +2,8 @@
 
 namespace App\Support\SelfMonitoring;
 
+use App\Models\ProjectKey;
+
 /**
  * Die DSN, mit der Errstack sich selbst meldet — zerlegt in das, was die
  * einzelnen Meldewege davon brauchen.
@@ -16,8 +18,7 @@ namespace App\Support\SelfMonitoring;
  *
  * Der Aufbau ist der von Sentry, weil die SDKs nichts anderes lesen:
  * `{schema}://{öffentlicher Schlüssel}@{rechner}[:{port}][{pfad}]/{projekt}`.
- * Er entsteht in {@see \App\Models\ProjectKey::dsn()} und wird hier
- * zurückgelesen.
+ * Er entsteht in {@see ProjectKey::dsn()} und wird hier zurückgelesen.
  *
  * Unbrauchbares ergibt `null` und keine Ausnahme: eine halb ausgefüllte
  * Zeile in der `.env` darf die Anwendung nicht am Starten hindern. Was nicht

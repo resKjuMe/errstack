@@ -31,9 +31,10 @@ class SelfMonitoringDsnTest extends TestCase
     {
         $dsn = Dsn::parse('https://abc123@errstack.example/7');
 
+        $this->assertNotNull($dsn);
         $this->assertSame(
             'https://errstack.example/api/7/security/?sentry_key=abc123',
-            $dsn?->securityReportUrl(),
+            $dsn->securityReportUrl(),
         );
     }
 
@@ -41,9 +42,10 @@ class SelfMonitoringDsnTest extends TestCase
     {
         $dsn = Dsn::parse('https://abc123@errstack.example/7');
 
+        $this->assertNotNull($dsn);
         $this->assertSame(
             'https://errstack.example/api/7/cron/zeitplan/abc123',
-            $dsn?->cronCheckInUrl('zeitplan'),
+            $dsn->cronCheckInUrl('zeitplan'),
         );
     }
 
@@ -56,10 +58,11 @@ class SelfMonitoringDsnTest extends TestCase
     {
         $dsn = Dsn::parse('https://abc123@example.test:8443/werkzeuge/errstack/12');
 
-        $this->assertSame('https://example.test:8443/werkzeuge/errstack', $dsn?->baseUrl());
+        $this->assertNotNull($dsn);
+        $this->assertSame('https://example.test:8443/werkzeuge/errstack', $dsn->baseUrl());
         $this->assertSame(
             'https://example.test:8443/werkzeuge/errstack/api/12/cron/zeitplan/abc123',
-            $dsn?->cronCheckInUrl('zeitplan'),
+            $dsn->cronCheckInUrl('zeitplan'),
         );
     }
 
@@ -71,7 +74,10 @@ class SelfMonitoringDsnTest extends TestCase
     public function test_the_dsn_survives_the_round_trip(): void
     {
         foreach (['https://abc123@errstack.example/7', 'http://k@localhost:8000/1'] as $original) {
-            $this->assertSame($original, Dsn::parse($original)?->toString());
+            $dsn = Dsn::parse($original);
+
+            $this->assertNotNull($dsn);
+            $this->assertSame($original, $dsn->toString());
         }
     }
 

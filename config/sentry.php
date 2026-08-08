@@ -1,5 +1,7 @@
 <?php
 
+use App\Support\SelfMonitoring\DeployedVersion;
+
 /**
  * Sentry Laravel SDK configuration file.
  *
@@ -28,8 +30,8 @@ return [
     //
     // `SENTRY_RELEASE` hat Vorrang; ohne sie zählt eine Datei `VERSION` im
     // Wurzelverzeichnis, die das Deploy-Skript schreibt
-    // ({@see App\Support\SelfMonitoring\DeployedVersion}).
-    'release' => App\Support\SelfMonitoring\DeployedVersion::resolve(env('SENTRY_RELEASE'), dirname(__DIR__)),
+    // ({@see DeployedVersion}).
+    'release' => DeployedVersion::resolve(env('SENTRY_RELEASE'), dirname(__DIR__)),
 
     // When left empty or `null` the Laravel environment will be used (usually discovered from `APP_ENV` in your `.env`)
     'environment' => env('SENTRY_ENVIRONMENT'),
