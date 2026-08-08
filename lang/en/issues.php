@@ -335,6 +335,15 @@ return [
             'toggle' => 'Expand and collapse frame',
         ],
 
+        'symbolication' => [
+            'pending' => 'Translating the stack trace using source maps …',
+            'counted' => ':mapped of :total frames translated',
+            'show_minified' => 'Show minified version',
+            'show_source' => 'Show original source',
+            'frame_count' => '(:count×)',
+            'from' => 'Reported as',
+        ],
+
         'breadcrumbs' => [
             'title' => 'Last steps',
             'description' => 'What happened before the error — oldest step first.',

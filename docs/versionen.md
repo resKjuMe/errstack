@@ -149,6 +149,9 @@ Liste genannt — sonst sähe sie aus, als hätte sie den Begriff ausgewertet.
 - **Gesundheit und Verbreitung** einer Version (wie viele Sitzungen und Nutzer
   mit ihr abstürzen, wie schnell sie sich ausbreitet) sind Fragen an die
   Sitzungsdaten — R7.
+- **Quellkarten und die Rückübersetzung minimierter Stacktraces** stehen in
+  [quellkarten.md](quellkarten.md) — R5. Die Artefakte hängen an einer Version;
+  was mit ihnen geschieht, ist eine eigene Frage.
 - **Commits und Repositories** an einer Version — R2. Die Spalte `ref` steht
   dafür schon bereit und bleibt bis dahin leer.
 - **Detailseite und Vergleich zur Vorversion** — R8.

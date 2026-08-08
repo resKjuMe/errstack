@@ -18,6 +18,8 @@ return [
         'first_event' => 'Zuerst gesehen: :value',
         'no_events' => 'Noch keine Meldung',
         'released_at' => 'Ausgeliefert: :value',
+        'artifacts' => ':count Artefakte',
+        'no_artifacts' => 'Keine Quellkarten',
     ],
 
     'columns' => [

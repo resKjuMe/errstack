@@ -5,6 +5,7 @@ use App\Support\Ingest\Processing\Steps\DecodePayload;
 use App\Support\Ingest\Processing\Steps\FilterEvent;
 use App\Support\Ingest\Processing\Steps\GroupEvent;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
+use App\Support\Ingest\Processing\Steps\QueueSymbolication;
 use App\Support\Ingest\Processing\Steps\RecordProfile;
 use App\Support\Ingest\Processing\Steps\RecordRelease;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
@@ -177,6 +178,7 @@ return [
             AggregateIssue::class,
             RecordRelease::class,
             RecordUserReport::class,
+            QueueSymbolication::class,
         ],
 
     ],

@@ -335,6 +335,15 @@ return [
             'toggle' => 'Rahmen auf- und zuklappen',
         ],
 
+        'symbolication' => [
+            'pending' => 'Stacktrace wird über die Quellkarten zurückübersetzt …',
+            'counted' => ':mapped von :total Rahmen zurückübersetzt',
+            'show_minified' => 'Minimierte Fassung zeigen',
+            'show_source' => 'Originalquelle zeigen',
+            'frame_count' => '(:count×)',
+            'from' => 'Gemeldet als',
+        ],
+
         'breadcrumbs' => [
             'title' => 'Letzte Schritte',
             'description' => 'Was vor dem Fehler passiert ist — ältester Schritt zuerst.',

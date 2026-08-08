@@ -5,6 +5,7 @@ namespace App\Support\Ingest\Normalization;
 use App\Enums\EventLevel;
 use App\Support\Ingest\Normalization\Sections\Breadcrumbs;
 use App\Support\Ingest\Normalization\Sections\Contexts;
+use App\Support\Ingest\Normalization\Sections\DebugMeta;
 use App\Support\Ingest\Normalization\Sections\Exceptions;
 use App\Support\Ingest\Normalization\Sections\Frames;
 use App\Support\Ingest\Normalization\Sections\Message;
@@ -74,6 +75,7 @@ final class EventNormalizer
         private readonly Contexts $contexts,
         private readonly Breadcrumbs $breadcrumbs,
         private readonly Sdk $sdk,
+        private readonly DebugMeta $debugMeta,
     ) {}
 
     /**
@@ -103,6 +105,7 @@ final class EventNormalizer
             new Contexts($sanitizer),
             new Breadcrumbs($sanitizer, $timestamps),
             new Sdk($sanitizer),
+            new DebugMeta($sanitizer),
         );
     }
 
@@ -174,6 +177,7 @@ final class EventNormalizer
             unknown: $this->unknown($data),
             notes: $notes->toArray(),
             fingerprint: $this->fingerprint($data['fingerprint'] ?? null),
+            debugMeta: $this->debugMeta->normalize($data['debug_meta'] ?? null, 'debug_meta'),
         );
     }
 

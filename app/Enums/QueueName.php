@@ -3,6 +3,7 @@
 namespace App\Enums;
 
 use App\Jobs\DetectPerformanceIssues;
+use App\Jobs\SymbolicateEvent;
 
 /**
  * Warteschlangen der Anwendung. Die Reihenfolge der Cases ist zugleich die
@@ -29,12 +30,27 @@ enum QueueName: string
      */
     case Performance = 'performance';
 
+    /**
+     * Das Zurückübersetzen minimierter Stacktraces über Quellkarten
+     * ({@see SymbolicateEvent}).
+     *
+     * Eine eigene Warteschlange, weil dieser Auftrag als einziger große Dateien
+     * einliest: eine Quellkarte mit eingebettetem Quelltext bringt zweistellige
+     * Megabyte mit, und ihr Zerlegen dauert. In `default` würde jede
+     * Aufräumarbeit dahinter warten, in `ingest` die Aufnahme selbst.
+     *
+     * Hinter `performance` und vor `default`: die Übersetzung ist nachgelagert —
+     * niemand wartet auf sie, solange die Fehlerseite „wird übersetzt" zeigen
+     * kann.
+     */
+    case Symbolication = 'symbolication';
+
     /** Alles Übrige. */
     case Default = 'default';
 
     /**
      * Warteschlangen in Prioritätsreihenfolge, wie sie `queue:work --queue=…`
-     * erwartet: `ingest,notifications,performance,default`.
+     * erwartet: `ingest,notifications,performance,symbolication,default`.
      */
     public static function priority(): string
     {
