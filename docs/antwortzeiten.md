@@ -10,9 +10,10 @@ Envelope-Element {"type":"transaction"}
    ProcessIngestPayload  →  ProcessingPipeline
         │                        └ RecordTransaction  ← dieser Teil
         ▼
-   transactions            eine Zeile je gemessenem Aufruf
-   transaction_spans       die Einzelschritte, als Baum
-   transaction_aggregates  Anzahl, Summe, Verteilung je Minute
+   transactions                 eine Zeile je gemessenem Aufruf
+   transaction_spans            die Einzelschritte, als Baum
+   transaction_aggregates       Anzahl, Summe, Verteilung je Minute
+   transaction_user_aggregates  Nutzer und Unzufriedene je Minute
 ```
 
 ## Eine Transaktion ist kein Fehler
@@ -36,6 +37,7 @@ sehen keine Transaktion.
 | `transactions` | Name, Operation, Anfang/Ende, Dauer, Ausgang, Umgebung, Version, Nutzer-Kennung, Trace-Zusammenhang, Messwerte |
 | `transaction_spans` | Operation, Beschreibung, Dauer, Eltern-Schritt, Zusatzangaben, Reihenfolge |
 | `transaction_aggregates` | je Name, Operation, Umgebung und Minute: Anzahl, Fehlschläge, Summe, Kleinstes, Größtes, Verteilung |
+| `transaction_user_aggregates` | je Nutzer, Name, Operation, Umgebung und Minute: Anzahl der Aufrufe und wie viele davon zu langsam waren |
 
 Zwei Festlegungen fallen auf:
 
@@ -86,6 +88,30 @@ eine bekannte Ungenauigkeit — der Fehler eines Perzentils ist höchstens die
 Breite seiner Klasse, und ausgewiesen wird deren Obergrenze, also nie zu
 niedrig.
 
+**Warum die Verteilung immer ein JSON-Objekt ist.** `json_encode` macht aus
+einem Feld mit lückenlosen Schlüsseln ab null eine Liste (`[2,5]`) und sonst ein
+Objekt (`{"7":2}`) — dieselbe Klasse stünde damit mal unter `$."0"` und mal
+unter `$[0]`. Für PHP ist das gleichgültig, für die Übersicht nicht: sie legt
+die Verteilungen eines Zeitraums **in der Datenbank** zusammen und liest je
+Klasse einen festen Pfad. `TransactionAggregate` schreibt deshalb mit
+`JSON_FORCE_OBJECT`.
+
+**Nutzer stehen in einer zweiten Tabelle.** „Wie viele Nutzer sind betroffen"
+lässt sich aus dem Aggregat nicht beantworten — der Nutzer steht bewusst nicht
+in dessen Schlüssel. Die Frage aus den Einzelmessungen zu beantworten
+(`COUNT(DISTINCT user_identifier)`) wäre genau der Vollscan, den die
+Vorberechnung vermeiden soll. Also eine eigene Vorberechnung mit einer Zeile je
+Nutzer, Transaktion und Minute; die Kennung steht dort **gehasht**, weil sie nur
+gezählt und nie angezeigt wird. Ihre Zeilenzahl wächst mit der Zahl der
+wiederkehrenden Nutzer und nicht mit der der Aufrufe.
+
+Mitgeschrieben wird dabei, wie viele Aufrufe eines Nutzers über der
+Unzufriedenheits-Schwelle lagen (`PERFORMANCE_APDEX_THRESHOLD_US` mal
+`PERFORMANCE_MISERY_FACTOR`, Vorgabe 300 ms mal 4 — die Apdex-Rechnung von
+Sentry). Die Bewertung fällt **beim Aufnehmen**: eine später geänderte Schwelle
+bewertet Altdaten nicht rückwirkend um. Das ist der Preis dafür, die Kennzahl
+ohne Vollscan zu bekommen.
+
 **Warum die Zeile gesperrt wird.** Anzahl und Summe ließen sich mit
 `count = count + 1` ohne Sperre hochzählen, die Verteilung nicht: sie ist ein
 Feld-Baum, der gelesen, geändert und zurückgeschrieben wird. Zwei Arbeiter ohne
@@ -129,6 +155,9 @@ sollen sich die Rohdaten erneut durchlaufen lassen.
 
 ## Was hier noch nicht steht
 
-Die Auswertung. Übersicht (PF2), Detailseite mit Verteilung (PF3),
-Trace-Ansicht (PF4), Web Vitals (PF5), automatisch erkannte Probleme (PF6) und
-Trend-Erkennung (PF7) lesen aus diesen Tabellen — geschrieben werden sie hier.
+Die Auswertung. Die Übersicht (PF2) liest aus diesen Tabellen — sie steht unter
+`/leistung` und rechnet mit drei Abfragen, unabhängig von der Datenmenge
+(`App\Support\Performance\TransactionOverview`). Detailseite mit Verteilung
+(PF3), Trace-Ansicht (PF4), Web Vitals (PF5), automatisch erkannte Probleme
+(PF6) und Trend-Erkennung (PF7) lesen ebenfalls von hier — geschrieben werden
+die Tabellen in diesem Teil.

@@ -297,11 +297,40 @@ return [
     | gezählt und protokolliert, damit ein abgeschnittener Ablauf als solcher
     | erkennbar bleibt.
     |
+    | Die beiden anderen Werte legen fest, ab wann ein Aufruf für den Nutzer
+    | nicht mehr bloß langsam, sondern ärgerlich war — die Grundlage der Kennzahl
+    | „Nutzer-Unzufriedenheit" der Performance-Übersicht:
+    |
+    |   apdex_threshold_us — die Zufriedenheitsschwelle. Bis hierher gilt ein
+    |                        Aufruf als zügig bedient. 300 ms, wie bei Sentry:
+    |                        darunter empfindet niemand eine Wartezeit.
+    |   misery_factor      — das Vielfache davon, ab dem ein Nutzer als
+    |                        unzufrieden zählt. Vier, ebenfalls aus der
+    |                        Apdex-Rechnung: zwischen „spürbar langsam" und
+    |                        „aufgegeben" liegt eine Größenordnung, und eine
+    |                        Kennzahl, die schon bei geringfügiger Verzögerung
+    |                        ausschlägt, unterscheidet nichts mehr.
+    |
+    | Die Bewertung fällt **beim Aufnehmen** und steht danach in
+    | `transaction_user_aggregates`. Eine spätere Änderung wirkt deshalb nur auf
+    | neue Messungen und bewertet Altdaten nicht rückwirkend um. Das ist der
+    | Preis dafür, die Kennzahl ohne einen Vollscan über die Einzelmessungen zu
+    | bekommen — wer die Werte ändert, sollte das im Hinterkopf behalten.
+    |
+    | Beide Werte sind je Anwendung verschieden: 300 ms sind für eine Suchmaske
+    | viel und für einen nächtlichen Import nichts. Sie stehen hier und nicht je
+    | Projekt in der Datenbank, weil die Übersicht bislang keine Stelle hat, an
+    | der sie zu pflegen wären — das gehört zu den Schwellwerten der Alarme (A3).
+    |
     */
 
     'performance' => [
 
         'max_spans' => (int) env('INGEST_MAX_SPANS', 1000),
+
+        'apdex_threshold_us' => (int) env('PERFORMANCE_APDEX_THRESHOLD_US', 300_000),
+
+        'misery_factor' => (int) env('PERFORMANCE_MISERY_FACTOR', 4),
 
     ],
 

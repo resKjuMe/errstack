@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import AppShell from './shell/AppShell.jsx';
 import Dashboard from './shell/pages/Dashboard.jsx';
+import Performance from './shell/pages/Performance.jsx';
 import Components from './shell/pages/Components.jsx';
 import Profile from './shell/pages/Profile.jsx';
 import OrganizationsIndex from './shell/pages/organizations/Index.jsx';
@@ -35,6 +36,7 @@ import VerifyEmail from './shell/pages/auth/VerifyEmail.jsx';
 // GuestShell ihr eigenes mit.
 const pages = {
     Dashboard,
+    Performance,
     Components,
     Profile,
     'organizations/Index': OrganizationsIndex,

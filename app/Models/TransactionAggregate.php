@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Support\Performance\DurationHistogram;
 use Carbon\CarbonImmutable;
+use Database\Factories\TransactionAggregateFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
@@ -48,6 +50,9 @@ use Illuminate\Support\Facades\DB;
  */
 class TransactionAggregate extends Model
 {
+    /** @use HasFactory<TransactionAggregateFactory> */
+    use HasFactory;
+
     /**
      * Schreibt eine Messung in ihr Zeitfenster fort.
      *
@@ -175,6 +180,30 @@ class TransactionAggregate extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * Wie die Feld-Bäume dieses Models nach JSON geschrieben werden.
+     *
+     * `JSON_FORCE_OBJECT` für die Verteilung, und das ist keine Formsache. Die
+     * Verteilung ist ein Feld mit Zahlen als Schlüssel; sind die lückenlos und
+     * beginnen bei null (`[0 => 2, 1 => 5]` — lauter sehr kurze Messungen),
+     * schreibt `json_encode` daraus eine JSON-**Liste** `[2,5]`, sonst ein
+     * Objekt `{"7":2}`. Dieselbe Klasse stünde damit mal unter `$."0"` und mal
+     * unter `$[0]`.
+     *
+     * Gelesen wird beides ({@see DurationHistogram::fromStored()}), aber die
+     * Performance-Übersicht legt die Verteilungen eines Zeitraums **in der
+     * Datenbank** zusammen und braucht dafür je Klasse genau einen Pfad. Ohne
+     * diese Festlegung müsste sie zwei Pfade prüfen — und in MySQL wäre der
+     * zweite sogar falsch, weil `$[0]` auf ein Objekt angewendet das ganze
+     * Objekt liefert statt nichts.
+     *
+     * @param  string  $key
+     */
+    protected function getJsonCastFlags($key): int
+    {
+        return parent::getJsonCastFlags($key) | JSON_FORCE_OBJECT;
     }
 
     /**

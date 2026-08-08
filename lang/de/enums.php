@@ -246,4 +246,12 @@ return [
         'day' => 'Täglich',
     ],
 
+    'trend_direction' => [
+        'new' => 'Neu — im Vorzeitraum nicht gemessen',
+        'unknown' => 'Zu wenige Messungen für einen Vergleich',
+        'flat' => 'Unverändert',
+        'better' => 'Schneller geworden',
+        'worse' => 'Langsamer geworden',
+    ],
+
 ];
