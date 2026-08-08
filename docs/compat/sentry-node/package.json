@@ -1,0 +1,12 @@
+{
+    "name": "errstack-compat-sentry-node",
+    "private": true,
+    "type": "module",
+    "description": "Kompatibilitäts-Beispiel: unverändertes @sentry/node gegen den Klon",
+    "scripts": {
+        "senden": "node senden.mjs"
+    },
+    "dependencies": {
+        "@sentry/node": "^10.69.0"
+    }
+}

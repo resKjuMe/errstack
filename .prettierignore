@@ -11,6 +11,9 @@ package-lock.json
 # Von Composer selbst geschrieben — Prettier wuerde dagegen anformatieren
 composer.json
 
+# Aufgezeichnete SDK-Nutzdaten: Mitschnitt, nicht Quelltext
+/tests/Fixtures
+
 # PHP formatiert Pint, nicht Prettier
 *.php
 
