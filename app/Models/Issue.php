@@ -60,6 +60,8 @@ use Illuminate\Support\Facades\DB;
  * @property EventLevel $level
  * @property IssueStatus $status
  * @property IssuePriority $priority
+ * @property bool $priority_locked
+ * @property CarbonImmutable|null $escalated_at
  * @property int $times_seen
  * @property int $users_seen
  * @property int $time_lost_us
@@ -778,6 +780,8 @@ class Issue extends Model
         'level',
         'status',
         'priority',
+        'priority_locked',
+        'escalated_at',
         'times_seen',
         'users_seen',
         'time_lost_us',
@@ -810,6 +814,7 @@ class Issue extends Model
             'level' => EventLevel::class,
             'status' => IssueStatus::class,
             'priority' => IssuePriority::class,
+            'priority_locked' => 'boolean',
             'times_seen' => 'integer',
             'users_seen' => 'integer',
             'time_lost_us' => 'integer',
@@ -819,6 +824,7 @@ class Issue extends Model
             'last_seen' => 'immutable_datetime',
             'first_release_at' => 'immutable_datetime',
             'last_release_at' => 'immutable_datetime',
+            'escalated_at' => 'immutable_datetime',
             'resolved_at' => 'immutable_datetime',
             'resolved_in_next_release' => 'boolean',
             'ignored_at' => 'immutable_datetime',

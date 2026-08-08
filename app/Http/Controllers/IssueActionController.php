@@ -54,6 +54,7 @@ class IssueActionController extends Controller
             'resolve' => $actions->resolve($query, $request->resolveMode()),
             'unresolve' => $actions->unresolve($query),
             'ignore' => $actions->ignore($query, $request->ignoreMode(), $request->threshold(), $request->window()),
+            'priority' => $actions->prioritize($query, $request->priority()),
             'bookmark' => $actions->bookmark($query, true),
             'unbookmark' => $actions->bookmark($query, false),
             'subscribe' => $actions->subscribe($query, true),
@@ -233,6 +234,20 @@ class IssueActionController extends Controller
                 'count' => $count,
                 'condition' => $request->resolveMode()->label(),
             ]);
+        }
+
+        if ($action === 'priority') {
+            $priority = $request->priority();
+
+            // Zwei Meldungen und nicht eine mit einem Platzhalter: „auf
+            // automatisch gesetzt" ist keine Stufe, und ein Satz, der beides
+            // abdecken müsste, sagt am Ende keines von beiden.
+            return $priority === null
+                ? __('issues.actions.flash.priority_auto', ['count' => $count])
+                : __('issues.actions.flash.priority', [
+                    'count' => $count,
+                    'priority' => $priority->label(),
+                ]);
         }
 
         return __('issues.actions.flash.'.$action, ['count' => $count]);

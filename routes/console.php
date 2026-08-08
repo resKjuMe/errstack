@@ -50,3 +50,17 @@ ScheduleCheckIn::attach($sweep);
 // doppelte Läufe abgesichert —, sondern gegen das Auflaufen: ein Durchlauf,
 // der länger als eine Minute braucht, würde sonst vom nächsten überholt.
 Schedule::command('alerts:sweep')->everyMinute()->withoutOverlapping();
+
+// Die Wichtigkeit der Fehler fortschreiben und eskalierte Stummschaltungen
+// erkennen (S11).
+//
+// Alle fünfzehn Minuten und nicht minütlich: die Ableitung liest den Verlauf von
+// zwei Tagen, und der ändert sich in einer Minute um nichts, was eine Einordnung
+// umwerfen würde. Die Eskalation misst gegen die zuletzt **vollständige** Stunde
+// ({@see App\Support\Issues\IssuePrioritySweep}) — häufiger nachzusehen als
+// viermal in der Stunde bringt deshalb keine Meldung früher, nur mehr Abfragen.
+//
+// `withoutOverlapping`, weil ein Durchlauf über viele Fehler länger dauern kann
+// als der Abstand zum nächsten: zwei gleichzeitige Durchläufe würden dieselbe
+// Eskalation zweimal melden.
+Schedule::command('issues:prioritize')->everyFifteenMinutes()->withoutOverlapping();

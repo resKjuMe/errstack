@@ -103,10 +103,15 @@ final class IssueSeries
      * fünfzig Umläufe für eine Grafik von Daumenbreite — dieselbe Rechnung wie
      * bei den Zählern selbst.
      *
+     * Öffentlich, weil der Durchlauf der Wichtigkeit dieselbe Zuordnung braucht
+     * ({@see IssuePrioritySweep}): eine zweite Fassung davon wäre die Stelle, an
+     * der ein zusammengeführter Fehler in der Grafik auftritt und in der
+     * Bewertung stillsteht.
+     *
      * @param  list<int>  $issueIds
      * @return array<int, int>
      */
-    private static function owners(array $issueIds): array
+    public static function owners(array $issueIds): array
     {
         $owner = array_combine($issueIds, $issueIds);
 
