@@ -38,11 +38,15 @@ final class TrendNotifier
 
     public function send(TransactionTrendDetection $detection): void
     {
-        $project = $detection->project;
-
-        if ($project === null || ! $detection->isRegression()) {
+        // Die zweite Sperre gegen eine Meldung über eine gute Nachricht — die
+        // erste steht im Durchlauf. Sie ist hier keine Doppelung, sondern die
+        // Zusage dieser Klasse: wer sie mit einer Verbesserung aufruft, bekommt
+        // Stille und keine Meldung „schneller geworden" in der Nachtschicht.
+        if (! $detection->isRegression()) {
             return;
         }
+
+        $project = $detection->project;
 
         $this->dispatcher->send($project->organization, new NotificationMessage(
             title: __('performance_trends.notification.title', [
@@ -84,7 +88,7 @@ final class TrendNotifier
     private function context(TransactionTrendDetection $detection): array
     {
         $context = [
-            __('performance_trends.notification.context_project') => $detection->project?->name ?? '',
+            __('performance_trends.notification.context_project') => $detection->project->name,
             __('performance_trends.notification.context_environment') => $detection->environment,
             __('performance_trends.notification.context_transaction') => $detection->name,
             __('performance_trends.notification.context_before') => self::duration($detection->before_p95_us),
@@ -101,7 +105,7 @@ final class TrendNotifier
 
         if ($deploy !== null) {
             $context[__('performance_trends.notification.context_deploy')] = __('performance_trends.notification.deploy', [
-                'version' => $deploy->release?->version ?? $deploy->label(),
+                'version' => $deploy->release->version,
                 'at' => (string) Formats::dateTime($deploy->finished_at),
             ]);
         }

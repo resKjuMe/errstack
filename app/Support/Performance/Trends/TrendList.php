@@ -127,7 +127,7 @@ final class TrendList
             // Genauigkeit, die die Klassenbreite der Verteilung nicht hergibt.
             'confidenceLabel' => Formats::number($detection->z_score, 1),
             'deploy' => $deploy === null ? null : [
-                'version' => $deploy->release?->version ?? $deploy->label(),
+                'version' => $deploy->release->version,
                 'atLabel' => Formats::dateTime($deploy->finished_at),
             ],
             'seenAtLabel' => Formats::dateTime($detection->seen_at),

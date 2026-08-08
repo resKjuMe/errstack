@@ -161,7 +161,7 @@ class TransactionTrendTest extends TestCase
         /** @var list<array<string, mixed>> $rows */
         $rows = $trends['data'] ?? [];
 
-        return array_values($rows);
+        return $rows;
     }
 
     public function test_a_transaction_that_turned_slower_is_found_and_reported(): void

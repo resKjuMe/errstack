@@ -37,7 +37,7 @@ class BreakpointScanTest extends TestCase
     {
         $start = CarbonImmutable::parse('2026-08-01 00:00:00', 'UTC');
 
-        return array_values(array_map(
+        return array_map(
             static fn (int $durationUs, int $index): TrendWindow => new TrendWindow(
                 at: $start->addHours($index),
                 count: $perWindow,
@@ -47,7 +47,7 @@ class BreakpointScanTest extends TestCase
             ),
             $durationsUs,
             array_keys($durationsUs),
-        ));
+        );
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\TrendDirection;
+use App\Support\Performance\Trends\Breakpoint;
 use Carbon\CarbonImmutable;
 use Database\Factories\TransactionTrendDetectionFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -66,6 +67,18 @@ class TransactionTrendDetection extends Model
     protected function unseen(Builder $query): void
     {
         $query->whereNull('seen_at');
+    }
+
+    /**
+     * Ob es die schlechte Nachricht ist.
+     *
+     * Dieselbe Frage wie am Befund ({@see Breakpoint::isRegression()})
+     * und mit Absicht auch hier: der Versand entscheidet daran, ob überhaupt
+     * etwas hinausgeht, und er bekommt die Zeile und nicht den Befund.
+     */
+    public function isRegression(): bool
+    {
+        return $this->direction === TrendDirection::Worse;
     }
 
     /**
