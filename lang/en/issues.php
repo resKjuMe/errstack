@@ -237,6 +237,7 @@ return [
         'search' => 'Search for a person or a team',
         'nobody' => 'Nobody',
         'team' => 'Team',
+        'suggested' => 'suggested',
         'no_match' => 'No account and no team by that name.',
 
         'state' => ':name is responsible, since :at.',

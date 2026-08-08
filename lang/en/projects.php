@@ -90,6 +90,12 @@ return [
         'manage' => 'View history',
     ],
 
+    'ownership' => [
+        'title' => 'Ownership',
+        'description' => 'Who looks after an error depends on where it happened. Rules on path, URL, module or tag suggest the owners — and assign them if you want.',
+        'manage' => 'View rules',
+    ],
+
     'sampling' => [
         'title' => 'Sampling',
         'description' => 'Only a configurable share of the response times is stored; the evaluations scale it back up. Error reports are untouched by this.',

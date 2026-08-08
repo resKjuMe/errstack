@@ -36,6 +36,7 @@ use Illuminate\Support\Str;
  * @property bool $filter_message_patterns
  * @property bool $filter_ip_addresses
  * @property bool $filter_releases
+ * @property bool $ownership_auto_assign
  */
 #[Fillable([
     'name',
@@ -53,6 +54,7 @@ use Illuminate\Support\Str;
     'filter_message_patterns',
     'filter_ip_addresses',
     'filter_releases',
+    'ownership_auto_assign',
 ])]
 class Project extends Model
 {
@@ -278,6 +280,17 @@ class Project extends Model
     }
 
     /**
+     * Die Zuständigkeits-Regeln (R6): wer sich um einen Fehler kümmert,
+     * abgeleitet aus dem Ort, an dem er passiert ist.
+     *
+     * @return HasMany<OwnershipRule, $this>
+     */
+    public function ownershipRules(): HasMany
+    {
+        return $this->hasMany(OwnershipRule::class);
+    }
+
+    /**
      * Die hochgeladenen Bauartefakte aller Versionen dieses Projekts (R5).
      *
      * Sie hängen an einer Version und stehen trotzdem hier: die Beziehung ist
@@ -329,6 +342,7 @@ class Project extends Model
             'filter_message_patterns' => 'boolean',
             'filter_ip_addresses' => 'boolean',
             'filter_releases' => 'boolean',
+            'ownership_auto_assign' => 'boolean',
         ];
     }
 }

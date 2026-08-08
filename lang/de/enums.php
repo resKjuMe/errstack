@@ -163,6 +163,13 @@ return [
         'release' => 'Release-Sperrliste',
     ],
 
+    'ownership_matcher' => [
+        'path' => 'Pfad',
+        'url' => 'Adresse',
+        'module' => 'Modul',
+        'tag' => 'Merkmal',
+    ],
+
     'event_level' => [
         'fatal' => 'Kritisch',
         'error' => 'Fehler',

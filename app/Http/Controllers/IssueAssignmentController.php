@@ -2,12 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Event;
+use App\Models\Issue;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Models\Team;
 use App\Models\User;
 use App\Support\Issues\IssueAssignee;
+use App\Support\Ownership\OwnershipAssignment;
+use App\Support\Ownership\OwnershipSubjects;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * Wem sich ein Fehler zuweisen lässt — die Vorschlagsliste der Aktionsleiste.
@@ -26,11 +32,18 @@ use Illuminate\Http\Request;
  * zweite Weg, denselben Zuständigen zu benennen, und der erste, der bei einer
  * Änderung übersehen wird.
  *
- * **Automatische Vorschläge kommen später.** Die Zuständigkeits-Regeln (R6) und
- * die verdächtigen Commits (R4) werden die Liste anführen können, sobald es sie
- * gibt; bis dahin steht hier, wer überhaupt in Frage kommt. Der Unterschied ist
- * für den Aufrufer keiner — er bekommt eine geordnete Liste, und woher ihre
- * Reihenfolge stammt, ist die Sache dieser Klasse.
+ * **Die Zuständigkeits-Regeln führen die Liste an** (R6), sobald der Aufruf
+ * sagt, um welchen Fehler es geht (`?issue=`). Sie stehen oben und mit eigener
+ * Art (`ownership`), damit die Oberfläche sie als Vorschlag ausweisen kann:
+ * „das Regelwerk sagt die Kasse" ist eine andere Auskunft als „die Kasse gibt
+ * es". Ohne Kennung — bei einer Sammelaktion über 12.480 Einträge — bleibt es
+ * bei der reinen Auswahlliste: eine Zuständigkeit, die für den einen Fehler
+ * gilt, gilt nicht für die anderen 12.479, und sie trotzdem vorzuschlagen wäre
+ * ein Vorschlag, der meistens danebenliegt.
+ *
+ * Die verdächtigen Commits (R4) werden sich an derselben Stelle einreihen. Für
+ * den Aufrufer ist das kein Unterschied — er bekommt eine geordnete Liste, und
+ * woher ihre Reihenfolge stammt, ist die Sache dieser Klasse.
  */
 class IssueAssignmentController extends Controller
 {
@@ -59,18 +72,104 @@ class IssueAssignmentController extends Controller
 
         $term = trim((string) $request->query('q', ''));
 
+        $ownership = $this->ownership($request, $organization, $term);
+
+        // Was das Regelwerk vorschlägt, steht nicht ein zweites Mal in der
+        // Auswahlliste darunter — derselbe Name zweimal sieht nach einem Fehler
+        // aus. `me` bleibt davon unberührt: es ist keine Wiederholung, sondern
+        // eine andere Aussage („ich", nicht „diese Person").
+        $taken = array_column($ownership, 'value');
+
         return response()->json([
             'suggestions' => [
-                // Der Betrachter selbst zuerst und mit dem festen Text `me`:
+                // Die Zuständigkeits-Regeln zuerst: wenn es eine Antwort auf
+                // „wem gehört das?" gibt, ist sie die gesuchte.
+                ...$ownership,
+                // Dann der Betrachter selbst mit dem festen Text `me`:
                 // „mir zuweisen" ist der häufigste Fall, und `me` bleibt
                 // richtig, auch wenn sich die eigene Adresse ändert.
                 ...$this->self($viewer, $term),
                 // Dann die Teams: sie sind die wenigeren und die, die man
                 // seltener ausgeschrieben im Kopf hat.
-                ...$this->teams($organization, $term),
-                ...$this->members($organization, $viewer, $term),
+                ...$this->without($this->teams($organization, $term), $taken),
+                ...$this->without($this->members($organization, $viewer, $term), $taken),
             ],
         ]);
+    }
+
+    /**
+     * Was die Zuständigkeits-Regeln zu diesem Fehler sagen (R6).
+     *
+     * **Ohne `?issue=` gibt es nichts zu sagen**, und das ist der Regelfall bei
+     * einer Sammelaktion. Ein Fehler, den der Betrachter nicht sehen darf oder
+     * der einer anderen Organisation gehört, wird still übergangen: die Liste
+     * ist eine Auswahlhilfe und nicht der Ort, an dem sich die Sichtbarkeit von
+     * Einträgen erfragen lässt.
+     *
+     * @return list<array{value: string, label: string, kind: string}>
+     */
+    private function ownership(Request $request, Organization $organization, string $term): array
+    {
+        $id = $request->query('issue');
+
+        if (! is_string($id) && ! is_int($id)) {
+            return [];
+        }
+
+        $issue = Issue::query()->with('project.organization')->find((int) $id);
+        $project = $issue?->project;
+
+        if (
+            ! $issue instanceof Issue
+            || ! $project instanceof Project
+            || $project->organization_id !== $organization->id
+            || ! Gate::allows('view', $issue)
+        ) {
+            return [];
+        }
+
+        // Das zuletzt gesehene Ereignis: die Regeln greifen auf Pfade, Adressen
+        // und Merkmale einer **Meldung** zu, und der Eintrag selbst trägt davon
+        // nur den Titel. Das jüngste und nicht das erste, weil sich der Ort
+        // eines Fehlers über die Zeit verschieben kann — nach einem Umbau steht
+        // im ältesten Ereignis ein Pfad, den es nicht mehr gibt.
+        $event = $issue->events()->latestFirst()->first();
+
+        if (! $event instanceof Event) {
+            return [];
+        }
+
+        $suggestions = app(OwnershipAssignment::class)
+            ->suggest(OwnershipSubjects::fromEvent($event), $project);
+
+        $found = [];
+
+        foreach ($suggestions as $assignee) {
+            if ($this->matches($assignee->label(), $term)) {
+                $found[] = [
+                    'value' => $assignee->term(),
+                    'label' => $assignee->label(),
+                    'kind' => 'ownership',
+                ];
+            }
+        }
+
+        return array_slice($found, 0, self::LIMIT);
+    }
+
+    /**
+     * Dieselbe Liste ohne die bereits vorgeschlagenen Zuständigen.
+     *
+     * @param  list<array{value: string, label: string, kind: string}>  $suggestions
+     * @param  list<string>  $taken
+     * @return list<array{value: string, label: string, kind: string}>
+     */
+    private function without(array $suggestions, array $taken): array
+    {
+        return array_values(array_filter(
+            $suggestions,
+            static fn (array $suggestion): bool => ! in_array($suggestion['value'], $taken, true),
+        ));
     }
 
     /**

@@ -238,6 +238,7 @@ return [
         'search' => 'Person oder Team suchen',
         'nobody' => 'Niemand',
         'team' => 'Team',
+        'suggested' => 'vorgeschlagen',
         'no_match' => 'Kein Konto und kein Team mit diesem Namen.',
 
         'state' => 'Zuständig ist :name, seit :at.',
