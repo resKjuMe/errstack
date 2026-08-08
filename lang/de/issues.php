@@ -40,10 +40,16 @@ return [
         'status' => 'Zustand',
         'any_status' => 'Alle',
         'search' => 'Suche',
-        'search_placeholder' => 'z. B. release:1.1.0 oder firstRelease:1.0.0',
-        'search_unsupported' => 'Nicht ausgewertet: :terms. Die vollständige Suchsprache '
-            .'kommt mit einer der nächsten Aufgaben; bis dahin wirken nur '
-            .'release: und firstRelease:.',
+        'search_placeholder' => 'z. B. is:unresolved browser:Chrome timesSeen:>100',
+        'search_hint' => 'Feld:Wert, mehrere Begriffe sind ein Und. `!` verneint, '
+            .'`or` und Klammern verknüpfen, `*` steht für beliebige Zeichen.',
+        'search_error' => 'Der Suchausdruck wurde nicht verstanden: :message '
+            .'Gezeigt wird deshalb die ungefilterte Liste.',
+        'search_error_at' => 'an dieser Stelle: :excerpt',
+        'search_unavailable' => 'Noch nicht auswertbar: :terms. Diese Begriffe gehören zur '
+            .'Suchsprache, aber die Daten dazu kommen erst mit einer späteren Aufgabe — '
+            .'sie schränken die Liste nicht ein.',
+        'search_suggestions' => 'Vorschläge',
     ],
 
     // Die betroffenen Versionen an einer Zeile der Liste.
@@ -74,7 +80,8 @@ return [
     ],
 
     'environment_ignored' => 'Die gewählte Umgebung schränkt diese Liste nicht ein: '
-        .'ein Fehler wird über alle Umgebungen hinweg gezählt.',
+        .'ein Fehler wird über alle Umgebungen hinweg gezählt. Wer nur die Fehler '
+        .'einer Umgebung sehen will, sucht nach environment:production.',
 
     // Die Detailseite (app/Http/Controllers/IssueDetailController,
     // resources/js/shell/pages/issues/Show.jsx und issues/detail/*).
