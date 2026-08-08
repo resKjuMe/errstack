@@ -26,11 +26,15 @@ export function LogoIcon({
             >
                 <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" />
             </svg>
-            <span
-                className={`font-semibold tracking-tight text-gray-800 dark:text-gray-100 ${nameClassName}`}
-            >
-                {appName}
-            </span>
+            {/* Ohne Namen bleibt die Bildmarke allein — so zeigt die
+                eingeklappte Seitenleiste kein leeres Feld neben dem Zeichen. */}
+            {appName && (
+                <span
+                    className={`font-semibold tracking-tight text-gray-800 dark:text-gray-100 ${nameClassName}`}
+                >
+                    {appName}
+                </span>
+            )}
         </span>
     );
 }
@@ -242,6 +246,88 @@ const MENU_ICONS = {
             <path d="M15 12H3" />
         </>
     ),
+    // Übersicht: vier Kacheln, das Bild einer Startseite.
+    dashboard: (
+        <>
+            <rect x="3" y="3" width="7" height="9" rx="1" />
+            <rect x="14" y="3" width="7" height="5" rx="1" />
+            <rect x="14" y="12" width="7" height="9" rx="1" />
+            <rect x="3" y="16" width="7" height="5" rx="1" />
+        </>
+    ),
+    // Fehler: das Warnzeichen — der Kern der Anwendung.
+    issues: (
+        <>
+            <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0" />
+            <path d="M12 9v4" />
+            <path d="M12 17h.01" />
+        </>
+    ),
+    // Rückmeldungen: eine Sprechblase — jemand hat etwas geschrieben.
+    feedback: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
+    // Merkmale: das Preisschild, an dem Eigenschaften hängen.
+    tags: (
+        <>
+            <path d="M20.6 13.4 12 4.8V2H4a2 2 0 0 0-2 2v8h2.8l8.6 8.6a2 2 0 0 0 2.8 0l4.4-4.4a2 2 0 0 0 0-2.8" />
+            <circle cx="7" cy="7" r="1.2" />
+        </>
+    ),
+    // Leistung: die Anzeige eines Tachometers.
+    performance: (
+        <>
+            <path d="M4 18a9 9 0 1 1 16 0" />
+            <path d="m12 15 4-5" />
+            <circle cx="12" cy="16" r="1.2" />
+        </>
+    ),
+    // Leistungsprobleme: die Stoppuhr mit Ausrufezeichen.
+    performance_issues: (
+        <>
+            <circle cx="12" cy="14" r="7" />
+            <path d="M12 11v3" />
+            <path d="M12 17h.01" />
+            <path d="M9 2h6" />
+        </>
+    ),
+    // Ladeerlebnis: was der Besucher im Browser erlebt.
+    web_vitals: (
+        <>
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+            <path d="M2 9h20" />
+            <path d="m7 16 3-3 2 2 3-4" />
+        </>
+    ),
+    // Profile: die Balken eines Flammendiagramms.
+    profiling: (
+        <>
+            <rect x="3" y="4" width="18" height="4" rx="1" />
+            <rect x="3" y="10" width="12" height="4" rx="1" />
+            <rect x="3" y="16" width="7" height="4" rx="1" />
+        </>
+    ),
+    // Versionen: das ausgelieferte Paket.
+    releases: (
+        <>
+            <path d="M21 8 12 3 3 8v8l9 5 9-5z" />
+            <path d="m3 8 9 5 9-5" />
+            <path d="M12 13v8" />
+        </>
+    ),
+    // Projekte: der Ordner, in dem eine Anwendung steckt.
+    projects: (
+        <path d="M3 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    ),
+    // Organisationen: das Gebäude über allem.
+    organizations: (
+        <>
+            <path d="M3 21h18" />
+            <path d="M5 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16" />
+            <path d="M15 21V11h2a2 2 0 0 1 2 2v8" />
+            <path d="M9 7h2" />
+            <path d="M9 11h2" />
+            <path d="M9 15h2" />
+        </>
+    ),
 };
 
 export function MenuIcon({ name, className = '' }) {
@@ -263,6 +349,27 @@ export function MenuIcon({ name, className = '' }) {
             aria-hidden="true"
         >
             {paths}
+        </svg>
+    );
+}
+
+// Ein- und Ausklappen der Seitenleiste: ein Panel, dessen Pfeil in die Richtung
+// zeigt, in die es geht.
+export function SidebarToggleIcon({ collapsed = false, className = '' }) {
+    return (
+        <svg
+            className={className}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+        >
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <path d="M9 4v16" />
+            {collapsed ? <path d="m13 9 3 3-3 3" /> : <path d="m17 9-3 3 3 3" />}
         </svg>
     );
 }

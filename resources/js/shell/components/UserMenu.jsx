@@ -2,13 +2,17 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { ChevronDownIcon, MenuIcon } from '../icons.jsx';
 
-// Nutzer-Dropdown rechts in der Kopfzeile (Name + Menü). Klick außerhalb und
-// Escape schließen; ein Klick auf einen Eintrag schließt ebenfalls. Der Logout
-// ist ein echtes POST-Formular (CSRF).
+// Nutzer-Dropdown (Name + Menü). Klick außerhalb und Escape schließen; ein Klick
+// auf einen Eintrag schließt ebenfalls. Der Logout ist ein echtes POST-Formular
+// (CSRF).
+//
+// Es steht im Fuß der Seitenleiste. Weil dort unten kein Platz nach unten ist,
+// klappt es nach oben auf; `compact` zeigt in der eingeklappten Leiste nur das
+// Zeichen statt des Namens.
 //
 // Ohne Anmeldung (bis Task F3) steht dort „Gast"; statt des Logouts erscheint
 // ein Anmelde-Link, sobald es die Route gibt.
-export default function UserMenu({ shell }) {
+export default function UserMenu({ shell, compact = false }) {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
 
@@ -42,17 +46,24 @@ export default function UserMenu({ shell }) {
                 onClick={() => setOpen((v) => !v)}
                 aria-expanded={open}
                 aria-haspopup="menu"
-                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                title={compact ? name : undefined}
+                className={`inline-flex w-full items-center rounded-md border border-transparent px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none dark:text-gray-400 dark:hover:text-gray-200 ${compact ? 'justify-center px-2' : ''}`}
             >
-                <div>{name}</div>
-                <div className="ms-1">
-                    <ChevronDownIcon className="h-4 w-4 fill-current" />
-                </div>
+                {compact ? (
+                    <MenuIcon name="profile" className="h-5 w-5 shrink-0" />
+                ) : (
+                    <>
+                        <div className="truncate">{name}</div>
+                        <div className="ms-1">
+                            <ChevronDownIcon className="h-4 w-4 shrink-0 fill-current" />
+                        </div>
+                    </>
+                )}
             </button>
 
             {open && (
                 <div
-                    className="absolute end-0 z-50 mt-2 w-56 rounded-md shadow-lg"
+                    className="absolute bottom-full start-0 z-50 mb-2 w-56 rounded-md shadow-lg"
                     onClick={() => setOpen(false)}
                 >
                     <div className="rounded-md bg-white py-1 ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/10">
