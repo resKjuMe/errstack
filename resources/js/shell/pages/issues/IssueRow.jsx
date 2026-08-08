@@ -31,6 +31,12 @@ export default function IssueRow({
             <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                     <LevelBadge level={issue.level} label={issue.levelLabel} />
+                    <PriorityBadge
+                        priority={issue.priority}
+                        label={issue.priorityLabel}
+                        locked={issue.priorityLocked}
+                        t={t}
+                    />
                     <Link
                         href={issue.href}
                         className="truncate font-medium text-gray-900 hover:underline dark:text-gray-100"
@@ -99,6 +105,35 @@ export default function IssueRow({
                 </p>
             </div>
         </li>
+    );
+}
+
+// Die Wichtigkeit als Marke (S11) — daneben und nicht anstelle des Schweregrads:
+// der Grad beschreibt die Meldung, die Wichtigkeit den Eintrag, und genau der
+// Unterschied ist der Grund, dass ein „fatal" von vorletzter Woche unten steht.
+//
+// Nur „hoch" und „niedrig" bekommen Farbe. „Mittel" ist die Vorgabe und damit
+// die häufigste Marke der Liste; sie hervorzuheben hieße, jede Zeile zu
+// hervorheben.
+function PriorityBadge({ priority, label, locked, t }) {
+    const tone =
+        {
+            high: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200',
+            low: 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
+        }[priority] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
+
+    return (
+        <span
+            // Von Hand gesetzt oder abgeleitet: dieselbe Marke, ein anderer
+            // Hinweis. Wer die Liste sortiert, will wissen, ob die Reihenfolge
+            // eine Rechnung ist oder eine Entscheidung.
+            title={t(locked ? 'issues.priority.hint_locked' : 'issues.priority.hint')}
+            className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${tone} ${
+                locked ? 'ring-1 ring-inset ring-gray-400 dark:ring-gray-500' : ''
+            }`}
+        >
+            {label}
+        </span>
     );
 }
 

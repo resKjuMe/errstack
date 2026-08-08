@@ -41,8 +41,9 @@ enum IssueActivityType: string
      * Die Stummschaltung ist abgelaufen: die Bedingung ist eingetreten, und der
      * Eintrag meldet sich wieder.
      *
-     * Einer der Fälle, die ohne handelndes Konto entstehen — er fällt bei der
-     * Aufnahme an, und dort steht niemand daneben.
+     * Er fällt bei der Aufnahme an, und dort steht niemand daneben — der
+     * Vermerk trägt deshalb kein Konto. Dasselbe gilt für die Auslieferung und
+     * die beiden Fälle aus S11 unten, die aus dem Hintergrund-Durchlauf kommen.
      */
     case IgnoreExpired = 'ignore_expired';
 
@@ -58,6 +59,34 @@ enum IssueActivityType: string
      * gewartet hat.
      */
     case Deployed = 'deployed';
+
+    /**
+     * Die Wichtigkeit hat sich geändert — von Hand oder durch die Ableitung
+     * (S11).
+     *
+     * **Ein Fall für beide Urheber**, und das ist dieselbe Überlegung wie beim
+     * Erledigen: „hoch" ist „hoch", gleich ob es jemand eingestellt oder die
+     * Ableitung errechnet hat. Wer es war, steht ohnehin an jedem Vermerk
+     * ({@see IssueActivity::$actor_name} — leer bei der Automatik), und die
+     * Begründung, aus der die Ableitung ihre Stufe zieht, steht in `data`.
+     * Genau dieses `data` ist die Zusage der Aufgabe: die Herleitung ist im
+     * Verlauf nachvollziehbar, ohne dass sie ein zweites Mal gerechnet werden
+     * müsste.
+     */
+    case PriorityChanged = 'priority';
+
+    /**
+     * Ein stummgeschalteter Eintrag ist aus dem Ruder gelaufen und deshalb
+     * wieder offen (S11).
+     *
+     * Getrennt von {@see self::IgnoreExpired}, obwohl das Ergebnis dasselbe
+     * ist: dort ist eine **vereinbarte** Bedingung eingetreten („bis 100
+     * weitere"), hier hat niemand etwas vereinbart — der Fehler tritt weit
+     * häufiger auf, als sein eigener Verlauf erwarten ließ. Für den, der die
+     * Zeitleiste liest, sind das zwei verschiedene Auskünfte: die eine sagt
+     * „wie bestellt", die andere „sieh hin".
+     */
+    case Escalated = 'escalated';
 
     /** Gemerkt (Lesezeichen). */
     case Bookmarked = 'bookmarked';
