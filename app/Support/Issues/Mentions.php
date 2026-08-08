@@ -233,9 +233,6 @@ final class Mentions
             $matches,
         );
 
-        /** @var list<string> $spans */
-        $spans = $matches[1] ?? [];
-
-        return $spans;
+        return $matches[1];
     }
 }
