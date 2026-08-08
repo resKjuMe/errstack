@@ -72,6 +72,33 @@ class ProjectPolicy
     }
 
     /**
+     * Eingangsfilter schalten und ihre Listen pflegen.
+     *
+     * Wieder dasselbe Recht, und hier steht am meisten auf dem Spiel: ein
+     * Eingangsfilter verhindert nicht, dass etwas zusammengefasst wird, sondern
+     * dass es überhaupt entsteht. Eine zu weit gefasste Sperre lässt Meldungen
+     * verschwinden, ohne dass in der Liste eine Lücke zu sehen wäre — nur die
+     * Zählung der gefilterten Ereignisse verrät sie noch.
+     */
+    public function manageFilters(User $user, Project $project): bool
+    {
+        return $user->can('manageProjects', $project->organization);
+    }
+
+    /**
+     * Schwellwert-Alarme anlegen, ändern, abschalten und löschen.
+     *
+     * Getrennt vom Ansehen: welche Alarme scharf sind, soll jedes Mitglied
+     * sehen — das ist die erste Frage, wenn etwas **nicht** gemeldet wurde. Eine
+     * Schwelle zu verstellen heißt dagegen, die Überwachung leiser zu drehen,
+     * und das ist eine Verwaltungsentscheidung.
+     */
+    public function manageAlerts(User $user, Project $project): bool
+    {
+        return $user->can('manageProjects', $project->organization);
+    }
+
+    /**
      * Stichproben-Regeln anlegen, ändern und löschen.
      *
      * Dasselbe Recht wie für die übrigen Einstellungen, und hier wöge eine

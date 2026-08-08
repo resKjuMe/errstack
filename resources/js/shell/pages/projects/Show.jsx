@@ -76,12 +76,16 @@ export default function Show({
 
                 {project.keysHref && <ClientKeys project={project} />}
 
+                <MetricAlerts project={project} />
+
                 <CronMonitors project={project} />
 
                 <Grouping project={project} />
 
                 <Sampling project={project} />
                 <Privacy project={project} />
+
+                <InboundFilters project={project} />
 
                 {permissions.delete && <DeleteProject project={project} />}
             </div>
@@ -371,6 +375,21 @@ function CronMonitors({ project }) {
     );
 }
 
+// Weg zu den Schwellwert-Alarmen. Ohne Bedingung: welche Alarme scharf sind,
+// ist die erste Frage, wenn etwas **nicht** gemeldet wurde — und die stellt
+// nicht nur die Verwaltung.
+function MetricAlerts({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.alerts.title')} description={t('projects.alerts.description')}>
+            <Link href={project.alertsHref}>
+                <SecondaryButton type="button">{t('projects.alerts.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
 // Weg zu den Fingerprint-Regeln. Ebenfalls ohne Bedingung: sie erklären, warum
 // gleichartige Meldungen zu einem Eintrag werden — das ist eine Frage der
 // Fehlersuche und keine der Verwaltung.
@@ -411,6 +430,21 @@ function Privacy({ project }) {
         <Card title={t('projects.privacy.title')} description={t('projects.privacy.description')}>
             <Link href={project.privacyHref}>
                 <SecondaryButton type="button">{t('projects.privacy.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zu den Eingangsfiltern. Auch dieser ohne Bedingung, und hier zählt es am
+// meisten: eine gefilterte Meldung hinterlässt in der Fehlerliste keine Lücke —
+// wer eine vermisst, findet die Antwort nur auf dieser Seite.
+function InboundFilters({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.filters.title')} description={t('projects.filters.description')}>
+            <Link href={project.filtersHref}>
+                <SecondaryButton type="button">{t('projects.filters.manage')}</SecondaryButton>
             </Link>
         </Card>
     );

@@ -102,6 +102,10 @@ final class ProjectData
                 // erklären, warum die Fehlerliste so aussieht, wie sie aussieht
                 // — und diese Frage stellt sich nicht nur die Verwaltung.
                 'groupingHref' => route('projects.grouping.index', [$organization, $project]),
+                // Die Schwellwert-Alarme ebenfalls ohne Bedingung: welche
+                // Alarme scharf sind, ist die erste Frage, wenn etwas **nicht**
+                // gemeldet wurde — und die stellt nicht nur die Verwaltung.
+                'alertsHref' => route('projects.alerts.index', [$organization, $project]),
                 // Die Stichproben aus demselben Grund ohne Bedingung: sie
                 // erklären, warum in der Performance-Übersicht mehr Aufrufe
                 // stehen, als Messungen gespeichert sind.
@@ -109,6 +113,9 @@ final class ProjectData
                 // Ebenso ohne Bedingung: was von einer Meldung gespeichert wird,
                 // geht jeden an, der mit den Daten arbeitet.
                 'privacyHref' => route('projects.privacy.index', [$organization, $project]),
+                // Und ebenso die Eingangsfilter: wer eine Meldung vermisst, muss
+                // nachsehen können, ob ein Filter sie genommen hat.
+                'filtersHref' => route('projects.filters.index', [$organization, $project]),
             ],
             'organization' => [
                 'slug' => $organization->slug,
@@ -122,6 +129,7 @@ final class ProjectData
                 'manageKeys' => $mayManageKeys,
                 'manageCrons' => Gate::forUser($viewer)->allows('manageCrons', $project),
                 'manageGrouping' => Gate::forUser($viewer)->allows('manageGrouping', $project),
+                'manageFilters' => Gate::forUser($viewer)->allows('manageFilters', $project),
             ],
             'teams' => $organization->teams()
                 ->orderBy('name')

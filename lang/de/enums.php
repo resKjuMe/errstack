@@ -4,6 +4,32 @@
 // nach dem gespeicherten Wert — so bleibt der Bezug auch im Export lesbar.
 return [
 
+    'alert_status' => [
+        'ok' => 'In Ordnung',
+        'warning' => 'Warnung',
+        'critical' => 'Kritisch',
+    ],
+
+    'alert_direction' => [
+        'above' => 'Überschreitet die Schwelle',
+        'below' => 'Unterschreitet die Schwelle',
+    ],
+
+    'alert_comparison' => [
+        'absolute' => 'Wert selbst',
+        'percent_change_week' => 'Veränderung gegenüber der Vorwoche',
+    ],
+
+    'alert_metric' => [
+        'error_count' => 'Fehlermeldungen',
+        'transaction_throughput' => 'Durchsatz (Aufrufe)',
+        'transaction_failure_rate' => 'Fehlerquote der Aufrufe',
+        'transaction_duration_avg' => 'Antwortzeit (Mittelwert)',
+        'transaction_duration_p50' => 'Antwortzeit (p50)',
+        'transaction_duration_p95' => 'Antwortzeit (p95)',
+        'transaction_duration_p99' => 'Antwortzeit (p99)',
+    ],
+
     'grouping_source' => [
         'rule' => 'Projektweite Regel',
         'custom' => 'Eigene Angabe des SDK',
@@ -121,6 +147,17 @@ return [
         'duplicate' => 'doppelte Zustellung',
         'sampled' => 'nicht in die Stichprobe gefallen',
         'scrubbed' => 'aus Datenschutzgründen nicht gespeichert',
+        'filtered' => 'vom Eingangsfilter aussortiert',
+    ],
+
+    'inbound_filter_kind' => [
+        'browser_extension' => 'Browser-Erweiterungen',
+        'legacy_browser' => 'Veraltete Browser',
+        'localhost' => 'Lokale Entwicklung',
+        'crawler' => 'Web-Crawler',
+        'message_pattern' => 'Fehlermeldungen nach Muster',
+        'ip_address' => 'Absender-Sperrliste',
+        'release' => 'Release-Sperrliste',
     ],
 
     'event_level' => [
@@ -244,6 +281,14 @@ return [
     'count_period' => [
         'hour' => 'Stündlich',
         'day' => 'Täglich',
+    ],
+
+    'trend_direction' => [
+        'new' => 'Neu — im Vorzeitraum nicht gemessen',
+        'unknown' => 'Zu wenige Messungen für einen Vergleich',
+        'flat' => 'Unverändert',
+        'better' => 'Schneller geworden',
+        'worse' => 'Langsamer geworden',
     ],
 
 ];

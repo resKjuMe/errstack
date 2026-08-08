@@ -72,6 +72,12 @@ return [
         'manage' => 'Cronjobs ansehen',
     ],
 
+    'alerts' => [
+        'title' => 'Alarme',
+        'description' => 'Schwellwert-Alarme auf Kennzahlen: Fehleranzahl, Fehlerquote, Durchsatz und Antwortzeiten. Sie melden sich, wenn eine Kennzahl aus dem Rahmen fällt — und wieder, wenn sie sich normalisiert hat.',
+        'manage' => 'Alarme ansehen',
+    ],
+
     'sampling' => [
         'title' => 'Stichproben',
         'description' => 'Von den Antwortzeiten wird nur ein einstellbarer Anteil gespeichert und in den Auswertungen hochgerechnet. Fehlermeldungen bleiben davon unberührt.',
@@ -82,6 +88,12 @@ return [
         'title' => 'Gruppierung',
         'description' => 'Gleichartige Meldungen werden zu einem Eintrag zusammengefasst. Greift das im Einzelfall zu grob oder zu fein, korrigieren projektweite Regeln es.',
         'manage' => 'Regeln ansehen',
+    ],
+
+    'filters' => [
+        'title' => 'Eingangsfilter',
+        'description' => 'Bekanntes Rauschen — Browser-Erweiterungen, Crawler, lokale Entwicklung — wird beim Eingang verworfen und nur noch gezählt.',
+        'manage' => 'Filter einstellen',
     ],
 
     'privacy' => [

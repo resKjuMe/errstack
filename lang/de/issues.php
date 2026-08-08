@@ -39,6 +39,18 @@ return [
         'sort' => 'Sortierung',
         'status' => 'Zustand',
         'any_status' => 'Alle',
+        'search' => 'Suche',
+        'search_placeholder' => 'z. B. release:1.1.0 oder firstRelease:1.0.0',
+        'search_unsupported' => 'Nicht ausgewertet: :terms. Die vollständige Suchsprache '
+            .'kommt mit einer der nächsten Aufgaben; bis dahin wirken nur '
+            .'release: und firstRelease:.',
+    ],
+
+    // Die betroffenen Versionen an einer Zeile der Liste.
+    'release' => [
+        'first' => 'Zuerst in',
+        'last' => 'Zuletzt in',
+        'only' => 'In',
     ],
 
     'trend' => [

@@ -15,19 +15,24 @@ POST /api/{projekt}/envelope/     ─┴─▶ ingest_payloads (Rohdaten)
                                      ProcessingPipeline
                                      ├ Entpacken      (Rahmen)
                                      ├ Eingangsfilter (I8)
-                                     ├ Stichprobe     (I9)
                                      ├ Scrubbing      (I7)
+                                     ├ Stichprobe     (I9)
                                      ├ Antwortzeiten  (PF1) ─▶ transactions
                                      ├ Normalisierung (I4)  ─▶ events
                                      ├ Grouping       (I5)
-                                     └ Aggregation    (I6)
+                                     ├ Aggregation    (I6)
+                                     └ Version        (R1) ─▶ releases
 ```
 
+Was der Eingangsfilter aussortiert — und was von einer aussortierten Meldung
+bleibt —, steht in [eingangsfilter.md](eingangsfilter.md).
 Was die Normalisierung aus einer Meldung macht — und warum sie nichts
 aussortiert —, steht in [normalisierung.md](normalisierung.md). Wie
 Transaktionen und ihre Einzelschritte abgelegt werden, steht in
 [antwortzeiten.md](antwortzeiten.md); die beiden Schritte fassen verschiedene
-Meldungsarten an und kommen sich nicht in die Quere.
+Meldungsarten an und kommen sich nicht in die Quere. Wie aus der Angabe
+`release` einer Meldung eine ausgelieferte Version wird — und warum dieser
+Schritt am Ende der Kette steht —, steht in [versionen.md](versionen.md).
 
 Was am Eingang ankommen **muss**, damit die Original-SDKs ohne Änderung hierher
 melden, steht in [compat/README.md](compat/README.md) — samt der Abweichungen zur

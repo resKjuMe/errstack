@@ -106,6 +106,21 @@ final class ShellData
                 'activePattern' => 'issues.*',
             ],
             [
+                'label' => __('nav.links.tags'),
+                'route' => 'tags.index',
+                'activePattern' => 'tags.*',
+            ],
+            [
+                'label' => __('nav.links.releases'),
+                'route' => 'releases.index',
+                'activePattern' => 'releases.*',
+            ],
+            [
+                'label' => __('nav.links.performance'),
+                'route' => 'performance.index',
+                'activePattern' => 'performance.*',
+            ],
+            [
                 'label' => __('nav.links.projects'),
                 'route' => 'projects.index',
                 'activePattern' => 'projects.*',

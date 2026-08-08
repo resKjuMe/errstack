@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PerformanceController;
 use App\Jobs\ProcessDemoIngest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Die Übersicht ist die erste Seite mit der globalen Filterleiste; ihr
     // Zustand steht in der Adresszeile und wird serverseitig aufgelöst.
     Route::get('/', DashboardController::class)->name('dashboard');
+
+    // Die erste Auswertungsseite: Antwortzeiten, Durchsatz und Fehlerrate je
+    // Transaktion. Sie nutzt dieselbe Filterleiste und ergänzt sie um Suche,
+    // Sortierung und Seitenzahl — alles in der Adresszeile.
+    Route::get('/leistung', PerformanceController::class)->name('performance.index');
+
     Route::get('/bausteine', fn () => Inertia::render('Components'))->name('components');
 });
 
@@ -35,4 +42,5 @@ require __DIR__.'/organizations.php';
 require __DIR__.'/notifications.php';
 require __DIR__.'/projects.php';
 require __DIR__.'/issues.php';
+require __DIR__.'/releases.php';
 require __DIR__.'/api-tokens.php';

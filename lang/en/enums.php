@@ -4,6 +4,32 @@
 // stored value so the reference stays readable in exports as well.
 return [
 
+    'alert_status' => [
+        'ok' => 'OK',
+        'warning' => 'Warning',
+        'critical' => 'Critical',
+    ],
+
+    'alert_direction' => [
+        'above' => 'Rises above the threshold',
+        'below' => 'Falls below the threshold',
+    ],
+
+    'alert_comparison' => [
+        'absolute' => 'Value itself',
+        'percent_change_week' => 'Change against the previous week',
+    ],
+
+    'alert_metric' => [
+        'error_count' => 'Error reports',
+        'transaction_throughput' => 'Throughput (calls)',
+        'transaction_failure_rate' => 'Failure rate of calls',
+        'transaction_duration_avg' => 'Response time (average)',
+        'transaction_duration_p50' => 'Response time (p50)',
+        'transaction_duration_p95' => 'Response time (p95)',
+        'transaction_duration_p99' => 'Response time (p99)',
+    ],
+
     'grouping_source' => [
         'rule' => 'Project rule',
         'custom' => 'Fingerprint sent by the SDK',
@@ -121,6 +147,17 @@ return [
         'duplicate' => 'duplicate delivery',
         'sampled' => 'not part of the sample',
         'scrubbed' => 'not stored for privacy reasons',
+        'filtered' => 'discarded by an inbound filter',
+    ],
+
+    'inbound_filter_kind' => [
+        'browser_extension' => 'Browser extensions',
+        'legacy_browser' => 'Legacy browsers',
+        'localhost' => 'Local development',
+        'crawler' => 'Web crawlers',
+        'message_pattern' => 'Error messages by pattern',
+        'ip_address' => 'Sender blocklist',
+        'release' => 'Release blocklist',
     ],
 
     'event_level' => [
@@ -244,6 +281,14 @@ return [
     'count_period' => [
         'hour' => 'Hourly',
         'day' => 'Daily',
+    ],
+
+    'trend_direction' => [
+        'new' => 'New — not measured in the previous period',
+        'unknown' => 'Too few measurements to compare',
+        'flat' => 'Unchanged',
+        'better' => 'Got faster',
+        'worse' => 'Got slower',
     ],
 
 ];
