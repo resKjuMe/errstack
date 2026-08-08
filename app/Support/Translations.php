@@ -47,6 +47,7 @@ final class Translations
         'sampling',
         'tags',
         'teams',
+        'traces',
     ];
 
     /**

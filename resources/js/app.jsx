@@ -18,6 +18,7 @@ import IssuesIndex from './shell/pages/issues/Index.jsx';
 import IssuesShow from './shell/pages/issues/Show.jsx';
 import IssuesTags from './shell/pages/issues/Tags.jsx';
 import TagsIndex from './shell/pages/tags/Index.jsx';
+import TracesShow from './shell/pages/traces/Show.jsx';
 import ProjectsIndex from './shell/pages/projects/Index.jsx';
 import ProjectsShow from './shell/pages/projects/Show.jsx';
 import ProjectsKeys from './shell/pages/projects/Keys.jsx';
@@ -66,6 +67,10 @@ const pages = {
     // Liste, nicht ein Bildschirm.
     'issues/Tags': IssuesTags,
     'tags/Index': TagsIndex,
+    // Der Ablauf eines Aufrufs über alle Dienste. Keine Liste daneben: eine Spur
+    // wird nicht gesucht, sondern von einem Fehler oder einer Messung aus
+    // aufgerufen.
+    'traces/Show': TracesShow,
     'projects/Index': ProjectsIndex,
     'projects/Show': ProjectsShow,
     'projects/Keys': ProjectsKeys,

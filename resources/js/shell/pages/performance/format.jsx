@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatDuration } from '../../duration.js';
 import { formatNumber } from '../../i18n.js';
 
 // Die Schreibweisen, die sich Übersicht, Detailanalyse und die
@@ -8,6 +9,11 @@ import { formatNumber } from '../../i18n.js';
 // gleich aussehen muss: „1,2 s" auf der einen und „1200 ms" auf der anderen
 // wären zwei Zahlen für denselben Wert, und wer zwischen den Seiten wechselt,
 // vergleicht sie.
+//
+// Die Umrechnung selbst steht noch eine Ebene höher, in `shell/duration.js`:
+// die Trace-Ansicht (PF4) zeigt dieselben Messwerte und ist keine
+// Performance-Seite. Hier bleibt, was die Darstellung in einer Tabelle
+// ausmacht — vor allem der Umgang mit dem, was gar nicht gemessen wurde.
 
 // Ein fehlender Wert ist etwas anderes als eine Null: keine Messung heißt nicht
 // „null Millisekunden".
@@ -15,30 +21,12 @@ export function Missing() {
     return <span className="text-gray-400 dark:text-gray-600">—</span>;
 }
 
-// Die Einheit richtet sich nach der Größe: Mikrosekunden für Einzelschritte,
-// Millisekunden für Antwortzeiten, Sekunden für alles, was jemand merkt. Eine
-// feste Einheit wäre entweder „0 ms" für eine Datenbankabfrage oder
-// „4200000 µs" für einen hängenden Aufruf.
+// Dieselbe Zahl wie im Wasserfall, nur mit einem Strich statt einer leeren
+// Zelle, wenn nichts gemessen wurde.
 export function duration(microseconds, t, formats) {
-    if (microseconds === null || microseconds === undefined) {
-        return <Missing />;
-    }
+    const formatted = formatDuration(microseconds, t, formats);
 
-    if (microseconds < 1000) {
-        return `${formatNumber(microseconds, formats)} ${t('performance.units.microseconds')}`;
-    }
-
-    if (microseconds < 1_000_000) {
-        const milliseconds = microseconds / 1000;
-
-        return `${formatNumber(milliseconds, formats, {
-            maximumFractionDigits: milliseconds < 10 ? 1 : 0,
-        })} ${t('performance.units.milliseconds')}`;
-    }
-
-    return `${formatNumber(microseconds / 1_000_000, formats, {
-        maximumFractionDigits: 2,
-    })} ${t('performance.units.seconds')}`;
+    return formatted === null ? <Missing /> : formatted;
 }
 
 export function percent(ratio, formats) {

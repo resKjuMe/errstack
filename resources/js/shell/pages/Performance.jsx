@@ -163,6 +163,12 @@ export default function Performance({
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700/60">
                                     {rows.map((row) => (
                                         <tr
+                                            // Das Nullbyte als Trennzeichen wie serverseitig
+                                            // (TransactionOverview::key) — als Escape
+                                            // geschrieben, damit die Datei Text bleibt: ein
+                                            // echtes Nullbyte macht sie für git zur
+                                            // Binärdatei, und jede zweite Änderung daran ist
+                                            // dann ein Konflikt von Hand.
                                             key={`${row.name}\u0000${row.op}`}
                                             className="hover:bg-gray-50 dark:hover:bg-gray-700/40"
                                         >
