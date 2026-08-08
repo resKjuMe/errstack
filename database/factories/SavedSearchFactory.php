@@ -32,10 +32,8 @@ class SavedSearchFactory extends Factory
 
     /**
      * Für die ganze Organisation sichtbar.
-     *
-     * @return $this
      */
-    public function shared(): self
+    public function shared(): static
     {
         return $this->state(fn (): array => ['shared' => true]);
     }
