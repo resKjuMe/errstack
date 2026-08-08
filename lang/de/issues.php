@@ -64,4 +64,111 @@ return [
     'environment_ignored' => 'Die gewählte Umgebung schränkt diese Liste nicht ein: '
         .'ein Fehler wird über alle Umgebungen hinweg gezählt.',
 
+    // Die Detailseite (app/Http/Controllers/IssueDetailController,
+    // resources/js/shell/pages/issues/Show.jsx und issues/detail/*).
+    'detail' => [
+
+        'help' => 'Diese Seite zeigt eine einzelne Meldung dieses Fehlers mit allem, '
+            .'was zur Diagnose gehört: Stacktrace, die letzten Schritte davor und '
+            .'den technischen Kontext. Häufigkeit, betroffene Nutzer und die beiden '
+            .'Zeitpunkte gelten dagegen für den Fehler insgesamt. Über die '
+            .'Schaltflächen oben wechselt man zwischen den Meldungen.',
+
+        'no_event' => 'Zu diesem Fehler liegt keine Meldung mehr vor.',
+        'no_event_hint' => 'Die Zähler bleiben stehen; die Einzelmeldungen können '
+            .'aufgeräumt worden sein.',
+
+        'nav' => [
+            'label' => 'Meldung',
+            'newest' => 'Neueste',
+            'newer' => 'Neuere',
+            'older' => 'Ältere',
+            'oldest' => 'Älteste',
+        ],
+
+        'header' => [
+            'times_seen' => 'Häufigkeit',
+            'users_seen' => 'Betroffene',
+            'first_seen' => 'Zuerst',
+            'last_seen' => 'Zuletzt',
+            'status' => 'Zustand',
+            'priority' => 'Dringlichkeit',
+        ],
+
+        'meta' => [
+            'title' => 'Meldung',
+            'event_id' => 'Kennung',
+            'occurred_at' => 'Aufgetreten',
+            'received_at' => 'Eingegangen',
+            'level' => 'Schweregrad',
+            'platform' => 'Plattform',
+            'environment' => 'Umgebung',
+            'release' => 'Version',
+            'dist' => 'Auslieferung',
+            'server_name' => 'Server',
+            'transaction' => 'Vorgang',
+            'logger' => 'Protokollierer',
+            'sdk' => 'SDK',
+        ],
+
+        'message' => [
+            'title' => 'Meldungstext',
+        ],
+
+        'exception' => [
+            'title' => 'Stacktrace',
+            'caused_by' => 'Verursacht durch',
+            'handled' => 'Aufgefangen',
+            'unhandled' => 'Nicht aufgefangen',
+            'mechanism' => 'Herkunft: :type',
+        ],
+
+        'frames' => [
+            'empty' => 'Kein Stacktrace übermittelt.',
+            'line' => 'Zeile :line',
+            'column' => 'Spalte :column',
+            'in_app' => 'Eigener Code',
+            'unknown_file' => 'Unbekannte Stelle',
+            'hidden_one' => 'Ein fremder Rahmen',
+            'hidden_many' => ':count fremde Rahmen',
+            'show' => 'Einblenden',
+            'hide' => 'Ausblenden',
+            'vars' => 'Variablen',
+            'toggle' => 'Rahmen auf- und zuklappen',
+        ],
+
+        'breadcrumbs' => [
+            'title' => 'Letzte Schritte',
+            'description' => 'Was vor dem Fehler passiert ist — ältester Schritt zuerst.',
+            'data' => 'Daten',
+        ],
+
+        'sections' => [
+            'request' => 'Anfrage',
+            'user' => 'Nutzer',
+            'contexts' => 'Umgebung',
+            'tags' => 'Merkmale',
+            'extra' => 'Zusatzdaten',
+            'modules' => 'Pakete',
+        ],
+
+        'notes' => [
+            'title' => 'Diese Meldung wurde gekürzt.',
+            'truncated' => 'Gekürzt: :paths',
+            'invalid' => 'Verworfen: :paths',
+        ],
+
+        'raw' => [
+            'title' => 'Rohdaten',
+            'description' => 'Die ausgewertete Meldung und daneben das, was das SDK '
+                .'geschickt hat.',
+            'show' => 'Anzeigen',
+            'hide' => 'Verbergen',
+            'open' => 'In neuem Tab öffnen',
+            'loading' => 'Wird geladen …',
+            'failed' => 'Die Rohdaten konnten nicht geladen werden.',
+        ],
+
+    ],
+
 ];

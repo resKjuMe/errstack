@@ -23,9 +23,12 @@ export default function IssueRow({ issue, selected, onToggle, showProject, trend
             <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                     <LevelBadge level={issue.level} label={issue.levelLabel} />
-                    <p className="truncate font-medium text-gray-900 dark:text-gray-100">
+                    <Link
+                        href={issue.href}
+                        className="truncate font-medium text-gray-900 hover:underline dark:text-gray-100"
+                    >
                         {issue.title}
-                    </p>
+                    </Link>
                 </div>
 
                 <p className="mt-0.5 truncate text-sm text-gray-500 dark:text-gray-400">

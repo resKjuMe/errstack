@@ -100,6 +100,9 @@ final class IssueList
             // Meldung ohne Ausnahme hat keinen. Die Fehlerstelle ist dann die
             // aussagekräftigste Angabe, die es gibt.
             'title' => $issue->title ?? $issue->culprit ?? __('issues.list.untitled'),
+            // Der Weg in die Tiefe: die Zeile nennt den Fehler, die Detailseite
+            // sagt, warum es ihn gibt.
+            'href' => route('issues.show', $issue),
             'culprit' => $issue->culprit,
             'type' => $issue->type,
             'level' => $issue->level->value,

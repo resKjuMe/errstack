@@ -13,6 +13,7 @@ import NotificationsIndex from './shell/pages/notifications/Index.jsx';
 import NotificationsPreferences from './shell/pages/notifications/Preferences.jsx';
 import NotificationsUnsubscribe from './shell/pages/notifications/Unsubscribe.jsx';
 import IssuesIndex from './shell/pages/issues/Index.jsx';
+import IssuesShow from './shell/pages/issues/Show.jsx';
 import ProjectsIndex from './shell/pages/projects/Index.jsx';
 import ProjectsShow from './shell/pages/projects/Show.jsx';
 import ProjectsKeys from './shell/pages/projects/Keys.jsx';
@@ -45,6 +46,7 @@ const pages = {
     'notifications/Preferences': NotificationsPreferences,
     'notifications/Unsubscribe': NotificationsUnsubscribe,
     'issues/Index': IssuesIndex,
+    'issues/Show': IssuesShow,
     'projects/Index': ProjectsIndex,
     'projects/Show': ProjectsShow,
     'projects/Keys': ProjectsKeys,
