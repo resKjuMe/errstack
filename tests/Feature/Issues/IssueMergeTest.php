@@ -471,6 +471,29 @@ class IssueMergeTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_an_unknown_entry_is_answered_like_a_foreign_one(): void
+    {
+        [$user, , $project] = $this->context();
+
+        $mine = $this->issue($project, 'Meiner', ['times_seen' => 10]);
+
+        $foreign = Issue::factory()
+            ->for(Project::factory()->for(Organization::factory()))
+            ->create();
+
+        // Beides dieselbe Antwort: sonst ließe sich durch Raten von Kennungen
+        // erfahren, welche Fehler es in anderen Organisationen gibt.
+        $this->actingAs($user)
+            ->post(route('issues.merge.store'), ['issues' => [$mine->id, $foreign->id]])
+            ->assertForbidden();
+
+        $this->actingAs($user)
+            ->post(route('issues.merge.store'), ['issues' => [$mine->id, $foreign->id + 1000]])
+            ->assertForbidden();
+
+        $this->assertNull($mine->fresh()->merged_into_id);
+    }
+
     public function test_an_outsider_cannot_merge(): void
     {
         [, , $project] = $this->context();

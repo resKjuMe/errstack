@@ -107,6 +107,9 @@ class Issue extends Model
                 // Sonst liefe die Zählung weiter am beigetretenen Eintrag
                 // auf, den niemand mehr in der Liste sieht — der
                 // zusammengeführte Fehler stünde still, obwohl er auftritt.
+                //
+                // Eine Abfrage mehr, aber nur für zusammengeführte Gruppen:
+                // steht dort `null` — der Regelfall —, wird nichts nachgeladen.
                 return $existing->head();
             }
         }

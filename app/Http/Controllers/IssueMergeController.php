@@ -30,14 +30,15 @@ class IssueMergeController extends Controller
      * bestimmt {@see IssueMerging::merge()}. Deshalb führt der Weg auf dessen
      * Detailseite — dorthin, wo das Ergebnis steht und wo es sich wieder
      * auftrennen lässt.
+     *
+     * Das Recht ist hier nicht zu prüfen: es hängt an jedem einzelnen Eintrag
+     * der Auswahl und wird deshalb dort entschieden, wo die Auswahl gelesen wird
+     * ({@see IssueMergeRequest::authorize()}) — vor der Prüfung der Eingabe und
+     * damit vor jeder Auskunft darüber, welche Einträge es gibt.
      */
     public function store(IssueMergeRequest $request): RedirectResponse
     {
         $issues = $request->issues();
-
-        foreach ($issues as $issue) {
-            Gate::authorize('merge', $issue);
-        }
 
         $head = IssueMerging::merge($issues);
 

@@ -20,13 +20,39 @@ use Illuminate\Validation\Validator;
 class IssueMergeRequest extends FormRequest
 {
     /**
+     * Das Recht wird **vor** der Prüfung entschieden, und eine unbekannte
+     * Kennung zählt dabei wie eine fremde.
+     *
+     * Das ist nicht Vorsicht, sondern schließt ein Auszählen: liefe die Prüfung
+     * zuerst, wäre die Antwort auf einen fremden Eintrag „kein Recht" (403) und
+     * auf einen nicht vorhandenen „gibt es nicht" (422) — und damit ließe sich
+     * durch Raten von Kennungen erfahren, welche Fehler es in anderen
+     * Organisationen gibt. Beides gleich zu beantworten kostet nichts; dieselbe
+     * Überlegung wie bei der Detailseite ({@see App\Policies\IssuePolicy}).
+     */
+    public function authorize(): bool
+    {
+        $ids = self::ids($this->input('issues'));
+        $issues = $this->issues();
+
+        if ($ids === [] || count($ids) !== $issues->count()) {
+            return false;
+        }
+
+        return $issues->every(fn (Issue $issue): bool => $this->user()?->can('merge', $issue) === true);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
             'issues' => ['required', 'array', 'min:2'],
-            'issues.*' => ['integer', 'distinct', 'exists:issues,id'],
+            // Ohne `exists`: dass es die Einträge gibt, hat {@see authorize()}
+            // schon entschieden — eine zweite Antwort darauf wäre genau die,
+            // die dort vermieden wird.
+            'issues.*' => ['integer', 'distinct'],
         ];
     }
 
@@ -66,9 +92,28 @@ class IssueMergeRequest extends FormRequest
             return $this->loaded;
         }
 
-        $ids = array_map(intval(...), (array) $this->input('issues', []));
+        return $this->loaded = Issue::query()
+            ->whereKey(self::ids($this->input('issues')))
+            ->get();
+    }
 
-        return $this->loaded = Issue::query()->whereKey($ids)->get();
+    /**
+     * Die Kennungen der Anfrage, ohne Doppelte.
+     *
+     * Ohne Doppelte, weil sie gegen die Zahl der gefundenen Einträge verglichen
+     * werden: zweimal dieselbe Kennung ergäbe zwei Wünsche und einen Fund, und
+     * das wäre kein fehlendes Recht, sondern ein Zählfehler. Dass sie doppelt
+     * gar nicht vorkommen dürfen, sagt die Prüfregel `distinct`.
+     *
+     * @return list<int>
+     */
+    private static function ids(mixed $input): array
+    {
+        if (! is_array($input)) {
+            return [];
+        }
+
+        return array_values(array_unique(array_map(intval(...), $input)));
     }
 
     /**
