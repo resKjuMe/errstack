@@ -12,6 +12,7 @@ return [
     'links' => [
         'dashboard' => 'Overview',
         'issues' => 'Issues',
+        'tags' => 'Tags',
         'projects' => 'Projects',
         'organizations' => 'Organizations',
         'components' => 'Components',

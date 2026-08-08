@@ -39,6 +39,7 @@ final class Translations
         'project_keys',
         'projects',
         'sampling',
+        'tags',
         'teams',
     ];
 

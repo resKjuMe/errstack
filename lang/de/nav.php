@@ -12,6 +12,7 @@ return [
     'links' => [
         'dashboard' => 'Übersicht',
         'issues' => 'Fehler',
+        'tags' => 'Merkmale',
         'projects' => 'Projekte',
         'organizations' => 'Organisationen',
         'components' => 'Bausteine',

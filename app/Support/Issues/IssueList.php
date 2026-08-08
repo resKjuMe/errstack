@@ -8,6 +8,7 @@ use App\Models\Issue;
 use App\Models\Project;
 use App\Support\Filters\GlobalFilter;
 use App\Support\Formats;
+use App\Support\Tags\TagFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -39,9 +40,9 @@ final class IssueList
      *
      * @return LengthAwarePaginator<int, array<string, mixed>>
      */
-    public static function paginate(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status): LengthAwarePaginator
+    public static function paginate(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?TagFilter $tag = null): LengthAwarePaginator
     {
-        $page = self::query($filter, $sort, $status)
+        $page = self::query($filter, $sort, $status, $tag)
             ->paginate(self::PER_PAGE)
             ->withQueryString();
 
@@ -66,7 +67,7 @@ final class IssueList
      *
      * @return Builder<Issue>
      */
-    public static function query(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status): Builder
+    public static function query(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?TagFilter $tag = null): Builder
     {
         $query = Issue::query()->with(['project:id,name,slug,organization_id', 'project.organization:id,slug']);
 
@@ -75,6 +76,10 @@ final class IssueList
         if ($status !== null) {
             $query->where('status', $status);
         }
+
+        // Die Merkmal-Einschränkung liest die vorberechneten Zähler und nicht
+        // die Ereignisse — dieselbe Zusage wie für den Rest dieser Liste.
+        $tag?->apply($query);
 
         $sort->apply($query);
 
@@ -117,6 +122,9 @@ final class IssueList
             'lastSeen' => $issue->last_seen->toIso8601String(),
             'lastSeenLabel' => Formats::dateTime($issue->last_seen),
             'project' => self::project($issue),
+            // Der Weg zu den Merkmalen dieses Fehlers — welche Browser, welche
+            // Fassungen, welche Server ihn betrifft (S3).
+            'tagsHref' => route('issues.tags.index', $issue),
             'series' => $series,
         ];
     }

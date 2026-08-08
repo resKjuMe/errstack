@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
 import FilterBar from '../../components/FilterBar.jsx';
@@ -29,6 +29,8 @@ export default function Index({
     live: liveConfig,
     environmentIgnored,
     totalLabel,
+    tagLabel,
+    tagsHref,
 }) {
     const { shell } = usePage().props;
     const t = useT();
@@ -45,6 +47,18 @@ export default function Index({
         auto: issues.current_page === 1 && list.sort === 'last_seen',
         paused: selection.selected.size > 0 || selection.allMatching,
     });
+
+    // Ein Feld der Adresszeile abwählen, ohne die übrigen anzurühren — für die
+    // Merkmal-Einschränkung, die aus einem Klick in der Verteilung entstanden
+    // ist und ohne diesen Weg nur von Hand aus dem Link zu entfernen wäre.
+    const drop = (key) => {
+        const query = new URLSearchParams(window.location.search);
+
+        query.delete(key);
+        query.delete('page');
+
+        router.get(`${window.location.pathname}?${query.toString()}`, {}, { preserveState: true });
+    };
 
     // Sortierung und Zustand sind Felder dieser Seite, nicht der Leiste; die
     // übrigen Parameter der Adresszeile bleiben deshalb stehen. Eine neue
@@ -98,10 +112,39 @@ export default function Index({
                         />
                     </div>
 
-                    <p className="ms-auto text-sm text-gray-500 dark:text-gray-400">
-                        {t('issues.list.count', { count: totalLabel })}
-                    </p>
+                    <div className="ms-auto flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                        <Link
+                            href={tagsHref}
+                            className="underline hover:text-gray-700 dark:hover:text-gray-200"
+                        >
+                            {t('tags.link.overview')}
+                        </Link>
+                        <span>{t('issues.list.count', { count: totalLabel })}</span>
+                    </div>
                 </div>
+
+                {/* Die Merkmal-Einschränkung als abwählbare Marke: sie steht in
+                    der Adresszeile und wäre sonst nur an den Zahlen zu
+                    bemerken. */}
+                {list.tag && (
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-sm text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200">
+                            {t('tags.filter.active', {
+                                key: tagLabel ?? list.tag.key,
+                                value: list.tag.value,
+                            })}
+                            <button
+                                type="button"
+                                onClick={() => drop('tag')}
+                                aria-label={t('tags.filter.clear')}
+                                title={t('tags.filter.clear')}
+                                className="font-semibold hover:text-indigo-600 dark:hover:text-indigo-100"
+                            >
+                                ×
+                            </button>
+                        </span>
+                    </div>
+                )}
             </Card>
 
             {live.pending > 0 && (
