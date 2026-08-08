@@ -1,0 +1,268 @@
+{
+    "aufnahmen": [
+        {
+            "sdk": "sentry-browser",
+            "sdk_kennung": "sentry.javascript.browser/10.69.0",
+            "art": "fehler",
+            "datei": "sentry-browser/fehler.envelope",
+            "aufgezeichnet_am": "20260808",
+            "methode": "POST",
+            "pfad": "/api/1/envelope/",
+            "abfrage": "sentry_version=7&sentry_key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&sentry_client=sentry.javascript.browser%2F10.69.0",
+            "kopfzeilen": {
+                "accept-language": "de,en-US;q=0.9,en;q=0.8,fr;q=0.7",
+                "content-type": "text/plain;charset=UTF-8",
+                "cookie": "gas_vid=c0c80e74-c9e1-4867-8ee4-d434d5b866f7.IAmxpn1N%2BZCTRPH3TIfNPZOuEDYSIphtUmWh7381XJQ",
+                "origin": "http://127.0.0.1:9911",
+                "referer": "http://127.0.0.1:9911/",
+                "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-origin",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"
+            }
+        },
+        {
+            "sdk": "sentry-browser",
+            "sdk_kennung": "sentry.javascript.browser/10.69.0",
+            "art": "nachricht",
+            "datei": "sentry-browser/nachricht.envelope",
+            "aufgezeichnet_am": "20260808",
+            "methode": "POST",
+            "pfad": "/api/1/envelope/",
+            "abfrage": "sentry_version=7&sentry_key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&sentry_client=sentry.javascript.browser%2F10.69.0",
+            "kopfzeilen": {
+                "accept-language": "de,en-US;q=0.9,en;q=0.8,fr;q=0.7",
+                "content-type": "text/plain;charset=UTF-8",
+                "cookie": "gas_vid=c0c80e74-c9e1-4867-8ee4-d434d5b866f7.IAmxpn1N%2BZCTRPH3TIfNPZOuEDYSIphtUmWh7381XJQ",
+                "origin": "http://127.0.0.1:9911",
+                "referer": "http://127.0.0.1:9911/",
+                "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-origin",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"
+            }
+        },
+        {
+            "sdk": "sentry-browser",
+            "sdk_kennung": "sentry.javascript.browser/10.69.0",
+            "art": "sitzung",
+            "datei": "sentry-browser/sitzung.envelope",
+            "aufgezeichnet_am": "20260808",
+            "methode": "POST",
+            "pfad": "/api/1/envelope/",
+            "abfrage": "sentry_version=7&sentry_key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&sentry_client=sentry.javascript.browser%2F10.69.0",
+            "kopfzeilen": {
+                "accept-language": "de,en-US;q=0.9,en;q=0.8,fr;q=0.7",
+                "content-type": "text/plain;charset=UTF-8",
+                "cookie": "gas_vid=c0c80e74-c9e1-4867-8ee4-d434d5b866f7.IAmxpn1N%2BZCTRPH3TIfNPZOuEDYSIphtUmWh7381XJQ",
+                "origin": "http://127.0.0.1:9911",
+                "referer": "http://127.0.0.1:9911/",
+                "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-origin",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"
+            }
+        },
+        {
+            "sdk": "sentry-browser",
+            "sdk_kennung": "sentry.javascript.browser/10.69.0",
+            "art": "transaktion",
+            "datei": "sentry-browser/transaktion.envelope",
+            "aufgezeichnet_am": "20260808",
+            "methode": "POST",
+            "pfad": "/api/1/envelope/",
+            "abfrage": "sentry_version=7&sentry_key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&sentry_client=sentry.javascript.browser%2F10.69.0",
+            "kopfzeilen": {
+                "accept-language": "de,en-US;q=0.9,en;q=0.8,fr;q=0.7",
+                "content-type": "text/plain;charset=UTF-8",
+                "cookie": "gas_vid=c0c80e74-c9e1-4867-8ee4-d434d5b866f7.IAmxpn1N%2BZCTRPH3TIfNPZOuEDYSIphtUmWh7381XJQ",
+                "origin": "http://127.0.0.1:9911",
+                "referer": "http://127.0.0.1:9911/",
+                "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-origin",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"
+            }
+        },
+        {
+            "sdk": "sentry-node",
+            "sdk_kennung": "sentry.javascript.node/10.69.0",
+            "art": "fehler",
+            "datei": "sentry-node/fehler.envelope",
+            "aufgezeichnet_am": "20260808",
+            "methode": "POST",
+            "pfad": "/api/1/envelope/",
+            "abfrage": "sentry_version=7&sentry_key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&sentry_client=sentry.javascript.node%2F10.69.0",
+            "kopfzeilen": {
+                "transfer-encoding": "chunked",
+                "user-agent": "sentry.javascript.node/10.69.0"
+            }
+        },
+        {
+            "sdk": "sentry-node",
+            "sdk_kennung": "sentry.javascript.node/10.69.0",
+            "art": "nachricht",
+            "datei": "sentry-node/nachricht.envelope",
+            "aufgezeichnet_am": "20260808",
+            "methode": "POST",
+            "pfad": "/api/1/envelope/",
+            "abfrage": "sentry_version=7&sentry_key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&sentry_client=sentry.javascript.node%2F10.69.0",
+            "kopfzeilen": {
+                "transfer-encoding": "chunked",
+                "user-agent": "sentry.javascript.node/10.69.0"
+            }
+        },
+        {
+            "sdk": "sentry-node",
+            "sdk_kennung": "sentry.javascript.node/10.69.0",
+            "art": "sitzung",
+            "datei": "sentry-node/sitzung.envelope",
+            "aufgezeichnet_am": "20260808",
+            "methode": "POST",
+            "pfad": "/api/1/envelope/",
+            "abfrage": "sentry_version=7&sentry_key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&sentry_client=sentry.javascript.node%2F10.69.0",
+            "kopfzeilen": {
+                "transfer-encoding": "chunked",
+                "user-agent": "sentry.javascript.node/10.69.0"
+            }
+        },
+        {
+            "sdk": "sentry-node",
+            "sdk_kennung": "sentry.javascript.node/10.69.0",
+            "art": "transaktion",
+            "datei": "sentry-node/transaktion.envelope",
+            "aufgezeichnet_am": "20260808",
+            "methode": "POST",
+            "pfad": "/api/1/envelope/",
+            "abfrage": "sentry_version=7&sentry_key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&sentry_client=sentry.javascript.node%2F10.69.0",
+            "kopfzeilen": {
+                "transfer-encoding": "chunked",
+                "user-agent": "sentry.javascript.node/10.69.0"
+            }
+        },
+        {
+            "sdk": "sentry-php",
+            "sdk_kennung": "sentry.php/4.30.0",
+            "art": "fehler",
+            "datei": "sentry-php/fehler.envelope",
+            "aufgezeichnet_am": "20260808",
+            "methode": "POST",
+            "pfad": "/api/1/envelope/",
+            "abfrage": null,
+            "kopfzeilen": {
+                "content-encoding": "gzip",
+                "content-type": "application/x-sentry-envelope",
+                "user-agent": "sentry.php/4.30.0",
+                "x-sentry-auth": "Sentry sentry_version=7, sentry_client=sentry.php/4.30.0, sentry_key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+        },
+        {
+            "sdk": "sentry-php",
+            "sdk_kennung": "sentry.php/4.30.0",
+            "art": "nachricht",
+            "datei": "sentry-php/nachricht.envelope",
+            "aufgezeichnet_am": "20260808",
+            "methode": "POST",
+            "pfad": "/api/1/envelope/",
+            "abfrage": null,
+            "kopfzeilen": {
+                "content-encoding": "gzip",
+                "content-type": "application/x-sentry-envelope",
+                "user-agent": "sentry.php/4.30.0",
+                "x-sentry-auth": "Sentry sentry_version=7, sentry_client=sentry.php/4.30.0, sentry_key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+        },
+        {
+            "sdk": "sentry-php",
+            "sdk_kennung": "sentry.php/4.30.0",
+            "art": "transaktion",
+            "datei": "sentry-php/transaktion.envelope",
+            "aufgezeichnet_am": "20260808",
+            "methode": "POST",
+            "pfad": "/api/1/envelope/",
+            "abfrage": null,
+            "kopfzeilen": {
+                "content-encoding": "gzip",
+                "content-type": "application/x-sentry-envelope",
+                "user-agent": "sentry.php/4.30.0",
+                "x-sentry-auth": "Sentry sentry_version=7, sentry_client=sentry.php/4.30.0, sentry_key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+        },
+        {
+            "sdk": "sentry-python",
+            "sdk_kennung": "sentry.python/2.66.1",
+            "art": "fehler",
+            "datei": "sentry-python/fehler.envelope",
+            "aufgezeichnet_am": "20260808",
+            "methode": "POST",
+            "pfad": "/api/1/envelope/",
+            "abfrage": null,
+            "kopfzeilen": {
+                "content-encoding": "gzip",
+                "content-type": "application/x-sentry-envelope",
+                "user-agent": "sentry.python/2.66.1",
+                "x-sentry-auth": "Sentry sentry_key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, sentry_version=7, sentry_client=sentry.python/2.66.1"
+            }
+        },
+        {
+            "sdk": "sentry-python",
+            "sdk_kennung": "sentry.python/2.66.1",
+            "art": "nachricht",
+            "datei": "sentry-python/nachricht.envelope",
+            "aufgezeichnet_am": "20260808",
+            "methode": "POST",
+            "pfad": "/api/1/envelope/",
+            "abfrage": null,
+            "kopfzeilen": {
+                "content-encoding": "gzip",
+                "content-type": "application/x-sentry-envelope",
+                "user-agent": "sentry.python/2.66.1",
+                "x-sentry-auth": "Sentry sentry_key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, sentry_version=7, sentry_client=sentry.python/2.66.1"
+            }
+        },
+        {
+            "sdk": "sentry-python",
+            "sdk_kennung": "sentry.python/2.66.1",
+            "art": "sitzung",
+            "datei": "sentry-python/sitzung.envelope",
+            "aufgezeichnet_am": "20260808",
+            "methode": "POST",
+            "pfad": "/api/1/envelope/",
+            "abfrage": null,
+            "kopfzeilen": {
+                "content-encoding": "gzip",
+                "content-type": "application/x-sentry-envelope",
+                "user-agent": "sentry.python/2.66.1",
+                "x-sentry-auth": "Sentry sentry_key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, sentry_version=7, sentry_client=sentry.python/2.66.1"
+            }
+        },
+        {
+            "sdk": "sentry-python",
+            "sdk_kennung": "sentry.python/2.66.1",
+            "art": "transaktion",
+            "datei": "sentry-python/transaktion.envelope",
+            "aufgezeichnet_am": "20260808",
+            "methode": "POST",
+            "pfad": "/api/1/envelope/",
+            "abfrage": null,
+            "kopfzeilen": {
+                "content-encoding": "gzip",
+                "content-type": "application/x-sentry-envelope",
+                "user-agent": "sentry.python/2.66.1",
+                "x-sentry-auth": "Sentry sentry_key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, sentry_version=7, sentry_client=sentry.python/2.66.1"
+            }
+        }
+    ]
+}
