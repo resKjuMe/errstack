@@ -176,6 +176,47 @@ return [
         'discarded' => 'Gelöscht; gleichartige Meldungen werden künftig verworfen',
     ],
 
+    // Fehler von Hand zusammenführen und wieder auftrennen (S9,
+    // app/Support/Issues/IssueMerging).
+    'merge' => [
+        'action' => ':count Fehler zusammenführen',
+        'hint' => 'Die gewählten Fehler werden zu einem Eintrag. Der mit der größten '
+            .'Häufigkeit wird der Kopf, die übrigen werden zu Untergruppen und lassen '
+            .'sich einzeln wieder herauslösen. Es geht dabei keine Meldung verloren.',
+        'merged_into' => 'Dieser Fehler ist eine Untergruppe von',
+
+        'badge' => [
+            'label' => ':count zusammengeführt',
+            'hint' => 'Dieser Fehler ist von Hand aus mehreren zusammengeführt. Die Zahlen '
+                .'gelten für alle Untergruppen zusammen.',
+        ],
+
+        'sources' => [
+            'title' => 'Untergruppen (:count)',
+            'description' => 'Von Hand zusammengeführte Fehler. Ihre Zahlen sind die des '
+                .'Zusammenführens — was danach aufgetreten ist, zählt am Fehler darüber.',
+            'figures' => ':count Mal · :first bis :last',
+        ],
+
+        'split' => [
+            'action' => 'Herauslösen',
+            'hint' => 'Diese Untergruppe steht danach wieder als eigener Fehler in der '
+                .'Liste, mit den Zahlen, die sie beim Zusammenführen hatte.',
+        ],
+
+        'error' => [
+            'mixed_projects' => 'Zusammenführen geht nur innerhalb eines Projekts.',
+            'only_errors' => 'Zusammenführen geht nur bei Fehlern, nicht bei Leistungsproblemen.',
+            'already_merged' => 'Mindestens einer der gewählten Fehler ist bereits eine '
+                .'Untergruppe. Er muss zuerst herausgelöst werden.',
+        ],
+
+        'flash' => [
+            'merged' => ':count Fehler zu einem zusammengeführt.',
+            'unmerged' => 'Untergruppe wieder herausgelöst.',
+        ],
+    ],
+
     'live' => [
         'new_one' => 'Ein neuer Fehler',
         'new_many' => ':count neue Fehler',

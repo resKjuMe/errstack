@@ -3,6 +3,7 @@
 namespace App\Support\Issues;
 
 use App\Enums\CountPeriod;
+use App\Models\Issue;
 use App\Models\IssueCount;
 use App\Support\Filters\GlobalFilter;
 use Carbon\CarbonImmutable;
@@ -61,8 +62,14 @@ final class IssueSeries
         /** @var array<int, list<int>> $series */
         $series = array_fill_keys($issueIds, $empty);
 
+        // Zusammengeführte Einträge (S9) zeichnen die Reihe ihrer Untergruppen
+        // mit: die Zeitreihe bleibt beim Beitritt stehen, wo sie entstanden ist,
+        // und ein Kopf, der nur seine eigene zeigte, hätte einen Verlauf, der
+        // nicht zu seiner Häufigkeit passt.
+        $owner = self::owners($issueIds);
+
         $rows = IssueCount::query()
-            ->whereIn('issue_id', $issueIds)
+            ->whereIn('issue_id', array_keys($owner))
             ->where('period', $period)
             // Die Grenzen ausdrücklich in UTC gelesen: die Fenster sind in UTC
             // abgelegt, und `parse()` ohne Zone nähme die der Anwendung — eine
@@ -78,11 +85,40 @@ final class IssueSeries
             $slot = $index[$row->window_start->utc()->format('Y-m-d H:i:s')] ?? null;
 
             if ($slot !== null) {
-                $series[$row->issue_id][$slot] = $row->event_count;
+                // Aufaddiert und nicht gesetzt: mehrere Untergruppen können im
+                // selben Fenster gezählt haben, und der Kopf selbst auch.
+                $series[$owner[$row->issue_id]][$slot] += $row->event_count;
             }
         }
 
         return $series;
+    }
+
+    /**
+     * Zu welcher Reihe jede gelesene Zeile gehört — Kennung des Zählers auf
+     * Kennung des Eintrags, der ihn zeichnet.
+     *
+     * Ein Eintrag steht darin auf sich selbst, eine Untergruppe auf ihren Kopf.
+     * Eine Abfrage für die ganze Seite: je Zeile die Untergruppen zu holen wären
+     * fünfzig Umläufe für eine Grafik von Daumenbreite — dieselbe Rechnung wie
+     * bei den Zählern selbst.
+     *
+     * @param  list<int>  $issueIds
+     * @return array<int, int>
+     */
+    private static function owners(array $issueIds): array
+    {
+        $owner = array_combine($issueIds, $issueIds);
+
+        $members = Issue::query()
+            ->whereIn('merged_into_id', $issueIds)
+            ->pluck('merged_into_id', 'id');
+
+        foreach ($members as $memberId => $headId) {
+            $owner[(int) $memberId] = (int) $headId;
+        }
+
+        return $owner;
     }
 
     /**

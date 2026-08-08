@@ -29,6 +29,18 @@ export default function IssueRow({ issue, selected, onToggle, showProject, trend
                     >
                         {issue.title}
                     </Link>
+
+                    {/* Von Hand zusammengeführt (S9): die Marke erklärt die
+                        Zahlen dieser Zeile — sie gelten für mehrere
+                        Fingerabdrücke. */}
+                    {issue.mergedCount > 0 && (
+                        <span
+                            title={t('issues.merge.badge.hint')}
+                            className="shrink-0 rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                        >
+                            {t('issues.merge.badge.label', { count: issue.mergedCount + 1 })}
+                        </span>
+                    )}
                 </div>
 
                 <p className="mt-0.5 truncate text-sm text-gray-500 dark:text-gray-400">
