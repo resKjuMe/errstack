@@ -270,7 +270,9 @@ class ProjectSetupTest extends TestCase
         $this->actingAs($user)
             ->get("/organisationen/{$organization->slug}/projekte/{$project->slug}")
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('project.setupHref', $this->path($organization, $project))
+                // Die Nutzlast trägt die volle Adresse (`route()`), nicht den
+                // Pfad — der Vergleich muss dieselbe Quelle nehmen.
+                ->where('project.setupHref', route('projects.setup.index', [$organization, $project]))
             );
     }
 
