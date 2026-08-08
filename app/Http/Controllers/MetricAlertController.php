@@ -245,7 +245,7 @@ class MetricAlertController extends Controller
             ->get()
             ->map(fn (MetricAlertTransition $transition): array => [
                 'id' => $transition->id,
-                'alert' => $transition->alert?->name ?? '',
+                'alert' => $transition->alert->name,
                 'kind' => $transition->kind(),
                 'kindLabel' => __('alerts.kind.'.$transition->kind()),
                 'fromStatus' => $transition->from_status->value,

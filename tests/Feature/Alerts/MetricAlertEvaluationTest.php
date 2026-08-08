@@ -63,6 +63,9 @@ class MetricAlertEvaluationTest extends TestCase
         return [$organization, $project];
     }
 
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
     private function alert(Project $project, array $attributes = []): MetricAlert
     {
         return MetricAlert::factory()->for($project)->create($attributes);

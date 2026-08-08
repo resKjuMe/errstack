@@ -544,7 +544,10 @@ function AlertForm({
                 Aussage. */}
             {metric && !metric.count && (
                 <div>
-                    <InputLabel htmlFor={id('samples')} value={t('alerts.fields.minimum_samples')} />
+                    <InputLabel
+                        htmlFor={id('samples')}
+                        value={t('alerts.fields.minimum_samples')}
+                    />
                     <TextInput
                         id={id('samples')}
                         type="number"
