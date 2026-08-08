@@ -49,6 +49,11 @@ final class NotificationDispatcher
         /** @var NotificationDelivery $delivery */
         $delivery = $channel->deliveries()->create([
             'subject' => $message->title,
+            // Dieselbe Kennung, die auch in der Nutzlast steht — hier als eigene
+            // Spalte, weil die Alarm-Detailseite (A4) danach sucht: „was ist aus
+            // dieser Regel hinausgegangen, und kam es an?". Aus dem JSON wäre das
+            // in beiden unterstützten Datenbanken eine Abfrage ohne Index.
+            'reference' => $message->reference,
             'payload' => $message->toArray(),
             'status' => DeliveryStatus::Pending,
             'is_test' => $isTest,

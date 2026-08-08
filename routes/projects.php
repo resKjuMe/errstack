@@ -14,6 +14,8 @@
 |
 */
 
+use App\Http\Controllers\AlertOverviewController;
+use App\Http\Controllers\AlertSnoozeController;
 use App\Http\Controllers\CronMonitorController;
 use App\Http\Controllers\EnvironmentController;
 use App\Http\Controllers\FingerprintRuleController;
@@ -157,6 +159,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('{project}/alarme/{metric_alert}', [MetricAlertController::class, 'destroy'])
                 ->name('projects.alerts.destroy');
 
+            // Stummschalten (A4). Sie steht unter der Regel und nicht unter der
+            // Übersicht, weil `scopeBindings` den Alarm hier über die Beziehung
+            // am Projekt auflöst — dieselbe Bindung wie bei den übrigen
+            // Alarm-Routen. Anlegen und Aufheben teilen sich die Adresse: es ist
+            // dieselbe Sache, einmal gesetzt und einmal genommen.
+            Route::post('{project}/alarme/{metric_alert}/stummschaltung', [AlertSnoozeController::class, 'storeForMetricAlert'])
+                ->name('projects.alerts.snooze.store');
+            Route::delete('{project}/alarme/{metric_alert}/stummschaltung', [AlertSnoozeController::class, 'destroyForMetricAlert'])
+                ->name('projects.alerts.snooze.destroy');
+
             // Alarm-Regeln für Fehler. Der Parametername ist
             // `issue_alert_rule` — aus demselben Grund wie bei den
             // Schwellwert-Alarmen: `scopeBindings` leitet daraus die Beziehung
@@ -177,6 +189,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('projects.issue-alerts.toggle');
             Route::delete('{project}/alarmregeln/{issue_alert_rule}', [IssueAlertRuleController::class, 'destroy'])
                 ->name('projects.issue-alerts.destroy');
+
+            // Stummschalten (A4) — wie bei den Schwellwert-Alarmen unter der
+            // Regel selbst.
+            Route::post('{project}/alarmregeln/{issue_alert_rule}/stummschaltung', [AlertSnoozeController::class, 'storeForIssueAlertRule'])
+                ->name('projects.issue-alerts.snooze.store');
+            Route::delete('{project}/alarmregeln/{issue_alert_rule}/stummschaltung', [AlertSnoozeController::class, 'destroyForIssueAlertRule'])
+                ->name('projects.issue-alerts.snooze.destroy');
+
+            // Die Alarm-Übersicht (A4): alle Regeln beider Arten mit Zustand und
+            // Verlauf, dazu je Regel eine Detailseite. Sie liegt bewusst neben
+            // den Einstellungsseiten und nicht in ihnen: dort wird eingerichtet,
+            // hier nachgesehen — und wer nach einer Störung nachsieht, will
+            // nicht erst wissen, ob es ein Schwellwert-Alarm oder eine
+            // Fehler-Regel war.
+            //
+            // Ansehen darf jedes Mitglied, aus demselben Grund wie bei den
+            // Einstellungsseiten.
+            Route::get('{project}/alarmuebersicht', [AlertOverviewController::class, 'index'])
+                ->name('projects.alert-overview.index');
+            Route::get('{project}/alarmuebersicht/alarme/{metric_alert}', [AlertOverviewController::class, 'metricAlert'])
+                ->name('projects.alert-overview.metric');
+            Route::get('{project}/alarmuebersicht/regeln/{issue_alert_rule}', [AlertOverviewController::class, 'issueAlertRule'])
+                ->name('projects.alert-overview.issue');
 
             // Stichproben-Regeln der Antwortzeiten. Der Parametername ist
             // `sampling_rule` — aus demselben Grund wie bei den

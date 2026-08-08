@@ -22,6 +22,7 @@ use Illuminate\Support\Str;
  * @property int $id
  * @property int $notification_channel_id
  * @property string $subject
+ * @property string|null $reference Kennung der Meldung — dieselbe über alle Meldungen eines Alarms
  * @property array<string, mixed> $payload
  * @property DeliveryStatus $status
  * @property int $attempts
@@ -32,7 +33,7 @@ use Illuminate\Support\Str;
  * @property Carbon|null $delivered_at
  * @property Carbon $created_at
  */
-#[Fillable(['subject', 'payload', 'status', 'is_test'])]
+#[Fillable(['subject', 'reference', 'payload', 'status', 'is_test'])]
 class NotificationDelivery extends Model
 {
     /**

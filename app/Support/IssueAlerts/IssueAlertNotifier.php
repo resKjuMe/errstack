@@ -10,6 +10,8 @@ use App\Models\NotificationChannel;
 use App\Models\User;
 use App\Notifications\NotificationDispatcher;
 use App\Notifications\NotificationMessage;
+use App\Support\Alerts\AlertMute;
+use App\Support\Alerts\AlertReference;
 use App\Support\Formats;
 use Illuminate\Support\Carbon;
 
@@ -22,6 +24,12 @@ use Illuminate\Support\Carbon;
  * Schwellwert-Alarmen (A3) und aus demselben Grund: ein eigener Versandweg für
  * Fehler-Alarme wäre eine zweite Stelle, an der jemand seine Ruhezeiten und
  * Abbestellungen einstellen müsste.
+ *
+ * **Die Stummschaltung (A4) greift genau hier** und nicht in der Auswertung: die
+ * Auslösung ist bereits festgestellt und steht gleich im Verlauf. „Für alle"
+ * beendet den Versand vollständig, „nur für mich" nimmt eine einzelne Person aus
+ * den persönlichen Benachrichtigungen — der gemeinsame Kanal daneben ist an
+ * niemanden persönlich gerichtet und meldet weiter ({@see AlertMute}).
  */
 final class IssueAlertNotifier
 {
@@ -39,13 +47,21 @@ final class IssueAlertNotifier
             return 0;
         }
 
+        // Stummgeschaltet (A4). Die Auslösung ist bereits festgestellt und wird
+        // gleich in den Verlauf geschrieben — hier entfällt nur der Versand.
+        $mute = AlertMute::for($rule);
+
+        if ($mute->silent()) {
+            return 0;
+        }
+
         $message = $this->message($rule, $context, $matched);
         $count = 0;
 
         foreach ($actions as $action) {
             $count += match ($action->type) {
                 IssueAlertAction::Channel => $this->toChannels($context, $message, $action->channelId),
-                IssueAlertAction::Members => $this->toMembers($context, $message),
+                IssueAlertAction::Members => $this->toMembers($context, $message, $mute),
             };
         }
 
@@ -94,13 +110,18 @@ final class IssueAlertNotifier
      * hier ausdrücklich gewollt — eine Alarmregel ist die Stelle, an der jemand
      * gesagt hat, dass er genau davon wissen will.
      */
-    private function toMembers(IssueAlertContext $context, NotificationMessage $message): int
+    private function toMembers(IssueAlertContext $context, NotificationMessage $message, AlertMute $mute): int
     {
         $project = $context->issue->project;
 
         $members = User::query()
             ->whereIn('id', $project->organization->memberships()->select('user_id'))
-            ->get();
+            ->get()
+            // Wer sich diese Regel für sich selbst stummgeschaltet hat (A4),
+            // fällt hier heraus — und nur hier: der gemeinsame Kanal daneben
+            // meldet weiter, weil er nicht an eine einzelne Person gerichtet
+            // ist.
+            ->reject(fn (User $member): bool => $mute->mutes($member->id));
 
         $sent = $this->dispatcher->sendToUsers(
             $members,
@@ -138,8 +159,9 @@ final class IssueAlertNotifier
             context: $this->context($rule, $context, $matched),
             // Dieselbe Kennung über alle Meldungen einer Regel zu einem Fehler:
             // erst dadurch lassen sich Wiederholungen im Kanal einander
-            // zuordnen.
-            reference: 'ISSUE-'.$rule->id.'-'.$issue->id,
+            // zuordnen — und die Detailseite (A4) findet über sie, was
+            // hinausgegangen ist.
+            reference: AlertReference::forIssueAlert($rule, $issue->id),
             occurredAt: Carbon::parse($context->occurredAt),
         );
     }
