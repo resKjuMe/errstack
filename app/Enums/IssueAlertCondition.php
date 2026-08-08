@@ -20,8 +20,13 @@ enum IssueAlertCondition: string
     /**
      * Ein erledigter Fehler tritt wieder auf.
      *
-     * Erkannt wird das hier nur **für die Meldung**: der Eintrag bleibt
-     * erledigt, weil das Wiederaufmachen zur Rückfallerkennung (S8) gehört.
+     * Aufgemacht wird der Eintrag dabei nicht von dieser Regel, sondern von der
+     * Rückfallerkennung (S8) einen Schritt davor; diese Bedingung hört mit —
+     * wie {@see Escalation} bei der Stummschaltung. Sie greift außerdem in einem
+     * Fall, in dem der Eintrag erledigt **bleibt**: eine Meldung aus einer noch
+     * laufenden alten Fassung widerlegt „erledigt in 1.4.2" nicht, ist aber ein
+     * Grund, den Zuständigen zu benachrichtigen.
+     *
      * Damit derselbe Rückfall nicht in jedem Zeitfenster erneut gemeldet wird,
      * merkt sich der Regel-Zustand den Auflösungszeitpunkt, zu dem gemeldet
      * wurde (App\Models\IssueAlertState).

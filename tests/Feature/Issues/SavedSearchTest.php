@@ -361,10 +361,9 @@ class SavedSearchTest extends TestCase
                 // „Zur Prüfung" ist seit S7 vollständig beantwortbar …
                 ->where('savedSearches.views.1.key', 'for_review')
                 ->where('savedSearches.views.1.available', true)
-                // … „Wieder aufgetreten" noch nicht: die Rückfallerkennung ist
-                // S8. Die Ansicht steht trotzdem da und sagt es.
+                // … „Wieder aufgetreten" seit S8 ebenso.
                 ->where('savedSearches.views.2.key', 'regressed')
-                ->where('savedSearches.views.2.available', false)
+                ->where('savedSearches.views.2.available', true)
                 ->where('savedSearches.project.slug', 'webshop'));
     }
 

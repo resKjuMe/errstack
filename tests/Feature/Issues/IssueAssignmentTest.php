@@ -417,8 +417,8 @@ class IssueAssignmentTest extends TestCase
 
     /**
      * Die Standard-Ansichten sagen, ob sie beantwortbar sind. „Zur Prüfung" und
-     * „Mir zugewiesen" sind es seit dieser Aufgabe — „Wieder aufgetreten" (S8)
-     * noch nicht, und das soll die Leiste weiterhin sagen.
+     * „Mir zugewiesen" sind es seit dieser Aufgabe, „Wieder aufgetreten" seit
+     * S8 — die Leiste bietet damit alle drei an.
      */
     public function test_the_views_report_what_is_answerable(): void
     {
@@ -434,7 +434,7 @@ class IssueAssignmentTest extends TestCase
 
                 $this->assertTrue($available['for_review']);
                 $this->assertTrue($available['assigned']);
-                $this->assertFalse($available['regressed']);
+                $this->assertTrue($available['regressed']);
             });
     }
 

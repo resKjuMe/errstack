@@ -354,6 +354,7 @@ return [
     'issue_activity' => [
         'resolved' => 'Resolved',
         'unresolved' => 'Reopened',
+        'regressed' => 'Regressed',
         'ignored' => 'Ignored',
         'ignore_expired' => 'Ignoring ended',
         'assigned' => 'Assigned',

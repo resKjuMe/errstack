@@ -127,10 +127,20 @@ class Release extends Model
      * über die Schnittstelle angekündigte Version hat noch kein Ereignis, und
      * `null > ?` ist in SQL weder wahr noch falsch — ohne den Zusatz bliebe der
      * erste Zeitstempel für immer leer.
+     *
+     * **Die Instanz wird mitgeführt**, anders als beim Zählen am Fehler-Eintrag.
+     * Dort ist die Veraltung der bewusste Preis, weil sich die neuen Zähler
+     * nicht ohne Leseabfrage herleiten ließen; hier ergeben sich beide
+     * Zeitpunkte aus derselben Fallunterscheidung wie in der Anweisung. Wer die
+     * frisch angelegte Auslieferung weiterreicht — der Aufnahmeweg tut das
+     * ({@see App\Support\Ingest\Processing\Steps\RecordRelease}) —, bekäme sonst
+     * eine mit leerem `first_event_at`, und genau daran hängt die Rangfolge
+     * unzerlegbarer Fassungen ({@see isNewerThan()}).
      */
     public function noteEvent(CarbonImmutable $occurred): void
     {
-        $at = $occurred->utc()->format('Y-m-d H:i:s');
+        $occurred = $occurred->utc();
+        $at = $occurred->format('Y-m-d H:i:s');
         $now = Carbon::now()->format('Y-m-d H:i:s');
 
         DB::update(
@@ -141,6 +151,72 @@ class Release extends Model
             .'where id = ?',
             [$at, $at, $at, $at, $now, $this->id],
         );
+
+        if ($this->first_event_at === null || $this->first_event_at->greaterThan($occurred)) {
+            $this->first_event_at = $occurred;
+        }
+
+        if ($this->last_event_at === null || $this->last_event_at->lessThan($occurred)) {
+            $this->last_event_at = $occurred;
+        }
+
+        // Ohne das gälte die Instanz als geändert und würde bei einem späteren
+        // `save()` die beiden Spalten ein zweites Mal schreiben — dann als
+        // Zuweisung und damit ohne die Fallunterscheidung von oben.
+        $this->syncOriginalAttributes(['first_event_at', 'last_event_at']);
+    }
+
+    /**
+     * Ist diese Auslieferung jünger als jene?
+     *
+     * **Dieselbe Rangfolge wie in der Liste** ({@see newestFirst()}), Stufe für
+     * Stufe — und das ist der Zweck dieser Methode. Die Rückfallerkennung (S8)
+     * fragt „ist eine **neuere** Fassung betroffen?", und die Antwort darf nicht
+     * davon abhängen, wer fragt: eine zweite Vorstellung von „neuer" wäre eine,
+     * die der Versionsliste eines Tages widerspricht — dieselben zwei Angaben
+     * stünden dann in der Liste in der einen und in der Erkennung in der anderen
+     * Reihenfolge.
+     *
+     * Die Zeit entscheidet erst zuletzt und trägt dort alles, was keine Nummer
+     * hat: ein Commit-Hash hat keine Rangfolge, aber die Auslieferung, aus der
+     * die erste Meldung später eintraf, ist die spätere. Genommen wird dafür das
+     * **erste** Ereignis und nicht das letzte, mit dem die Liste ihren
+     * Gleichstand auflöst — das letzte wandert bei jeder eingehenden Meldung,
+     * und eine Erkennung, die heute „neuer" sagt und morgen „älter", wäre keine.
+     */
+    public function isNewerThan(self $other): bool
+    {
+        return self::rank($this) > self::rank($other);
+    }
+
+    /**
+     * Der Rang einer Auslieferung als vergleichbare Liste.
+     *
+     * PHP vergleicht Listen von links nach rechts, Feld für Feld — dieselbe
+     * Ordnung, die `order by` aus mehreren Spalten macht. Die Werte sind
+     * deshalb so gewählt, dass **größer** überall „neuer" heißt, auch dort, wo
+     * die Abfrage absteigend sortiert.
+     *
+     * Die beiden Marken (`hat eine Nummer`, `ist endgültig`) stehen als eigene
+     * Felder da und nicht als Kunstgriff im Text daneben: „endgültig vor Vorab"
+     * über ein vorangestelltes Zeichen zu lösen hinge daran, dass kein
+     * Vorabteil dieses Zeichen enthält — und was ein SDK als Version schickt,
+     * ist nicht verhandelbar.
+     *
+     * @return list<int|string>
+     */
+    private static function rank(self $release): array
+    {
+        return [
+            $release->sort_major === null ? 0 : 1,
+            $release->sort_major ?? 0,
+            $release->sort_minor ?? 0,
+            $release->sort_patch ?? 0,
+            $release->sort_prerelease === null ? 1 : 0,
+            $release->sort_prerelease ?? '',
+            $release->first_event_at?->getTimestamp() ?? 0,
+            $release->id,
+        ];
     }
 
     /**

@@ -34,6 +34,18 @@ enum IssueActivityType: string
     /** Wieder geöffnet, von Hand. */
     case Unresolved = 'unresolved';
 
+    /**
+     * Zurückgekommen: der erledigte Fehler ist wieder aufgetreten und hat sich
+     * von selbst wieder geöffnet (S8).
+     *
+     * Getrennt von {@see Unresolved}, obwohl beide denselben Zustand
+     * herstellen — für den, der den Verlauf liest, sind es zwei verschiedene
+     * Vorgänge: das eine hat jemand entschieden, das andere ist geschehen. Wie
+     * bei {@see IgnoreExpired} steht deshalb kein Name daneben, dafür die
+     * Version, in der er zurückkam (`data`).
+     */
+    case Regressed = 'regressed';
+
     /** Stummgeschaltet — die Bedingung steht in `data`. */
     case Ignored = 'ignored';
 

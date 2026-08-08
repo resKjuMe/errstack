@@ -248,6 +248,13 @@ final class IssueActivityFeed
 
     /**
      * Der Satz zu einem Vermerk — mit Bedingung, wo es eine gibt.
+     *
+     * Der Rückfall (S8) bekommt einen zweiten Schlüssel statt eines
+     * Platzhalters, der leer bleiben darf: „Wieder aufgetreten in Version "
+     * wäre ein halber Satz, und eine Meldung ohne Versionsangabe ist der
+     * Regelfall bei einem SDK ohne `release`. Der Verlauf ist unveränderlich —
+     * die Version steht deshalb als Text im Vermerk und wird nicht über den
+     * Eintrag nachgeladen, der sie längst weitergezogen hat.
      */
     private static function text(IssueActivity $activity): string
     {
@@ -266,6 +273,12 @@ final class IssueActivityFeed
 
         if ($activity->type === IssueActivityType::Escalated) {
             return self::escalationText($data);
+        }
+
+        $release = $activity->type === IssueActivityType::Regressed ? ($data['release'] ?? null) : null;
+
+        if (is_string($release) && $release !== '') {
+            $key .= '_in';
         }
 
         return __($key, [

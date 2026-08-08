@@ -38,13 +38,17 @@ enum IssueResolveMode: string
     }
 
     /**
-     * Braucht dieser Fall eine Version als Bezugspunkt?
+     * Nennt dieser Fall die Version, in der der Fehler behoben **ist**?
      *
-     * Nur „in dieser Version": das nächste Release gibt es beim Auflösen noch
-     * nicht — es wird beim Anlegen erkannt (S8) und ist bis dahin ein Vermerk
-     * ohne Verweis.
+     * Nur „in dieser Version". „Im nächsten Release" merkt sich dieselbe
+     * Version, aber als **Bezugspunkt** und nicht als Ziel: behoben ist der
+     * Fehler dort erst in dem, was danach kommt
+     * ({@see App\Support\Issues\IssueActions::resolve()}). Der Unterschied ist
+     * der zwischen „behoben in 1.4.2" und „behoben nach 1.4.2" — für die
+     * Rückfallerkennung dieselbe Prüfung, für den Satz in der Oberfläche zwei
+     * verschiedene Aussagen.
      */
-    public function needsRelease(): bool
+    public function namesRelease(): bool
     {
         return $this === self::CurrentRelease;
     }

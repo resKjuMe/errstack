@@ -56,6 +56,19 @@ export default function IssueRow({
                         </span>
                     )}
 
+                    {/* Von selbst wieder aufgegangen (S8): der Fehler galt
+                        schon einmal als behoben. Warnfarbe und nicht grau — er
+                        steht zwischen lauter offenen Einträgen, und genau das
+                        ist die Information, die ihn heraushebt. */}
+                    {issue.regressed && (
+                        <span
+                            title={t('issues.regression.badge.hint')}
+                            className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
+                        >
+                            {t('issues.regression.badge.label')}
+                        </span>
+                    )}
+
                     {/* Liegt noch zur Prüfung (S7): niemand hat den Fehler
                         bisher in die Hand genommen. Die Marke steht neben dem
                         Titel und nicht in einer eigenen Spalte, weil sie meist
