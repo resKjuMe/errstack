@@ -17,9 +17,14 @@
 | Pfad-Abschnitte. Ein Transaktionsname ist in aller Regel ein Pfad und bringt
 | damit genau die Zeichen mit, die ein Abschnitt nicht tragen kann.
 |
+| Dazu die Leistungsprobleme (PF6). Eine eigene Adresse und nicht ein Filter auf
+| der Fehlerliste: sie beantworten eine andere Frage („was kostet Zeit?" statt
+| „was ist kaputt?") und zeigen deshalb andere Spalten.
+|
 */
 
 use App\Http\Controllers\PerformanceController;
+use App\Http\Controllers\PerformanceIssueController;
 use App\Http\Controllers\TransactionDetailController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,4 +33,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('leistung/transaktion', TransactionDetailController::class)
         ->name('performance.transaction');
+
+    Route::get('leistungsprobleme', [PerformanceIssueController::class, 'index'])
+        ->name('performance.issues.index');
+
+    Route::get('leistungsprobleme/{issue}', [PerformanceIssueController::class, 'show'])
+        ->name('performance.issues.show');
 });

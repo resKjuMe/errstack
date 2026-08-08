@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\SelfMonitoring\BrowserConfig;
 use App\Support\ShellData;
 use App\Support\Translations;
 use Illuminate\Http\Request;
@@ -41,6 +42,10 @@ class HandleInertiaRequests extends Middleware
                 // sonst könnte die Seite bestimmen, was zurückgenommen wird.
                 'undo' => $request->session()->get('undo'),
             ],
+            // Womit sich die Oberfläche bei der Selbstüberwachung meldet.
+            // `null`, solange keine DSN eingerichtet ist — dann lädt die Seite
+            // das SDK gar nicht erst ({@see resources/js/selfmonitoring.js}).
+            'selfMonitoring' => fn () => BrowserConfig::build(),
         ]);
     }
 }

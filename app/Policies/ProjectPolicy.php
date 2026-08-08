@@ -111,4 +111,20 @@ class ProjectPolicy
     {
         return $user->can('manageProjects', $project->organization);
     }
+
+    /**
+     * Die Schwellen der Leistungserkennung setzen.
+     *
+     * Dasselbe Recht wie für die übrigen Einstellungen — und anders als bei den
+     * Stichproben ist hier nichts unwiderruflich: eine zu hoch gesetzte Schwelle
+     * verhindert nur, dass ein Muster **gemeldet** wird. Die Abläufe selbst
+     * bleiben gespeichert, und wer die Schwelle zurücknimmt, findet die
+     * folgenden Vorfälle wieder. Ein eigenes, schwächeres Recht wäre trotzdem
+     * eine Einladung: wer die Schwellen hochdreht, macht eine Liste leer, die
+     * andere für vollständig halten.
+     */
+    public function managePerformance(User $user, Project $project): bool
+    {
+        return $user->can('manageProjects', $project->organization);
+    }
 }

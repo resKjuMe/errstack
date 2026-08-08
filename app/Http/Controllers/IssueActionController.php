@@ -135,6 +135,13 @@ class IssueActionController extends Controller
      *                ({@see IssuePolicy::scopeFor()}). Eine geratene Kennung ist
      *                ein Aufruf wie jeder andere.
      *
+     * **Nach Kategorie wird nur der `all`-Weg getrennt** (die Listenabfrage
+     * filtert auf Fehler, PF6). Über Kennungen sind auch Leistungsprobleme
+     * erreichbar, und das ist Absicht: erledigen, stummschalten und merken sind
+     * Aussagen über einen Eintrag und nicht über seine Herkunft. Eine Sperre
+     * hier hieße, dieselben Aktionen für die andere Liste ein zweites Mal zu
+     * bauen.
+     *
      * @return Builder<Issue>
      */
     private function target(IssueActionRequest $request): Builder

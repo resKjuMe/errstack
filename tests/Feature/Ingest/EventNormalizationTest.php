@@ -173,6 +173,48 @@ class EventNormalizationTest extends TestCase
         $this->assertSame('renderRow (app://bundle.js)', $event->culprit);
     }
 
+    public function test_the_trace_of_a_report_is_kept_in_its_own_columns(): void
+    {
+        $key = $this->key();
+
+        $payload = $this->accept($key, [
+            'message' => 'in einem Aufruf passiert',
+            'contexts' => ['trace' => [
+                // Groß geschrieben, wie es manche SDKs tun. Bliebe die
+                // Schreibweise stehen, fänden Fehler und Transaktion desselben
+                // Vorgangs nicht zueinander.
+                'trace_id' => 'AABBCCDDEEFF00112233445566778899',
+                'span_id' => 'AABBCCDDEEFF0011',
+            ]],
+        ]);
+
+        ProcessIngestPayload::dispatch($payload);
+
+        $event = Event::query()->firstOrFail();
+
+        // Die Spalten sind der Weg der Trace-Ansicht (PF4) zu den Fehlern eines
+        // Ablaufs; das Fach in `contexts` bleibt daneben unverändert stehen.
+        $this->assertSame('aabbccddeeff00112233445566778899', $event->trace_id);
+        $this->assertSame('aabbccddeeff0011', $event->trace_span_id);
+        $this->assertSame('aabbccddeeff00112233445566778899', data_get($event->contexts, 'trace.trace_id'));
+    }
+
+    public function test_a_report_without_a_trace_keeps_the_columns_empty(): void
+    {
+        $key = $this->key();
+
+        $payload = $this->accept($key, ['message' => 'ohne Aufruf']);
+
+        ProcessIngestPayload::dispatch($payload);
+
+        $event = Event::query()->firstOrFail();
+
+        // Ein SDK ohne Performance-Aufzeichnung schickt keine Spur. Das ist der
+        // Regelfall und kein Datenfehler.
+        $this->assertNull($event->trace_id);
+        $this->assertNull($event->trace_span_id);
+    }
+
     public function test_a_badly_filled_report_is_stored_with_a_note_instead_of_being_dropped(): void
     {
         $key = $this->key();

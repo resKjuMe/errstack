@@ -34,6 +34,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $fingerprint
  * @property EventLevel $level
  * @property string $platform
+ * @property string|null $trace_id
+ * @property string|null $trace_span_id
  * @property string|null $title
  * @property string|null $culprit
  * @property string|null $transaction
@@ -81,6 +83,12 @@ class Event extends Model
             [
                 'project_id' => $payload->project_id,
                 'event_id' => $event->eventId,
+                // Die Spur steht zusätzlich in `contexts.trace`. Hier steht sie
+                // ein zweites Mal, weil die Trace-Ansicht (PF4) danach sucht und
+                // ein Index über ein JSON-Fach in MySQL und SQLite verschieden
+                // zu schreiben wäre.
+                'trace_id' => $event->traceId(),
+                'trace_span_id' => $event->traceSpanId(),
                 'level' => $event->level,
                 'platform' => $event->platform,
                 'title' => $event->title,
@@ -246,6 +254,8 @@ class Event extends Model
         'fingerprint',
         'grouping',
         'event_id',
+        'trace_id',
+        'trace_span_id',
         'level',
         'platform',
         'title',

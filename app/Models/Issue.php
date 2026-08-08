@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Enums\EventLevel;
+use App\Enums\IssueCategory;
 use App\Enums\IssuePriority;
 use App\Enums\IssueStatus;
+use App\Enums\PerformanceProblem;
 use App\Support\Tags\TagAggregates;
 use Carbon\CarbonImmutable;
 use Database\Factories\IssueFactory;
@@ -43,6 +45,7 @@ use Illuminate\Support\Facades\DB;
  *
  * @property int $id
  * @property int $project_id
+ * @property IssueCategory $category
  * @property string|null $title
  * @property string|null $culprit
  * @property string|null $type
@@ -51,6 +54,7 @@ use Illuminate\Support\Facades\DB;
  * @property IssuePriority $priority
  * @property int $times_seen
  * @property int $users_seen
+ * @property int $time_lost_us
  * @property CarbonImmutable $first_seen
  * @property CarbonImmutable $last_seen
  * @property int|null $first_release_id
@@ -111,6 +115,7 @@ class Issue extends Model
 
         $issue = self::query()->create([
             'project_id' => $group->project_id,
+            'category' => IssueCategory::Error,
             'title' => $event->title,
             'culprit' => $event->culprit,
             'type' => self::typeOf($event),
@@ -199,6 +204,90 @@ class Issue extends Model
     }
 
     /**
+     * Findet den Eintrag eines Leistungsproblems oder legt ihn an.
+     *
+     * Derselbe Ablauf wie bei einem Fehler, mit derselben Wettlaufsituation und
+     * derselben Lösung ({@see forGroup()}) — die Gruppe entscheidet über die
+     * bedingte Zuweisung, wer den Eintrag anlegen durfte. Was sich
+     * unterscheidet, sind nur die Angaben, die hineingehen: die Überschrift
+     * kommt vom Muster und seinem Gegenstand, die Fehlerstelle ist der Name des
+     * Ablaufs, und der Grad ist eine Warnung, kein Fehler
+     * ({@see PerformanceProblem::level()}).
+     *
+     * Auch hier gilt: die Angaben stammen vom **ersten** Fund und werden nicht
+     * nachgeführt. Sie beschreiben, womit dieser Eintrag angefangen hat; was
+     * sich seither geändert hat, steht in den Funden.
+     */
+    public static function forPerformance(EventGroup $group, PerformanceDetection $detection, string $title, ?string $culprit): self
+    {
+        if ($group->issue_id !== null) {
+            $existing = self::query()->find($group->issue_id);
+
+            if ($existing !== null) {
+                return $existing;
+            }
+        }
+
+        $issue = self::query()->create([
+            'project_id' => $group->project_id,
+            'category' => IssueCategory::Performance,
+            'title' => $title,
+            'culprit' => $culprit,
+            // Die Art ist das Muster selbst. Bei einem Fehler steht hier die
+            // Klasse der Ausnahme — beides beantwortet dieselbe Frage: „was für
+            // eine Sorte Problem ist das", und beides trägt denselben Filter.
+            'type' => $detection->problem->value,
+            'level' => $detection->problem->level(),
+            'status' => IssueStatus::DEFAULT,
+            'priority' => IssuePriority::DEFAULT,
+            'first_seen' => $detection->occurred_at,
+            'last_seen' => $detection->occurred_at,
+        ]);
+
+        $claimed = EventGroup::query()
+            ->whereKey($group->id)
+            ->whereNull('issue_id')
+            ->update(['issue_id' => $issue->id]);
+
+        if ($claimed === 1) {
+            $group->issue_id = $issue->id;
+
+            return $issue;
+        }
+
+        $issue->delete();
+
+        $group->refresh();
+
+        return self::query()->findOrFail($group->issue_id);
+    }
+
+    /**
+     * Nimmt einen Fund in die Zähler auf.
+     *
+     * **Ohne eigenen Anspruch auf das Zählen**, anders als {@see record()}. Den
+     * hat der Fund schon beim Anlegen erworben: sein eindeutiger Index über
+     * (Ablauf, Fingerabdruck) lässt denselben Fund kein zweites Mal entstehen,
+     * und diese Methode wird nur für einen **frisch angelegten** Fund gerufen
+     * ({@see PerformanceDetection::claim()}). Ein zweiter Anspruch daneben wäre
+     * eine zweite Stelle, die dieselbe Frage beantwortet.
+     *
+     * Der Betroffene kommt als fertiger Schlüssel herein und nicht als
+     * Ereignis: eine Transaktion führt eine einzelne Kennung mit, kein
+     * Nutzer-Feld mit Kennung, Name und Adresse zur Auswahl.
+     */
+    public function recordDetection(PerformanceDetection $detection, ?string $userKey): void
+    {
+        $occurred = CarbonImmutable::parse($detection->occurred_at)->utc();
+
+        $this->bumpPerformance($occurred, $detection->time_lost_us);
+
+        IssueCount::record($this, $occurred);
+
+        IssueUser::note($this, $userKey, $occurred);
+    }
+
+    /**
      * Schreibt Häufigkeit, Zeitpunkte und Grad in einer Anweisung fort.
      *
      * `times_seen = times_seen + 1` statt Lesen-Ändern-Schreiben: die Datenbank
@@ -233,6 +322,36 @@ class Issue extends Model
             .'updated_at = ? '
             .'where id = ?',
             [$at, $at, $at, $level->value, $at, $at, $now, $this->id],
+        );
+    }
+
+    /**
+     * Dasselbe für einen Fund — mit der verlorenen Zeit statt des Grades.
+     *
+     * Die verlorene Zeit wird **addiert** und nicht ersetzt: gefragt ist, was
+     * dieses Problem insgesamt kostet, nicht was es beim letzten Mal gekostet
+     * hat. Erst diese Summe macht die Liste sortierbar nach dem, was sich zu
+     * beheben lohnt — ein Muster, das in jedem zweiten Aufruf zehn Millisekunden
+     * frisst, steht damit vor dem einmaligen Ausreißer von einer Sekunde.
+     *
+     * Der Grad bleibt, wie er ist. Er hängt am Muster und nicht am einzelnen
+     * Fund; ein besonders schlimmer Fall macht aus einer langsamen Abfrage
+     * keinen Fehler.
+     */
+    private function bumpPerformance(CarbonImmutable $occurred, int $timeLostUs): void
+    {
+        $at = $occurred->format('Y-m-d H:i:s');
+        $now = Carbon::now()->format('Y-m-d H:i:s');
+
+        DB::update(
+            'update '.$this->getTable().' set '
+            .'times_seen = times_seen + 1, '
+            .'time_lost_us = time_lost_us + ?, '
+            .'first_seen = case when first_seen > ? then ? else first_seen end, '
+            .'last_seen = case when last_seen < ? then ? else last_seen end, '
+            .'updated_at = ? '
+            .'where id = ?',
+            [max(0, $timeLostUs), $at, $at, $at, $at, $now, $this->id],
         );
     }
 
@@ -344,6 +463,19 @@ class Issue extends Model
     public function affectedUsers(): HasMany
     {
         return $this->hasMany(IssueUser::class);
+    }
+
+    /**
+     * Die Funde dieses Eintrags — bei einem Fehler immer leer.
+     *
+     * Das Gegenstück zu {@see events()}: dort das einzelne Auftreten eines
+     * Fehlers, hier das einzelne Auftreten eines Musters.
+     *
+     * @return HasMany<PerformanceDetection, $this>
+     */
+    public function detections(): HasMany
+    {
+        return $this->hasMany(PerformanceDetection::class);
     }
 
     /**
@@ -482,10 +614,26 @@ class Issue extends Model
     }
 
     /**
+     * Nur Einträge einer Kategorie.
+     *
+     * **Jede** Liste setzt diesen Filter, und zwar ausdrücklich: eine Ansicht,
+     * die ihn vergisst, zeigt langsame Abfragen zwischen Ausnahmen — und das
+     * fällt nicht auf, solange noch kein Leistungsproblem erkannt wurde.
+     * Deshalb gibt es keinen Vorgabewert, der stillschweigend einspringt.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeOfCategory(Builder $query, IssueCategory $category): void
+    {
+        $query->where('category', $category);
+    }
+
+    /**
      * @var list<string>
      */
     protected $fillable = [
         'project_id',
+        'category',
         'title',
         'culprit',
         'type',
@@ -494,6 +642,7 @@ class Issue extends Model
         'priority',
         'times_seen',
         'users_seen',
+        'time_lost_us',
         'first_seen',
         'last_seen',
         'first_release_id',
@@ -519,11 +668,13 @@ class Issue extends Model
     protected function casts(): array
     {
         return [
+            'category' => IssueCategory::class,
             'level' => EventLevel::class,
             'status' => IssueStatus::class,
             'priority' => IssuePriority::class,
             'times_seen' => 'integer',
             'users_seen' => 'integer',
+            'time_lost_us' => 'integer',
             // `immutable_datetime`, damit ein versehentliches `->addHour()` auf
             // einer geteilten Instanz nicht den Eintrag selbst verschiebt.
             'first_seen' => 'immutable_datetime',
