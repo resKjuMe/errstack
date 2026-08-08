@@ -106,6 +106,7 @@ function Settings({ project, platformOptions, resolutionOptions }) {
         default_environment: project.defaultEnvironment,
         resolution_behavior: project.resolutionBehavior,
         retention_days: project.retentionDays,
+        auto_assign_suspect_commits: project.autoAssignSuspectCommits,
     });
 
     const submit = (e) => {
@@ -197,6 +198,34 @@ function Settings({ project, platformOptions, resolutionOptions }) {
                         />
                         <InputError message={errors.resolution_behavior} className="mt-2" />
                     </div>
+
+                    {/* Die verdächtigen Commits (R4) stehen am Fehler immer;
+                        hier steht nur, ob daraus auch eine Zuständigkeit wird.
+                        Anzeigen ist harmlos, Zuweisen schreibt an einem Eintrag
+                        und schickt eine Benachrichtigung — deshalb ist der
+                        Schalter aus, solange ihn niemand einschaltet. */}
+                    <div className="md:col-span-2">
+                        <label className="flex items-start gap-3">
+                            <Checkbox
+                                id="auto_assign_suspect_commits"
+                                name="auto_assign_suspect_commits"
+                                checked={data.auto_assign_suspect_commits}
+                                className="mt-0.5"
+                                onChange={(e) =>
+                                    setData('auto_assign_suspect_commits', e.target.checked)
+                                }
+                            />
+                            <span>
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    {t('projects.settings.auto_assign')}
+                                </span>
+                                <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+                                    {t('projects.settings.auto_assign_hint')}
+                                </span>
+                            </span>
+                        </label>
+                        <InputError message={errors.auto_assign_suspect_commits} className="mt-2" />
+                    </div>
                 </div>
 
                 <PrimaryButton type="submit" disabled={processing}>
@@ -220,6 +249,12 @@ function ReadOnlySettings({ project, resolutionOptions }) {
         [
             t('projects.settings.retention_label'),
             t('projects.settings.retention_value', { days: project.retentionDays }),
+        ],
+        [
+            t('projects.settings.auto_assign'),
+            project.autoAssignSuspectCommits
+                ? t('projects.settings.auto_assign_on')
+                : t('projects.settings.auto_assign_off'),
         ],
     ];
 

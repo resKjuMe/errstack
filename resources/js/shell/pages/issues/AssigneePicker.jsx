@@ -70,7 +70,14 @@ export default function AssigneePicker({ suggestHref, current = null, onApply, o
                     <Option
                         key={`${suggestion.kind}:${suggestion.value}`}
                         label={suggestion.label}
-                        hint={suggestion.kind === 'team' ? t('issues.assignment.team') : null}
+                        // Der Verdächtige bringt seine Begründung selbst mit
+                        // (R4) — ein Vorschlag, der ganz oben steht und nicht
+                        // sagt, warum, sieht aus wie eine willkürliche
+                        // Sortierung.
+                        hint={
+                            suggestion.hint ??
+                            (suggestion.kind === 'team' ? t('issues.assignment.team') : null)
+                        }
                         active={current === suggestion.value}
                         onSelect={() => onApply(suggestion.value)}
                     />

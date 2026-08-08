@@ -90,6 +90,11 @@ final class ProjectData
                 'defaultEnvironment' => $project->default_environment,
                 'resolutionBehavior' => $project->resolution_behavior->value,
                 'retentionDays' => $project->retention_days,
+                // Ob ein neuer Fehler von selbst an den Autor des
+                // verdächtigsten Commits geht (R4). Angezeigt werden die
+                // Verdächtigen immer; das hier ist die Frage, ob daraus auch
+                // eine Zuständigkeit wird.
+                'autoAssignSuspectCommits' => $project->auto_assign_suspect_commits,
                 'href' => route('projects.show', [$organization, $project]),
                 // Die DSN steht auf der Schlüssel-Seite; hier verweist nur der
                 // Link darauf, und auch der nur für die Verwaltung.
