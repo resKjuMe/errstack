@@ -194,6 +194,8 @@ final class ReleaseList
             // Auslieferung dazugekommen?" ist die Frage, die man von hier aus
             // als Nächstes stellt.
             'issuesHref' => route('issues.index', ['q' => SearchQuery::term('firstRelease', $release->version)]),
+            // Die Detailseite: was in dieser Auslieferung steckt (R2).
+            'href' => route('releases.show', $release),
             'project' => self::project($release),
         ];
     }

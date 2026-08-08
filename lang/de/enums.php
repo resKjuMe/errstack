@@ -358,6 +358,9 @@ return [
         'ignore_expired' => 'Stummschaltung beendet',
         'assigned' => 'Zugewiesen',
         'unassigned' => 'Zuständigkeit aufgehoben',
+        'deployed' => 'Ausgeliefert',
+        'priority' => 'Wichtigkeit geändert',
+        'escalated' => 'Eskaliert',
         'bookmarked' => 'Gemerkt',
         'unbookmarked' => 'Vormerkung aufgehoben',
         'subscribed' => 'Abonniert',
@@ -424,6 +427,12 @@ return [
         'min_total_ms' => 'Mindestsumme in ms',
         'min_duration_ms' => 'Mindestdauer in ms',
         'min_size_kb' => 'Mindestgröße in KB',
+    ],
+
+    'commit_file_change' => [
+        'A' => 'Hinzugefügt',
+        'M' => 'Geändert',
+        'D' => 'Gelöscht',
     ],
 
     'release_artifact_kind' => [

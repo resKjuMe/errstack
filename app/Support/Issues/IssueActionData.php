@@ -3,6 +3,7 @@
 namespace App\Support\Issues;
 
 use App\Enums\IssueIgnoreMode;
+use App\Enums\IssuePriority;
 use App\Enums\IssueResolveMode;
 use App\Models\Issue;
 use Illuminate\Support\Facades\Gate;
@@ -32,6 +33,15 @@ final class IssueActionData
             // einer Organisation wären in jeder Seitenlast ein Vielfaches der
             // Seite selbst, für ein Feld, das die meisten Aufrufe nie anfassen.
             'assignSuggestHref' => route('issues.assignment.suggest'),
+            // Die Stufen zur Auswahl — mit „automatisch" an erster Stelle. Es
+            // ist keine vierte Stufe, sondern der Weg zurück: wer von Hand
+            // eingeordnet hat, muss die Ableitung wieder zulassen können, und
+            // ein zweiter Knopf dafür wäre ein zweiter Begriff für dieselbe
+            // Frage (S11).
+            'priorities' => [
+                ['value' => 'auto', 'label' => __('issues.actions.priority.auto')],
+                ...IssuePriority::options(),
+            ],
             // Ohne Eintrag — also in der Liste — wird das Löschen angeboten und
             // beim Absenden geprüft. Die Menge kann Einträge aus mehreren
             // Projekten enthalten; eine Schaltfläche, die dann „darf" oder

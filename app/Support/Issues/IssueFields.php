@@ -27,7 +27,8 @@ use Illuminate\Support\Facades\Date;
  *
  * Hier endet die Sprache und beginnt das Schema. Drei Sorten von Feldern:
  *
- *   - **Spalten am Eintrag** — `is:`, `level:`, `priority:`, `timesSeen:`,
+ *   - **Spalten am Eintrag** — `is:`, `level:`, `priority:` (auch
+ *     `issue.priority:`), `timesSeen:`,
  *     `usersSeen:`, `firstSeen:`, `lastSeen:`. Sie kosten nichts, weil sie
  *     dieselben Zähler lesen, die die Liste ohnehin anzeigt.
  *   - **Merkmale** — alles, was hier nicht steht: `browser:Chrome`,
@@ -142,6 +143,7 @@ final class IssueFields implements FieldResolver
             'is',
             'level',
             'priority',
+            'issue.priority',
             'timesSeen',
             'usersSeen',
             'firstSeen',
@@ -179,7 +181,12 @@ final class IssueFields implements FieldResolver
         return match ($key) {
             'is' => $this->state($condition),
             'level' => $this->enumColumn($condition, 'level', array_column(EventLevel::cases(), 'value')),
-            'priority' => $this->enumColumn($condition, 'priority', array_column(IssuePriority::cases(), 'value')),
+            // Beide Schreibweisen meinen dasselbe Feld. `issue.priority:` ist
+            // die Form, in der andere Werkzeuge danach fragen, und ein
+            // unbekanntes Feld wäre hier kein Fehler, sondern ein **Merkmal** —
+            // die Suche fände dann stillschweigend nichts. Genau diese stille
+            // falsche Antwort ist der Grund für den zweiten Namen (S11).
+            'priority', 'issue.priority' => $this->enumColumn($condition, 'priority', array_column(IssuePriority::cases(), 'value')),
             'timesseen' => $this->number($condition, 'times_seen'),
             'usersseen' => $this->number($condition, 'users_seen'),
             'firstseen' => $this->moment($condition, 'first_seen'),

@@ -5,6 +5,7 @@ namespace App\Support\Issues;
 use App\Enums\IgnoreOutcome;
 use App\Enums\IssueActivityType;
 use App\Enums\IssueIgnoreMode;
+use App\Enums\IssuePriority;
 use App\Enums\IssueResolveMode;
 use App\Enums\IssueStatus;
 use App\Models\Issue;
@@ -237,6 +238,42 @@ final class IssueActions
     }
 
     /**
+     * Die Wichtigkeit von Hand setzen — oder sie wieder der Ableitung
+     * überlassen (S11).
+     *
+     * **Von Hand gesetzt heißt festgestellt.** `priority_locked` ist die einzige
+     * Auskunft, an der die Ableitung erkennen kann, dass jemand widersprochen
+     * hat; ohne sie hätte sie nur die Wahl, entweder jede Einordnung von Hand im
+     * nächsten Durchlauf zu überschreiben oder nie wieder etwas anzufassen, was
+     * einmal von der Vorgabe abweicht ({@see IssuePrioritySweep}).
+     *
+     * **Der Weg zurück ist derselbe Knopf.** `null` heißt „automatisch": der
+     * Schalter fällt, die Stufe bleibt vorerst stehen und der nächste Durchlauf
+     * rechnet sie neu. Sie dabei sofort auf die Vorgabe zurückzusetzen wäre die
+     * lautere und die falsche Wahl — zwischen Klick und Durchlauf stünde eine
+     * Zahl da, die niemand behauptet hat.
+     *
+     * @param  Builder<Issue>  $query
+     */
+    public function prioritize(Builder $query, ?IssuePriority $priority): IssueActionResult
+    {
+        $now = CarbonImmutable::now();
+
+        return $this->apply(
+            $query,
+            fn (array $ids): int => Issue::query()->whereIn('id', $ids)->update(array_filter([
+                'priority' => $priority?->value,
+                'priority_locked' => $priority !== null,
+                'updated_at' => $now,
+            ], static fn (mixed $value): bool => $value !== null)),
+            IssueActivityType::PriorityChanged,
+            $priority === null
+                ? ['mode' => 'auto']
+                : ['mode' => 'manual', 'priority' => $priority->value],
+        );
+    }
+
+    /**
      * Merken und Vormerkung aufheben.
      *
      * @param  Builder<Issue>  $query
@@ -399,6 +436,60 @@ final class IssueActions
         ]);
 
         $issue->status = IssueStatus::Unresolved;
+
+        return true;
+    }
+
+    /**
+     * Holt einen stummgeschalteten Eintrag zurück, der aus dem Ruder gelaufen
+     * ist (S11).
+     *
+     * Der Zwilling von {@see self::expireIgnore()} und aus denselben Teilen
+     * gebaut — bedingter `update` auf `status`, Vermerk ohne Konto, dieselbe
+     * geleerte Bedingung. Der Unterschied liegt allein im Anlass: dort ist
+     * eingetreten, was jemand vereinbart hat, hier hat niemand etwas vereinbart
+     * ({@see IssueEscalation}). Deshalb ein eigener Vermerk und ein eigener
+     * Zeitstempel — `escalated_at` ist der Grund, warum dieselbe Welle nicht in
+     * jedem Durchlauf erneut gemeldet wird.
+     *
+     * Läuft im Hintergrund-Durchlauf und damit ohne handelndes Konto.
+     */
+    public static function escalate(Issue $issue, IssueEscalation $escalation, ?CarbonImmutable $now = null): bool
+    {
+        $now ??= CarbonImmutable::now();
+
+        $woken = Issue::query()
+            ->whereKey($issue->id)
+            // Dieselbe Bedingung wie beim Ablauf der Stummschaltung: zwischen
+            // dem Errechnen und dem Schreiben kann jemand den Eintrag von Hand
+            // erledigt oder wieder geöffnet haben.
+            ->where('status', IssueStatus::Ignored)
+            ->update([
+                'status' => IssueStatus::Unresolved,
+                ...self::clearedIgnore(),
+                'escalated_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+        if ($woken === 0) {
+            return false;
+        }
+
+        IssueActivity::query()->create([
+            'issue_id' => $issue->id,
+            'project_id' => $issue->project_id,
+            'user_id' => null,
+            'actor_name' => null,
+            'type' => IssueActivityType::Escalated,
+            'data' => [
+                'observed' => $escalation->observed,
+                'expected' => round($escalation->expected, 1),
+                'factor' => $escalation->factor(),
+            ],
+        ]);
+
+        $issue->status = IssueStatus::Unresolved;
+        $issue->escalated_at = $now;
 
         return true;
     }

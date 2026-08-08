@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\IssueIgnoreMode;
+use App\Enums\IssuePriority;
 use App\Enums\IssueResolveMode;
 use App\Support\Issues\IssueActions;
 use App\Support\Issues\IssueAssignee;
@@ -50,6 +51,7 @@ class IssueActionRequest extends IssueListRequest
             'action' => ['required', 'string', Rule::in([
                 'resolve', 'unresolve', 'ignore',
                 'assign',
+                'priority',
                 'bookmark', 'unbookmark', 'subscribe', 'unsubscribe',
                 'delete', 'discard',
             ])],
@@ -68,6 +70,12 @@ class IssueActionRequest extends IssueListRequest
             // withValidator(): „erforderlich, wenn" wäre hier zwar kürzer,
             // ließe aber eine Schwelle ohne passende Art durchgehen.
             'mode' => ['nullable', 'string'],
+
+            // Nur für `priority`. „auto" ist kein Wert der Aufzählung, sondern
+            // die Rücknahme der Einordnung von Hand — geprüft wird das in
+            // withValidator(), damit die Aufzählung nicht um einen Fall wachsen
+            // muss, den es in der Datenbank nicht gibt.
+            'priority' => ['nullable', 'string'],
             'count' => ['nullable', 'integer', 'min:1', 'max:1000000'],
             'window' => ['nullable', 'integer', 'min:1', 'max:'.(60 * 24 * 30)],
         ];
@@ -92,6 +100,10 @@ class IssueActionRequest extends IssueListRequest
             // und zwar niemandem zugewiesen.
             if ($action === 'assign' && $this->assigneeInput() !== null && $this->assignee() === null) {
                 $validator->errors()->add('assignee', __('issues.assignment.validation.unknown'));
+            }
+
+            if ($action === 'priority' && ! self::isPriority((string) $this->input('priority'))) {
+                $validator->errors()->add('priority', __('issues.actions.validation.priority'));
             }
 
             if ($action !== 'ignore') {
@@ -179,6 +191,26 @@ class IssueActionRequest extends IssueListRequest
     public function ignoreMode(): IssueIgnoreMode
     {
         return IssueIgnoreMode::tryFrom((string) $this->input('mode')) ?? IssueIgnoreMode::Forever;
+    }
+
+    /**
+     * Die gewählte Wichtigkeit — `null` heißt „wieder automatisch".
+     *
+     * Dieselbe Form wie {@see self::resolveMode()}: die Prüfung hat die Eingabe
+     * schon abgewiesen, wenn sie nichts Gültiges enthält; hier steht deshalb
+     * eine Umwandlung und keine zweite Prüfung.
+     */
+    public function priority(): ?IssuePriority
+    {
+        return IssuePriority::tryFrom((string) $this->input('priority'));
+    }
+
+    /**
+     * Eine gültige Angabe zur Wichtigkeit: eine der Stufen — oder „auto".
+     */
+    private static function isPriority(string $value): bool
+    {
+        return $value === 'auto' || IssuePriority::tryFrom($value) !== null;
     }
 
     public function threshold(): ?int

@@ -151,6 +151,13 @@ return [
         'delete' => 'Delete',
         'discard' => 'Delete and discard from now on',
 
+        // Setting the priority by hand (S11). "Automatic" is not a fourth level
+        // but the way back to the derivation.
+        'priority' => [
+            'label' => 'Priority',
+            'auto' => 'Derive automatically',
+        ],
+
         'apply' => 'Apply',
         'cancel' => 'Cancel',
         'threshold' => 'Count',
@@ -202,6 +209,9 @@ return [
             'delete' => ':count issues deleted.',
             'discard' => ':count issues deleted; reports of the same kind will be '
                 .'discarded from now on.',
+            'priority' => 'Priority of :count issues set to :priority.',
+            'priority_auto' => 'Priority of :count issues is derived '
+                .'automatically again.',
             'none' => 'No issue affected — the selection is gone by now.',
             'undone' => 'The action has been undone.',
             'undo_expired' => 'This can no longer be undone.',
@@ -212,6 +222,7 @@ return [
             'mode' => 'Please choose a condition.',
             'count' => 'Please enter a count.',
             'window' => 'A time window only applies to an event threshold.',
+            'priority' => 'Please choose a priority.',
         ],
 
     ],
@@ -271,12 +282,52 @@ return [
         'ignore_expired' => 'Ignoring ended — the condition was met',
         'assigned' => 'Assigned to :assignee',
         'unassigned' => 'Assignment removed',
+        'deployed' => 'Deployed with :release to :environment',
+        'priority' => 'Priority set to :priority',
+        'priority_auto' => 'Priority is derived automatically again',
+        'priority_derived' => 'Priority derived as :priority — :reason',
+        'escalated' => 'Ignoring lifted: :observed events within an hour, '
+            .':factor times the expected course',
+        'escalated_plain' => 'Ignoring lifted: :observed events within an hour, '
+            .'far above the expected course',
         'bookmarked' => 'Bookmarked',
         'unbookmarked' => 'Bookmark removed',
         'subscribed' => 'Subscribed',
         'unsubscribed' => 'Unsubscribed',
         'deleted' => 'Deleted',
         'discarded' => 'Deleted; reports of the same kind will be discarded from now on',
+    ],
+
+    // The derived priority (S11, App\Support\Issues\IssuePriorityScore). The
+    // contributions become words only when read — the record itself holds keys
+    // and numbers.
+    'priority' => [
+        'hint' => 'Derived priority',
+        'hint_locked' => 'Priority set by hand',
+
+        'reason' => [
+            'level' => 'level :value',
+            'events' => ':value events within 24 hours',
+            'users' => ':value users affected',
+            'new' => 'newly appeared',
+            'trend_up' => 'rising sharply',
+            'trend_down' => 'declining',
+        ],
+    ],
+
+    // A muted issue escalating (S11,
+    // App\Support\Issues\IssueEscalationNotifier).
+    'escalation' => [
+        'factor' => ':factor times',
+
+        'notification' => [
+            'title' => 'Ignored issue escalating in :project',
+            'body' => ':issue — :observed events within an hour, :expected were '
+                .'expected. The issue is open again.',
+            'context_project' => 'Project',
+            'context_observed' => 'Events within the hour',
+            'context_factor' => 'Above the expected course',
+        ],
     ],
 
     // Comments on an issue (App\Support\Issues\IssueComments,
@@ -363,7 +414,9 @@ return [
 
     'environment_ignored' => 'The selected environment does not narrow this list: '
         .'an issue is counted across all environments. To see the issues of one '
-        .'environment only, search for environment:production.',
+        .'environment only, search for environment:production. It does affect the '
+        .'deploy markers in the trend, though — a deployment belongs to exactly '
+        .'one environment.',
 
     // The detail page (app/Http/Controllers/IssueDetailController,
     // resources/js/shell/pages/issues/Show.jsx and issues/detail/*).

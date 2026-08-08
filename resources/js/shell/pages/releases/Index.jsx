@@ -85,9 +85,14 @@ function ReleaseRow({ release, showProject, t }) {
         <li className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/40">
             <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                    <p className="truncate font-mono font-medium text-gray-900 dark:text-gray-100">
+                    {/* Der Weg zum Inhalt der Auslieferung (R2): welche Commits
+                        stecken drin und von wem. */}
+                    <Link
+                        href={release.href}
+                        className="truncate font-mono font-medium text-gray-900 underline hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400"
+                    >
                         {release.version}
-                    </p>
+                    </Link>
 
                     {/* Eine Angabe ohne Rangfolge — ein Commit-Hash, ein
                         Zählerstand — steht nicht an der Stelle, an der man sie

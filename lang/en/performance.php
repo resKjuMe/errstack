@@ -98,6 +98,7 @@ return [
         'series' => [
             'title' => 'Trend (p95)',
             'point' => ':at · p95 :p95 from :count measurements',
+            'deploy' => ':at · p95 :p95 from :count measurements · deployed: :version to :environment',
             'period_hour' => 'One bar per hour.',
             'period_day' => 'One bar per day.',
         ],

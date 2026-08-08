@@ -213,7 +213,19 @@ function IssueHeader({ issue, actions, t }) {
                 <Figure label={t('issues.detail.header.first_seen')} value={issue.firstSeenLabel} />
                 <Figure label={t('issues.detail.header.last_seen')} value={issue.lastSeenLabel} />
                 <Figure label={t('issues.detail.header.status')} value={issue.statusLabel} />
-                <Figure label={t('issues.detail.header.priority')} value={issue.priorityLabel} />
+                {/* Die Wichtigkeit — mit dem Hinweis, wer sie gesetzt hat
+                    (S11). „Hoch" von der Ableitung und „hoch, weil ich das
+                    sage" sind zwei verschiedene Aussagen, und nur die zweite
+                    bleibt beim nächsten Durchlauf stehen. */}
+                <Figure
+                    label={t('issues.detail.header.priority')}
+                    value={issue.priorityLabel}
+                    hint={t(
+                        issue.priorityLocked
+                            ? 'issues.priority.hint_locked'
+                            : 'issues.priority.hint'
+                    )}
+                />
             </dl>
 
             {/* Wer zuständig ist (S7) — und ob der Fehler noch zur Prüfung
@@ -237,6 +249,8 @@ function IssueHeader({ issue, actions, t }) {
                         bookmarked: issue.bookmarked,
                         subscribed: issue.subscribed,
                         assignee: issue.assignee,
+                        priority: issue.priority,
+                        priorityLocked: issue.priorityLocked,
                     }}
                     t={t}
                 />
@@ -397,11 +411,17 @@ function MergedIntoNotice({ head, t }) {
     );
 }
 
-function Figure({ label, value }) {
+function Figure({ label, value, hint = null }) {
     return (
         <div>
             <dt className="text-xs text-gray-500 dark:text-gray-400">{label}</dt>
-            <dd className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-gray-100">
+            <dd
+                // Der Hinweis hängt am Wert und nicht daneben: die Kopfzeile ist
+                // eine Reihe kurzer Zahlen, und ein zweiter Satz Text in jeder
+                // Zelle würde sie zerreißen.
+                title={hint ?? undefined}
+                className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-gray-100"
+            >
                 {value}
             </dd>
         </div>

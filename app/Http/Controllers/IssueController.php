@@ -15,6 +15,7 @@ use App\Support\Issues\IssueList;
 use App\Support\Issues\IssueSeries;
 use App\Support\Issues\IssueViews;
 use App\Support\Issues\SavedSearchData;
+use App\Support\Releases\DeployMarkers;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -92,6 +93,10 @@ class IssueController extends Controller
             'series' => [
                 'period' => $period->value,
                 'periodLabel' => $period->label(),
+                // Wann in diesem Zeitraum ausgeliefert wurde (R3). Einmal für
+                // die ganze Seite: alle Grafiken darauf stehen über demselben
+                // Raster und zeigen deshalb dieselben Striche.
+                'markers' => DeployMarkers::forFilter($filter),
             ],
             // Woran die Oberfläche die Live-Aktualisierung anmeldet: **ein** Kanal
             // für die ganze Organisation. Welche Projekte davon gerade zählen,

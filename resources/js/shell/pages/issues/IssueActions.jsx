@@ -24,7 +24,8 @@ import AssigneePicker from './AssigneePicker.jsx';
 // Adresszeile und werden von dort übernommen; sie im Formular nachzubauen wäre
 // eine zweite Wahrheit über die aktuelle Ansicht.
 export default function IssueActions({ actions, target, status, state = {}, compact = false, t }) {
-    // Welches Untermenü offen ist: `resolve`, `ignore`, `assign` oder nichts.
+    // Welches Untermenü offen ist: `resolve`, `ignore`, `assign`, `priority`
+    // oder nichts.
     // Die drei sind die einzigen Aktionen mit einer Rückfrage — alle übrigen
     // sind ein Klick.
     const [open, setOpen] = useState(null);
@@ -84,6 +85,15 @@ export default function IssueActions({ actions, target, status, state = {}, comp
                     : t('issues.assignment.action')}
             </SecondaryButton>
 
+            {/* Die Wichtigkeit von Hand (S11). Sie steht bei den Aktionen und
+                nicht im Kopf der Detailseite, weil sie dieselbe Frage für einen
+                Eintrag wie für eine ganze Auswahl ist — und weil die Ableitung
+                ihr sonst in die Quere käme, ohne dass es einen Weg zurück
+                gäbe. */}
+            <SecondaryButton type="button" disabled={busy} onClick={() => setOpen('priority')}>
+                {t('issues.actions.priority.label')}
+            </SecondaryButton>
+
             <SecondaryButton
                 type="button"
                 disabled={busy}
@@ -137,6 +147,17 @@ export default function IssueActions({ actions, target, status, state = {}, comp
                 />
             )}
 
+            {open === 'priority' && (
+                <PriorityPanel
+                    priorities={actions.priorities}
+                    current={state.priority}
+                    locked={state.priorityLocked}
+                    onCancel={() => setOpen(null)}
+                    onApply={(priority) => submit({ action: 'priority', priority })}
+                    t={t}
+                />
+            )}
+
             {open === 'ignore' && (
                 <IgnorePanel
                     actions={actions}
@@ -177,6 +198,28 @@ function ModePanel({ modes, onApply, onCancel, t }) {
                 options={modes}
                 onChange={(e) => setMode(e.target.value)}
                 aria-label={t('issues.actions.resolve')}
+            />
+        </Panel>
+    );
+}
+
+// Die Rückfrage zur Wichtigkeit. Vorausgewählt ist, was gerade gilt — „auto"
+// dann, wenn die Ableitung zuständig ist: der Auswahlkasten zeigt damit den
+// Zustand und nicht nur die Wahl, und ein Klick auf „Ausführen" ohne Änderung
+// ändert nichts.
+//
+// In der Liste (mehrere Einträge, kein gemeinsamer Zustand) steht „auto" vorn;
+// eine Sammelaktion hat keine Stufe, die sie zeigen könnte.
+function PriorityPanel({ priorities, current, locked, onApply, onCancel, t }) {
+    const [priority, setPriority] = useState(locked && current ? current : 'auto');
+
+    return (
+        <Panel onCancel={onCancel} onApply={() => onApply(priority)} t={t}>
+            <SelectInput
+                value={priority}
+                options={priorities}
+                onChange={(e) => setPriority(e.target.value)}
+                aria-label={t('issues.actions.priority.label')}
             />
         </Panel>
     );

@@ -150,6 +150,7 @@ final class IssueList
             'statusLabel' => $issue->status->label(),
             'priority' => $issue->priority->value,
             'priorityLabel' => $issue->priority->label(),
+            'priorityLocked' => $issue->priority_locked,
             'timesSeen' => $issue->times_seen,
             'timesSeenLabel' => Formats::number($issue->times_seen),
             'usersSeen' => $issue->users_seen,

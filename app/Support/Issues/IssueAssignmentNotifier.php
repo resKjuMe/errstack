@@ -74,7 +74,7 @@ final class IssueAssignmentNotifier
 
     private function message(IssueAssignee $assignee, int $count, ?Issue $issue, ?User $actor): NotificationMessage
     {
-        $actorName = $actor?->name ?? __('issues.activity.system');
+        $actorName = $actor->name ?? __('issues.activity.system');
 
         // An ein Team gerichtet steht das im Betreff: sonst liest ein Mitglied
         // „dir zugewiesen" und sucht vergeblich nach dem Grund, warum
