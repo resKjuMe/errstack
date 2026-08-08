@@ -484,11 +484,11 @@ class PerformanceOverviewTest extends TestCase
         // die auseinanderlaufen.
         $this->assertSame(TransactionSort::values(), self::pluck($props['columns'], 'key'));
 
-        // Die Seite hängt in der Navigation.
+        // Die Seite hängt in der Navigation — dort in einer der Gruppen der
+        // Seitenleiste, nicht mehr in einer flachen Liste.
         $shell = $props['shell'];
-        $links = is_array($shell) ? ($shell['links'] ?? []) : [];
 
-        $this->assertContains('Leistung', self::pluck($links, 'label'));
+        $this->assertContains('Leistung', self::pluck(self::navLinks($shell), 'label'));
     }
 
     public function test_an_unknown_sort_key_is_rejected(): void
@@ -580,5 +580,24 @@ class PerformanceOverviewTest extends TestCase
         }
 
         return $values;
+    }
+
+    /**
+     * Die Einträge der Seitenleiste über alle Gruppen hinweg — die Navigation
+     * kommt seit U1 gruppiert (App\Support\ShellData::nav).
+     *
+     * @return list<mixed>
+     */
+    private static function navLinks(mixed $shell): array
+    {
+        $links = [];
+
+        foreach (is_array($shell) ? ($shell['nav'] ?? []) : [] as $group) {
+            foreach (is_array($group) ? ($group['links'] ?? []) : [] as $link) {
+                $links[] = $link;
+            }
+        }
+
+        return $links;
     }
 }
