@@ -40,9 +40,16 @@ return [
         'status' => 'Status',
         'any_status' => 'All',
         'search' => 'Search',
-        'search_placeholder' => 'e.g. release:1.1.0 or firstRelease:1.0.0',
-        'search_unsupported' => 'Not applied: :terms. The full search syntax arrives with '
-            .'one of the next tasks; until then only release: and firstRelease: take effect.',
+        'search_placeholder' => 'e.g. is:unresolved browser:Chrome timesSeen:>100',
+        'search_hint' => 'field:value, several terms are an AND. `!` negates, '
+            .'`or` and brackets combine, `*` stands for any characters.',
+        'search_error' => 'The search expression was not understood: :message '
+            .'The unfiltered list is shown instead.',
+        'search_error_at' => 'at this spot: :excerpt',
+        'search_unavailable' => 'Not applicable yet: :terms. These terms belong to the search '
+            .'language, but the data behind them arrives with a later task — they do not '
+            .'narrow the list.',
+        'search_suggestions' => 'Suggestions',
     ],
 
     // The affected versions on a row of the list.
@@ -217,7 +224,8 @@ return [
     ],
 
     'environment_ignored' => 'The selected environment does not narrow this list: '
-        .'an issue is counted across all environments.',
+        .'an issue is counted across all environments. To see the issues of one '
+        .'environment only, search for environment:production.',
 
     // The detail page (app/Http/Controllers/IssueDetailController,
     // resources/js/shell/pages/issues/Show.jsx and issues/detail/*).

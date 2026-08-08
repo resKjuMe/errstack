@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\Release;
 use App\Support\Filters\GlobalFilter;
 use App\Support\Formats;
+use App\Support\Search\SearchQuery;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -183,21 +184,9 @@ final class ReleaseList
             // Der Weg von der Version in die Fehlerliste: „was ist mit dieser
             // Auslieferung dazugekommen?" ist die Frage, die man von hier aus
             // als Nächstes stellt.
-            'issuesHref' => route('issues.index', ['q' => 'firstRelease:'.self::searchValue($release->version)]),
+            'issuesHref' => route('issues.index', ['q' => SearchQuery::term('firstRelease', $release->version)]),
             'project' => self::project($release),
         ];
-    }
-
-    /**
-     * Eine Versionsangabe, wie die Suche sie annimmt.
-     *
-     * Enthält sie ein Leerzeichen, gehört sie in Anführungszeichen — sonst
-     * zerfiele sie in der Suchleiste in einen Begriff und einen Rest, und der
-     * Link führte auf eine andere Liste als die, auf die er zeigt.
-     */
-    private static function searchValue(string $version): string
-    {
-        return str_contains($version, ' ') ? '"'.$version.'"' : $version;
     }
 
     /**

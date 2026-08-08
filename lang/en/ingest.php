@@ -9,6 +9,7 @@ return [
     'not_json' => 'The report is not a JSON object.',
     'no_content' => 'The report has no content.',
     'not_decodable' => 'The report could not be decompressed.',
+    'feedback_incomplete' => 'The feedback has no text — without a description it is not feedback.',
     'envelope_header' => 'The envelope does not start with a JSON header line.',
     'security_unknown' => 'Not a known security report — expected csp-report, expect-ct-report or expect-staple-report.',
 

@@ -152,7 +152,6 @@ class IssueActionController extends Controller
                 $request->sort(),
                 $request->status(),
                 $request->search(),
-                $request->tag(),
                 // Die Sortierung der Liste ist für eine Aktion ohne Bedeutung und
                 // stört das blockweise Abarbeiten, das nach der Kennung ordnet.
             )->reorder();
