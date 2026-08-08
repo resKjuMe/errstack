@@ -96,6 +96,9 @@ class IssuePriorityTest extends TestCase
         }
     }
 
+    /**
+     * @return array{examined: int, changed: int, escalated: int, failed: int}
+     */
     private function sweep(): array
     {
         return app(IssuePrioritySweep::class)->run();

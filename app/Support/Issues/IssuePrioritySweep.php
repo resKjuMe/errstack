@@ -252,7 +252,7 @@ final class IssuePrioritySweep
         // die Verlaufsgrafik gezeichnet wird ({@see IssueSeries::owners()}). Ohne
         // sie stünde ein zusammengeführter Fehler in der Bewertung still,
         // während seine Zahlen weiterlaufen.
-        $owner = IssueSeries::owners($issues->modelKeys());
+        $owner = IssueSeries::owners(self::keysOf($issues));
 
         $rows = IssueCount::query()
             ->selectRaw('issue_id')
@@ -270,8 +270,12 @@ final class IssuePrioritySweep
             $id = $owner[(int) $row->issue_id];
 
             $counts[$id] ??= ['recent' => 0, 'previous' => 0];
-            $counts[$id]['recent'] += (int) $row->recent;
-            $counts[$id]['previous'] += (int) $row->previous;
+            // Die beiden Summen sind Aliase der Abfrage und keine Spalten des
+            // Modells; `previous` ist am Modell sogar belegt. Über
+            // `getAttribute()` gelesen ist beides eindeutig — und dasselbe, was
+            // der Pfeil-Zugriff ohnehin getan hätte.
+            $counts[$id]['recent'] += (int) $row->getAttribute('recent');
+            $counts[$id]['previous'] += (int) $row->getAttribute('previous');
         }
 
         return $counts;
@@ -296,9 +300,9 @@ final class IssuePrioritySweep
      */
     private function baselinesFor(Collection $issues, CarbonImmutable $now): array
     {
-        $ignored = $issues
-            ->filter(static fn (Issue $issue): bool => $issue->status === IssueStatus::Ignored)
-            ->modelKeys();
+        $ignored = self::keysOf(
+            $issues->filter(static fn (Issue $issue): bool => $issue->status === IssueStatus::Ignored),
+        );
 
         if ($ignored === []) {
             return [];
@@ -328,13 +332,27 @@ final class IssuePrioritySweep
             $id = $owner[(int) $row->issue_id];
 
             $totals[$id] ??= ['observed' => 0, 'baseline' => 0];
-            $totals[$id]['observed'] += (int) $row->observed;
-            $totals[$id]['baseline'] += (int) $row->baseline;
+            $totals[$id]['observed'] += (int) $row->getAttribute('observed');
+            $totals[$id]['baseline'] += (int) $row->getAttribute('baseline');
         }
 
         return array_map(static fn (array $total): array => [
             'observed' => $total['observed'],
             'expected' => $total['baseline'] / $hours,
         ], $totals);
+    }
+
+    /**
+     * Die Kennungen einer Sammlung, lückenlos gezählt.
+     *
+     * `modelKeys()` behält die Schlüssel der Sammlung — nach einem `filter()`
+     * sind das Lücken, und die Zuordnung der Untergruppen erwartet eine Liste.
+     *
+     * @param  Collection<int, Issue>  $issues
+     * @return list<int>
+     */
+    private static function keysOf(Collection $issues): array
+    {
+        return $issues->map(static fn (Issue $issue): int => $issue->id)->values()->all();
     }
 }
