@@ -298,6 +298,32 @@ class IssueRegressionTest extends TestCase
     }
 
     /**
+     * Unzerlegbare Fassungen — ein Commit-Hash — haben keine Nummer; dann
+     * entscheidet, wann die erste Meldung daraus eintraf.
+     *
+     * Der Fall hängt daran, dass die frisch angelegte Auslieferung ihren ersten
+     * Zeitpunkt auch in der weitergereichten Instanz trägt
+     * ({@see Release::noteEvent()}) — ohne ihn stünde dort `null`, und ein
+     * Projekt, das Commit-Hashes als Version schickt, bekäme nie einen Rückfall
+     * gemeldet.
+     */
+    public function test_an_unordered_later_release_reopens(): void
+    {
+        $project = Project::factory()->create();
+
+        $this->ingest($project, ['release' => 'a1b2c3d']);
+
+        $issue = Issue::query()->sole();
+        $this->resolve($issue, IssueResolveMode::CurrentRelease);
+
+        Carbon::setTestNow(now()->addHour());
+
+        $this->ingest($project, ['release' => 'e4f5a6b']);
+
+        $this->assertSame(IssueStatus::Unresolved, $issue->refresh()->status);
+    }
+
+    /**
      * Die Alarm-Regel „ein erledigter Fehler tritt wieder auf" sieht den
      * Rückfall — obwohl der Schritt davor den Eintrag längst aufgemacht hat.
      *

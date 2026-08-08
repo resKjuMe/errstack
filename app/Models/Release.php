@@ -126,10 +126,20 @@ class Release extends Model
      * über die Schnittstelle angekündigte Version hat noch kein Ereignis, und
      * `null > ?` ist in SQL weder wahr noch falsch — ohne den Zusatz bliebe der
      * erste Zeitstempel für immer leer.
+     *
+     * **Die Instanz wird mitgeführt**, anders als beim Zählen am Fehler-Eintrag.
+     * Dort ist die Veraltung der bewusste Preis, weil sich die neuen Zähler
+     * nicht ohne Leseabfrage herleiten ließen; hier ergeben sich beide
+     * Zeitpunkte aus derselben Fallunterscheidung wie in der Anweisung. Wer die
+     * frisch angelegte Auslieferung weiterreicht — der Aufnahmeweg tut das
+     * ({@see App\Support\Ingest\Processing\Steps\RecordRelease}) —, bekäme sonst
+     * eine mit leerem `first_event_at`, und genau daran hängt die Rangfolge
+     * unzerlegbarer Fassungen ({@see isNewerThan()}).
      */
     public function noteEvent(CarbonImmutable $occurred): void
     {
-        $at = $occurred->utc()->format('Y-m-d H:i:s');
+        $occurred = $occurred->utc();
+        $at = $occurred->format('Y-m-d H:i:s');
         $now = Carbon::now()->format('Y-m-d H:i:s');
 
         DB::update(
@@ -140,6 +150,19 @@ class Release extends Model
             .'where id = ?',
             [$at, $at, $at, $at, $now, $this->id],
         );
+
+        if ($this->first_event_at === null || $this->first_event_at->greaterThan($occurred)) {
+            $this->first_event_at = $occurred;
+        }
+
+        if ($this->last_event_at === null || $this->last_event_at->lessThan($occurred)) {
+            $this->last_event_at = $occurred;
+        }
+
+        // Ohne das gälte die Instanz als geändert und würde bei einem späteren
+        // `save()` die beiden Spalten ein zweites Mal schreiben — dann als
+        // Zuweisung und damit ohne die Fallunterscheidung von oben.
+        $this->syncOriginalAttributes(['first_event_at', 'last_event_at']);
     }
 
     /**
