@@ -138,7 +138,7 @@ final class TransactionDetail
             seriesPeriod: $this->period()->value,
             series: $this->series(),
             spans: $spans,
-            samples: $this->samples($sample, $histogram),
+            samples: $this->samples($sample),
             facets: $this->facets($sample),
             issues: $this->issues(),
             sampledTransactions: $sample->count(),
@@ -448,17 +448,24 @@ final class TransactionDetail
     /**
      * Die Beispielfälle, je Perzentil-Bereich einer.
      *
-     * Die Schwelle kommt aus der **vollständigen** Verteilung und nicht aus der
-     * Stichprobe — sie ist damit das echte p95 des Zeitraums. Gesucht wird dann
-     * in der Stichprobe der Aufruf, der dieser Schwelle am nächsten kommt, ohne
-     * sie zu unterschreiten; gibt es keinen darüber, der langsamste darunter.
-     * So steht neben „p95: 4,2 s" ein Aufruf, der tatsächlich rund 4,2 s
-     * gebraucht hat, und nicht der langsamste überhaupt.
+     * Gewählt wird über den **Rang in der nach Dauer sortierten Stichprobe**:
+     * für das p95 der Aufruf, unter dem 95 % der Stichprobe liegen. Damit
+     * stammt der Fall zwangsläufig aus dem gemeinten Bereich.
+     *
+     * Der naheliegende Weg — die Schwelle aus der vollständigen Verteilung
+     * nehmen und den ersten Aufruf darüber suchen — ist der falsche, und zwar
+     * unauffällig: {@see DurationHistogram::percentile()} gibt bewusst die
+     * **Obergrenze** der Klasse zurück, in der das Perzentil liegt. Bei
+     * verdoppelnden Klassen ist das bis zum Doppelten des echten Werts, und der
+     * erste Aufruf darüber ist dann nicht der aus dem p50-Bereich, sondern der
+     * nächste Ausreißer. In einer Stichprobe aus lauter gleich schnellen
+     * Aufrufen und einem langsamen liefe damit jeder Perzentil-Bereich auf
+     * denselben langsamen Fall hinaus.
      *
      * @param  Collection<int, Transaction>  $sample
      * @return list<TransactionSample>
      */
-    private function samples(Collection $sample, DurationHistogram $histogram): array
+    private function samples(Collection $sample): array
     {
         if ($sample->isEmpty()) {
             return [];
@@ -472,8 +479,7 @@ final class TransactionDetail
         $seen = [];
 
         foreach (self::SAMPLE_PERCENTILES as $percentile) {
-            $threshold = $histogram->percentile($percentile);
-            $match = self::nearest($sorted, $threshold);
+            $match = self::atPercentile($sorted, $percentile);
 
             // Dieselbe Messung nicht zweimal: bei wenigen Aufrufen fallen p95
             // und p99 auf denselben Fall, und zwei gleiche Zeilen sähen aus wie
@@ -504,27 +510,26 @@ final class TransactionDetail
     }
 
     /**
-     * Der Aufruf, der einer Schwelle am nächsten kommt.
+     * Der Aufruf an einer Perzentil-Stelle der sortierten Stichprobe.
+     *
+     * Aufgerundet, damit das p100 die letzte Messung trifft und nicht die
+     * vorletzte — dieselbe Rechnung wie in
+     * {@see DurationHistogram::percentile()}, damit Kennzahl und Beispiel
+     * denselben Begriff von „p95" benutzen.
      *
      * @param  list<Transaction>  $sorted  Aufsteigend nach Dauer
      */
-    private static function nearest(array $sorted, ?int $thresholdUs): ?Transaction
+    private static function atPercentile(array $sorted, float $percentile): ?Transaction
     {
-        if ($sorted === []) {
+        $total = count($sorted);
+
+        if ($total === 0) {
             return null;
         }
 
-        if ($thresholdUs === null) {
-            return $sorted[array_key_last($sorted)];
-        }
+        $rank = (int) max(1, ceil($percentile * $total));
 
-        foreach ($sorted as $transaction) {
-            if ($transaction->duration_us >= $thresholdUs) {
-                return $transaction;
-            }
-        }
-
-        return $sorted[array_key_last($sorted)];
+        return $sorted[min($rank, $total) - 1];
     }
 
     /**
@@ -546,7 +551,9 @@ final class TransactionDetail
 
         $keys = [
             'release' => fn (Transaction $transaction): ?string => $transaction->release,
-            'environment' => fn (Transaction $transaction): ?string => $transaction->environment,
+            // Die Umgebung steht immer da — die Aufnahme setzt sie, weil sie im
+            // eindeutigen Schlüssel der Vorberechnung liegt.
+            'environment' => fn (Transaction $transaction): string => $transaction->environment,
             'platform' => fn (Transaction $transaction): ?string => $transaction->platform,
         ];
 
@@ -592,16 +599,26 @@ final class TransactionDetail
      * keinen. Gezählt wird, wie oft ein Eintrag **in diesem Zeitraum unter
      * diesem Namen** auftrat — nicht seine Gesamtzahl, die etwas anderes ist.
      *
+     * Zwischen Meldung und Eintrag steht die Gruppe: eine Meldung gehört zu
+     * einem Fingerabdruck (`event_groups`), und erst der Fingerabdruck gehört
+     * zu einem Eintrag. Der Umweg ist nicht zu sparen — ab S9 hängen mehrere
+     * Gruppen an einem Eintrag, und eine Abkürzung an der Gruppe vorbei wäre
+     * genau dann still falsch.
+     *
      * @return list<array{id: int, title: string, culprit: string|null, count: int, href: string|null}>
      */
     private function issues(): array
     {
         $rows = $this->filter
-            ->apply(Event::query(), 'occurred_at')
-            ->where('transaction', $this->name)
-            ->whereNotNull('issue_id')
-            ->selectRaw('issue_id, count(*) as event_count')
-            ->groupBy('issue_id')
+            // Die Spalten ausdrücklich benannt: nach dem Verbund tragen beide
+            // Tabellen ein `project_id`, und eine unbenannte Bedingung darauf
+            // ist in beiden Datenbanken ein Fehler.
+            ->apply(Event::query(), 'events.occurred_at', 'events.project_id', 'events.environment')
+            ->where('events.transaction', $this->name)
+            ->join('event_groups', 'event_groups.id', '=', 'events.event_group_id')
+            ->whereNotNull('event_groups.issue_id')
+            ->selectRaw('event_groups.issue_id as issue_id, count(*) as event_count')
+            ->groupBy('event_groups.issue_id')
             ->orderByDesc('event_count')
             ->limit(self::ISSUE_LIMIT)
             ->toBase()

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Performance;
 
 use App\Models\Event;
+use App\Models\EventGroup;
 use App\Models\Issue;
 use App\Models\Organization;
 use App\Models\Project;
@@ -134,7 +135,7 @@ class TransactionDetailTest extends TestCase
 
     private function span(Transaction $transaction, string $op, int $durationUs, ?string $description = null): void
     {
-        TransactionSpan::query()->create([
+        TransactionSpan::query()->forceCreate([
             'transaction_id' => $transaction->id,
             'project_id' => $transaction->project_id,
             'trace_id' => $transaction->trace_id,
@@ -185,8 +186,10 @@ class TransactionDetailTest extends TestCase
         [$user, $project] = $this->context();
 
         // Zwei Gruppen: schnelle Aufrufe und eine Handvoll sehr langsamer.
+        // Verschiedene Fenster: die Vorberechnung fasst je Minute zusammen,
+        // zweimal dieselbe Minute wäre dieselbe Zeile.
         $this->aggregate($project, 20_000, 40);
-        $this->aggregate($project, 4_000_000, 5);
+        $this->aggregate($project, 4_000_000, 5, 0, '2026-08-07 11:30:00');
 
         $detail = $this->detail($this->actingAs($user)->get($this->url()));
 
@@ -277,17 +280,21 @@ class TransactionDetailTest extends TestCase
     {
         [$user, $project] = $this->context();
 
-        // Neunundvierzig schnelle Aufrufe und ein sehr langsamer. Ein zufällig
-        // gezogener Fall wäre mit 98 % Wahrscheinlichkeit ein schneller — genau
+        // Fünfundvierzig schnelle Aufrufe und fünf sehr langsame. Ein zufällig
+        // gezogener Fall wäre mit 90 % Wahrscheinlichkeit ein schneller — genau
         // der, dessentwegen niemand diese Seite öffnet.
-        $this->aggregate($project, 30_000, 49);
-        $this->aggregate($project, 9_000_000, 1);
+        $this->aggregate($project, 30_000, 45);
+        $this->aggregate($project, 9_000_000, 5, 0, '2026-08-07 11:30:00');
 
-        for ($i = 0; $i < 49; $i++) {
+        for ($i = 0; $i < 45; $i++) {
             $this->transaction($project, 30_000);
         }
 
-        $slow = $this->transaction($project, 9_000_000);
+        $slow = [];
+
+        for ($i = 0; $i < 5; $i++) {
+            $slow[] = $this->transaction($project, 9_000_000);
+        }
 
         $detail = $this->detail($this->actingAs($user)->get($this->url()));
 
@@ -302,9 +309,15 @@ class TransactionDetailTest extends TestCase
         $median = $samples[array_search(0.5, $percentiles, true)];
         $high = $samples[array_search(0.95, $percentiles, true)];
 
+        // Der Median steht für den Regelfall, das p95 für den Bereich, wegen
+        // dessen jemand nachsieht — und zwar als tatsächlicher Aufruf.
         $this->assertSame(30_000, $median['durationUs']);
         $this->assertSame(9_000_000, $high['durationUs']);
-        $this->assertSame($slow->trace_id, $high['traceId']);
+
+        $this->assertContains(
+            $high['traceId'],
+            array_map(fn (Transaction $transaction): string => $transaction->trace_id, $slow),
+        );
 
         // Solange es die Trace-Ansicht (PF4) nicht gibt, steht der Fall ohne
         // Link da — ein toter Link wäre die schlechtere Wahl.
@@ -382,14 +395,26 @@ class TransactionDetailTest extends TestCase
         $checkout = Issue::factory()->for($project)->create(['title' => 'TypeError: order is null']);
         $elsewhere = Issue::factory()->for($project)->create(['title' => 'RuntimeException: irgendwo anders']);
 
+        // Zwischen Meldung und Eintrag steht die Gruppe — der Weg, den auch die
+        // Aufnahme geht.
+        // Eigene Fingerabdrücke: zwei Gruppen desselben Projekts dürfen sich
+        // nicht denselben teilen — genau dafür ist er da.
+        $checkoutGroup = EventGroup::factory()->for($project)
+            ->custom('error.type=TypeError')
+            ->create(['issue_id' => $checkout->id]);
+
+        $elsewhereGroup = EventGroup::factory()->for($project)
+            ->custom('error.type=RuntimeException')
+            ->create(['issue_id' => $elsewhere->id]);
+
         Event::factory()->count(2)->for($project)->create([
-            'issue_id' => $checkout->id,
+            'event_group_id' => $checkoutGroup->id,
             'transaction' => self::NAME,
             'occurred_at' => self::INSIDE,
         ]);
 
         Event::factory()->for($project)->create([
-            'issue_id' => $elsewhere->id,
+            'event_group_id' => $elsewhereGroup->id,
             'transaction' => 'GET /profil',
             'occurred_at' => self::INSIDE,
         ]);
