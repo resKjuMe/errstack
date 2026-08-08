@@ -16,6 +16,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 /**
  * Die Aktionen an Fehler-Einträgen: erledigen, stummschalten, merken,
@@ -59,6 +60,11 @@ class IssueActionController extends Controller
             'unsubscribe' => $actions->subscribe($query, false),
             'delete' => $actions->delete($query, discard: false),
             'discard' => $actions->delete($query, discard: true),
+            // Unerreichbar, solange die Prüfung dieselbe Liste führt
+            // (IssueActionRequest::rules()). Der Zweig steht trotzdem da: wächst
+            // die eine Liste ohne die andere, ist ein lautes Scheitern besser als
+            // eine Aktion, die stillschweigend nichts tut.
+            default => throw new InvalidArgumentException("Unbekannte Aktion: {$action}"),
         };
 
         if ($result->count === 0) {

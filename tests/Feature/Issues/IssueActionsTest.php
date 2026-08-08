@@ -241,13 +241,13 @@ class IssueActionsTest extends TestCase
         [$user, $project] = $this->context();
         $issue = $this->issue($project);
 
-        $response = $this->actingAs($user)->post(route('issues.actions.store'), [
+        $this->actingAs($user)->post(route('issues.actions.store'), [
             'action' => 'resolve',
             'mode' => 'now',
             'issues' => [$issue->id],
         ]);
 
-        $undo = $response->getSession()->get('undo');
+        $undo = session('undo');
 
         $this->assertIsArray($undo);
         $this->assertArrayHasKey('token', $undo);

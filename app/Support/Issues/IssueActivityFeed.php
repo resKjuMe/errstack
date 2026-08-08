@@ -54,7 +54,7 @@ final class IssueActivityFeed
             // Der Name aus dem Vermerk und nicht aus dem Konto: er ist der zum
             // Zeitpunkt der Handlung, und genau der gehört in einen Verlauf.
             'actor' => $activity->actor_name,
-            'at' => $activity->created_at?->toIso8601String(),
+            'at' => $activity->created_at->toIso8601String(),
             'atLabel' => Formats::dateTime($activity->created_at),
         ];
     }

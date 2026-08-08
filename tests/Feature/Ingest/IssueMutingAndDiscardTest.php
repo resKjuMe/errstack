@@ -199,11 +199,17 @@ class IssueMutingAndDiscardTest extends TestCase
 
         $this->ingest($project, $this->crash());
 
-        // Kein neuer Eintrag und keine neue Gruppe: das Verwerfen greift vor
-        // dem Anlegen, sonst legte es genau das wieder an, was es verhindern
-        // soll.
+        // Kein neuer Eintrag: das Verwerfen greift vor dem Anlegen, sonst
+        // legte es genau das wieder an, was es verhindern soll.
         $this->assertSame(0, Issue::query()->count());
-        $this->assertSame(0, EventGroup::query()->count());
+
+        // Die Gruppe von vorhin bleibt dagegen stehen — an ihr hängen die
+        // Ereignisse, und ein gelöschter Eintrag ist die Aussage „will ich
+        // nicht mehr sehen", nicht „das ist nie passiert" (siehe den
+        // Fremdschlüssel event_groups.issue_id). Geprüft gehört deshalb, dass
+        // keine ZWEITE entsteht und die alte ohne Eintrag dasteht.
+        $this->assertSame(1, EventGroup::query()->count());
+        $this->assertNull(EventGroup::query()->sole()->issue_id);
 
         // Und es wird gezählt — mit einem eigenen Grund, damit „warum kommt der
         // nicht mehr an?" beantwortbar bleibt.
