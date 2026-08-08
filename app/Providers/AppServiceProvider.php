@@ -100,5 +100,17 @@ class AppServiceProvider extends ServiceProvider
                 (int) config('api.rate_limit.max_attempts', 60),
             )->by($key);
         });
+
+        // Rückmeldungen betroffener Personen (M6). Die einzige Adresse der
+        // Datenaufnahme, hinter der ein Mensch mit einem Formular sitzt — und
+        // damit die einzige, an der sich massenhaftes Absenden lohnt: der
+        // Client-Schlüssel dafür steht in jedem JavaScript-Bundle.
+        //
+        // Je Absender-Adresse **und** Projekt: nur je Adresse wäre zu streng
+        // (hinter einer Firmen-Adresse sitzt ein ganzes Haus, und deren erste
+        // Zuschrift darf die zweite nicht blockieren), nur je Projekt wirkungslos.
+        RateLimiter::for('ingest-feedback', fn (Request $request): Limit => Limit::perMinute(
+            (int) config('ingest.feedback.max_per_minute', 5),
+        )->by('feedback:'.$request->ip().':'.$request->route('project')));
     }
 }

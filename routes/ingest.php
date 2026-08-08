@@ -24,6 +24,7 @@ use App\Http\Controllers\Ingest\CheckInController;
 use App\Http\Controllers\Ingest\EnvelopeController;
 use App\Http\Controllers\Ingest\SecurityController;
 use App\Http\Controllers\Ingest\StoreController;
+use App\Http\Controllers\Ingest\UserFeedbackController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('{project}/store', [StoreController::class, 'store'])
@@ -51,6 +52,20 @@ Route::post('{project}/security', [SecurityController::class, 'store'])
     ->whereNumber('project')
     ->middleware('ingest.key')
     ->name('ingest.security');
+
+// Die Beschreibung einer betroffenen Person (M6) — und der Weg des
+// mitgelieferten Widgets. Zwei Schreibweisen, weil beide im Umlauf sind:
+// `/user-feedback/` ist Sentrys heutige, `/user-report/` die ältere.
+//
+// Die Ratenbegrenzung steht hier und nirgends sonst in dieser Datei: an allen
+// anderen Adressen meldet eine Anwendung, hier drückt ein Mensch auf
+// „Absenden" — und der Schlüssel dazu steht in jedem JavaScript-Bundle.
+// Gezählt wird je Absender-Adresse und Projekt (App\Providers\AppServiceProvider).
+Route::post('{project}/{feedback}', [UserFeedbackController::class, 'store'])
+    ->whereNumber('project')
+    ->where('feedback', 'user-feedback|user-report')
+    ->middleware(['throttle:ingest-feedback', 'ingest.key'])
+    ->name('ingest.feedback');
 
 // Lebenszeichen eines überwachten Cronjobs, ohne SDK: der Schlüssel steht hier
 // in der Adresse statt in einer Kopfzeile (siehe App\Support\Ingest\IngestAuth),

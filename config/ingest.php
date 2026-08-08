@@ -8,6 +8,7 @@ use App\Support\Ingest\Processing\Steps\NormalizeEvent;
 use App\Support\Ingest\Processing\Steps\RecordProfile;
 use App\Support\Ingest\Processing\Steps\RecordRelease;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
+use App\Support\Ingest\Processing\Steps\RecordUserReport;
 use App\Support\Ingest\Processing\Steps\SampleTransaction;
 use App\Support\Ingest\Processing\Steps\ScanPerformance;
 use App\Support\Ingest\Processing\Steps\ScrubEvent;
@@ -175,7 +176,35 @@ return [
             GroupEvent::class,
             AggregateIssue::class,
             RecordRelease::class,
+            RecordUserReport::class,
         ],
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Nutzer-Rückmeldungen
+    |--------------------------------------------------------------------------
+    |
+    | Der Endpunkt `/user-feedback/` ist die einzige Stelle der Datenaufnahme,
+    | an der ein **Mensch** absendet und nicht eine Anwendung. Damit ist er auch
+    | die einzige, an der es sich lohnt, ein Formular hundertmal abzuschicken:
+    | der Schlüssel steht in jedem JavaScript-Bundle, und wer ihn hat, kann
+    | schreiben.
+    |
+    | Gezählt wird je Absender-Adresse **und** Projekt. Nur je Adresse wäre zu
+    | streng — hinter einer Firmen-Adresse sitzt ein ganzes Haus, und deren
+    | erste Rückmeldung darf die zweite nicht blockieren. Nur je Projekt wäre
+    | wirkungslos.
+    |
+    | Der Wert ist bewusst niedrig: eine Rückmeldung ist ein getippter Text,
+    | und wer in einer Minute mehr als fünf davon schreibt, tippt nicht.
+    |
+    */
+
+    'feedback' => [
+
+        'max_per_minute' => (int) env('INGEST_FEEDBACK_MAX_PER_MINUTE', 5),
 
     ],
 

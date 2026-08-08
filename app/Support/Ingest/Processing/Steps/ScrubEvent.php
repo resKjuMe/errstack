@@ -61,6 +61,19 @@ final class ScrubEvent implements ProcessingStep
             return;
         }
 
+        if ($payload->type->isUserFeedback()) {
+            // Eine Rückmeldung besteht aus dem, was jemand **freiwillig**
+            // angegeben hat, um zurückgerufen zu werden. Das Schwärzen ist gegen
+            // etwas ganz anderes gerichtet: gegen personenbezogene Daten, die
+            // ein SDK nebenbei einsammelt, ohne dass jemand gefragt wurde. Beide
+            // über einen Kamm zu scheren hieße, die Antwortadresse zu löschen,
+            // um die die Person selbst gebeten hat — und die Zuschrift damit
+            // wertlos zu machen (M6).
+            $next($context);
+
+            return;
+        }
+
         $settings = Settings::forProject($project);
 
         if ($payload->type->isBinary()) {

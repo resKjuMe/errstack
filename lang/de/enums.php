@@ -193,6 +193,19 @@ return [
         'profile' => 'Laufzeitmessung',
         'client_report' => 'Verworfen-Meldung des SDK',
         'user_report' => 'Nutzer-Rückmeldung',
+        'feedback' => 'Nutzer-Rückmeldung (neue Form)',
+    ],
+
+    'user_report_status' => [
+        'new' => 'neu',
+        'in_progress' => 'in Arbeit',
+        'done' => 'erledigt',
+        'spam' => 'Spam',
+    ],
+
+    'user_report_source' => [
+        'crash_report' => 'zu einem Ereignis',
+        'standalone' => 'freie Zuschrift',
     ],
 
     'security_report_type' => [
