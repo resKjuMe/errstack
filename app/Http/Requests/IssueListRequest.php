@@ -72,9 +72,11 @@ class IssueListRequest extends GlobalFilterRequest
      */
     public function listValues(): array
     {
+        $status = $this->status();
+
         return [
             'sort' => $this->sort()->value,
-            'status' => $this->status()?->value ?? self::STATUS_ANY,
+            'status' => $status === null ? self::STATUS_ANY : $status->value,
         ];
     }
 }

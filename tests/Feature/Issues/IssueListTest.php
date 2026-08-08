@@ -205,7 +205,7 @@ class IssueListTest extends TestCase
             ->get(route('issues.index', ['period' => '24h']))
             ->assertInertia(function (AssertableInertia $page) {
                 /** @var list<int> $series */
-                $series = $page->prop('issues.data.0.series');
+                $series = $page->toArray()['props']['issues']['data'][0]['series'];
 
                 // Ein Raster über den ganzen Zeitraum und nicht nur über die
                 // Fenster mit Zahlen: die stillen Stunden sind Nullen.
@@ -230,6 +230,13 @@ class IssueListTest extends TestCase
         $this->actingAs($user);
 
         $this->issue($project, 'Einer');
+
+        // Ein Aufruf zum Aufwärmen: der erste löst die aktive Organisation des
+        // Betrachters einmalig auf und kostet dafür eine Abfrage mehr. Ohne ihn
+        // verglichen sich hier erster und zweiter Aufruf statt kurzer und langer
+        // Liste — der Test wäre um genau diese eine Abfrage danebengelegen.
+        $this->get(route('issues.index'))->assertOk();
+
         $few = $this->countQueries();
 
         for ($i = 0; $i < 25; $i++) {
@@ -271,7 +278,7 @@ class IssueListTest extends TestCase
             ]))
             ->assertInertia(function (AssertableInertia $page) {
                 /** @var list<int> $series */
-                $series = $page->prop('issues.data.0.series');
+                $series = $page->toArray()['props']['issues']['data'][0]['series'];
 
                 // Über 45.000 Tagesfenster wären es ohne Grenze. Weiter zurück,
                 // als die Zähler aufbewahrt werden, gibt es ohnehin nichts.

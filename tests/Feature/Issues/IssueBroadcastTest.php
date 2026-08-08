@@ -39,8 +39,12 @@ class IssueBroadcastTest extends TestCase
     /**
      * Nimmt dieselbe Meldung an und lässt sie durch die Kette laufen.
      */
-    private function ingest(Project $project, string $value = 'Rechnung fehlgeschlagen'): void
-    {
+    private function ingest(
+        Project $project,
+        string $value = 'Rechnung fehlgeschlagen',
+        string $type = 'RuntimeException',
+        string $function = 'store',
+    ): void {
         $eventId = IngestPayload::freshEventId();
 
         $payload = IngestPayload::factory()->create([
@@ -51,11 +55,11 @@ class IssueBroadcastTest extends TestCase
                 'timestamp' => Carbon::now()->toIso8601String(),
                 'platform' => 'php',
                 'exception' => ['values' => [[
-                    'type' => 'RuntimeException',
+                    'type' => $type,
                     'value' => $value,
                     'stacktrace' => ['frames' => [[
                         'filename' => 'app/Http/Controllers/InvoiceController.php',
-                        'function' => 'store',
+                        'function' => $function,
                         'lineno' => 42,
                     ]]],
                 ]]],
@@ -102,8 +106,12 @@ class IssueBroadcastTest extends TestCase
 
         $project = $this->project();
 
+        // Ein anderer Fehler heißt: eine andere Gruppe. Nur einen anderen
+        // Fehlertext zu schicken genügt dafür nicht — die Gruppierung (I5) fasst
+        // dieselbe Stelle mit derselben Ausnahme bewusst zusammen, sonst wäre
+        // jede Meldung mit einer Kennung darin ein eigener Eintrag.
         $this->ingest($project, 'Rechnung fehlgeschlagen');
-        $this->ingest($project, 'Zahlung abgelehnt');
+        $this->ingest($project, 'Zahlung abgelehnt', 'DomainException', 'capture');
 
         Event::assertDispatchedTimes(IssueCreated::class, 2);
     }
