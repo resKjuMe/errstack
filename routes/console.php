@@ -32,3 +32,12 @@ Schedule::command('queue:prune-failed --hours=168')->daily();
 // damit ein langsamer Durchlauf den nächsten nicht überholt und derselbe Termin
 // zweimal als verpasst gilt.
 Schedule::command('crons:sweep')->everyMinute()->withoutOverlapping();
+
+// Schwellwert-Alarme auf Kennzahlen auswerten (A3).
+//
+// Dieselbe Begründung wie beim Cronjob-Sweep: eine Kennzahl, die schlechter
+// wird, meldet sich nicht von selbst. `withoutOverlapping` nicht wegen der
+// Richtigkeit — der Zustandswechsel ist eine bedingte Anweisung und gegen
+// doppelte Läufe abgesichert —, sondern gegen das Auflaufen: ein Durchlauf,
+// der länger als eine Minute braucht, würde sonst vom nächsten überholt.
+Schedule::command('alerts:sweep')->everyMinute()->withoutOverlapping();

@@ -13,6 +13,7 @@ return [
         'dashboard' => 'Overview',
         'issues' => 'Issues',
         'tags' => 'Tags',
+        'releases' => 'Releases',
         'performance' => 'Performance',
         'projects' => 'Projects',
         'organizations' => 'Organizations',

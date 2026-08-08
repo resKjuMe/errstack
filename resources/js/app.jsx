@@ -4,6 +4,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import AppShell from './shell/AppShell.jsx';
 import Dashboard from './shell/pages/Dashboard.jsx';
 import Performance from './shell/pages/Performance.jsx';
+import PerformanceTransaction from './shell/pages/performance/Transaction.jsx';
 import Components from './shell/pages/Components.jsx';
 import Profile from './shell/pages/Profile.jsx';
 import OrganizationsIndex from './shell/pages/organizations/Index.jsx';
@@ -14,12 +15,14 @@ import NotificationsIndex from './shell/pages/notifications/Index.jsx';
 import NotificationsPreferences from './shell/pages/notifications/Preferences.jsx';
 import NotificationsUnsubscribe from './shell/pages/notifications/Unsubscribe.jsx';
 import IssuesIndex from './shell/pages/issues/Index.jsx';
+import IssuesShow from './shell/pages/issues/Show.jsx';
 import IssuesTags from './shell/pages/issues/Tags.jsx';
 import TagsIndex from './shell/pages/tags/Index.jsx';
 import TracesShow from './shell/pages/traces/Show.jsx';
 import ProjectsIndex from './shell/pages/projects/Index.jsx';
 import ProjectsShow from './shell/pages/projects/Show.jsx';
 import ProjectsKeys from './shell/pages/projects/Keys.jsx';
+import ProjectsAlerts from './shell/pages/projects/Alerts.jsx';
 import ProjectsCrons from './shell/pages/projects/Crons.jsx';
 import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
 import ProjectsFilters from './shell/pages/projects/Filters.jsx';
@@ -41,6 +44,9 @@ import VerifyEmail from './shell/pages/auth/VerifyEmail.jsx';
 const pages = {
     Dashboard,
     Performance,
+    // Die Detailanalyse einer Transaktion — die Frage „warum" hinter der
+    // Übersicht.
+    'performance/Transaction': PerformanceTransaction,
     Components,
     Profile,
     'organizations/Index': OrganizationsIndex,
@@ -51,6 +57,7 @@ const pages = {
     'notifications/Preferences': NotificationsPreferences,
     'notifications/Unsubscribe': NotificationsUnsubscribe,
     'issues/Index': IssuesIndex,
+    'issues/Show': IssuesShow,
     // Eine Seite für Übersicht und Merkmal-Detail — der Unterschied ist eine
     // Liste, nicht ein Bildschirm.
     'issues/Tags': IssuesTags,
@@ -62,6 +69,7 @@ const pages = {
     'projects/Index': ProjectsIndex,
     'projects/Show': ProjectsShow,
     'projects/Keys': ProjectsKeys,
+    'projects/Alerts': ProjectsAlerts,
     'projects/Crons': ProjectsCrons,
     'projects/Grouping': ProjectsGrouping,
     'projects/Filters': ProjectsFilters,
