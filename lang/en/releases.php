@@ -41,6 +41,28 @@ return [
         .'shipped as a whole and does not belong to one environment.',
 
     // The detail page of a release (R2): what is in it.
+    'deploys' => [
+        'title' => 'Deployments',
+        'help' => 'When this version landed in which environment. The point in time '
+            .'does not follow from any event — it comes from the deployment '
+            .'pipeline through the API.',
+        'empty' => 'No deployment was reported for this version.',
+        'empty_hint' => 'A pipeline reports it at the end of its run; '
+            .'POST /api/0/organizations/{org}/projects/{project}/releases/{version}/deploys.',
+        'environment' => 'Environment',
+        'at' => 'Point in time',
+        'duration' => 'Duration',
+        'link' => 'Open build run',
+
+        'notification' => [
+            'title' => ':version was deployed to :environment',
+            'body' => 'Your changes are out: :commits commits are part of this '
+                .'deployment of :project.',
+            'context_project' => 'Project',
+            'context_environment' => 'Environment',
+        ],
+    ],
+
     'detail' => [
         'title' => 'Release :version',
         'help' => 'What went out with this release. Commits come from a connected '

@@ -10,6 +10,7 @@ use App\Models\TransactionAggregate;
 use App\Models\TransactionSpan;
 use App\Models\TransactionUserAggregate;
 use App\Support\Filters\GlobalFilter;
+use App\Support\Releases\DeployMarkers;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -129,6 +130,7 @@ final class TransactionDetail
 
         $sample = $this->sample();
         $spans = $this->spanBreakdown($sample);
+        $series = $this->series();
 
         return new TransactionDetailResult(
             name: $this->name,
@@ -136,7 +138,17 @@ final class TransactionDetail
             summary: $summary,
             histogram: self::histogramBars($histogram),
             seriesPeriod: $this->period()->value,
-            series: $this->series(),
+            series: $series,
+            // Die Markierungen liegen auf den Punkten des Verlaufs und nicht auf
+            // einem eigenen Raster: hier steht nur, wofür es Messungen gibt, und
+            // eine Markierung, die ihre Stelle selbst ausrechnet, säße nach der
+            // ersten Lücke daneben.
+            seriesMarkers: DeployMarkers::forPoints(
+                $this->filter->projectIds(),
+                array_map(static fn (array $point): string => (string) $point['window'], $series),
+                $this->period(),
+                $this->filter->environment,
+            ),
             spans: $spans,
             samples: $this->samples($sample),
             facets: $this->facets($sample),

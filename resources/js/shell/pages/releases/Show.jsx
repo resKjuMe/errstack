@@ -12,6 +12,7 @@ import { useT } from '../../i18n.js';
 // der Inhalt dieser einen Auslieferung.
 export default function Show({
     release,
+    deploys,
     commits,
     commitsLabel,
     commitsTruncated,
@@ -91,6 +92,8 @@ export default function Show({
                 </div>
             </Card>
 
+            <Deploys deploys={deploys} t={t} />
+
             <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                 <div className="border-b border-gray-100 px-4 py-2 text-xs font-medium uppercase text-gray-500 dark:border-gray-700 dark:text-gray-400">
                     {t('releases.detail.commit_count', { count: commitsLabel })}
@@ -122,6 +125,60 @@ export default function Show({
                 )}
             </div>
         </>
+    );
+}
+
+// Wann diese Version wohin ausgeliefert wurde.
+//
+// Über den Commits und nicht darunter: „seit wann ist das draußen?" ist die
+// Frage, mit der jemand hierherkommt, und „was steckt drin?" die, die danach
+// kommt. Eine Zeile je Auslieferung, neueste zuerst — dieselbe Version geht
+// nacheinander nach staging und nach production, und nach einem Rollback ein
+// zweites Mal.
+function Deploys({ deploys, t }) {
+    return (
+        <Card className="mb-4" title={t('releases.deploys.title')}>
+            {deploys.length === 0 ? (
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <p>{t('releases.deploys.empty')}</p>
+                    <p className="mt-1 text-xs">{t('releases.deploys.empty_hint')}</p>
+                </div>
+            ) : (
+                <ul className="divide-y divide-gray-100 text-sm dark:divide-gray-700">
+                    {deploys.map((deploy) => (
+                        <li
+                            key={deploy.id}
+                            className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-2 first:pt-0 last:pb-0"
+                        >
+                            <span className="rounded bg-sky-50 px-2 py-0.5 font-mono text-xs text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
+                                {deploy.environment}
+                            </span>
+
+                            <span className="text-gray-900 dark:text-gray-100">
+                                {deploy.atLabel}
+                            </span>
+
+                            {deploy.label !== deploy.environment && (
+                                <span className="text-gray-500 dark:text-gray-400">
+                                    {deploy.label}
+                                </span>
+                            )}
+
+                            {deploy.url && (
+                                <a
+                                    href={deploy.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-indigo-600 underline hover:text-indigo-500 dark:text-indigo-400"
+                                >
+                                    {t('releases.deploys.link')}
+                                </a>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </Card>
     );
 }
 

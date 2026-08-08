@@ -227,6 +227,7 @@ return [
         'unresolved' => 'Reopened',
         'ignored' => 'Ignored (:condition)',
         'ignore_expired' => 'Ignoring ended — the condition was met',
+        'deployed' => 'Deployed with :release to :environment',
         'bookmarked' => 'Bookmarked',
         'unbookmarked' => 'Bookmark removed',
         'subscribed' => 'Subscribed',

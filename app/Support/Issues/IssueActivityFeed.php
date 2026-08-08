@@ -254,6 +254,12 @@ final class IssueActivityFeed
             'condition' => self::condition($data),
             'count' => Formats::number((int) ($data['count'] ?? $data['users'] ?? 0)),
             'minutes' => Formats::number((int) ($data['window'] ?? 0)),
+            // Die Auslieferung, auf die ein Eintrag gewartet hat (R3). Beide
+            // Angaben stehen im Vermerk und werden nicht nachgeschlagen: eine
+            // gelöschte Version oder umbenannte Umgebung darf einen Verlauf
+            // nicht leerräumen — dieselbe Wahl wie beim Namen des Handelnden.
+            'release' => (string) ($data['release'] ?? ''),
+            'environment' => (string) ($data['environment'] ?? ''),
         ]);
     }
 

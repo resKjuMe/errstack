@@ -41,6 +41,28 @@ return [
         .'als Ganzes ausgeliefert und gehört nicht zu einer Umgebung.',
 
     // Die Detailseite einer Version (R2): was in ihr steckt.
+    'deploys' => [
+        'title' => 'Auslieferungen',
+        'help' => 'Wann diese Version in welcher Umgebung landete. Der Zeitpunkt '
+            .'geht aus keiner Meldung hervor — er kommt aus der Auslieferungs-'
+            .'Pipeline über die Schnittstelle.',
+        'empty' => 'Für diese Version wurde keine Auslieferung gemeldet.',
+        'empty_hint' => 'Eine Pipeline meldet sie am Ende ihres Laufs; '
+            .'POST /api/0/organizations/{org}/projects/{projekt}/releases/{version}/deploys.',
+        'environment' => 'Umgebung',
+        'at' => 'Zeitpunkt',
+        'duration' => 'Dauer',
+        'link' => 'Zum Baulauf',
+
+        'notification' => [
+            'title' => ':version wurde nach :environment ausgeliefert',
+            'body' => 'Deine Änderungen sind draußen: :commits Commits stecken in dieser '
+                .'Auslieferung von :project.',
+            'context_project' => 'Projekt',
+            'context_environment' => 'Umgebung',
+        ],
+    ],
+
     'detail' => [
         'title' => 'Version :version',
         'help' => 'Was in dieser Auslieferung steckt. Die Commits kommen aus einem '

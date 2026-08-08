@@ -227,6 +227,7 @@ return [
         'unresolved' => 'Wieder geöffnet',
         'ignored' => 'Stummgeschaltet (:condition)',
         'ignore_expired' => 'Stummschaltung beendet — die Bedingung ist eingetreten',
+        'deployed' => 'Ausgeliefert mit :release nach :environment',
         'bookmarked' => 'Gemerkt',
         'unbookmarked' => 'Vormerkung aufgehoben',
         'subscribed' => 'Abonniert',

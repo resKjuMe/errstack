@@ -11,7 +11,12 @@ import React from 'react';
 // Verlauf dieses einen Fehlers („war das gestern schon so?"), nicht sein Anteil
 // am Aufkommen. Über eine gemeinsame Skala wäre neben einem Fehler mit einer
 // Million Auftreten jeder andere ein flacher Strich.
-export default function Sparkline({ values, label }) {
+//
+// Die Deploy-Markierungen (R3) sind dagegen **für alle Zeilen dieselben**: sie
+// gehören zum Zeitraum und nicht zum Fehler. Sie stehen als senkrechte Striche
+// **hinter** den Balken — davor gezeichnet verdeckten sie genau die Ausschläge,
+// wegen derer jemand hinsieht.
+export default function Sparkline({ values, label, markers = [] }) {
     if (!values || values.length === 0) {
         return <div className="h-8 w-28" aria-hidden="true" />;
     }
@@ -33,6 +38,20 @@ export default function Sparkline({ values, label }) {
             className="text-rose-500 dark:text-rose-400"
             preserveAspectRatio="none"
         >
+            {markers.map((marker, index) => (
+                // Der Strich steht am **Anfang** des Fensters, in dem
+                // ausgeliefert wurde: was danach kommt, ist das, was die
+                // Auslieferung erklären soll.
+                <rect
+                    key={`deploy-${index}`}
+                    x={marker.slot * slot}
+                    y={0}
+                    width={1}
+                    height={height}
+                    className="fill-sky-500/70 dark:fill-sky-400/70"
+                />
+            ))}
+
             {values.map((value, index) => {
                 // Ein Fenster mit Auftreten bekommt mindestens einen Pixel:
                 // sonst sieht „einmal" neben „zehntausendmal" aus wie „nie".

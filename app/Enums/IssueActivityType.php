@@ -41,10 +41,23 @@ enum IssueActivityType: string
      * Die Stummschaltung ist abgelaufen: die Bedingung ist eingetreten, und der
      * Eintrag meldet sich wieder.
      *
-     * Der einzige Fall, der ohne handelndes Konto entsteht — er fällt bei der
+     * Einer der Fälle, die ohne handelndes Konto entstehen — er fällt bei der
      * Aufnahme an, und dort steht niemand daneben.
      */
     case IgnoreExpired = 'ignore_expired';
+
+    /**
+     * Der Fix ist draußen: der Eintrag stand auf „erledigt im nächsten Release",
+     * und dieses Release wurde ausgeliefert (R3). Version und Umgebung stehen in
+     * `data`.
+     *
+     * Ein eigener Fall und keine zweite Spielart von {@see self::Resolved}, aus
+     * demselben Grund wie bei {@see self::IgnoreExpired}: erledigt hat jemand
+     * von Hand, ausgeliefert wurde ohne Zutun. Für den, der den Verlauf liest,
+     * sind das zwei Vorgänge — und der zweite ist der, auf den der erste
+     * gewartet hat.
+     */
+    case Deployed = 'deployed';
 
     /** Gemerkt (Lesezeichen). */
     case Bookmarked = 'bookmarked';

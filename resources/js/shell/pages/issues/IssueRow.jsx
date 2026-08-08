@@ -11,7 +11,15 @@ import Sparkline from './Sparkline.jsx';
 // Die Zahlen kommen fertig geschrieben vom Server (`timesSeenLabel`), die rohen
 // Werte daneben sind für die Grafik da. Formatiert wird nicht zweimal — wie eine
 // Zahl aussieht, hängt an der Sprache, und die kennt der Server.
-export default function IssueRow({ issue, selected, onToggle, showProject, trendLabel, t }) {
+export default function IssueRow({
+    issue,
+    selected,
+    onToggle,
+    showProject,
+    trendLabel,
+    deploys,
+    t,
+}) {
     return (
         <li className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/40">
             <Checkbox
@@ -73,7 +81,7 @@ export default function IssueRow({ issue, selected, onToggle, showProject, trend
             </div>
 
             <div className="hidden w-28 sm:block">
-                <Sparkline values={issue.series} label={trendLabel} />
+                <Sparkline values={issue.series} label={trendLabel} markers={deploys} />
             </div>
 
             <div className="w-16 text-right font-medium text-gray-900 dark:text-gray-100">

@@ -22,6 +22,7 @@
 |
 */
 
+use App\Http\Controllers\Api\V0\DeployController;
 use App\Http\Controllers\Api\V0\OrganizationController;
 use App\Http\Controllers\Api\V0\ProjectController;
 use App\Http\Controllers\Api\V0\ReleaseArtifactController;
@@ -119,6 +120,20 @@ Route::prefix((string) config('api.version'))
                     ->where('version', '[^/]+')
                     ->middleware('scope:project:write')
                     ->name('releases.commits.store');
+
+                // Wann die Version wohin ausgeliefert wurde (R3). Der Aufruf am
+                // Ende einer Auslieferungs-Pipeline — und die einzige Quelle
+                // dieser Angabe: aus einer Meldung geht der Zeitpunkt einer
+                // Auslieferung nicht hervor.
+                Route::get('{project}/releases/{version}/deploys', [DeployController::class, 'index'])
+                    ->where('version', '[^/]+')
+                    ->middleware('scope:project:read')
+                    ->name('releases.deploys.index');
+
+                Route::post('{project}/releases/{version}/deploys', [DeployController::class, 'store'])
+                    ->where('version', '[^/]+')
+                    ->middleware('scope:project:write')
+                    ->name('releases.deploys.store');
 
                 // Die Bauartefakte einer Version: Bundle und Quellkarte. Sie sind
                 // die Voraussetzung dafür, einen minimierten JavaScript-Stacktrace
