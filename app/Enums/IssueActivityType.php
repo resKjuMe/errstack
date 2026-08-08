@@ -46,6 +46,19 @@ enum IssueActivityType: string
      */
     case IgnoreExpired = 'ignore_expired';
 
+    /**
+     * Einer Person oder einem Team zugewiesen (S7).
+     *
+     * Wem, steht in `data` — als **Name** und nicht als Kennung. Ein Verlauf
+     * wird gelesen, nicht ausgewertet: „Anna Beck zugewiesen" bleibt lesbar,
+     * wenn das Konto gelöscht wurde, eine Kennung wäre dann eine Zahl ohne
+     * Bedeutung. Dieselbe Entscheidung wie beim Namen des Handelnden.
+     */
+    case Assigned = 'assigned';
+
+    /** Die Zuständigkeit wurde aufgehoben. */
+    case Unassigned = 'unassigned';
+
     /** Gemerkt (Lesezeichen). */
     case Bookmarked = 'bookmarked';
 

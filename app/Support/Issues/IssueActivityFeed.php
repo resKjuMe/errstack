@@ -254,6 +254,10 @@ final class IssueActivityFeed
             'condition' => self::condition($data),
             'count' => Formats::number((int) ($data['count'] ?? $data['users'] ?? 0)),
             'minutes' => Formats::number((int) ($data['window'] ?? 0)),
+            // Der Zuständige steht als **Name** im Vermerk und wird nicht
+            // nachgeladen (S7): ein Verlauf sagt, was damals galt, und ein
+            // gelöschtes Konto darf ihn nicht in „zugewiesen an —" verwandeln.
+            'assignee' => (string) ($data['assignee'] ?? ''),
         ]);
     }
 

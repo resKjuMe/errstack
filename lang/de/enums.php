@@ -356,6 +356,8 @@ return [
         'unresolved' => 'Wieder geöffnet',
         'ignored' => 'Stummgeschaltet',
         'ignore_expired' => 'Stummschaltung beendet',
+        'assigned' => 'Zugewiesen',
+        'unassigned' => 'Zuständigkeit aufgehoben',
         'bookmarked' => 'Gemerkt',
         'unbookmarked' => 'Vormerkung aufgehoben',
         'subscribed' => 'Abonniert',

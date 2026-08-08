@@ -328,6 +328,9 @@ function ListHeader({ selection, total, totalLabel, pageSize, mergeHref, actions
             ) : (
                 <>
                     <span className="min-w-0 flex-1 uppercase">{t('issues.columns.issue')}</span>
+                    <span className="hidden w-32 uppercase lg:block">
+                        {t('issues.columns.assignee')}
+                    </span>
                     <span className="hidden w-28 uppercase sm:block">
                         {t('issues.columns.trend')}
                     </span>

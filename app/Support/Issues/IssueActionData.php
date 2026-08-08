@@ -27,6 +27,11 @@ final class IssueActionData
             'undo' => route('issues.actions.undo'),
             'resolveModes' => IssueResolveMode::options(),
             'ignoreModes' => IssueIgnoreMode::options(),
+            // Woher die Auswahlliste der Zuständigkeit ihre Vorschläge holt
+            // (S7). Als Adresse und nicht als fertige Liste — die Mitglieder
+            // einer Organisation wären in jeder Seitenlast ein Vielfaches der
+            // Seite selbst, für ein Feld, das die meisten Aufrufe nie anfassen.
+            'assignSuggestHref' => route('issues.assignment.suggest'),
             // Ohne Eintrag — also in der Liste — wird das Löschen angeboten und
             // beim Absenden geprüft. Die Menge kann Einträge aus mehreren
             // Projekten enthalten; eine Schaltfläche, die dann „darf" oder

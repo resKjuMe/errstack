@@ -41,6 +41,20 @@ export default function IssueRow({ issue, selected, onToggle, showProject, trend
                             {t('issues.merge.badge.label', { count: issue.mergedCount + 1 })}
                         </span>
                     )}
+
+                    {/* Liegt noch zur Prüfung (S7): niemand hat den Fehler
+                        bisher in die Hand genommen. Die Marke steht neben dem
+                        Titel und nicht in einer eigenen Spalte, weil sie meist
+                        fehlt — eine leere Spalte in jeder Zeile wäre der Preis
+                        für eine Auskunft, die nur wenige Zeilen tragen. */}
+                    {issue.forReview && (
+                        <span
+                            title={t('issues.assignment.for_review_hint')}
+                            className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
+                        >
+                            {t('issues.views.for_review')}
+                        </span>
+                    )}
                 </div>
 
                 <p className="mt-0.5 truncate text-sm text-gray-500 dark:text-gray-400">
@@ -70,6 +84,18 @@ export default function IssueRow({ issue, selected, onToggle, showProject, trend
                 </p>
 
                 <ReleaseTrail issue={issue} t={t} />
+            </div>
+
+            {/* Wer zuständig ist (S7). Eine eigene, schmale Spalte und kein
+                Zusatz unter dem Titel: „wem gehört das?" beantwortet man beim
+                Überfliegen einer Liste spaltenweise, und der Platz ist derselbe,
+                ob die Zelle leer ist oder nicht. */}
+            <div className="hidden w-32 truncate text-sm text-gray-600 lg:block dark:text-gray-300">
+                {issue.assignee ? (
+                    <span title={issue.assignee.label}>{issue.assignee.label}</span>
+                ) : (
+                    <span className="text-gray-400 dark:text-gray-500">—</span>
+                )}
             </div>
 
             <div className="hidden w-28 sm:block">

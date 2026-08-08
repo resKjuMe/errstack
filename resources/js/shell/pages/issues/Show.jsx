@@ -216,6 +216,12 @@ function IssueHeader({ issue, actions, t }) {
                 <Figure label={t('issues.detail.header.priority')} value={issue.priorityLabel} />
             </dl>
 
+            {/* Wer zuständig ist (S7) — und ob der Fehler noch zur Prüfung
+                liegt. Eine eigene Zeile und keine siebte Kennzahl: „Anna Beck,
+                zugewiesen am 10.03. von Jonas" ist ein Satz und keine Zahl, und
+                zwischen sechs Zählern stünde er falsch. */}
+            <AssignmentNote issue={issue} t={t} />
+
             {/* Der Zustand allein sagt „erledigt". Erst die Bedingung sagt, ob
                 das heißt „behoben", „behoben in 1.4.2" oder „behoben, sobald
                 ausgeliefert wird" — und daran hängt, ob der Eintrag morgen
@@ -227,12 +233,50 @@ function IssueHeader({ issue, actions, t }) {
                     actions={actions}
                     target={{ issues: [issue.id] }}
                     status={issue.status}
-                    state={{ bookmarked: issue.bookmarked, subscribed: issue.subscribed }}
+                    state={{
+                        bookmarked: issue.bookmarked,
+                        subscribed: issue.subscribed,
+                        assignee: issue.assignee,
+                    }}
                     t={t}
                 />
             </div>
         </div>
     );
+}
+
+// Die Zuständigkeit (S7): wer sich kümmert — oder dass es noch niemand tut.
+//
+// Beides steht hier und nicht nur eines: „zur Prüfung" ist keine Zuständigkeit,
+// sondern deren Abwesenheit mit einem Datum daran. Wer den Fehler aufschlägt,
+// soll sehen, ob er ihn liegen lassen darf.
+function AssignmentNote({ issue, t }) {
+    if (issue.assignee) {
+        return (
+            <p className="mt-4 rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
+                {issue.assignee.by
+                    ? t('issues.assignment.state_by', {
+                          name: issue.assignee.label,
+                          at: issue.assignee.atLabel,
+                          actor: issue.assignee.by,
+                      })
+                    : t('issues.assignment.state', {
+                          name: issue.assignee.label,
+                          at: issue.assignee.atLabel,
+                      })}
+            </p>
+        );
+    }
+
+    if (issue.forReview) {
+        return (
+            <p className="mt-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+                {t('issues.assignment.for_review_state')}
+            </p>
+        );
+    }
+
+    return null;
 }
 
 // Woran der Zustand hängt — nur dort, wo es etwas zu sagen gibt.

@@ -21,6 +21,7 @@ return [
 
     'columns' => [
         'issue' => 'Issue',
+        'assignee' => 'Assignee',
         'trend' => 'Trend',
         'events' => 'Events',
         'users' => 'Users',
@@ -215,6 +216,47 @@ return [
 
     ],
 
+    // Assignment and the review list (S7): App\Support\Issues\IssueAssignee,
+    // IssueAssignmentNotifier, resources/js/shell/pages/issues/AssigneePicker.jsx.
+    'assignment' => [
+
+        'action' => 'Assign',
+        'assigned_to' => 'Assignee: :name',
+        'search' => 'Search for a person or a team',
+        'nobody' => 'Nobody',
+        'team' => 'Team',
+        'no_match' => 'No account and no team by that name.',
+
+        'state' => ':name is responsible, since :at.',
+        'state_by' => ':name is responsible, assigned by :actor on :at.',
+
+        'for_review_hint' => 'New or regressed — nobody has looked at it yet.',
+        'for_review_state' => 'This issue is up for review: it is new or has come back, '
+            .'and nobody is responsible. It leaves the review list by being assigned, '
+            .'resolved or ignored.',
+
+        'flash' => [
+            'assigned' => ':count issues assigned to :assignee.',
+            'unassigned' => 'Assignment removed for :count issues.',
+        ],
+
+        'validation' => [
+            'unknown' => 'No account and no team of this organization goes by that name.',
+        ],
+
+        // What the assignee gets to read. With exactly one issue its title is
+        // the body, with several their count — see
+        // App\Support\Issues\IssueAssignmentNotifier.
+        'notification' => [
+            'title' => ':actor assigned an issue to you',
+            'title_team' => ':actor assigned an issue to :assignee',
+            'many' => ':count issues at once.',
+            'context_project' => 'Project',
+            'context_culprit' => 'Culprit',
+        ],
+
+    ],
+
     // The activity history of an issue
     // (App\Support\Issues\IssueActivityFeed).
     'activity' => [
@@ -227,6 +269,8 @@ return [
         'unresolved' => 'Reopened',
         'ignored' => 'Ignored (:condition)',
         'ignore_expired' => 'Ignoring ended — the condition was met',
+        'assigned' => 'Assigned to :assignee',
+        'unassigned' => 'Assignment removed',
         'bookmarked' => 'Bookmarked',
         'unbookmarked' => 'Bookmark removed',
         'subscribed' => 'Subscribed',
