@@ -180,6 +180,60 @@ final class DurationHistogram
         return self::lowerBound(self::MAX_BUCKET + 1);
     }
 
+    /**
+     * Je Klasse eine Summe, als SQL-Ausdruck — der Weg, Verteilungen **in der
+     * Datenbank** zusammenzulegen statt alle Zeilen zu laden.
+     *
+     * `JSON_EXTRACT` gibt es in MySQL wie in SQLite, und die Klassen sind
+     * bekannt und endlich: 31 Ausdrücke, aus der Konstanten erzeugt statt
+     * einunddreißigmal hingeschrieben. Der Pfad steht in Anführungszeichen
+     * (`$."7"`), weil eine reine Ziffer als Feldname sonst in keiner der beiden
+     * Datenbanken zu deuten ist; dass dort eine Zahl aus einer Schleife steht
+     * und keine Eingabe, macht die Zeichenkette unbedenklich.
+     *
+     * Die Gegenrichtung ist {@see self::fromRowSums()}.
+     *
+     * @param  string  $column  Die Spalte, in der die Verteilung steht.
+     * @return list<string>
+     */
+    public static function sumExpressions(string $column = 'duration_histogram'): array
+    {
+        $expressions = [];
+
+        for ($bucket = 0; $bucket <= self::MAX_BUCKET; $bucket++) {
+            $expressions[] = sprintf(
+                'sum(coalesce(json_extract(%s, \'$."%d"\'), 0)) as bucket_%d',
+                $column,
+                $bucket,
+                $bucket,
+            );
+        }
+
+        return $expressions;
+    }
+
+    /**
+     * Baut aus den Klassensummen einer Ergebniszeile wieder eine Verteilung.
+     *
+     * @param  array<string, mixed>  $row
+     */
+    public static function fromRowSums(array $row): self
+    {
+        $buckets = [];
+
+        for ($bucket = 0; $bucket <= self::MAX_BUCKET; $bucket++) {
+            // Als Zeichenkette, wenn MySQL antwortet, und als Zahl bei SQLite —
+            // die Summe einer Spalte kommt je nach Treiber verschieden zurück.
+            $count = (int) ($row['bucket_'.$bucket] ?? 0);
+
+            if ($count > 0) {
+                $buckets[$bucket] = $count;
+            }
+        }
+
+        return self::fromStored($buckets);
+    }
+
     public function count(): int
     {
         return array_sum($this->buckets);
