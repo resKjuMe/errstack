@@ -81,9 +81,7 @@ class BacklogWatchTest extends TestCase
         // Vier Minuten später ist der Ansturm abgearbeitet — es wurde nie
         // gewarnt, also gibt es auch nichts zu entwarnen.
         $this->travel(4)->minutes();
-        $payloads->each(fn (IngestPayload $payload) => $payload->update([
-            'processing_state' => ProcessingState::Processed,
-        ]));
+        $payloads->each(self::markProcessed(...));
 
         $this->assertSame(BacklogAction::None, $this->watch()->evaluate()['action']);
 
@@ -106,9 +104,7 @@ class BacklogWatchTest extends TestCase
         $this->travel(6)->minutes();
         $this->assertSame(BacklogAction::Warn, $this->watch()->evaluate()['action']);
 
-        $payloads->each(fn (IngestPayload $payload) => $payload->update([
-            'processing_state' => ProcessingState::Processed,
-        ]));
+        $payloads->each(self::markProcessed(...));
 
         $this->assertSame(BacklogAction::Recover, $this->watch()->evaluate()['action']);
 
@@ -164,6 +160,20 @@ class BacklogWatchTest extends TestCase
 
         // Hätte `status()` die Uhr gestartet, käme hier bereits die Warnung.
         $this->assertSame(BacklogAction::None, $this->watch()->evaluate()['action']);
+    }
+
+    /**
+     * Eine Meldung als ausgewertet abhaken.
+     *
+     * Von Hand gesetzt statt per `update()`: das Modell hat bewusst kein
+     * `Fillable` — an ihm wird nur über seine eigenen Methoden geschrieben, und
+     * die Verarbeitungsspalten setzt sonst die Kette selbst.
+     */
+    private static function markProcessed(IngestPayload $payload): void
+    {
+        $payload->processing_state = ProcessingState::Processed;
+        $payload->processed_at = now();
+        $payload->save();
     }
 
     private function watch(): BacklogWatch
