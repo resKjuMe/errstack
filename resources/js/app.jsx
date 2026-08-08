@@ -26,6 +26,8 @@ import ProjectsSetup from './shell/pages/projects/Setup.jsx';
 import ProjectsKeys from './shell/pages/projects/Keys.jsx';
 import ProjectsAlerts from './shell/pages/projects/Alerts.jsx';
 import ProjectsIssueAlerts from './shell/pages/projects/IssueAlerts.jsx';
+import ProjectsAlertOverview from './shell/pages/projects/AlertOverview.jsx';
+import ProjectsAlertDetail from './shell/pages/projects/AlertDetail.jsx';
 import ProjectsCrons from './shell/pages/projects/Crons.jsx';
 import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
 import ProjectsFilters from './shell/pages/projects/Filters.jsx';
@@ -39,6 +41,7 @@ import ProfilingShow from './shell/pages/profiling/Show.jsx';
 import PrivacyIndex from './shell/pages/privacy/Index.jsx';
 import InvitationsAccept from './shell/pages/invitations/Accept.jsx';
 import ApiTokensIndex from './shell/pages/api-tokens/Index.jsx';
+import OperationsIndex from './shell/pages/operations/Index.jsx';
 import Login from './shell/pages/auth/Login.jsx';
 import Register from './shell/pages/auth/Register.jsx';
 import ForgotPassword from './shell/pages/auth/ForgotPassword.jsx';
@@ -85,6 +88,12 @@ const pages = {
     'projects/Keys': ProjectsKeys,
     'projects/Alerts': ProjectsAlerts,
     'projects/IssueAlerts': ProjectsIssueAlerts,
+    // Übersicht und Detail sind zwei Seiten: die Übersicht führt beide
+    // Alarm-Arten zusammen, das Detail zeigt genau eine Regel. Dieselbe Seite
+    // mit einer Weiche wäre an jeder zweiten Stelle eine Abfrage „welcher Fall
+    // ist das gerade".
+    'projects/AlertOverview': ProjectsAlertOverview,
+    'projects/AlertDetail': ProjectsAlertDetail,
     'projects/Crons': ProjectsCrons,
     'projects/Grouping': ProjectsGrouping,
     'projects/Filters': ProjectsFilters,
@@ -104,6 +113,8 @@ const pages = {
     'privacy/Index': PrivacyIndex,
     'invitations/Accept': InvitationsAccept,
     'api-tokens/Index': ApiTokensIndex,
+    // Der Zustand der Installation selbst — sichtbar nur für den Betreiber.
+    'operations/Index': OperationsIndex,
     'auth/Login': Login,
     'auth/Register': Register,
     'auth/ForgotPassword': ForgotPassword,

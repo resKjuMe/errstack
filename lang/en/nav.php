@@ -17,6 +17,7 @@ return [
         'releases' => 'Releases',
         'performance' => 'Performance',
         'performance_issues' => 'Performance issues',
+        'web_vitals' => 'Web Vitals',
         'profiling' => 'Profiles',
         'projects' => 'Projects',
         'organizations' => 'Organizations',
@@ -27,6 +28,7 @@ return [
         'profile' => 'Profile',
         'notifications' => 'Notifications',
         'api_tokens' => 'Access tokens',
+        'operations' => 'Operations',
         'components' => 'Components',
     ],
 

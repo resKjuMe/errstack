@@ -11,6 +11,7 @@ use App\Enums\IssueStatus;
 use App\Models\Issue;
 use App\Models\IssueActivity;
 use App\Models\IssueDiscard;
+use App\Models\Release;
 use App\Models\User;
 use App\Support\Ingest\Processing\Steps\AggregateIssue;
 use Carbon\CarbonImmutable;
@@ -20,7 +21,17 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Die Zustandsaktionen an Fehler-Einträgen: erledigen, wieder öffnen,
- * stummschalten, merken, abonnieren, löschen.
+ * stummschalten, zuweisen, merken, abonnieren, löschen.
+ *
+ * **Die Prüfliste (S7) wird hier geführt und nirgends sonst.** Sie ist keine
+ * eigene Tabelle und kein eigener Zustand, sondern ein Zeitpunkt am Eintrag
+ * (`for_review_at`): gesetzt, wenn er entsteht ({@see Issue::forGroup()}) oder
+ * von selbst zurückkehrt ({@see expireIgnore()}), geräumt, sobald jemand
+ * entschieden hat — zuweisen, erledigen, stummschalten. Ein eigener Zustand
+ * daneben wäre die naheliegende Alternative und die falsche: „zur Prüfung" ist
+ * keine Auskunft darüber, ob der Fehler behoben ist, sondern darüber, ob jemand
+ * hingesehen hat. Beides in eine Spalte zu legen hieße, das eine zu verlieren,
+ * sobald das andere gesetzt wird.
  *
  * **Jede Aktion nimmt eine Abfrage entgegen, nicht einen Eintrag.** Das ist die
  * eine Entscheidung, aus der sich der Rest dieser Klasse ergibt: „diesen einen"
@@ -75,6 +86,15 @@ final class IssueActions
      * Projekts. Als Spalten-auf-Spalte-Zuweisung ist das zugleich derselbe eine
      * `update` wie in den übrigen Fällen.
      *
+     * **„Mit der nächsten Auslieferung" merkt sich dieselbe Version** und
+     * unterscheidet sich nur im Schalter daneben. Das ist keine Sparsamkeit,
+     * sondern die Bedeutung: „behoben, sobald das nächste Mal ausgeliefert wird"
+     * ist eine Aussage über alles, was **nach** dem jetzigen Stand kommt — und
+     * der jetzige Stand ist der, aus dem die Meldungen kamen. Ohne diesen
+     * Bezugspunkt wäre die Rückfallerkennung (S8) bei dieser Art zu erledigen
+     * blind: sie müsste entweder jede spätere Meldung als Rückfall werten
+     * (dann wäre „nächste Auslieferung" dasselbe wie „sofort") oder gar keine.
+     *
      * @param  Builder<Issue>  $query
      */
     public function resolve(Builder $query, IssueResolveMode $mode): IssueActionResult
@@ -87,15 +107,24 @@ final class IssueActions
                 'status' => IssueStatus::Resolved,
                 'resolved_at' => $now,
                 'resolved_by_id' => $this->actor?->id,
-                'resolved_in_release_id' => $mode === IssueResolveMode::CurrentRelease
-                    ? DB::raw('last_release_id')
-                    : null,
+                'resolved_in_release_id' => $mode === IssueResolveMode::Now
+                    ? null
+                    : DB::raw('last_release_id'),
                 'resolved_in_next_release' => $mode === IssueResolveMode::NextRelease,
+                // Ein Rückfall ist mit dem Erledigen abgehandelt: der Eintrag
+                // war zurück, jemand hat sich gekümmert. Die Marke stehen zu
+                // lassen hieße, ihn dauerhaft in der Ansicht „wieder
+                // aufgetreten" zu führen.
+                ...self::clearedRegression(),
                 // Eine Stummschaltung endet mit dem Erledigen. Sie stehen zu
                 // lassen wäre die stillere und die schlechtere Wahl: käme der
                 // Fehler zurück und würde wieder geöffnet, gälte plötzlich eine
                 // Bedingung, die niemand mehr auf dem Schirm hat.
                 ...self::clearedIgnore(),
+                // Erledigen ist die zweite Art, einen Eintrag zu prüfen: „das
+                // ist behoben" beantwortet die Frage der Prüfliste genauso wie
+                // eine Zuweisung.
+                'for_review_at' => null,
                 'updated_at' => $now,
             ]),
             IssueActivityType::Resolved,
@@ -127,6 +156,10 @@ final class IssueActions
                 'resolved_in_release_id' => null,
                 'resolved_in_next_release' => false,
                 ...self::clearedIgnore(),
+                // Von Hand geöffnet ist kein Rückfall: die Marke sagt „das ist
+                // von selbst zurückgekommen", und wer sie hier stehen ließe,
+                // machte aus einer Entscheidung eine Beobachtung.
+                ...self::clearedRegression(),
                 'updated_at' => $now,
             ]),
             IssueActivityType::Unresolved,
@@ -165,6 +198,11 @@ final class IssueActions
                 'resolved_by_id' => null,
                 'resolved_in_release_id' => null,
                 'resolved_in_next_release' => false,
+                ...self::clearedRegression(),
+                // Und die dritte: „interessiert mich nicht" ist ebenfalls eine
+                // Entscheidung, und danach hat die Prüfliste nichts mehr zu
+                // fragen.
+                'for_review_at' => null,
                 'updated_at' => $now,
             ]),
             IssueActivityType::Ignored,
@@ -174,6 +212,48 @@ final class IssueActions
                 'window' => $condition['window'],
                 'users' => $condition['users'],
             ], static fn (mixed $value): bool => $value !== null),
+        );
+    }
+
+    /**
+     * Zuweisen und Zuständigkeit aufheben (S7).
+     *
+     * **Eine Aktion für beides**, weil es dieselbe Anweisung ist: `null` räumt
+     * beide Spalten. Zwei Methoden wären zwei Stellen mit demselben Vermerk und
+     * derselben Räumung der Prüfliste — und die zweite bekäme die nächste
+     * Änderung erfahrungsgemäß nicht mit.
+     *
+     * **Zuweisen nimmt den Eintrag aus der Prüfliste**, denn genau das heißt
+     * „geprüft": jemand hat hingesehen und entschieden, wer sich kümmert. Das
+     * Aufheben stellt ihn **nicht** zurück — wer eine Zuständigkeit aufhebt, hat
+     * den Fehler gesehen, und ihn erneut zur Prüfung zu legen hieße, die eigene
+     * Entscheidung zu vergessen.
+     *
+     * Die Benachrichtigung verschickt nicht diese Methode: sie kennt die
+     * betroffenen Einträge, aber nicht, ob es einer oder zwölftausend werden —
+     * und beides ergibt eine andere Nachricht. Der Aufrufer entscheidet das mit
+     * dem Ergebnis in der Hand ({@see IssueAssignmentNotifier}).
+     *
+     * @param  Builder<Issue>  $query
+     */
+    public function assign(Builder $query, ?IssueAssignee $assignee): IssueActionResult
+    {
+        $now = CarbonImmutable::now();
+        $columns = IssueAssignee::columnsFor($assignee);
+
+        return $this->apply(
+            $query,
+            fn (array $ids): int => Issue::query()->whereIn('id', $ids)->update([
+                ...$columns,
+                'assigned_at' => $assignee === null ? null : $now,
+                'assigned_by_id' => $assignee === null ? null : $this->actor?->id,
+                // Zugewiesen heißt geprüft. Beim Aufheben bleibt die Prüfliste
+                // unberührt — sie steht ohnehin schon auf `null`.
+                ...($assignee === null ? [] : ['for_review_at' => null]),
+                'updated_at' => $now,
+            ]),
+            $assignee === null ? IssueActivityType::Unassigned : IssueActivityType::Assigned,
+            $assignee === null ? null : ['assignee' => $assignee->label(), 'kind' => $assignee->kind()],
         );
     }
 
@@ -353,6 +433,12 @@ final class IssueActions
             ->update([
                 'status' => IssueStatus::Unresolved,
                 ...self::clearedIgnore(),
+                // Der Eintrag meldet sich von selbst zurück, und niemand hat es
+                // entschieden — also gehört er wieder auf die Prüfliste. Das ist
+                // dieselbe Stelle, an der die Rückfallerkennung (S8) einen
+                // wiedergekehrten Fehler eintragen wird: „wieder da und niemand
+                // zuständig" ist beide Male die Aussage.
+                'for_review_at' => $now,
                 'updated_at' => $now,
             ]);
 
@@ -370,6 +456,72 @@ final class IssueActions
         ]);
 
         $issue->status = IssueStatus::Unresolved;
+
+        return true;
+    }
+
+    /**
+     * Öffnet einen erledigten Eintrag wieder, weil er zurückgekommen ist (S8).
+     *
+     * Der Zwilling von {@see expireIgnore()}: bei der Aufnahme, ohne handelndes
+     * Konto, mit einem bedingten `update` als einziger Absicherung. Die
+     * Bedingung auf `status` und `resolved_at` ist hier sogar die wichtigere
+     * Hälfte — die Meldungen eines Ausfalls laufen gleichzeitig durch mehrere
+     * Arbeiter, und jeder von ihnen kommt mit demselben Urteil an. Sie sorgt
+     * dafür, dass genau **einer** den Eintrag aufmacht und genau **ein**
+     * Vermerk im Verlauf steht; die übrigen gehen leer aus und melden das auch
+     * ({@see $issue} bleibt bei ihnen unverändert).
+     *
+     * `resolved_at` steht mit in der Bedingung und nicht nur `status`: zwischen
+     * dem Urteil und diesem `update` kann jemand den Eintrag von Hand wieder
+     * erledigt haben, und dann bezieht sich das Urteil auf eine Erledigung, die
+     * es nicht mehr gibt.
+     *
+     * **Zuweisung, Kommentare und Zähler bleiben unberührt.** Ein Rückfall ist
+     * derselbe Fehler und kein neuer — was an ihm hängt, gehört weiter zu ihm.
+     *
+     * @param  Release|null  $seenIn  Die Fassung, in der er zurückkam — für den
+     *                                Verlauf und für die Anzeige.
+     * @return bool `true`, wenn **dieser** Aufruf ihn aufgemacht hat.
+     */
+    public static function reopenRegression(Issue $issue, ?Release $seenIn): bool
+    {
+        $now = CarbonImmutable::now();
+
+        $reopened = Issue::query()
+            ->whereKey($issue->id)
+            ->where('status', IssueStatus::Resolved)
+            ->where('resolved_at', $issue->resolved_at)
+            ->update([
+                'status' => IssueStatus::Unresolved,
+                'resolved_at' => null,
+                'resolved_by_id' => null,
+                'resolved_in_release_id' => null,
+                'resolved_in_next_release' => false,
+                'regressed_at' => $now,
+                'regressed_in_release_id' => $seenIn?->id,
+                'updated_at' => $now,
+            ]);
+
+        if ($reopened === 0) {
+            return false;
+        }
+
+        IssueActivity::query()->create([
+            'issue_id' => $issue->id,
+            'project_id' => $issue->project_id,
+            'user_id' => null,
+            'actor_name' => null,
+            'type' => IssueActivityType::Regressed,
+            // Die Version als **Text** und nicht als Verweis: der Verlauf ist
+            // unveränderlich, und was er sagt, soll auch dann noch stimmen,
+            // wenn die Auslieferung längst aufgeräumt ist.
+            'data' => $seenIn === null ? null : ['release' => $seenIn->version],
+        ]);
+
+        $issue->status = IssueStatus::Unresolved;
+        $issue->regressed_at = $now;
+        $issue->regressed_in_release_id = $seenIn?->id;
 
         return true;
     }
@@ -612,6 +764,25 @@ final class IssueActions
             'ignore_users' => null,
             'ignore_times_seen' => null,
             'ignore_users_seen' => null,
+        ];
+    }
+
+    /**
+     * Die Spalten, die ein Rückfall zurücklassen soll.
+     *
+     * Er endet mit dem nächsten Zustandswechsel von Hand — erledigen,
+     * stummschalten, wieder öffnen. „Wieder aufgetreten" beschreibt, wie der
+     * Eintrag in seinen jetzigen Zustand gekommen ist; sobald jemand ihn ändert,
+     * beschreibt es nichts mehr, und die Ansicht „Wieder aufgetreten" führte ihn
+     * sonst für immer.
+     *
+     * @return array<string, mixed>
+     */
+    private static function clearedRegression(): array
+    {
+        return [
+            'regressed_at' => null,
+            'regressed_in_release_id' => null,
         ];
     }
 }

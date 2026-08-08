@@ -61,6 +61,18 @@ final class IssueHeader
             'resolution' => self::resolution($issue),
             'ignore' => self::ignore($issue),
 
+            // Der Rückfall (S8): der Eintrag ist offen, aber nicht, weil jemand
+            // ihn geöffnet hat. Er steht neben dem Zustand und nicht in ihm —
+            // „wieder aufgetreten" beantwortet, wie er hierher kam, und nicht,
+            // woran er ist.
+            'regression' => self::regression($issue),
+            // Wer sich kümmert (S7), und ob der Eintrag noch zur Prüfung liegt.
+            // Beides gehört in den Kopf und nicht in den Verlauf: der Verlauf
+            // sagt, **wann** zugewiesen wurde, der Kopf sagt, **wer** es jetzt
+            // ist — und danach fragt, wer die Seite aufschlägt.
+            'assignee' => self::assignee($issue),
+            'forReview' => $issue->for_review_at !== null,
+
             // Was **diesem** Betrachter an dem Eintrag gehört. Nicht am Eintrag
             // gespeichert, sondern je Person — eine Spalte am Eintrag könnte nur
             // die Meinung des Letzten festhalten.
@@ -140,6 +152,37 @@ final class IssueHeader
     }
 
     /**
+     * Der Zuständige samt Zeitpunkt und dem, der ihn eingetragen hat.
+     *
+     * `term` fährt mit, damit die Auswahlliste beim Öffnen den jetzigen
+     * Zuständigen kennt, ohne ihn aus dem Namen zurückrechnen zu müssen — bei
+     * zwei gleichnamigen Personen ginge das nicht.
+     *
+     * @return array{label: string, term: string, kind: string, at: string|null, atLabel: string|null, by: string|null}|null
+     */
+    private static function assignee(Issue $issue): ?array
+    {
+        $assignee = match (true) {
+            $issue->assignedTeam !== null => IssueAssignee::forTeam($issue->assignedTeam),
+            $issue->assignedUser !== null => IssueAssignee::forUser($issue->assignedUser),
+            default => null,
+        };
+
+        if ($assignee === null) {
+            return null;
+        }
+
+        return [
+            'label' => $assignee->label(),
+            'term' => $assignee->term(),
+            'kind' => $assignee->kind(),
+            'at' => $issue->assigned_at?->toIso8601String(),
+            'atLabel' => Formats::dateTime($issue->assigned_at),
+            'by' => $issue->assignedBy?->name,
+        ];
+    }
+
+    /**
      * Woraufhin der Eintrag als erledigt gilt — `null`, solange er offen ist.
      *
      * @return array{at: string|null, atLabel: string|null, by: string|null, release: string|null, nextRelease: bool}|null
@@ -156,6 +199,30 @@ final class IssueHeader
             'by' => $issue->resolvedBy?->name,
             'release' => $issue->resolvedInRelease?->version,
             'nextRelease' => $issue->resolved_in_next_release,
+        ];
+    }
+
+    /**
+     * Der Rückfall — `null`, solange der Eintrag keiner ist.
+     *
+     * Die Version steht mit dabei, weil sie die eigentliche Auskunft ist: „ist
+     * wieder aufgetreten" beantwortet noch nicht, ob der Fix es nie in eine
+     * Auslieferung geschafft hat oder ob er es getan hat und trotzdem nicht
+     * hält. `null` bleibt sie, wenn die Meldung keine Version trug — der
+     * Regelfall bei einem SDK ohne `release`-Angabe.
+     *
+     * @return array{at: string|null, atLabel: string|null, release: string|null}|null
+     */
+    private static function regression(Issue $issue): ?array
+    {
+        if (! $issue->hasRegressed()) {
+            return null;
+        }
+
+        return [
+            'at' => $issue->regressed_at?->toIso8601String(),
+            'atLabel' => Formats::dateTime($issue->regressed_at),
+            'release' => $issue->regressedInRelease?->version,
         ];
     }
 

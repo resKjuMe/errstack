@@ -34,6 +34,18 @@ enum IssueActivityType: string
     /** Wieder geöffnet, von Hand. */
     case Unresolved = 'unresolved';
 
+    /**
+     * Zurückgekommen: der erledigte Fehler ist wieder aufgetreten und hat sich
+     * von selbst wieder geöffnet (S8).
+     *
+     * Getrennt von {@see Unresolved}, obwohl beide denselben Zustand
+     * herstellen — für den, der den Verlauf liest, sind es zwei verschiedene
+     * Vorgänge: das eine hat jemand entschieden, das andere ist geschehen. Wie
+     * bei {@see IgnoreExpired} steht deshalb kein Name daneben, dafür die
+     * Version, in der er zurückkam (`data`).
+     */
+    case Regressed = 'regressed';
+
     /** Stummgeschaltet — die Bedingung steht in `data`. */
     case Ignored = 'ignored';
 
@@ -42,10 +54,36 @@ enum IssueActivityType: string
      * Eintrag meldet sich wieder.
      *
      * Er fällt bei der Aufnahme an, und dort steht niemand daneben — der
-     * Vermerk trägt deshalb kein Konto. Dasselbe gilt für die beiden Fälle aus
-     * S11 unten, die aus dem Hintergrund-Durchlauf kommen.
+     * Vermerk trägt deshalb kein Konto. Dasselbe gilt für die Auslieferung und
+     * die beiden Fälle aus S11 unten, die aus dem Hintergrund-Durchlauf kommen.
      */
     case IgnoreExpired = 'ignore_expired';
+
+    /**
+     * Einer Person oder einem Team zugewiesen (S7).
+     *
+     * Wem, steht in `data` — als **Name** und nicht als Kennung. Ein Verlauf
+     * wird gelesen, nicht ausgewertet: „Anna Beck zugewiesen" bleibt lesbar,
+     * wenn das Konto gelöscht wurde, eine Kennung wäre dann eine Zahl ohne
+     * Bedeutung. Dieselbe Entscheidung wie beim Namen des Handelnden.
+     */
+    case Assigned = 'assigned';
+
+    /** Die Zuständigkeit wurde aufgehoben. */
+    case Unassigned = 'unassigned';
+
+    /**
+     * Der Fix ist draußen: der Eintrag stand auf „erledigt im nächsten Release",
+     * und dieses Release wurde ausgeliefert (R3). Version und Umgebung stehen in
+     * `data`.
+     *
+     * Ein eigener Fall und keine zweite Spielart von {@see self::Resolved}, aus
+     * demselben Grund wie bei {@see self::IgnoreExpired}: erledigt hat jemand
+     * von Hand, ausgeliefert wurde ohne Zutun. Für den, der den Verlauf liest,
+     * sind das zwei Vorgänge — und der zweite ist der, auf den der erste
+     * gewartet hat.
+     */
+    case Deployed = 'deployed';
 
     /**
      * Die Wichtigkeit hat sich geändert — von Hand oder durch die Ableitung

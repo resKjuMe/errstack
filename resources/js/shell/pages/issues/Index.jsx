@@ -81,6 +81,10 @@ export default function Index({
 
     const showProject = filter.value.projects.length !== 1;
     const trendLabel = t('issues.trend.label', { period: series.periodLabel });
+    // Die Deploy-Markierungen gehören zum Zeitraum und nicht zur Zeile: eine
+    // Liste, in der jede Grafik ihre eigenen Striche ausrechnet, wäre dieselbe
+    // Auskunft fünfzigmal.
+    const deploys = series.markers ?? [];
 
     return (
         <>
@@ -224,6 +228,7 @@ export default function Index({
                                             onToggle={selection.toggle}
                                             showProject={showProject}
                                             trendLabel={trendLabel}
+                                            deploys={deploys}
                                             t={t}
                                         />
                                     ))}
@@ -328,6 +333,9 @@ function ListHeader({ selection, total, totalLabel, pageSize, mergeHref, actions
             ) : (
                 <>
                     <span className="min-w-0 flex-1 uppercase">{t('issues.columns.issue')}</span>
+                    <span className="hidden w-32 uppercase lg:block">
+                        {t('issues.columns.assignee')}
+                    </span>
                     <span className="hidden w-28 uppercase sm:block">
                         {t('issues.columns.trend')}
                     </span>

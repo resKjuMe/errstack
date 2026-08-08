@@ -154,4 +154,7 @@ Liste genannt — sonst sähe sie aus, als hätte sie den Begriff ausgewertet.
   was mit ihnen geschieht, ist eine eigene Frage.
 - **Commits und Repositories** an einer Version — R2. Die Spalte `ref` steht
   dafür schon bereit und bleibt bis dahin leer.
+- **Wann eine Version wohin ausgeliefert wurde** steht in
+  [auslieferungen.md](auslieferungen.md) — R3. `released_at` hier ist die eine
+  angekündigte Zeit; eine Version geht nacheinander in mehrere Umgebungen.
 - **Detailseite und Vergleich zur Vorversion** — R8.

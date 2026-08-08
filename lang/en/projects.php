@@ -84,6 +84,12 @@ return [
         'manage' => 'View alert rules',
     ],
 
+    'alert_overview' => [
+        'title' => 'Alert overview',
+        'description' => 'What fired when: every rule of both kinds with state, last trigger and history — plus the option to snooze a rule for a while without stopping its evaluation.',
+        'manage' => 'View history',
+    ],
+
     'sampling' => [
         'title' => 'Sampling',
         'description' => 'Only a configurable share of the response times is stored; the evaluations scale it back up. Error reports are untouched by this.',

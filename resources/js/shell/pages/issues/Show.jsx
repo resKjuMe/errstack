@@ -228,6 +228,12 @@ function IssueHeader({ issue, actions, t }) {
                 />
             </dl>
 
+            {/* Wer zuständig ist (S7) — und ob der Fehler noch zur Prüfung
+                liegt. Eine eigene Zeile und keine siebte Kennzahl: „Anna Beck,
+                zugewiesen am 10.03. von Jonas" ist ein Satz und keine Zahl, und
+                zwischen sechs Zählern stünde er falsch. */}
+            <AssignmentNote issue={issue} t={t} />
+
             {/* Der Zustand allein sagt „erledigt". Erst die Bedingung sagt, ob
                 das heißt „behoben", „behoben in 1.4.2" oder „behoben, sobald
                 ausgeliefert wird" — und daran hängt, ob der Eintrag morgen
@@ -242,6 +248,7 @@ function IssueHeader({ issue, actions, t }) {
                     state={{
                         bookmarked: issue.bookmarked,
                         subscribed: issue.subscribed,
+                        assignee: issue.assignee,
                         priority: issue.priority,
                         priorityLocked: issue.priorityLocked,
                     }}
@@ -250,6 +257,40 @@ function IssueHeader({ issue, actions, t }) {
             </div>
         </div>
     );
+}
+
+// Die Zuständigkeit (S7): wer sich kümmert — oder dass es noch niemand tut.
+//
+// Beides steht hier und nicht nur eines: „zur Prüfung" ist keine Zuständigkeit,
+// sondern deren Abwesenheit mit einem Datum daran. Wer den Fehler aufschlägt,
+// soll sehen, ob er ihn liegen lassen darf.
+function AssignmentNote({ issue, t }) {
+    if (issue.assignee) {
+        return (
+            <p className="mt-4 rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
+                {issue.assignee.by
+                    ? t('issues.assignment.state_by', {
+                          name: issue.assignee.label,
+                          at: issue.assignee.atLabel,
+                          actor: issue.assignee.by,
+                      })
+                    : t('issues.assignment.state', {
+                          name: issue.assignee.label,
+                          at: issue.assignee.atLabel,
+                      })}
+            </p>
+        );
+    }
+
+    if (issue.forReview) {
+        return (
+            <p className="mt-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+                {t('issues.assignment.for_review_state')}
+            </p>
+        );
+    }
+
+    return null;
 }
 
 // Woran der Zustand hängt — nur dort, wo es etwas zu sagen gibt.
@@ -274,6 +315,21 @@ function StateNote({ issue, t }) {
         );
     }
 
+    // „Im nächsten Release" wird zuerst geprüft, obwohl auch dort eine Version
+    // steht: sie ist dort der Bezugspunkt und nicht das Ziel — behoben ist der
+    // Fehler in dem, was nach ihr kommt.
+    if (issue.resolution?.nextRelease) {
+        return (
+            <p className="mt-4 rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
+                {issue.resolution.release
+                    ? t('issues.actions.resolved_next_after', {
+                          release: issue.resolution.release,
+                      })
+                    : t('issues.actions.resolved_next')}
+            </p>
+        );
+    }
+
     if (issue.resolution?.release) {
         return (
             <p className="mt-4 rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
@@ -282,10 +338,18 @@ function StateNote({ issue, t }) {
         );
     }
 
-    if (issue.resolution?.nextRelease) {
+    // Zurückgekommen (S8). Der Hinweis steht am Ende, weil er den **offenen**
+    // Eintrag betrifft: die Fälle darüber schließen sich mit ihm aus, und wo
+    // beides zuträfe, ist die laufende Bedingung die dringendere Auskunft.
+    if (issue.regression) {
         return (
-            <p className="mt-4 rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
-                {t('issues.actions.resolved_next')}
+            <p className="mt-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-900/30 dark:text-amber-100">
+                {issue.regression.release
+                    ? t('issues.regression.state_in', {
+                          release: issue.regression.release,
+                          at: issue.regression.atLabel,
+                      })
+                    : t('issues.regression.state', { at: issue.regression.atLabel })}
             </p>
         );
     }

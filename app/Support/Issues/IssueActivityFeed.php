@@ -248,6 +248,13 @@ final class IssueActivityFeed
 
     /**
      * Der Satz zu einem Vermerk — mit Bedingung, wo es eine gibt.
+     *
+     * Der Rückfall (S8) bekommt einen zweiten Schlüssel statt eines
+     * Platzhalters, der leer bleiben darf: „Wieder aufgetreten in Version "
+     * wäre ein halber Satz, und eine Meldung ohne Versionsangabe ist der
+     * Regelfall bei einem SDK ohne `release`. Der Verlauf ist unveränderlich —
+     * die Version steht deshalb als Text im Vermerk und wird nicht über den
+     * Eintrag nachgeladen, der sie längst weitergezogen hat.
      */
     private static function text(IssueActivity $activity): string
     {
@@ -268,10 +275,26 @@ final class IssueActivityFeed
             return self::escalationText($data);
         }
 
+        $release = $activity->type === IssueActivityType::Regressed ? ($data['release'] ?? null) : null;
+
+        if (is_string($release) && $release !== '') {
+            $key .= '_in';
+        }
+
         return __($key, [
             'condition' => self::condition($data),
             'count' => Formats::number((int) ($data['count'] ?? $data['users'] ?? 0)),
             'minutes' => Formats::number((int) ($data['window'] ?? 0)),
+            // Der Zuständige steht als **Name** im Vermerk und wird nicht
+            // nachgeladen (S7): ein Verlauf sagt, was damals galt, und ein
+            // gelöschtes Konto darf ihn nicht in „zugewiesen an —" verwandeln.
+            'assignee' => (string) ($data['assignee'] ?? ''),
+            // Die Auslieferung, auf die ein Eintrag gewartet hat (R3). Beide
+            // Angaben stehen im Vermerk und werden nicht nachgeschlagen: eine
+            // gelöschte Version oder umbenannte Umgebung darf einen Verlauf
+            // nicht leerräumen — dieselbe Wahl wie beim Namen des Handelnden.
+            'release' => (string) ($data['release'] ?? ''),
+            'environment' => (string) ($data['environment'] ?? ''),
         ]);
     }
 

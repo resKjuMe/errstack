@@ -10,6 +10,7 @@ use App\Support\Filters\GlobalFilter;
 use App\Support\Formats;
 use App\Support\Issues\IssueActionResult;
 use App\Support\Issues\IssueActions;
+use App\Support\Issues\IssueAssignmentNotifier;
 use App\Support\Issues\IssueList;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -54,6 +55,7 @@ class IssueActionController extends Controller
             'resolve' => $actions->resolve($query, $request->resolveMode()),
             'unresolve' => $actions->unresolve($query),
             'ignore' => $actions->ignore($query, $request->ignoreMode(), $request->threshold(), $request->window()),
+            'assign' => $actions->assign($query, $request->assignee()),
             'priority' => $actions->prioritize($query, $request->priority()),
             'bookmark' => $actions->bookmark($query, true),
             'unbookmark' => $actions->bookmark($query, false),
@@ -73,6 +75,18 @@ class IssueActionController extends Controller
             // — jemand anderes war schneller, oder die Seite stand lange offen.
             // Als Erfolg zu melden wäre die bequeme und die falsche Antwort.
             return back()->with('error', __('issues.actions.flash.none'));
+        }
+
+        // Die Benachrichtigung steht **nach** dem Schreiben und nicht darin: sie
+        // braucht die Anzahl, und die kennt erst das Ergebnis. Eine Zuweisung an
+        // niemanden benachrichtigt naturgemäß niemanden.
+        if ($action === 'assign') {
+            $assignee = $request->assignee();
+
+            if ($assignee !== null) {
+                app(IssueAssignmentNotifier::class)
+                    ->send($assignee, $result->count, $result->undoIds, $request->user());
+            }
         }
 
         return back()
@@ -181,6 +195,11 @@ class IssueActionController extends Controller
             // Löschen ohne Verwerfen ist endgültig — dafür gibt es keinen
             // Rückweg, und einen anzubieten wäre schlimmer als keiner.
             'discard' => 'undiscard',
+            // Und die Zuweisung hat keinen: der Rückweg müsste je Eintrag den
+            // **vorherigen** Zuständigen kennen, und der ist bei einer
+            // Sammelaktion für jede Zeile ein anderer. Eine Schaltfläche, die
+            // stattdessen alle auf „niemand" setzt, wäre keine Rücknahme,
+            // sondern eine zweite Aktion mit falscher Beschriftung.
             default => null,
         };
 
@@ -234,6 +253,17 @@ class IssueActionController extends Controller
                 'count' => $count,
                 'condition' => $request->resolveMode()->label(),
             ]);
+        }
+
+        if ($action === 'assign') {
+            $assignee = $request->assignee();
+
+            return $assignee === null
+                ? __('issues.assignment.flash.unassigned', ['count' => $count])
+                : __('issues.assignment.flash.assigned', [
+                    'count' => $count,
+                    'assignee' => $assignee->label(),
+                ]);
         }
 
         if ($action === 'priority') {

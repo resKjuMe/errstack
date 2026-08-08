@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Enums\OrganizationRole;
 use App\Models\ApiToken;
+use App\Models\User;
 use App\Notifications\ChannelRegistry;
 use App\Notifications\Contracts\ChannelDriver;
 use App\Notifications\NotificationPreferences;
@@ -11,6 +13,7 @@ use App\Support\Ingest\Processing\ProcessingPipeline;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\Sanctum;
@@ -65,6 +68,36 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureSanctum();
         $this->configureRateLimiting();
+        $this->configureOperations();
+    }
+
+    /**
+     * Wer die Betriebsansicht sehen darf (O5).
+     *
+     * Ein Gate und keine Policy, weil es kein Modell gibt, an dem die Frage
+     * hinge: „darf dieses Konto den Zustand *dieser Installation* sehen" ist
+     * eine Frage an den Server und nicht an eine Organisation. Ein Besitzer der
+     * einen Organisation ist nicht automatisch der Betreiber — auf einer
+     * Installation mit mehreren Kunden wäre er es gerade nicht.
+     *
+     * Deshalb steht die Liste in der Umgebung: ändern kann sie, wer den Server
+     * betreibt. Ist sie leer, greift die brauchbare Vorgabe für die übliche
+     * Installation mit einer einzigen Organisation — deren Besitzer.
+     */
+    private function configureOperations(): void
+    {
+        Gate::define('operations', function (User $user): bool {
+            /** @var list<string> $operators */
+            $operators = config('operations.operators', []);
+
+            if ($operators !== []) {
+                return in_array(mb_strtolower($user->email), array_map(mb_strtolower(...), $operators), true);
+            }
+
+            return $user->memberships()
+                ->where('role', OrganizationRole::Owner)
+                ->exists();
+        });
     }
 
     /**

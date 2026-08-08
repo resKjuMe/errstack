@@ -44,7 +44,8 @@ return [
         'problem' => 'Pattern',
         'any_problem' => 'All patterns',
         'environment_ignored' => 'The counters of an entry span all environments — the '
-            .'selected environment does not affect this list.',
+            .'selected environment does not affect this list. It does decide which '
+            .'deployments are marked in the trend, though.',
     ],
 
     'detail' => [

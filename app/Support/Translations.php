@@ -20,6 +20,7 @@ final class Translations
 {
     /** Sprachgruppen, die in der Oberfläche gebraucht werden. */
     public const GROUPS = [
+        'alert_overview',
         'alerts',
         'api_tokens',
         'audit',
@@ -33,9 +34,11 @@ final class Translations
         'grouping',
         'inbound',
         'invitations',
+        'issue_alerts',
         'issues',
         'nav',
         'notifications',
+        'operations',
         'organizations',
         'performance',
         'performance_issues',
@@ -51,6 +54,7 @@ final class Translations
         'tags',
         'teams',
         'traces',
+        'web_vitals',
     ];
 
     /**

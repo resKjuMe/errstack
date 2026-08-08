@@ -53,7 +53,13 @@ class IssueDetailController extends Controller
             'project.organization',
             'resolvedBy',
             'resolvedInRelease',
+            'regressedInRelease',
             'ignoredBy',
+            // Wer zuständig ist und wer ihn dazu gemacht hat (S7) — aus
+            // demselben Grund mitgeladen wie alles andere hier.
+            'assignedUser',
+            'assignedTeam',
+            'assignedBy',
             'mergedSources.groups',
             'mergedInto',
         ]);

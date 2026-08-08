@@ -17,6 +17,7 @@ return [
         'releases' => 'Versionen',
         'performance' => 'Leistung',
         'performance_issues' => 'Leistungsprobleme',
+        'web_vitals' => 'Ladeerlebnis',
         'profiling' => 'Profile',
         'projects' => 'Projekte',
         'organizations' => 'Organisationen',
@@ -27,6 +28,7 @@ return [
         'profile' => 'Profil',
         'notifications' => 'Benachrichtigungen',
         'api_tokens' => 'Zugriffstoken',
+        'operations' => 'Betrieb',
         'components' => 'Bausteine',
     ],
 

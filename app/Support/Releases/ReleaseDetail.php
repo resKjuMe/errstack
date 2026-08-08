@@ -4,6 +4,7 @@ namespace App\Support\Releases;
 
 use App\Models\Commit;
 use App\Models\CommitFile;
+use App\Models\Deploy;
 use App\Models\Release;
 use App\Support\Formats;
 use App\Support\Search\SearchQuery;
@@ -52,6 +53,12 @@ final class ReleaseDetail
     {
         $release->loadMissing('project.organization');
 
+        // Die Auslieferungen dieser Version (R3). Sie stehen auf derselben
+        // Seite wie ihr Inhalt, weil dort die Frage entsteht, für die es sie
+        // gibt: „was steckt drin" und „seit wann ist das draußen" sind zwei
+        // Hälften derselben Auskunft.
+        $deploys = $release->deploys()->with('environment')->get();
+
         $total = $release->commits()->count();
 
         $commits = $release->commits()
@@ -83,6 +90,7 @@ final class ReleaseDetail
                 ]),
                 'indexHref' => route('releases.index'),
             ],
+            'deploys' => $deploys->map(fn (Deploy $deploy): array => self::deploy($deploy))->all(),
             'commits' => $commits->map(fn (Commit $commit): array => self::commit($commit))->all(),
             // Die volle Zahl und nicht die der gezeigten Zeilen: sie ist die
             // Auskunft über die Auslieferung, die Liste darunter nur ein
@@ -90,6 +98,27 @@ final class ReleaseDetail
             'commitsLabel' => Formats::number($total),
             'commitsTruncated' => $total > $commits->count(),
             'commitsShownLabel' => Formats::number($commits->count()),
+        ];
+    }
+
+    /**
+     * Eine Auslieferung.
+     *
+     * Die Dauer steht nur da, wo ein Beginn übergeben wurde — sie ist die
+     * einzige Angabe hier, die aus zwei anderen entsteht, und ohne den Beginn
+     * wäre sie eine Behauptung.
+     *
+     * @return array<string, mixed>
+     */
+    private static function deploy(Deploy $deploy): array
+    {
+        return [
+            'id' => $deploy->id,
+            'label' => $deploy->label(),
+            'environment' => $deploy->environment?->name,
+            'url' => $deploy->url,
+            'atLabel' => Formats::dateTime($deploy->finished_at),
+            'startedAtLabel' => Formats::dateTime($deploy->started_at),
         ];
     }
 

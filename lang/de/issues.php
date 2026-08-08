@@ -21,6 +21,7 @@ return [
 
     'columns' => [
         'issue' => 'Fehler',
+        'assignee' => 'Zuständig',
         'trend' => 'Verlauf',
         'events' => 'Häufigkeit',
         'users' => 'Nutzer',
@@ -180,6 +181,7 @@ return [
         'ignored_state' => 'Stummgeschaltet :condition — :done von :total.',
         'resolved_in' => 'Erledigt in Version :release.',
         'resolved_next' => 'Erledigt mit der nächsten Auslieferung.',
+        'resolved_next_after' => 'Erledigt mit der nächsten Auslieferung nach Version :release.',
 
         'confirm' => [
             'delete' => 'Diese Fehler löschen? Die Zähler sind danach weg. Tritt der '
@@ -226,6 +228,49 @@ return [
 
     ],
 
+    // Die Zuständigkeit und die Prüfliste (S7):
+    // App\Support\Issues\IssueAssignee, IssueAssignmentNotifier,
+    // resources/js/shell/pages/issues/AssigneePicker.jsx.
+    'assignment' => [
+
+        'action' => 'Zuweisen',
+        'assigned_to' => 'Zuständig: :name',
+        'search' => 'Person oder Team suchen',
+        'nobody' => 'Niemand',
+        'team' => 'Team',
+        'no_match' => 'Kein Konto und kein Team mit diesem Namen.',
+
+        'state' => 'Zuständig ist :name, seit :at.',
+        'state_by' => 'Zuständig ist :name, seit :at von :actor zugewiesen.',
+
+        'for_review_hint' => 'Neu oder wieder aufgetreten — noch hat sich niemand '
+            .'darum gekümmert.',
+        'for_review_state' => 'Dieser Fehler liegt zur Prüfung: er ist neu oder wieder '
+            .'aufgetreten, und niemand ist zuständig. Er verlässt die Prüfliste durch '
+            .'Zuweisen, Erledigen oder Stummschalten.',
+
+        'flash' => [
+            'assigned' => ':count Fehler an :assignee zugewiesen.',
+            'unassigned' => 'Zuständigkeit für :count Fehler aufgehoben.',
+        ],
+
+        'validation' => [
+            'unknown' => 'Kein Konto und kein Team dieser Organisation trägt diesen Namen.',
+        ],
+
+        // Was die zugewiesene Person zu lesen bekommt. Bei genau einem Fehler
+        // steht sein Titel im Rumpf, bei mehreren ihre Anzahl — siehe
+        // App\Support\Issues\IssueAssignmentNotifier.
+        'notification' => [
+            'title' => ':actor hat dir einen Fehler zugewiesen',
+            'title_team' => ':actor hat :assignee einen Fehler zugewiesen',
+            'many' => ':count Fehler auf einmal.',
+            'context_project' => 'Projekt',
+            'context_culprit' => 'Fehlerstelle',
+        ],
+
+    ],
+
     // Die automatisch ermittelte Wichtigkeit (S11,
     // App\Support\Issues\IssuePriorityScore). Die Beiträge der Ableitung werden
     // erst beim Lesen zu Wörtern — im Vermerk stehen Schlüssel und Zahl.
@@ -268,8 +313,13 @@ return [
 
         'resolved' => 'Erledigt (:condition)',
         'unresolved' => 'Wieder geöffnet',
+        'regressed' => 'Wieder aufgetreten und automatisch geöffnet',
+        'regressed_in' => 'Wieder aufgetreten in Version :release und automatisch geöffnet',
         'ignored' => 'Stummgeschaltet (:condition)',
         'ignore_expired' => 'Stummschaltung beendet — die Bedingung ist eingetreten',
+        'assigned' => 'Zugewiesen an :assignee',
+        'unassigned' => 'Zuständigkeit aufgehoben',
+        'deployed' => 'Ausgeliefert mit :release nach :environment',
         'priority' => 'Wichtigkeit auf :priority gesetzt',
         'priority_auto' => 'Wichtigkeit wird wieder automatisch ermittelt',
         'priority_derived' => 'Wichtigkeit automatisch auf :priority — :reason',
@@ -361,6 +411,21 @@ return [
         ],
     ],
 
+    // Der Rückfall (S8): ein erledigter Fehler, der wieder aufgetreten ist und
+    // sich dadurch von selbst wieder geöffnet hat
+    // (app/Support/Ingest/Processing/Steps/DetectRegression).
+    'regression' => [
+        'badge' => [
+            'label' => 'Wieder aufgetreten',
+            'hint' => 'Dieser Fehler galt schon einmal als erledigt und ist wieder '
+                .'aufgetreten. Er hat sich deshalb von selbst wieder geöffnet.',
+        ],
+
+        'state' => 'Wieder aufgetreten am :at — der Fehler galt bereits als erledigt.',
+        'state_in' => 'Wieder aufgetreten in Version :release am :at — der Fehler galt '
+            .'bereits als erledigt.',
+    ],
+
     'live' => [
         'new_one' => 'Ein neuer Fehler',
         'new_many' => ':count neue Fehler',
@@ -369,7 +434,9 @@ return [
 
     'environment_ignored' => 'Die gewählte Umgebung schränkt diese Liste nicht ein: '
         .'ein Fehler wird über alle Umgebungen hinweg gezählt. Wer nur die Fehler '
-        .'einer Umgebung sehen will, sucht nach environment:production.',
+        .'einer Umgebung sehen will, sucht nach environment:production. Auf die '
+        .'Deploy-Markierungen im Verlauf wirkt die Auswahl dagegen schon — eine '
+        .'Auslieferung gehört zu genau einer Umgebung.',
 
     // Die Detailseite (app/Http/Controllers/IssueDetailController,
     // resources/js/shell/pages/issues/Show.jsx und issues/detail/*).

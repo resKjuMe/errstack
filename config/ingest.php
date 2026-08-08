@@ -2,6 +2,7 @@
 
 use App\Support\Ingest\Processing\Steps\AggregateIssue;
 use App\Support\Ingest\Processing\Steps\DecodePayload;
+use App\Support\Ingest\Processing\Steps\DetectRegression;
 use App\Support\Ingest\Processing\Steps\EvaluateIssueAlerts;
 use App\Support\Ingest\Processing\Steps\FilterEvent;
 use App\Support\Ingest\Processing\Steps\GroupEvent;
@@ -125,6 +126,14 @@ return [
     |   8. Normalisierung — Sentry-Schema in unser Modell (I4)
     |   9. Grouping      — Fingerabdruck und Gruppe bestimmen (I5)
     |  10. Aggregation   — Zähler und Issue fortschreiben (I6)
+    |  11. Version       — Auslieferung erfassen und verknüpfen (R1)
+    |  12. Rückfall      — erledigten Fehler wieder aufmachen (S8)
+    |
+    | Der Rückfall steht hinter der Version, weil er sie braucht: „erledigt in
+    | 1.4.2" ist erst durch eine **neuere** Fassung widerlegt, und welche das
+    | ist, steht erst dort fest. Und er steht vor der Alarmierung, weil er ihr
+    | den Anlass liefert — danach ist der Eintrag offen, und dass er eben noch
+    | erledigt war, wäre nicht mehr zu erkennen.
     |
     | Die Profile stehen unmittelbar hinter den Antwortzeiten, und das ist keine
     | Frage der Ordnung, sondern eine Voraussetzung: ein Profil wird an der
@@ -178,6 +187,7 @@ return [
             GroupEvent::class,
             AggregateIssue::class,
             RecordRelease::class,
+            DetectRegression::class,
             RecordUserReport::class,
             QueueSymbolication::class,
             // Ganz zum Schluss: die Alarm-Regeln (A2) beziehen sich auf den

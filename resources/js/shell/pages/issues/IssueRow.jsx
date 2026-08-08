@@ -11,7 +11,15 @@ import Sparkline from './Sparkline.jsx';
 // Die Zahlen kommen fertig geschrieben vom Server (`timesSeenLabel`), die rohen
 // Werte daneben sind für die Grafik da. Formatiert wird nicht zweimal — wie eine
 // Zahl aussieht, hängt an der Sprache, und die kennt der Server.
-export default function IssueRow({ issue, selected, onToggle, showProject, trendLabel, t }) {
+export default function IssueRow({
+    issue,
+    selected,
+    onToggle,
+    showProject,
+    trendLabel,
+    deploys,
+    t,
+}) {
     return (
         <li className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/40">
             <Checkbox
@@ -47,6 +55,33 @@ export default function IssueRow({ issue, selected, onToggle, showProject, trend
                             {t('issues.merge.badge.label', { count: issue.mergedCount + 1 })}
                         </span>
                     )}
+
+                    {/* Von selbst wieder aufgegangen (S8): der Fehler galt
+                        schon einmal als behoben. Warnfarbe und nicht grau — er
+                        steht zwischen lauter offenen Einträgen, und genau das
+                        ist die Information, die ihn heraushebt. */}
+                    {issue.regressed && (
+                        <span
+                            title={t('issues.regression.badge.hint')}
+                            className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
+                        >
+                            {t('issues.regression.badge.label')}
+                        </span>
+                    )}
+
+                    {/* Liegt noch zur Prüfung (S7): niemand hat den Fehler
+                        bisher in die Hand genommen. Die Marke steht neben dem
+                        Titel und nicht in einer eigenen Spalte, weil sie meist
+                        fehlt — eine leere Spalte in jeder Zeile wäre der Preis
+                        für eine Auskunft, die nur wenige Zeilen tragen. */}
+                    {issue.forReview && (
+                        <span
+                            title={t('issues.assignment.for_review_hint')}
+                            className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
+                        >
+                            {t('issues.views.for_review')}
+                        </span>
+                    )}
                 </div>
 
                 <p className="mt-0.5 truncate text-sm text-gray-500 dark:text-gray-400">
@@ -78,8 +113,20 @@ export default function IssueRow({ issue, selected, onToggle, showProject, trend
                 <ReleaseTrail issue={issue} t={t} />
             </div>
 
+            {/* Wer zuständig ist (S7). Eine eigene, schmale Spalte und kein
+                Zusatz unter dem Titel: „wem gehört das?" beantwortet man beim
+                Überfliegen einer Liste spaltenweise, und der Platz ist derselbe,
+                ob die Zelle leer ist oder nicht. */}
+            <div className="hidden w-32 truncate text-sm text-gray-600 lg:block dark:text-gray-300">
+                {issue.assignee ? (
+                    <span title={issue.assignee.label}>{issue.assignee.label}</span>
+                ) : (
+                    <span className="text-gray-400 dark:text-gray-500">—</span>
+                )}
+            </div>
+
             <div className="hidden w-28 sm:block">
-                <Sparkline values={issue.series} label={trendLabel} />
+                <Sparkline values={issue.series} label={trendLabel} markers={deploys} />
             </div>
 
             <div className="w-16 text-right font-medium text-gray-900 dark:text-gray-100">

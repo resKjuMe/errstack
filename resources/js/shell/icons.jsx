@@ -219,6 +219,15 @@ const MENU_ICONS = {
             <path d="m14 9 3 3" />
         </>
     ),
+    // Betrieb: ein Herzschlag auf einem Monitor — der Zustand der eigenen
+    // Installation.
+    pulse: (
+        <>
+            <rect x="2" y="4" width="20" height="14" rx="2" />
+            <path d="M6 11h3l1.5-3 2 6 1.5-3h3" />
+            <path d="M9 21h6" />
+        </>
+    ),
     logout: (
         <>
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

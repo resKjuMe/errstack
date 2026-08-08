@@ -84,6 +84,12 @@ return [
         'manage' => 'Alarm-Regeln ansehen',
     ],
 
+    'alert_overview' => [
+        'title' => 'Alarm-Übersicht',
+        'description' => 'Was hat wann gefeuert: alle Regeln beider Arten mit Zustand, letzter Auslösung und Verlauf — dazu die Möglichkeit, eine Regel befristet stummzuschalten, ohne die Auswertung anzuhalten.',
+        'manage' => 'Verlauf ansehen',
+    ],
+
     'sampling' => [
         'title' => 'Stichproben',
         'description' => 'Von den Antwortzeiten wird nur ein einstellbarer Anteil gespeichert und in den Auswertungen hochgerechnet. Fehlermeldungen bleiben davon unberührt.',

@@ -48,6 +48,7 @@ export default function Issues({
 
     const showProject = filter.value.projects.length !== 1;
     const trendLabel = t('issues.trend.label', { period: series.periodLabel });
+    const deploys = series.markers ?? [];
 
     return (
         <>
@@ -151,6 +152,7 @@ export default function Issues({
                                     issue={issue}
                                     showProject={showProject}
                                     trendLabel={trendLabel}
+                                    deploys={deploys}
                                     t={t}
                                     formats={formats}
                                 />
@@ -168,7 +170,7 @@ export default function Issues({
 // Eine Zeile. Die Spaltenbreiten stimmen mit der Kopfzeile überein — sie stehen
 // an beiden Stellen, weil dies eine Liste aus Flex-Zeilen ist und keine Tabelle:
 // eine echte Tabelle bekäme die Zeile auf schmalen Geräten nicht umgebrochen.
-function Row({ issue, showProject, trendLabel, t, formats }) {
+function Row({ issue, showProject, trendLabel, deploys, t, formats }) {
     return (
         <li className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/40">
             <div className="min-w-0 flex-1">
@@ -199,7 +201,7 @@ function Row({ issue, showProject, trendLabel, t, formats }) {
             </div>
 
             <div className="hidden w-28 sm:block">
-                <Sparkline values={issue.series} label={trendLabel} />
+                <Sparkline values={issue.series} label={trendLabel} markers={deploys} />
             </div>
 
             {/* Die Summe groß, der Mittelwert je Vorfall klein darunter: erst

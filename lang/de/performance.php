@@ -98,6 +98,7 @@ return [
         'series' => [
             'title' => 'Verlauf (p95)',
             'point' => ':at · p95 :p95 aus :count Messungen',
+            'deploy' => ':at · p95 :p95 aus :count Messungen · ausgeliefert: :version nach :environment',
             'period_hour' => 'Ein Balken je Stunde.',
             'period_day' => 'Ein Balken je Tag.',
         ],
