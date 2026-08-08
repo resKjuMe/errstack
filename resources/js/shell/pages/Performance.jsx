@@ -27,6 +27,7 @@ export default function Performance({
     pagination,
     truncated,
     groupLimit,
+    trendsHref,
 }) {
     const { shell } = usePage().props;
     const { t, formats } = useTranslations();
@@ -105,6 +106,19 @@ export default function Performance({
             />
 
             <FilterBar filter={filter} />
+
+            {/* Der Pfeil in der Tabelle sagt „langsamer als im Vorzeitraum",
+                aber nicht, wann es passiert ist. Dafür gibt es die Trend-Liste
+                (PF7), und der Weg dorthin gehört an die Stelle, an der die
+                Frage entsteht. */}
+            <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+                <Link
+                    href={trendsHref}
+                    className="underline hover:text-gray-700 dark:hover:text-gray-200"
+                >
+                    {t('performance_trends.link')}
+                </Link>
+            </p>
 
             <Card>
                 <form onSubmit={submitSearch} className="mb-4 flex flex-wrap items-end gap-2">

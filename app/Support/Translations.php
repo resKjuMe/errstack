@@ -42,6 +42,7 @@ final class Translations
         'organizations',
         'performance',
         'performance_issues',
+        'performance_trends',
         'privacy',
         'profile',
         'profiling',
