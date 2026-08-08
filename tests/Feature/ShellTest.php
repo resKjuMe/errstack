@@ -66,20 +66,22 @@ class ShellTest extends TestCase
                 ->where('shell.links.5.active', false)
                 ->where('shell.links.6.label', 'Leistungsprobleme')
                 ->where('shell.links.6.active', false)
-                ->where('shell.links.7.label', 'Profile')
+                ->where('shell.links.7.label', 'Ladeerlebnis')
                 ->where('shell.links.7.active', false)
-                ->where('shell.links.8.label', 'Projekte')
+                ->where('shell.links.8.label', 'Profile')
                 ->where('shell.links.8.active', false)
-                ->where('shell.links.9.label', 'Organisationen')
+                ->where('shell.links.9.label', 'Projekte')
                 ->where('shell.links.9.active', false)
-                ->where('shell.links.10.label', 'Bausteine')
+                ->where('shell.links.10.label', 'Organisationen')
                 ->where('shell.links.10.active', false)
+                ->where('shell.links.11.label', 'Bausteine')
+                ->where('shell.links.11.active', false)
             );
 
         $this->get('/bausteine')
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('shell.links.0.active', false)
-                ->where('shell.links.10.active', true)
+                ->where('shell.links.11.active', true)
             );
 
         // Die Merkmal-Übersicht markiert sich selbst — über ihr Muster
@@ -109,13 +111,21 @@ class ShellTest extends TestCase
                 ->where('shell.links.6.active', true)
             );
 
+        // Das Ladeerlebnis ist ein dritter eigener Eintrag: es misst, was der
+        // Besucher erlebt, und nicht, was der Server braucht.
+        $this->get('/ladeerlebnis')
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('shell.links.5.active', false)
+                ->where('shell.links.7.active', true)
+            );
+
         // Die Profile liegen unterhalb von `/leistung`, gehören aber zu ihrem
         // eigenen Muster `profiling.*`: die Adresse allein würde hier zwei
         // Einträge gleichzeitig markieren.
         $this->get('/leistung/profile')
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('shell.links.5.active', false)
-                ->where('shell.links.7.active', true)
+                ->where('shell.links.8.active', true)
             );
 
         $this->get('/versionen')

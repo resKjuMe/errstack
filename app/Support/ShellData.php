@@ -139,6 +139,11 @@ final class ShellData
                 'activePattern' => 'performance.issues.*',
             ],
             [
+                'label' => __('nav.links.web_vitals'),
+                'route' => 'web-vitals.index',
+                'activePattern' => 'web-vitals.*',
+            ],
+            [
                 'label' => __('nav.links.profiling'),
                 'route' => 'profiling.index',
                 'activePattern' => 'profiling.*',
