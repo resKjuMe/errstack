@@ -28,6 +28,11 @@ final class IssueActionData
             'undo' => route('issues.actions.undo'),
             'resolveModes' => IssueResolveMode::options(),
             'ignoreModes' => IssueIgnoreMode::options(),
+            // Woher die Auswahlliste der Zuständigkeit ihre Vorschläge holt
+            // (S7). Als Adresse und nicht als fertige Liste — die Mitglieder
+            // einer Organisation wären in jeder Seitenlast ein Vielfaches der
+            // Seite selbst, für ein Feld, das die meisten Aufrufe nie anfassen.
+            'assignSuggestHref' => route('issues.assignment.suggest'),
             // Die Stufen zur Auswahl — mit „automatisch" an erster Stelle. Es
             // ist keine vierte Stufe, sondern der Weg zurück: wer von Hand
             // eingeordnet hat, muss die Ableitung wieder zulassen können, und

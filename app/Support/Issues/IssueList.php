@@ -83,6 +83,11 @@ final class IssueList
             // in" je Zeile eine Abfrage, also fünfzig für eine Seite.
             'firstRelease:id,version',
             'lastRelease:id,version',
+            // Wer zuständig ist (S7) — mitgeladen aus demselben Grund: die
+            // Zeile zeigt den Namen, und ohne das Vorausladen wäre es je Zeile
+            // eine Abfrage, also fünfzig für eine Seite.
+            'assignedUser:id,name,email',
+            'assignedTeam:id,name',
         ])
             // Die Zahl der von Hand zusammengeführten Untergruppen (S9) — als
             // Unterabfrage in derselben Anweisung. Sie mitzuladen wäre je Zeile
@@ -169,7 +174,41 @@ final class IssueList
             // anders als einer mit einem, und der Unterschied ist nichts, was
             // man erst auf der Detailseite erfahren sollte.
             'mergedCount' => $issue->merged_sources_count ?? 0,
+            // Wer zuständig ist und ob der Eintrag noch zur Prüfung liegt (S7).
+            // Beides steht in der Zeile, weil beides eine Aussage über die
+            // **Arbeit** an diesem Fehler ist — und die Fehlerliste ist eine
+            // Arbeitsliste.
+            'assignee' => self::assignee($issue),
+            'forReview' => $issue->for_review_at !== null,
             'series' => $series,
+        ];
+    }
+
+    /**
+     * Der Zuständige einer Zeile — `null`, solange sich niemand kümmert.
+     *
+     * `term` fährt mit, damit ein Klick auf den Namen die Liste auf ihn
+     * einschränken kann, ohne dass die Oberfläche wüsste, wie man einen
+     * Zuständigen benennt ({@see IssueAssignee::term()}).
+     *
+     * @return array{label: string, term: string, kind: string}|null
+     */
+    private static function assignee(Issue $issue): ?array
+    {
+        $assignee = match (true) {
+            $issue->assignedTeam !== null => IssueAssignee::forTeam($issue->assignedTeam),
+            $issue->assignedUser !== null => IssueAssignee::forUser($issue->assignedUser),
+            default => null,
+        };
+
+        if ($assignee === null) {
+            return null;
+        }
+
+        return [
+            'label' => $assignee->label(),
+            'term' => $assignee->term(),
+            'kind' => $assignee->kind(),
         ];
     }
 

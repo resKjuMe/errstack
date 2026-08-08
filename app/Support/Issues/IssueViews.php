@@ -4,6 +4,7 @@ namespace App\Support\Issues;
 
 use App\Enums\IssueSort;
 use App\Http\Requests\IssueListRequest;
+use App\Models\User;
 use App\Support\Filters\GlobalFilter;
 use App\Support\Search\SearchExpression;
 
@@ -27,9 +28,10 @@ use App\Support\Search\SearchExpression;
  * das Ergebnis unter eigenem Namen.
  *
  * **Was die Sprache kennt, die Daten aber noch nicht, steht trotzdem hier.**
- * „Zur Prüfung" (S7), „Wieder aufgetreten" (S8) und „Mir zugewiesen" (S7)
- * gehören zur Suchsprache, aber die Daten dazu entstehen erst in einer späteren
- * Aufgabe ({@see IssueFields}). Sie zu verschweigen, bis es sie gibt, wäre die
+ * „Wieder aufgetreten" (S8) gehört zur Suchsprache, aber die Daten dazu
+ * entstehen erst in einer späteren Aufgabe ({@see IssueFields}); „Zur Prüfung"
+ * und „Mir zugewiesen" sind seit S7 vollständig beantwortbar. Eine Ansicht zu
+ * verschweigen, bis es ihre Daten gibt, wäre die
  * schlechtere Wahl: die Ansichten sind der Ort, an dem man sie erwartet, und
  * die Liste sagt ohnehin ausdrücklich, welche Begriffe sie noch nicht auswerten
  * konnte. Deshalb trägt jede Ansicht hier mit, ob sie heute vollständig
@@ -66,7 +68,7 @@ final class IssueViews
      *
      * @return list<array{key: string, name: string, query: string, sort: string, href: string, available: bool}>
      */
-    public static function forFilter(GlobalFilter $filter): array
+    public static function forFilter(GlobalFilter $filter, ?User $viewer = null): array
     {
         return array_map(
             static fn (array $view): array => [
@@ -75,7 +77,7 @@ final class IssueViews
                 'query' => $view['query'],
                 'sort' => $view['sort']->value,
                 'href' => self::href($filter, $view['query'], $view['sort']),
-                'available' => self::isAvailable($view['query'], $filter->timezone),
+                'available' => self::isAvailable($view['query'], $filter, $viewer),
             ],
             self::VIEWS,
         );
@@ -128,11 +130,15 @@ final class IssueViews
      *
      * Ein Ausdruck, der gar nicht aufgeht, gilt hier ebenfalls als „nicht
      * verfügbar": beides führt zu derselben Auskunft, nämlich dass die Liste
-     * nicht das zeigt, was draufsteht.
+     * nicht das zeigt, was draufsteht. Genau das trifft `assigned:me` ohne
+     * angemeldeten Betrachter — dann ist „mir" niemand.
      */
-    private static function isAvailable(string $query, string $timezone): bool
+    private static function isAvailable(string $query, GlobalFilter $filter, ?User $viewer): bool
     {
-        $expression = SearchExpression::compile($query, new IssueFields($timezone));
+        $expression = SearchExpression::compile(
+            $query,
+            new IssueFields($filter->timezone, $filter->organization, $viewer),
+        );
 
         return $expression->error === null && $expression->unavailable === [];
     }

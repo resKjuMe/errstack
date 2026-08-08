@@ -20,7 +20,17 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Die Zustandsaktionen an Fehler-Einträgen: erledigen, wieder öffnen,
- * stummschalten, merken, abonnieren, löschen.
+ * stummschalten, zuweisen, merken, abonnieren, löschen.
+ *
+ * **Die Prüfliste (S7) wird hier geführt und nirgends sonst.** Sie ist keine
+ * eigene Tabelle und kein eigener Zustand, sondern ein Zeitpunkt am Eintrag
+ * (`for_review_at`): gesetzt, wenn er entsteht ({@see Issue::forGroup()}) oder
+ * von selbst zurückkehrt ({@see expireIgnore()}), geräumt, sobald jemand
+ * entschieden hat — zuweisen, erledigen, stummschalten. Ein eigener Zustand
+ * daneben wäre die naheliegende Alternative und die falsche: „zur Prüfung" ist
+ * keine Auskunft darüber, ob der Fehler behoben ist, sondern darüber, ob jemand
+ * hingesehen hat. Beides in eine Spalte zu legen hieße, das eine zu verlieren,
+ * sobald das andere gesetzt wird.
  *
  * **Jede Aktion nimmt eine Abfrage entgegen, nicht einen Eintrag.** Das ist die
  * eine Entscheidung, aus der sich der Rest dieser Klasse ergibt: „diesen einen"
@@ -96,6 +106,10 @@ final class IssueActions
                 // Fehler zurück und würde wieder geöffnet, gälte plötzlich eine
                 // Bedingung, die niemand mehr auf dem Schirm hat.
                 ...self::clearedIgnore(),
+                // Erledigen ist die zweite Art, einen Eintrag zu prüfen: „das
+                // ist behoben" beantwortet die Frage der Prüfliste genauso wie
+                // eine Zuweisung.
+                'for_review_at' => null,
                 'updated_at' => $now,
             ]),
             IssueActivityType::Resolved,
@@ -165,6 +179,10 @@ final class IssueActions
                 'resolved_by_id' => null,
                 'resolved_in_release_id' => null,
                 'resolved_in_next_release' => false,
+                // Und die dritte: „interessiert mich nicht" ist ebenfalls eine
+                // Entscheidung, und danach hat die Prüfliste nichts mehr zu
+                // fragen.
+                'for_review_at' => null,
                 'updated_at' => $now,
             ]),
             IssueActivityType::Ignored,
@@ -174,6 +192,48 @@ final class IssueActions
                 'window' => $condition['window'],
                 'users' => $condition['users'],
             ], static fn (mixed $value): bool => $value !== null),
+        );
+    }
+
+    /**
+     * Zuweisen und Zuständigkeit aufheben (S7).
+     *
+     * **Eine Aktion für beides**, weil es dieselbe Anweisung ist: `null` räumt
+     * beide Spalten. Zwei Methoden wären zwei Stellen mit demselben Vermerk und
+     * derselben Räumung der Prüfliste — und die zweite bekäme die nächste
+     * Änderung erfahrungsgemäß nicht mit.
+     *
+     * **Zuweisen nimmt den Eintrag aus der Prüfliste**, denn genau das heißt
+     * „geprüft": jemand hat hingesehen und entschieden, wer sich kümmert. Das
+     * Aufheben stellt ihn **nicht** zurück — wer eine Zuständigkeit aufhebt, hat
+     * den Fehler gesehen, und ihn erneut zur Prüfung zu legen hieße, die eigene
+     * Entscheidung zu vergessen.
+     *
+     * Die Benachrichtigung verschickt nicht diese Methode: sie kennt die
+     * betroffenen Einträge, aber nicht, ob es einer oder zwölftausend werden —
+     * und beides ergibt eine andere Nachricht. Der Aufrufer entscheidet das mit
+     * dem Ergebnis in der Hand ({@see IssueAssignmentNotifier}).
+     *
+     * @param  Builder<Issue>  $query
+     */
+    public function assign(Builder $query, ?IssueAssignee $assignee): IssueActionResult
+    {
+        $now = CarbonImmutable::now();
+        $columns = IssueAssignee::columnsFor($assignee);
+
+        return $this->apply(
+            $query,
+            fn (array $ids): int => Issue::query()->whereIn('id', $ids)->update([
+                ...$columns,
+                'assigned_at' => $assignee === null ? null : $now,
+                'assigned_by_id' => $assignee === null ? null : $this->actor?->id,
+                // Zugewiesen heißt geprüft. Beim Aufheben bleibt die Prüfliste
+                // unberührt — sie steht ohnehin schon auf `null`.
+                ...($assignee === null ? [] : ['for_review_at' => null]),
+                'updated_at' => $now,
+            ]),
+            $assignee === null ? IssueActivityType::Unassigned : IssueActivityType::Assigned,
+            $assignee === null ? null : ['assignee' => $assignee->label(), 'kind' => $assignee->kind()],
         );
     }
 
@@ -353,6 +413,12 @@ final class IssueActions
             ->update([
                 'status' => IssueStatus::Unresolved,
                 ...self::clearedIgnore(),
+                // Der Eintrag meldet sich von selbst zurück, und niemand hat es
+                // entschieden — also gehört er wieder auf die Prüfliste. Das ist
+                // dieselbe Stelle, an der die Rückfallerkennung (S8) einen
+                // wiedergekehrten Fehler eintragen wird: „wieder da und niemand
+                // zuständig" ist beide Male die Aussage.
+                'for_review_at' => $now,
                 'updated_at' => $now,
             ]);
 

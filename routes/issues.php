@@ -21,6 +21,7 @@
 */
 
 use App\Http\Controllers\IssueActionController;
+use App\Http\Controllers\IssueAssignmentController;
 use App\Http\Controllers\IssueCommentController;
 use App\Http\Controllers\IssueController;
 use App\Http\Controllers\IssueDetailController;
@@ -39,6 +40,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // und „suche" wäre dort eine Fehlerkennung.
     Route::get('fehler/suche/vorschlaege', [IssueSearchController::class, 'suggest'])
         ->name('issues.search.suggest');
+
+    // Wem sich ein Fehler zuweisen lässt (S7). Steht aus demselben Grund wie
+    // die Suchvorschläge **vor** den Fehler-Routen und liegt bewusst nicht
+    // unter einem einzelnen Fehler: die Auswahlliste ist bei einer
+    // Sammelaktion über 12.480 Einträge dieselbe, und eine Adresse
+    // `fehler/{issue}/zustaendigkeit/vorschlaege` müsste dafür eine Kennung
+    // erfinden. Welche Organisation gemeint ist, sagt die Filterleiste.
+    Route::get('fehler/zustaendigkeit/vorschlaege', IssueAssignmentController::class)
+        ->name('issues.assignment.suggest');
 
     // Die gespeicherten Suchen (S5). Sie stehen aus demselben Grund wie die
     // Vorschläge **vor** den Fehler-Routen: `fehler/{issue}` würde „suchen"

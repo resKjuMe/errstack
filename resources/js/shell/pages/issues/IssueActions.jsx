@@ -7,6 +7,7 @@ import {
     SelectInput,
     TextInput,
 } from '../../components/Form.jsx';
+import AssigneePicker from './AssigneePicker.jsx';
 
 // Die Aktionsleiste eines Fehlers — dieselbe in der Liste und auf der
 // Detailseite.
@@ -23,7 +24,8 @@ import {
 // Adresszeile und werden von dort übernommen; sie im Formular nachzubauen wäre
 // eine zweite Wahrheit über die aktuelle Ansicht.
 export default function IssueActions({ actions, target, status, state = {}, compact = false, t }) {
-    // Welches Untermenü offen ist: `resolve`, `ignore`, `priority` oder nichts.
+    // Welches Untermenü offen ist: `resolve`, `ignore`, `assign`, `priority`
+    // oder nichts.
     // Die drei sind die einzigen Aktionen mit einer Rückfrage — alle übrigen
     // sind ein Klick.
     const [open, setOpen] = useState(null);
@@ -71,6 +73,17 @@ export default function IssueActions({ actions, target, status, state = {}, comp
                     {t('issues.actions.ignore')}
                 </SecondaryButton>
             )}
+
+            {/* Die Zuständigkeit (S7). Die Schaltfläche trägt den jetzigen
+                Zuständigen als Beschriftung — „Zuweisen" allein ließe offen, ob
+                schon jemand zuständig ist, und genau das ist die Frage, wegen
+                der man hinschaut. In der Sammelaktion gibt es keinen jetzigen
+                Zuständigen: die Auswahl kann fünfzig verschiedene haben. */}
+            <SecondaryButton type="button" disabled={busy} onClick={() => setOpen('assign')}>
+                {state.assignee
+                    ? t('issues.assignment.assigned_to', { name: state.assignee.label })
+                    : t('issues.assignment.action')}
+            </SecondaryButton>
 
             {/* Die Wichtigkeit von Hand (S11). Sie steht bei den Aktionen und
                 nicht im Kopf der Detailseite, weil sie dieselbe Frage für einen
@@ -150,6 +163,20 @@ export default function IssueActions({ actions, target, status, state = {}, comp
                     actions={actions}
                     onCancel={() => setOpen(null)}
                     onApply={(payload) => submit({ action: 'ignore', ...payload })}
+                    t={t}
+                />
+            )}
+
+            {open === 'assign' && (
+                <AssigneePicker
+                    suggestHref={actions.assignSuggestHref}
+                    current={state.assignee?.term ?? null}
+                    onCancel={() => setOpen(null)}
+                    // `null` heißt „niemand" — der Server liest daraus dieselbe
+                    // Aktion mit leerem Zuständigen und hebt die Zuständigkeit
+                    // auf. Eine zweite Aktion dafür wäre ein zweiter Name für
+                    // denselben Vorgang.
+                    onApply={(assignee) => submit({ action: 'assign', assignee })}
                     t={t}
                 />
             )}

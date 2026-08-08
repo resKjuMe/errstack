@@ -21,6 +21,7 @@ return [
 
     'columns' => [
         'issue' => 'Fehler',
+        'assignee' => 'Zuständig',
         'trend' => 'Verlauf',
         'events' => 'Häufigkeit',
         'users' => 'Nutzer',
@@ -226,6 +227,49 @@ return [
 
     ],
 
+    // Die Zuständigkeit und die Prüfliste (S7):
+    // App\Support\Issues\IssueAssignee, IssueAssignmentNotifier,
+    // resources/js/shell/pages/issues/AssigneePicker.jsx.
+    'assignment' => [
+
+        'action' => 'Zuweisen',
+        'assigned_to' => 'Zuständig: :name',
+        'search' => 'Person oder Team suchen',
+        'nobody' => 'Niemand',
+        'team' => 'Team',
+        'no_match' => 'Kein Konto und kein Team mit diesem Namen.',
+
+        'state' => 'Zuständig ist :name, seit :at.',
+        'state_by' => 'Zuständig ist :name, seit :at von :actor zugewiesen.',
+
+        'for_review_hint' => 'Neu oder wieder aufgetreten — noch hat sich niemand '
+            .'darum gekümmert.',
+        'for_review_state' => 'Dieser Fehler liegt zur Prüfung: er ist neu oder wieder '
+            .'aufgetreten, und niemand ist zuständig. Er verlässt die Prüfliste durch '
+            .'Zuweisen, Erledigen oder Stummschalten.',
+
+        'flash' => [
+            'assigned' => ':count Fehler an :assignee zugewiesen.',
+            'unassigned' => 'Zuständigkeit für :count Fehler aufgehoben.',
+        ],
+
+        'validation' => [
+            'unknown' => 'Kein Konto und kein Team dieser Organisation trägt diesen Namen.',
+        ],
+
+        // Was die zugewiesene Person zu lesen bekommt. Bei genau einem Fehler
+        // steht sein Titel im Rumpf, bei mehreren ihre Anzahl — siehe
+        // App\Support\Issues\IssueAssignmentNotifier.
+        'notification' => [
+            'title' => ':actor hat dir einen Fehler zugewiesen',
+            'title_team' => ':actor hat :assignee einen Fehler zugewiesen',
+            'many' => ':count Fehler auf einmal.',
+            'context_project' => 'Projekt',
+            'context_culprit' => 'Fehlerstelle',
+        ],
+
+    ],
+
     // Die automatisch ermittelte Wichtigkeit (S11,
     // App\Support\Issues\IssuePriorityScore). Die Beiträge der Ableitung werden
     // erst beim Lesen zu Wörtern — im Vermerk stehen Schlüssel und Zahl.
@@ -270,6 +314,8 @@ return [
         'unresolved' => 'Wieder geöffnet',
         'ignored' => 'Stummgeschaltet (:condition)',
         'ignore_expired' => 'Stummschaltung beendet — die Bedingung ist eingetreten',
+        'assigned' => 'Zugewiesen an :assignee',
+        'unassigned' => 'Zuständigkeit aufgehoben',
         'deployed' => 'Ausgeliefert mit :release nach :environment',
         'priority' => 'Wichtigkeit auf :priority gesetzt',
         'priority_auto' => 'Wichtigkeit wird wieder automatisch ermittelt',

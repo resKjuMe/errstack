@@ -356,6 +356,8 @@ return [
         'unresolved' => 'Reopened',
         'ignored' => 'Ignored',
         'ignore_expired' => 'Ignoring ended',
+        'assigned' => 'Assigned',
+        'unassigned' => 'Assignment removed',
         'deployed' => 'Deployed',
         'priority' => 'Priority changed',
         'escalated' => 'Escalated',

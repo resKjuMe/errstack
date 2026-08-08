@@ -74,7 +74,7 @@ final class SavedSearchData
         }
 
         return [
-            'views' => IssueViews::forFilter($filter),
+            'views' => IssueViews::forFilter($filter, $viewer),
             'items' => array_map(
                 static fn (SavedSearch $search): array => self::item($search, $filter, $viewer, $default),
                 $searches,
