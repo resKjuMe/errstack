@@ -108,8 +108,8 @@ class OwnershipRuleTest extends TestCase
 
         $rule = $project->ownershipRules()->orderByDesc('position')->first();
 
-        $this->assertSame('src/billing/*', $rule?->pattern);
-        $this->assertSame(1, $rule?->position);
+        $this->assertSame('src/billing/*', $rule->pattern);
+        $this->assertSame(1, $rule->position);
     }
 
     public function test_a_tag_rule_without_its_key_is_rejected(): void

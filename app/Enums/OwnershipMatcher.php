@@ -84,13 +84,13 @@ enum OwnershipMatcher: string
      */
     public static function options(): array
     {
-        return array_values(array_map(
+        return array_map(
             fn (self $matcher): array => [
                 'value' => $matcher->value,
                 'label' => $matcher->label(),
                 'needsKey' => $matcher->needsKey(),
             ],
             self::cases(),
-        ));
+        );
     }
 }

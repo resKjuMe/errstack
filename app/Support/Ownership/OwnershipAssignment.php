@@ -88,10 +88,6 @@ final class OwnershipAssignment
         $found = [];
 
         foreach ($rule->owners as $term) {
-            if (! is_string($term)) {
-                continue;
-            }
-
             // Ohne Betrachter: `me` bezeichnet in einer Regel niemanden — wer
             // eine Regel schreibt, ist nicht der, für den sie gilt. Das
             // Formular weist den Text schon zurück; hier ist es die zweite

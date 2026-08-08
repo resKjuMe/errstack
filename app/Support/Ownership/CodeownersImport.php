@@ -234,7 +234,7 @@ final class CodeownersImport
         $numbered = [];
 
         foreach (array_slice($lines, 0, self::MAX_LINES) as $index => $line) {
-            $numbered[$index + 1] = is_string($line) ? $line : '';
+            $numbered[$index + 1] = $line;
         }
 
         return $numbered;
