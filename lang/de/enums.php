@@ -148,6 +148,7 @@ return [
         'sampled' => 'nicht in die Stichprobe gefallen',
         'scrubbed' => 'aus Datenschutzgründen nicht gespeichert',
         'filtered' => 'vom Eingangsfilter aussortiert',
+        'discarded' => 'gelöschter Fehler, künftig verworfen',
         'orphaned' => 'ohne zugehörige Meldung',
     ],
 
@@ -283,6 +284,32 @@ return [
         'high' => 'Hoch',
         'medium' => 'Mittel',
         'low' => 'Niedrig',
+    ],
+
+    'issue_resolve_mode' => [
+        'now' => 'Sofort',
+        'current_release' => 'In dieser Version',
+        'next_release' => 'Mit der nächsten Auslieferung',
+    ],
+
+    'issue_ignore_mode' => [
+        'forever' => 'Dauerhaft',
+        'until_recurrence' => 'Bis er wieder auftritt',
+        'until_count' => 'Bis zu einer Anzahl Ereignisse',
+        'until_users' => 'Bis zu einer Anzahl Betroffener',
+    ],
+
+    'issue_activity' => [
+        'resolved' => 'Erledigt',
+        'unresolved' => 'Wieder geöffnet',
+        'ignored' => 'Stummgeschaltet',
+        'ignore_expired' => 'Stummschaltung beendet',
+        'bookmarked' => 'Gemerkt',
+        'unbookmarked' => 'Vormerkung aufgehoben',
+        'subscribed' => 'Abonniert',
+        'unsubscribed' => 'Abbestellt',
+        'discarded' => 'Gelöscht und verworfen',
+        'deleted' => 'Gelöscht',
     ],
 
     'count_period' => [

@@ -2,12 +2,14 @@
 
 namespace App\Support\Ingest\Processing\Steps;
 
+use App\Enums\IssueStatus;
 use App\Events\IssueCreated;
 use App\Models\Event;
 use App\Models\EventGroup;
 use App\Models\Issue;
 use App\Support\Ingest\Processing\ProcessingContext;
 use App\Support\Ingest\Processing\ProcessingStep;
+use App\Support\Issues\IssueActions;
 use Closure;
 
 /**
@@ -63,7 +65,24 @@ final class AggregateIssue implements ProcessingStep
         // die Marke zurück.
         $isNew = $issue->wasRecentlyCreated;
 
-        $issue->record($record);
+        $counted = $issue->record($record);
+
+        // Läuft eine Stummschaltung mit Bedingung ab? Die Frage stellt sich nur
+        // für stummgeschaltete Einträge und nur, wenn dieses Ereignis auch
+        // gezählt wurde: eine wiederholte Zustellung darf keine Schwelle reißen,
+        // die es nie gegeben hat.
+        //
+        // Die Zähler werden dafür **frisch** geholt — `record()` schreibt sie in
+        // der Datenbank fort, die Instanz im Speicher ist danach veraltet. Die
+        // zusätzliche Abfrage trifft nur stummgeschaltete Einträge; für alle
+        // übrigen kostet dieser Block einen Vergleich.
+        if ($counted && $issue->status === IssueStatus::Ignored) {
+            $current = $issue->fresh();
+
+            if ($current !== null) {
+                IssueActions::expireIgnore($current, $current->times_seen, $current->users_seen);
+            }
+        }
 
         // Die Fehlerliste (S1) hört mit und trägt einen neuen Eintrag nach, ohne
         // dass jemand die Seite neu lädt. Gemeldet wird nur das **erste**

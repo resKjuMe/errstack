@@ -148,6 +148,7 @@ return [
         'sampled' => 'not part of the sample',
         'scrubbed' => 'not stored for privacy reasons',
         'filtered' => 'discarded by an inbound filter',
+        'discarded' => 'deleted issue, discarded from now on',
         'orphaned' => 'no matching event',
     ],
 
@@ -283,6 +284,32 @@ return [
         'high' => 'High',
         'medium' => 'Medium',
         'low' => 'Low',
+    ],
+
+    'issue_resolve_mode' => [
+        'now' => 'Immediately',
+        'current_release' => 'In this release',
+        'next_release' => 'With the next release',
+    ],
+
+    'issue_ignore_mode' => [
+        'forever' => 'Permanently',
+        'until_recurrence' => 'Until it happens again',
+        'until_count' => 'Until a number of events',
+        'until_users' => 'Until a number of affected users',
+    ],
+
+    'issue_activity' => [
+        'resolved' => 'Resolved',
+        'unresolved' => 'Reopened',
+        'ignored' => 'Ignored',
+        'ignore_expired' => 'Ignoring ended',
+        'bookmarked' => 'Bookmarked',
+        'unbookmarked' => 'Bookmark removed',
+        'subscribed' => 'Subscribed',
+        'unsubscribed' => 'Unsubscribed',
+        'discarded' => 'Deleted and discarded',
+        'deleted' => 'Deleted',
     ],
 
     'count_period' => [
