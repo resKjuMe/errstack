@@ -76,9 +76,19 @@ final class IssueList
             // in" je Zeile eine Abfrage, also fünfzig für eine Seite.
             'firstRelease:id,version',
             'lastRelease:id,version',
-        ]);
+        ])
+            // Die Zahl der von Hand zusammengeführten Untergruppen (S9) — als
+            // Unterabfrage in derselben Anweisung. Sie mitzuladen wäre je Zeile
+            // eine Abfrage, und die Untergruppen selbst braucht die Liste nicht:
+            // sie zeigt nur, dass es welche gibt.
+            ->withCount('mergedSources');
 
         $filter->overlapping($query);
+
+        // Untergruppen stehen nicht für sich: ihre Zahlen sind im Kopf
+        // enthalten, und daneben ein zweites Mal einzeln zu erscheinen wäre
+        // genau die Doppelzählung, gegen die jemand sie zusammengeführt hat (S9).
+        $query->standalone();
 
         if ($status !== null) {
             $query->where('status', $status);
@@ -142,6 +152,12 @@ final class IssueList
             // Der Weg zu den Merkmalen dieses Fehlers — welche Browser, welche
             // Fassungen, welche Server ihn betrifft (S3).
             'tagsHref' => route('issues.tags.index', $issue),
+            // Wie viele Untergruppen von Hand zusammengeführt wurden (S9). Die
+            // Zahl steht in der Zeile, weil die Zahlen daneben sonst
+            // unerklärlich wären: ein Eintrag mit drei Fingerabdrücken zählt
+            // anders als einer mit einem, und der Unterschied ist nichts, was
+            // man erst auf der Detailseite erfahren sollte.
+            'mergedCount' => $issue->merged_sources_count ?? 0,
             'series' => $series,
         ];
     }

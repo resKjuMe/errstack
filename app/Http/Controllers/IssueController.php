@@ -47,6 +47,10 @@ class IssueController extends Controller
             // Projektauswahl. Sortierung, Zustand und Seite bleiben draußen —
             // dort gibt es sie nicht.
             'tagsHref' => route('tags.index', $filter->formValues()),
+            // Wohin die Auswahl geht, wenn jemand mehrere Fehler von Hand
+            // zusammenführt (S9). Welcher Eintrag dabei der Kopf wird, steht
+            // nicht in der Adresse — das entscheidet der Server aus der Auswahl.
+            'mergeHref' => route('issues.merge.store'),
             // Die Gesamtzahl auch geschrieben: „12.480" gegen „12480" — wie eine
             // Zahl aussieht, entscheidet die Sprache, und die kennt der Server.
             'totalLabel' => Formats::number($issues->total()),

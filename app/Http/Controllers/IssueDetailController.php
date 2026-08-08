@@ -34,7 +34,11 @@ class IssueDetailController extends Controller
         // Der Kopf verlinkt das Projekt, und die Adresse dorthin führt über die
         // Organisation. Ohne das Nachladen wären das zwei Abfragen mitten in der
         // Darstellung.
-        $issue->loadMissing('project.organization');
+        // Dazu, woraus der Eintrag besteht: die von Hand beigetretenen
+        // Untergruppen samt ihren Fingerabdrücken und — bei einem beigetretenen
+        // Eintrag — der Kopf, unter dem er jetzt gezählt wird (S9). Mitgeladen,
+        // weil es sonst je Untergruppe eine Abfrage wäre.
+        $issue->loadMissing(['project.organization', 'mergedSources.groups', 'mergedInto']);
 
         $event = $this->resolve($issue, $event);
 

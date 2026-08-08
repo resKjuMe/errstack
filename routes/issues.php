@@ -22,6 +22,7 @@
 
 use App\Http\Controllers\IssueController;
 use App\Http\Controllers\IssueDetailController;
+use App\Http\Controllers\IssueMergeController;
 use App\Http\Controllers\IssueTagController;
 use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Fehler" verlinkbar, ohne dass der Link auf ein Ereignis zeigt, das morgen
     // nicht mehr das neueste ist — und ein Link auf **diese** eine Meldung ist
     // trotzdem möglich.
+    // Das Zusammenführen steht **über** der Detailseite und nicht unter einem
+    // Eintrag: welcher Eintrag der Kopf wird, entscheidet sich erst beim
+    // Zusammenführen — eine Adresse `fehler/{issue}/zusammenfuehren` würde das
+    // Ergebnis vorwegnehmen. Das Auftrennen dagegen meint genau eine
+    // Untergruppe und steht deshalb unter ihr.
+    Route::post('fehler/zusammenfuehren', [IssueMergeController::class, 'store'])
+        ->name('issues.merge.store');
+    Route::delete('fehler/{issue}/zusammenfuehrung', [IssueMergeController::class, 'destroy'])
+        ->name('issues.merge.destroy');
+
     Route::get('fehler/{issue}', [IssueDetailController::class, 'show'])->name('issues.show');
     Route::get('fehler/{issue}/ereignisse/{event}', [IssueDetailController::class, 'show'])
         ->name('issues.events.show');
