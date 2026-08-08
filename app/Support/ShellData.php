@@ -121,6 +121,11 @@ final class ShellData
                 'activePattern' => 'performance.*',
             ],
             [
+                'label' => __('nav.links.profiling'),
+                'route' => 'profiling.index',
+                'activePattern' => 'profiling.*',
+            ],
+            [
                 'label' => __('nav.links.projects'),
                 'route' => 'projects.index',
                 'activePattern' => 'projects.*',
