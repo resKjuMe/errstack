@@ -56,9 +56,53 @@ enum IngestType: string
     /** Die Beschreibung einer betroffenen Person zu einem Fehler. */
     case UserReport = 'user_report';
 
+    /**
+     * Dasselbe auf dem neueren Weg: heutige SDKs schicken eine Rückmeldung als
+     * eigenes Element `feedback`, dessen Nutzdaten wie eine Meldung aussehen und
+     * den Text unter `contexts.feedback` tragen. Zwei Typen für eine Sache, weil
+     * beide Formen im Umlauf sind — auseinandergehalten werden sie nur beim
+     * Lesen der Nutzdaten, danach ist es dieselbe Rückmeldung.
+     */
+    case Feedback = 'feedback';
+
     public function label(): string
     {
         return __('enums.ingest_type.'.$this->value);
+    }
+
+    /**
+     * Ist das die Rückmeldung einer betroffenen Person (M6)?
+     *
+     * Die Frage stellen zwei Stellen: der Schritt, der sie ablegt, und das
+     * Schwärzen, das sie in Ruhe lassen muss. Beide dieselbe Antwort geben zu
+     * lassen ist billiger, als die Aufzählung an zwei Stellen zu pflegen — beim
+     * nächsten Typ wird sonst eine der beiden vergessen.
+     */
+    public function isUserFeedback(): bool
+    {
+        return $this === self::UserReport || $this === self::Feedback;
+    }
+
+    /**
+     * Zählt eine Meldung dieser Art gegen das Ereignis-Kontingent des Projekts?
+     *
+     * Die Abrechnung selbst ist O1 und gibt es noch nicht — die Zusage aber
+     * schon, und sie steht hier statt in einem Kommentar, damit sie prüfbar ist:
+     * eine Rückmeldung ist die Beschreibung eines Menschen zu einem Ereignis,
+     * das bereits gezählt wurde. Sie ein zweites Mal zu zählen hieße, das
+     * Nachfragen bei den Betroffenen zu bepreisen.
+     *
+     * Ebenso wenig zählen die Buchhaltungs-Elemente: ein Lebenszeichen, eine
+     * Verworfen-Meldung des SDK und ein Anhang sind keine Ereignisse, sondern
+     * Angaben über welche.
+     */
+    public function countsTowardEventQuota(): bool
+    {
+        return match ($this) {
+            self::Event, self::Transaction, self::Session, self::Sessions,
+            self::ReplayEvent, self::ReplayRecording, self::Profile => true,
+            default => false,
+        };
     }
 
     /**

@@ -13,6 +13,7 @@ return [
         'dashboard' => 'Übersicht',
         'issues' => 'Fehler',
         'tags' => 'Merkmale',
+        'feedback' => 'Rückmeldungen',
         'releases' => 'Versionen',
         'performance' => 'Leistung',
         'projects' => 'Projekte',

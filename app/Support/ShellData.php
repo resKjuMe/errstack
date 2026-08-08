@@ -111,6 +111,11 @@ final class ShellData
                 'activePattern' => 'tags.*',
             ],
             [
+                'label' => __('nav.links.feedback'),
+                'route' => 'feedback.index',
+                'activePattern' => 'feedback.*',
+            ],
+            [
                 'label' => __('nav.links.releases'),
                 'route' => 'releases.index',
                 'activePattern' => 'releases.*',

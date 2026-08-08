@@ -190,6 +190,19 @@ return [
         'profile' => 'Profile',
         'client_report' => 'Client report of the SDK',
         'user_report' => 'User feedback',
+        'feedback' => 'User feedback (new form)',
+    ],
+
+    'user_report_status' => [
+        'new' => 'new',
+        'in_progress' => 'in progress',
+        'done' => 'done',
+        'spam' => 'spam',
+    ],
+
+    'user_report_source' => [
+        'crash_report' => 'about an event',
+        'standalone' => 'standalone',
     ],
 
     'processing_state' => [

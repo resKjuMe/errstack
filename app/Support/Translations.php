@@ -28,6 +28,7 @@ final class Translations
         'components',
         'crons',
         'dashboard',
+        'feedback',
         'filters',
         'grouping',
         'inbound',
