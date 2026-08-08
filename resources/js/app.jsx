@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import AppShell from './shell/AppShell.jsx';
 import Dashboard from './shell/pages/Dashboard.jsx';
+import Performance from './shell/pages/Performance.jsx';
 import Components from './shell/pages/Components.jsx';
 import Profile from './shell/pages/Profile.jsx';
 import OrganizationsIndex from './shell/pages/organizations/Index.jsx';
@@ -20,6 +21,7 @@ import ProjectsShow from './shell/pages/projects/Show.jsx';
 import ProjectsKeys from './shell/pages/projects/Keys.jsx';
 import ProjectsCrons from './shell/pages/projects/Crons.jsx';
 import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
+import ProjectsFilters from './shell/pages/projects/Filters.jsx';
 import ProjectsSampling from './shell/pages/projects/Sampling.jsx';
 import PrivacyIndex from './shell/pages/privacy/Index.jsx';
 import InvitationsAccept from './shell/pages/invitations/Accept.jsx';
@@ -37,6 +39,7 @@ import VerifyEmail from './shell/pages/auth/VerifyEmail.jsx';
 // GuestShell ihr eigenes mit.
 const pages = {
     Dashboard,
+    Performance,
     Components,
     Profile,
     'organizations/Index': OrganizationsIndex,
@@ -56,6 +59,7 @@ const pages = {
     'projects/Keys': ProjectsKeys,
     'projects/Crons': ProjectsCrons,
     'projects/Grouping': ProjectsGrouping,
+    'projects/Filters': ProjectsFilters,
     'projects/Sampling': ProjectsSampling,
     // Eine Seite für beide Ebenen — Projekt und Organisation liefern dieselbe
     // Nutzlast mit unterschiedlichem `scope`.

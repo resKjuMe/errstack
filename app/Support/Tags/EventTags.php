@@ -83,12 +83,10 @@ final class EventTags
         $tags = [];
 
         // Die eigenen Marken der Anwendung zuerst, damit die festen Felder sie
-        // überschreiben und nicht umgekehrt.
+        // überschreiben und nicht umgekehrt. Dass hier Zeichenketten stehen,
+        // hat die Aufnahme bereits erledigt (Sanitizer::entries) — geprüft wird
+        // nur noch, was auch für die festen Felder gilt: leer fällt weg.
         foreach ($event->tags ?? [] as $name => $value) {
-            if (! is_string($name) || ! is_string($value)) {
-                continue;
-            }
-
             self::put($tags, $name, $value);
         }
 

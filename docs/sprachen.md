@@ -29,6 +29,7 @@ des Absenders wäre geraten.
 | `common`, `nav` | Wiederkehrendes, Navigation, Nutzer-Menü |
 | `auth_ui`, `profile` | Anmeldeseiten, Profil |
 | `dashboard`, `filters`, `components` | Übersicht, Filterleiste, Musterseite |
+| `performance` | Leistungs-Übersicht: Spalten, Suche, Leerzustände |
 | `projects`, `project_keys`, `organizations`, `teams` | Fachseiten samt Flash-Meldungen |
 | `notifications`, `channels` | Benachrichtigungen und ihre Wege |
 | `api_tokens`, `audit`, `invitations` | Zugriffstoken, Änderungsprotokoll, Einladungen |

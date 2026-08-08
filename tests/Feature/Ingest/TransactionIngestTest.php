@@ -14,6 +14,7 @@ use App\Models\ProjectKey;
 use App\Models\Transaction;
 use App\Models\TransactionAggregate;
 use App\Models\TransactionSpan;
+use App\Models\TransactionUserAggregate;
 use App\Support\Ingest\Processing\ProcessingContext;
 use App\Support\Ingest\Processing\ProcessingPipeline;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
@@ -31,8 +32,9 @@ use Tests\TestCase;
  * Geprüft wird, was die Auswertungen (PF2 bis PF5) voraussetzen: dass eine
  * gemeldete Transaktion vollständig ankommt, dass die Verschachtelung ihrer
  * Einzelschritte erhalten bleibt, dass ein Ablauf über mehrere Dienste über die
- * Trace-Kennung zusammenfindet, dass die Zahlen je Zeitfenster mitgeschrieben
- * werden — und dass eine Transaktion nirgends als Fehler gilt.
+ * Trace-Kennung zusammenfindet, dass **beide** Vorberechnungen je Zeitfenster
+ * mitgeschrieben werden (Zahlen und Nutzer) — und dass eine Transaktion nirgends
+ * als Fehler gilt.
  */
 class TransactionIngestTest extends TestCase
 {
@@ -233,6 +235,72 @@ class TransactionIngestTest extends TestCase
         $this->assertSame(1, $windows[1]->transaction_count);
     }
 
+    public function test_the_users_of_a_transaction_are_written_along(): void
+    {
+        // Die zweite Vorberechnung. Ohne sie wüsste die Übersicht zwar, wie
+        // langsam eine Seite war, aber nicht, wie viele Leute davon etwas
+        // gemerkt haben — und aus den Messungen ließe sich das nur mit einem
+        // Vollscan holen.
+        $key = $this->key();
+
+        // Zwei Aufrufe desselben Nutzers in derselben Minute: eine Zeile mit
+        // zwei Messungen. Die Vorgabe dauert 1,5 s und liegt damit über dem
+        // Vierfachen der Zufriedenheitsschwelle.
+        foreach (['10:00:05', '10:00:45'] as $second) {
+            $this->ingest(TransactionPayload::make([
+                'start_timestamp' => "2026-08-07T{$second}.000+00:00",
+                'timestamp' => '2026-08-07T10:00:50.000+00:00',
+                'user' => ['id' => '4711'],
+            ]), $key);
+        }
+
+        $aggregate = TransactionUserAggregate::query()->sole();
+
+        $this->assertSame('2026-08-07 10:00:00', $aggregate->window_start->format('Y-m-d H:i:s'));
+        $this->assertSame('GET /projects', $aggregate->name);
+        $this->assertSame('http.server', $aggregate->op);
+        $this->assertSame('production', $aggregate->environment);
+        $this->assertSame(2, $aggregate->transaction_count);
+        $this->assertSame(2, $aggregate->miserable_count);
+
+        // Die Kennung steht gehasht da: gezählt wird hier, angezeigt wird sie an
+        // der Messung.
+        $this->assertSame(TransactionUserAggregate::keyFor('4711'), $aggregate->user_key);
+        $this->assertStringNotContainsString('4711', $aggregate->user_key);
+    }
+
+    public function test_a_quick_call_leaves_the_user_satisfied(): void
+    {
+        config()->set('ingest.performance.apdex_threshold_us', 300_000);
+        config()->set('ingest.performance.misery_factor', 4);
+
+        // Eine halbe Sekunde: langsamer als die Zufriedenheitsschwelle, aber weit
+        // unter deren Vierfachem — kein Fall für die Unzufriedenheit.
+        $this->ingest(TransactionPayload::make([
+            'start_timestamp' => '2026-08-07T10:00:00.000+00:00',
+            'timestamp' => '2026-08-07T10:00:00.500+00:00',
+        ]));
+
+        $aggregate = TransactionUserAggregate::query()->sole();
+
+        $this->assertSame(1, $aggregate->transaction_count);
+        $this->assertSame(0, $aggregate->miserable_count);
+    }
+
+    public function test_a_transaction_without_a_user_produces_no_user_row(): void
+    {
+        // Der Regelfall bei Hintergrundarbeit und bei SDKs, die keine
+        // Nutzerdaten senden dürfen. Eine Zeile ohne Kennung wäre schlimmer als
+        // keine: sie zählte alle diese Aufrufe zu **einem** Nutzer zusammen.
+        $body = TransactionPayload::make();
+        unset($body['user']);
+
+        $this->ingest($body);
+
+        $this->assertSame(1, TransactionAggregate::query()->count());
+        $this->assertSame(0, TransactionUserAggregate::query()->count());
+    }
+
     public function test_a_hundred_spans_are_stored_in_one_go(): void
     {
         $spans = [];
@@ -361,6 +429,10 @@ class TransactionIngestTest extends TestCase
 
         $this->assertSame(1, $aggregate->transaction_count);
         $this->assertSame(1, $aggregate->histogram()->count());
+
+        // Beide Vorberechnungen hängen an derselben Bedingung — sonst wiese die
+        // Übersicht nach jedem wiederholten Lauf mehr Nutzer aus, als es gab.
+        $this->assertSame(1, TransactionUserAggregate::query()->sole()->transaction_count);
     }
 
     public function test_the_environment_of_a_transaction_appears_in_the_filter_bar(): void

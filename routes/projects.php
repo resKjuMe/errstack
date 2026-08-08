@@ -18,6 +18,7 @@ use App\Http\Controllers\CronMonitorController;
 use App\Http\Controllers\EnvironmentController;
 use App\Http\Controllers\FingerprintRuleController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectFilterController;
 use App\Http\Controllers\ProjectKeyController;
 use App\Http\Controllers\ProjectPrivacyController;
 use App\Http\Controllers\ProjectTeamController;
@@ -99,6 +100,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('{project}/gruppierung/{fingerprint_rule}', [FingerprintRuleController::class, 'destroy'])
                 ->name('projects.grouping.destroy');
 
+            // Eingangsfilter. Der Parametername ist `inbound_filter_rule` und
+            // nicht `eintrag`, weil `scopeBindings` daraus die Beziehung am
+            // Projekt ableitet (`inboundFilterRules()`) — mit einem freieren
+            // Namen fände es sie nicht, und ein Eintrag wäre über jedes Projekt
+            // erreichbar.
+            //
+            // Ansehen darf jedes Mitglied: wer eine Meldung vermisst, muss
+            // nachsehen können, ob ein Filter sie genommen hat.
+            Route::get('{project}/filter', [ProjectFilterController::class, 'index'])
+                ->name('projects.filters.index');
+            Route::patch('{project}/filter', [ProjectFilterController::class, 'update'])
+                ->name('projects.filters.update');
+            Route::post('{project}/filter/eintraege', [ProjectFilterController::class, 'store'])
+                ->name('projects.filters.rules.store');
+            Route::patch('{project}/filter/eintraege/{inbound_filter_rule}', [ProjectFilterController::class, 'updateRule'])
+                ->name('projects.filters.rules.update');
+            Route::post('{project}/filter/eintraege/{inbound_filter_rule}/zustand', [ProjectFilterController::class, 'toggle'])
+                ->name('projects.filters.rules.toggle');
+            Route::delete('{project}/filter/eintraege/{inbound_filter_rule}', [ProjectFilterController::class, 'destroy'])
+                ->name('projects.filters.rules.destroy');
+
             // Stichproben-Regeln der Antwortzeiten. Der Parametername ist
             // `sampling_rule` — aus demselben Grund wie bei den
             // Fingerprint-Regeln: `scopeBindings` leitet daraus die Beziehung am
@@ -113,6 +135,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('projects.sampling.toggle');
             Route::delete('{project}/stichproben/{sampling_rule}', [SamplingRuleController::class, 'destroy'])
                 ->name('projects.sampling.destroy');
+
             // Datenschutz. Die Seite darf jedes Mitglied ansehen — was von einer
             // Meldung übrig bleibt, muss jeder wissen, der mit den Daten
             // arbeitet; geändert wird sie von der Verwaltung.

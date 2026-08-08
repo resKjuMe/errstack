@@ -163,6 +163,35 @@ class Transaction extends Model
     }
 
     /**
+     * Musste der Nutzer dieses Aufrufs so lange warten, dass er die Anwendung
+     * für kaputt halten durfte?
+     *
+     * Die Schwelle ist die von Sentry übernommene Apdex-Rechnung: zufrieden ist,
+     * wer unter der Zufriedenheitsschwelle bedient wird, unzufrieden erst, wer
+     * über deren **Vierfachem** wartet. Der Abstand ist Absicht — zwischen
+     * „spürbar langsam" und „aufgegeben" liegt eine Größenordnung, und eine
+     * Kennzahl, die schon bei geringfügiger Verzögerung ausschlägt, unterscheidet
+     * nichts mehr.
+     *
+     * Beide Werte stehen in der Konfiguration und nicht hier, weil sie von der
+     * Anwendung abhängen: 300 ms sind für eine Suchmaske viel und für einen
+     * nächtlichen Import nichts. Eine unbrauchbare Einstellung (Null oder
+     * negativ) schaltet die Bewertung ab, statt jede Messung als unzufrieden zu
+     * zählen.
+     */
+    public function miserable(): bool
+    {
+        $threshold = (int) config('ingest.performance.apdex_threshold_us');
+        $factor = (int) config('ingest.performance.misery_factor');
+
+        if ($threshold < 1 || $factor < 1) {
+            return false;
+        }
+
+        return $this->duration_us > $threshold * $factor;
+    }
+
+    /**
      * Der Anfang des Zeitfensters, in dem diese Transaktion gezählt wird.
      */
     public function window(): CarbonImmutable

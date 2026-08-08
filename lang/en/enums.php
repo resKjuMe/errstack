@@ -121,6 +121,17 @@ return [
         'duplicate' => 'duplicate delivery',
         'sampled' => 'not part of the sample',
         'scrubbed' => 'not stored for privacy reasons',
+        'filtered' => 'discarded by an inbound filter',
+    ],
+
+    'inbound_filter_kind' => [
+        'browser_extension' => 'Browser extensions',
+        'legacy_browser' => 'Legacy browsers',
+        'localhost' => 'Local development',
+        'crawler' => 'Web crawlers',
+        'message_pattern' => 'Error messages by pattern',
+        'ip_address' => 'Sender blocklist',
+        'release' => 'Release blocklist',
     ],
 
     'event_level' => [
@@ -244,6 +255,14 @@ return [
     'count_period' => [
         'hour' => 'Hourly',
         'day' => 'Daily',
+    ],
+
+    'trend_direction' => [
+        'new' => 'New — not measured in the previous period',
+        'unknown' => 'Too few measurements to compare',
+        'flat' => 'Unchanged',
+        'better' => 'Got faster',
+        'worse' => 'Got slower',
     ],
 
 ];

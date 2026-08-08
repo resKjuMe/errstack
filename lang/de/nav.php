@@ -13,6 +13,7 @@ return [
         'dashboard' => 'Übersicht',
         'issues' => 'Fehler',
         'tags' => 'Merkmale',
+        'performance' => 'Leistung',
         'projects' => 'Projekte',
         'organizations' => 'Organisationen',
         'components' => 'Bausteine',
