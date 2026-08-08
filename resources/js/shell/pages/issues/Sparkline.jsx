@@ -13,9 +13,13 @@ import React from 'react';
 // Million Auftreten jeder andere ein flacher Strich.
 //
 // Die Deploy-Markierungen (R3) sind dagegen **für alle Zeilen dieselben**: sie
-// gehören zum Zeitraum und nicht zum Fehler. Sie stehen als senkrechte Striche
-// **hinter** den Balken — davor gezeichnet verdeckten sie genau die Ausschläge,
-// wegen derer jemand hinsieht.
+// gehören zum Zeitraum und nicht zum Fehler.
+//
+// Sie stehen als senkrechte Striche **über** den Balken. Dahinter gezeichnet
+// wären sie genau dort unsichtbar, wo sie gebraucht werden: ein voller Balken
+// deckt sie zu, und ein voller Balken direkt nach einer Auslieferung ist der
+// eine Fall, um dessentwillen es die Markierung gibt. Einen Pixel breit
+// verdecken sie ihrerseits nichts.
 export default function Sparkline({ values, label, markers = [] }) {
     if (!values || values.length === 0) {
         return <div className="h-8 w-28" aria-hidden="true" />;
@@ -38,20 +42,6 @@ export default function Sparkline({ values, label, markers = [] }) {
             className="text-rose-500 dark:text-rose-400"
             preserveAspectRatio="none"
         >
-            {markers.map((marker, index) => (
-                // Der Strich steht am **Anfang** des Fensters, in dem
-                // ausgeliefert wurde: was danach kommt, ist das, was die
-                // Auslieferung erklären soll.
-                <rect
-                    key={`deploy-${index}`}
-                    x={marker.slot * slot}
-                    y={0}
-                    width={1}
-                    height={height}
-                    className="fill-sky-500/70 dark:fill-sky-400/70"
-                />
-            ))}
-
             {values.map((value, index) => {
                 // Ein Fenster mit Auftreten bekommt mindestens einen Pixel:
                 // sonst sieht „einmal" neben „zehntausendmal" aus wie „nie".
@@ -70,6 +60,25 @@ export default function Sparkline({ values, label, markers = [] }) {
                     />
                 );
             })}
+
+            {markers.map((marker, index) => (
+                // Der Strich steht am **Anfang** des Fensters, in dem
+                // ausgeliefert wurde: was danach kommt, ist das, was die
+                // Auslieferung erklären soll.
+                <rect
+                    key={`deploy-${index}`}
+                    x={marker.slot * slot}
+                    y={0}
+                    width={1}
+                    height={height}
+                    className="fill-sky-500/80 dark:fill-sky-400/80"
+                >
+                    {/* Die Beschriftung kommt fertig vom Server: welche Version
+                        wann wohin ging. Ein Strich ohne sie wäre ein Strich
+                        ohne Auskunft. */}
+                    <title>{marker.label}</title>
+                </rect>
+            ))}
         </svg>
     );
 }

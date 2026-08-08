@@ -53,6 +53,7 @@ return [
         'at' => 'Point in time',
         'duration' => 'Duration',
         'link' => 'Open build run',
+        'marker' => 'Deployed: :version to :environment (:at)',
 
         'notification' => [
             'title' => ':version was deployed to :environment',

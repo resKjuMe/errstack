@@ -53,7 +53,7 @@ final class DeployMarkers
      *
      * @param  list<int>  $projectIds
      * @param  list<string>  $windows
-     * @return list<array{slot: int, version: string, environment: string, atLabel: string}>
+     * @return list<array{slot: int, version: string, environment: string, atLabel: string, label: string}>
      */
     public static function forWindows(array $projectIds, array $windows, CountPeriod $period, ?string $environment = null): array
     {
@@ -116,6 +116,14 @@ final class DeployMarkers
                 'version' => (string) $row->version,
                 'environment' => (string) $row->environment_name,
                 'atLabel' => Formats::dateTime($at),
+                // Fertig beschriftet und nicht in der Oberfläche zusammengesetzt:
+                // die Sprache kennt der Server, und der Strich in der Grafik
+                // wäre ohne Beschriftung ein Strich ohne Auskunft.
+                'label' => __('releases.deploys.marker', [
+                    'version' => (string) $row->version,
+                    'environment' => (string) $row->environment_name,
+                    'at' => Formats::dateTime($at),
+                ]),
             ];
         }
 
@@ -138,7 +146,7 @@ final class DeployMarkers
      *
      * @param  list<int>  $projectIds
      * @param  list<string>  $points
-     * @return list<array{slot: int, version: string, environment: string, atLabel: string}>
+     * @return list<array{slot: int, version: string, environment: string, atLabel: string, label: string}>
      */
     public static function forPoints(array $projectIds, array $points, CountPeriod $period, ?string $environment = null): array
     {
@@ -154,7 +162,7 @@ final class DeployMarkers
      * Dasselbe für eine Fehlerliste: Raster und Umgebung stammen aus der
      * Filterleiste.
      *
-     * @return list<array{slot: int, version: string, environment: string, atLabel: string}>
+     * @return list<array{slot: int, version: string, environment: string, atLabel: string, label: string}>
      */
     public static function forFilter(GlobalFilter $filter): array
     {

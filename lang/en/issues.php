@@ -320,7 +320,9 @@ return [
 
     'environment_ignored' => 'The selected environment does not narrow this list: '
         .'an issue is counted across all environments. To see the issues of one '
-        .'environment only, search for environment:production.',
+        .'environment only, search for environment:production. It does affect the '
+        .'deploy markers in the trend, though — a deployment belongs to exactly '
+        .'one environment.',
 
     // The detail page (app/Http/Controllers/IssueDetailController,
     // resources/js/shell/pages/issues/Show.jsx and issues/detail/*).

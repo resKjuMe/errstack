@@ -53,6 +53,7 @@ return [
         'at' => 'Zeitpunkt',
         'duration' => 'Dauer',
         'link' => 'Zum Baulauf',
+        'marker' => 'Ausgeliefert: :version nach :environment (:at)',
 
         'notification' => [
             'title' => ':version wurde nach :environment ausgeliefert',
