@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Carbon;
@@ -68,6 +69,17 @@ use Illuminate\Support\Facades\DB;
  * @property CarbonImmutable|null $first_release_at
  * @property int|null $last_release_id
  * @property CarbonImmutable|null $last_release_at
+ * @property CarbonImmutable|null $resolved_at
+ * @property int|null $resolved_by_id
+ * @property int|null $resolved_in_release_id
+ * @property bool $resolved_in_next_release
+ * @property CarbonImmutable|null $ignored_at
+ * @property int|null $ignored_by_id
+ * @property int|null $ignore_count
+ * @property int|null $ignore_window_minutes
+ * @property int|null $ignore_users
+ * @property int|null $ignore_times_seen
+ * @property int|null $ignore_users_seen
  * @property int|null $merged_sources_count nur nach `withCount('mergedSources')`
  */
 class Issue extends Model
@@ -657,6 +669,89 @@ class Issue extends Model
     }
 
     /**
+     * Wer den Eintrag erledigt hat — `null`, solange er offen ist oder das
+     * Konto gelöscht wurde. Wer es war, steht dann noch im Verlauf, wo der Name
+     * mitgeschrieben wird.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function resolvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'resolved_by_id');
+    }
+
+    /**
+     * Die Version, in der der Eintrag als behoben gilt.
+     *
+     * Nicht dasselbe wie {@see lastRelease()}: die eine sagt, wo er zuletzt
+     * auftrat, die andere, wo er behoben sein soll. Beim Erledigen „in dieser
+     * Version" fallen sie zusammen — danach nicht mehr, und genau daran erkennt
+     * die Rückkehr-Erkennung (S8) einen Rückfall.
+     *
+     * @return BelongsTo<Release, $this>
+     */
+    public function resolvedInRelease(): BelongsTo
+    {
+        return $this->belongsTo(Release::class, 'resolved_in_release_id');
+    }
+
+    /**
+     * Wer den Eintrag stummgeschaltet hat.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function ignoredBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'ignored_by_id');
+    }
+
+    /**
+     * Der Aktivitätsverlauf dieses Eintrags: wer wann was getan hat.
+     *
+     * @return HasMany<IssueActivity, $this>
+     */
+    public function activities(): HasMany
+    {
+        return $this->hasMany(IssueActivity::class);
+    }
+
+    /**
+     * Wer sich diesen Eintrag gemerkt hat.
+     *
+     * @return BelongsToMany<User, $this>
+     */
+    public function bookmarkedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'issue_bookmarks')->withTimestamps();
+    }
+
+    /**
+     * Wer diesen Eintrag abonniert hat.
+     *
+     * Ausdrücklich abonniert, nicht „bekommt Benachrichtigungen": womit und ob
+     * überhaupt zugestellt wird, entscheiden die Benachrichtigungs-
+     * Einstellungen (A5). Hier steht nur der Wunsch, von **diesem** Fehler zu
+     * hören.
+     *
+     * @return BelongsToMany<User, $this>
+     */
+    public function subscribers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'issue_subscriptions')->withTimestamps();
+    }
+
+    /**
+     * Wer sich um diesen Fehler erkennbar gekümmert hat — für die
+     * Benachrichtigung beim Ablauf einer Stummschaltung und für die Anzeige.
+     *
+     * @return array<int, int>
+     */
+    public function watcherIds(): array
+    {
+        return $this->subscribers()->pluck('users.id')->all();
+    }
+
+    /**
      * Nur Einträge einer Kategorie.
      *
      * **Jede** Liste setzt diesen Filter, und zwar ausdrücklich: eine Ansicht,
@@ -692,6 +787,17 @@ class Issue extends Model
         'first_release_at',
         'last_release_id',
         'last_release_at',
+        'resolved_at',
+        'resolved_by_id',
+        'resolved_in_release_id',
+        'resolved_in_next_release',
+        'ignored_at',
+        'ignored_by_id',
+        'ignore_count',
+        'ignore_window_minutes',
+        'ignore_users',
+        'ignore_times_seen',
+        'ignore_users_seen',
     ];
 
     /**
@@ -713,6 +819,14 @@ class Issue extends Model
             'last_seen' => 'immutable_datetime',
             'first_release_at' => 'immutable_datetime',
             'last_release_at' => 'immutable_datetime',
+            'resolved_at' => 'immutable_datetime',
+            'resolved_in_next_release' => 'boolean',
+            'ignored_at' => 'immutable_datetime',
+            'ignore_count' => 'integer',
+            'ignore_window_minutes' => 'integer',
+            'ignore_users' => 'integer',
+            'ignore_times_seen' => 'integer',
+            'ignore_users_seen' => 'integer',
         ];
     }
 }

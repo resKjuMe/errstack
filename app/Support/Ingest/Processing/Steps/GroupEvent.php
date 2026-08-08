@@ -2,8 +2,10 @@
 
 namespace App\Support\Ingest\Processing\Steps;
 
+use App\Enums\DiscardReason;
 use App\Models\Event;
 use App\Models\EventGroup;
+use App\Models\IssueDiscard;
 use App\Support\Ingest\Grouping\Grouper;
 use App\Support\Ingest\Normalization\NormalizedEvent;
 use App\Support\Ingest\Processing\ProcessingContext;
@@ -66,6 +68,21 @@ final class GroupEvent implements ProcessingStep
             $event,
             Grouper::rulesFor($record->project_id),
         );
+
+        // „Gelöscht und künftig verwerfen" (S6). Die Prüfung steht **hier** und
+        // nicht im Eingangsfilter, weil sie den Fingerabdruck braucht — und sie
+        // steht **vor** dem Anlegen der Gruppe, weil das Verwerfen sonst genau
+        // das wieder anlegte, was es verhindern soll: Gruppe, Eintrag, Zähler.
+        //
+        // Das Ereignis ist zu diesem Zeitpunkt bereits gespeichert; es bleibt
+        // ohne Gruppe liegen und wird mit der Aufbewahrungsfrist aufgeräumt
+        // (O2). Früher abfangen ließe sich das nur vor dem Normalisieren — und
+        // dort gibt es den Fingerabdruck noch nicht.
+        if (IssueDiscard::blocks($record->project_id, $fingerprint->hash)) {
+            $context->drop(DiscardReason::Discarded);
+
+            return;
+        }
 
         $group = EventGroup::forFingerprint($record->project_id, $fingerprint);
 

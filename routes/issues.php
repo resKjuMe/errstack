@@ -20,6 +20,7 @@
 |
 */
 
+use App\Http\Controllers\IssueActionController;
 use App\Http\Controllers\IssueController;
 use App\Http\Controllers\IssueDetailController;
 use App\Http\Controllers\IssueMergeController;
@@ -29,6 +30,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('fehler', IssueController::class)->name('issues.index');
+
+    // Die Zustandsaktionen (S6) — eine Adresse für einen Fehler wie für
+    // zwölftausend. Sie steht **neben** der Liste und nicht unter einem
+    // Eintrag: eine Sammelaktion meint keine einzelne Kennung, sondern die
+    // Auswahl, und ein Pfad `fehler/{issue}/aktion` müsste für sie eine
+    // Kennung erfinden. Welche Einträge gemeint sind, steht im Rumpf — samt
+    // der Filterfelder, mit denen die Liste gebaut wurde.
+    Route::post('fehler/aktionen', [IssueActionController::class, 'store'])
+        ->name('issues.actions.store');
+    Route::post('fehler/aktionen/rueckgaengig', [IssueActionController::class, 'undo'])
+        ->name('issues.actions.undo');
 
     // Die Detailseite steht unter dem Fehler, die einzelne Meldung darunter:
     // ohne Meldung in der Adresszeile zeigt die Seite die neueste. So ist „der

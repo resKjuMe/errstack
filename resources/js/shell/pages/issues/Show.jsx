@@ -3,11 +3,13 @@ import { Link, router, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import { SecondaryButton } from '../../components/Form.jsx';
 import { useT } from '../../i18n.js';
+import Activity from './detail/Activity.jsx';
 import Breadcrumbs from './detail/Breadcrumbs.jsx';
 import EventNav from './detail/EventNav.jsx';
 import RawData from './detail/RawData.jsx';
 import StackTrace from './detail/StackTrace.jsx';
 import { hasContent, KeyValues, Section } from './detail/Sections.jsx';
+import IssueActions from './IssueActions.jsx';
 
 // Die Detailseite eines Fehlers.
 //
@@ -21,7 +23,7 @@ import { hasContent, KeyValues, Section } from './detail/Sections.jsx';
 // Die Reihenfolge der Abschnitte folgt dem, wonach jemand sucht: erst der
 // Stacktrace, dann die letzten Schritte, dann der Kontext. Abschnitte ohne
 // Inhalt erscheinen nicht.
-export default function Show({ issue, event, navigation, rawHref }) {
+export default function Show({ issue, event, navigation, rawHref, activity, actions }) {
     const { shell } = usePage().props;
     const t = useT();
 
@@ -36,7 +38,7 @@ export default function Show({ issue, event, navigation, rawHref }) {
 
             {issue.mergedInto && <MergedIntoNotice head={issue.mergedInto} t={t} />}
 
-            <IssueHeader issue={issue} t={t} />
+            <IssueHeader issue={issue} actions={actions} t={t} />
 
             {issue.merged.length > 0 && <MergedSources sources={issue.merged} t={t} />}
 
@@ -136,6 +138,15 @@ export default function Show({ issue, event, navigation, rawHref }) {
                     </Section>
                 </div>
             )}
+
+            {/* Der Verlauf steht ganz unten: er beantwortet keine Frage, die man
+                vor einem offenen Stacktrace hat — aber die wichtigste, wenn ein
+                Fehler wieder auftaucht, den jemand für erledigt hielt. */}
+            <div className="mt-4">
+                <Section title={t('issues.activity.title')}>
+                    <Activity entries={activity ?? []} t={t} />
+                </Section>
+            </div>
         </>
     );
 }
@@ -164,7 +175,7 @@ function Message({ message }) {
 }
 
 // Der Kopf: der Fehler als Ganzes.
-function IssueHeader({ issue, t }) {
+function IssueHeader({ issue, actions, t }) {
     return (
         <div className="mb-4 rounded-lg bg-white p-6 shadow dark:bg-gray-800">
             <div className="flex flex-wrap items-center gap-2">
@@ -198,8 +209,65 @@ function IssueHeader({ issue, t }) {
                 <Figure label={t('issues.detail.header.status')} value={issue.statusLabel} />
                 <Figure label={t('issues.detail.header.priority')} value={issue.priorityLabel} />
             </dl>
+
+            {/* Der Zustand allein sagt „erledigt". Erst die Bedingung sagt, ob
+                das heißt „behoben", „behoben in 1.4.2" oder „behoben, sobald
+                ausgeliefert wird" — und daran hängt, ob der Eintrag morgen
+                wieder auftaucht. */}
+            <StateNote issue={issue} t={t} />
+
+            <div className="mt-4 border-t border-gray-100 pt-4 dark:border-gray-700">
+                <IssueActions
+                    actions={actions}
+                    target={{ issues: [issue.id] }}
+                    status={issue.status}
+                    state={{ bookmarked: issue.bookmarked, subscribed: issue.subscribed }}
+                    t={t}
+                />
+            </div>
         </div>
     );
+}
+
+// Woran der Zustand hängt — nur dort, wo es etwas zu sagen gibt.
+//
+// Der Fortschritt einer Bedingung („41 von 100") steht ausdrücklich mit dabei:
+// eine Bedingung, deren Stand man nicht sieht, ist von „dauerhaft" nicht zu
+// unterscheiden, und dann fragt sich jeder, warum der Fehler nicht wiederkommt.
+function StateNote({ issue, t }) {
+    if (issue.ignore) {
+        const progress = issue.ignore.progress;
+
+        return (
+            <p className="mt-4 rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
+                {progress
+                    ? t('issues.actions.ignored_state', {
+                          condition: issue.ignore.condition,
+                          done: progress.done,
+                          total: progress.total,
+                      })
+                    : issue.ignore.condition}
+            </p>
+        );
+    }
+
+    if (issue.resolution?.release) {
+        return (
+            <p className="mt-4 rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
+                {t('issues.actions.resolved_in', { release: issue.resolution.release })}
+            </p>
+        );
+    }
+
+    if (issue.resolution?.nextRelease) {
+        return (
+            <p className="mt-4 rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
+                {t('issues.actions.resolved_next')}
+            </p>
+        );
+    }
+
+    return null;
 }
 
 // Woraus dieser Eintrag besteht: die von Hand beigetretenen Untergruppen.
