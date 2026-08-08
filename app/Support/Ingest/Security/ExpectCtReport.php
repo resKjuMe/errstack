@@ -34,7 +34,9 @@ final class ExpectCtReport extends SecurityReport
         // etwas zu sehen bekommt. Die Angabe steht trotzdem, damit der Filter
         // vor jeder Art dieselbe Frage stellen kann und nicht nach der Art
         // unterscheiden muss.
-        return array_values(array_filter([$this->hostname()]));
+        $hostname = $this->hostname();
+
+        return $hostname === null ? [] : [$hostname];
     }
 
     protected function culprit(): ?string

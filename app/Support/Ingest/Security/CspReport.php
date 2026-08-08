@@ -134,9 +134,11 @@ final class CspReport extends SecurityReport
 
         $violated = $this->text('violated-directive', 400) ?? '';
 
+        // `false`, wenn nichts zu zerlegen war — der Text ist dann leer, denn
+        // `text()` hat die Ränder schon abgeschnitten.
         $first = strtok($violated, " \t\n");
 
-        return $first === false || $first === '' ? 'unbekannte Direktive' : $first;
+        return $first === false ? 'unbekannte Direktive' : $first;
     }
 
     /**

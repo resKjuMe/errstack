@@ -34,7 +34,9 @@ final class ExpectStapleReport extends SecurityReport
     {
         // Wie bei Expect-CT: für eine Erweiterung ist hier nichts zu holen, die
         // Angabe hält nur die Reihe geschlossen.
-        return array_values(array_filter([$this->hostname()]));
+        $hostname = $this->hostname();
+
+        return $hostname === null ? [] : [$hostname];
     }
 
     protected function culprit(): ?string
