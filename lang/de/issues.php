@@ -270,6 +270,7 @@ return [
         'unresolved' => 'Wieder geöffnet',
         'ignored' => 'Stummgeschaltet (:condition)',
         'ignore_expired' => 'Stummschaltung beendet — die Bedingung ist eingetreten',
+        'deployed' => 'Ausgeliefert mit :release nach :environment',
         'priority' => 'Wichtigkeit auf :priority gesetzt',
         'priority_auto' => 'Wichtigkeit wird wieder automatisch ermittelt',
         'priority_derived' => 'Wichtigkeit automatisch auf :priority — :reason',
@@ -369,7 +370,9 @@ return [
 
     'environment_ignored' => 'Die gewählte Umgebung schränkt diese Liste nicht ein: '
         .'ein Fehler wird über alle Umgebungen hinweg gezählt. Wer nur die Fehler '
-        .'einer Umgebung sehen will, sucht nach environment:production.',
+        .'einer Umgebung sehen will, sucht nach environment:production. Auf die '
+        .'Deploy-Markierungen im Verlauf wirkt die Auswahl dagegen schon — eine '
+        .'Auslieferung gehört zu genau einer Umgebung.',
 
     // Die Detailseite (app/Http/Controllers/IssueDetailController,
     // resources/js/shell/pages/issues/Show.jsx und issues/detail/*).

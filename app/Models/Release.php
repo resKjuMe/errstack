@@ -249,6 +249,21 @@ class Release extends Model
     }
 
     /**
+     * Die Auslieferungen dieser Version, neueste zuerst (R3).
+     *
+     * Mehrere, und das ist der Punkt: dieselbe Version geht nacheinander nach
+     * `staging` und nach `production`, und nach einem Rollback ein zweites Mal.
+     * `released_at` daneben ist die eine angekündigte Zeit aus der
+     * Schnittstelle — sie ersetzt diese Liste nicht.
+     *
+     * @return HasMany<Deploy, $this>
+     */
+    public function deploys(): HasMany
+    {
+        return $this->hasMany(Deploy::class)->newestFirst();
+    }
+
+    /**
      * @var list<string>
      */
     protected $fillable = [

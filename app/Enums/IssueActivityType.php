@@ -42,10 +42,23 @@ enum IssueActivityType: string
      * Eintrag meldet sich wieder.
      *
      * Er fällt bei der Aufnahme an, und dort steht niemand daneben — der
-     * Vermerk trägt deshalb kein Konto. Dasselbe gilt für die beiden Fälle aus
-     * S11 unten, die aus dem Hintergrund-Durchlauf kommen.
+     * Vermerk trägt deshalb kein Konto. Dasselbe gilt für die Auslieferung und
+     * die beiden Fälle aus S11 unten, die aus dem Hintergrund-Durchlauf kommen.
      */
     case IgnoreExpired = 'ignore_expired';
+
+    /**
+     * Der Fix ist draußen: der Eintrag stand auf „erledigt im nächsten Release",
+     * und dieses Release wurde ausgeliefert (R3). Version und Umgebung stehen in
+     * `data`.
+     *
+     * Ein eigener Fall und keine zweite Spielart von {@see self::Resolved}, aus
+     * demselben Grund wie bei {@see self::IgnoreExpired}: erledigt hat jemand
+     * von Hand, ausgeliefert wurde ohne Zutun. Für den, der den Verlauf liest,
+     * sind das zwei Vorgänge — und der zweite ist der, auf den der erste
+     * gewartet hat.
+     */
+    case Deployed = 'deployed';
 
     /**
      * Die Wichtigkeit hat sich geändert — von Hand oder durch die Ableitung

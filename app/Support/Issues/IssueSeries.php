@@ -137,6 +137,22 @@ final class IssueSeries
     }
 
     /**
+     * Das Raster, über dem eine Liste gezeichnet wird.
+     *
+     * Nach außen gegeben, weil nicht nur die Zahlen darauf liegen: die
+     * Deploy-Markierungen (R3) müssen auf **demselben** Raster sitzen, sonst
+     * steht der Strich neben seinem Ausschlag. Es hier zu holen ist die einzige
+     * Art, das sicherzustellen, die nicht darauf beruht, dass zwei Stellen
+     * dieselbe Rechnung anstellen.
+     *
+     * @return list<string>
+     */
+    public static function windowsFor(GlobalFilter $filter): array
+    {
+        return self::windows(self::periodFor($filter), $filter);
+    }
+
+    /**
      * Die Fenster des Rasters, aufsteigend, als Zeichenketten in UTC.
      *
      * Zeichenketten und keine Zeitpunkte, weil sie hier nur als Schlüssel
