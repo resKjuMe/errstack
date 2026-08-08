@@ -36,6 +36,7 @@ final class Translations
         'notifications',
         'organizations',
         'performance',
+        'performance_issues',
         'privacy',
         'profile',
         'project_keys',

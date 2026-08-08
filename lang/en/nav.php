@@ -14,6 +14,7 @@ return [
         'issues' => 'Issues',
         'tags' => 'Tags',
         'performance' => 'Performance',
+        'performance_issues' => 'Performance issues',
         'projects' => 'Projects',
         'organizations' => 'Organizations',
         'components' => 'Components',

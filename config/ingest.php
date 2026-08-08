@@ -7,7 +7,16 @@ use App\Support\Ingest\Processing\Steps\GroupEvent;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
 use App\Support\Ingest\Processing\Steps\SampleTransaction;
+use App\Support\Ingest\Processing\Steps\ScanPerformance;
 use App\Support\Ingest\Processing\Steps\ScrubEvent;
+use App\Support\Performance\Detection\Detectors\CacheMisses;
+use App\Support\Performance\Detection\Detectors\ConsecutiveQueries;
+use App\Support\Performance\Detection\Detectors\DuplicateQueries;
+use App\Support\Performance\Detection\Detectors\MainThreadBlock;
+use App\Support\Performance\Detection\Detectors\NPlusOneQueries;
+use App\Support\Performance\Detection\Detectors\OversizedAsset;
+use App\Support\Performance\Detection\Detectors\RenderBlockingAsset;
+use App\Support\Performance\Detection\Detectors\SlowHttpCall;
 
 return [
 
@@ -106,9 +115,10 @@ return [
     |   3. Scrubbing     — personenbezogene Daten entfernen (I7)
     |   4. Stichprobe    — Sampling für Performance-Daten (I9)
     |   5. Antwortzeiten — Transaktionen und ihre Schritte ablegen (PF1)
-    |   6. Normalisierung — Sentry-Schema in unser Modell (I4)
-    |   7. Grouping      — Fingerabdruck und Gruppe bestimmen (I5)
-    |   8. Aggregation   — Zähler und Issue fortschreiben (I6)
+    |   6. Leistungssuche — den abgelegten Ablauf zur Erkennung einreihen (PF6)
+    |   7. Normalisierung — Sentry-Schema in unser Modell (I4)
+    |   8. Grouping      — Fingerabdruck und Gruppe bestimmen (I5)
+    |   9. Aggregation   — Zähler und Issue fortschreiben (I6)
     |
     | Die Antwortzeiten stehen deshalb an fünfter Stelle und nicht früher: der
     | Schritt **schreibt**, und was er schreibt, darf keine personenbezogenen
@@ -149,6 +159,7 @@ return [
             ScrubEvent::class,
             SampleTransaction::class,
             RecordTransaction::class,
+            ScanPerformance::class,
             NormalizeEvent::class,
             GroupEvent::class,
             AggregateIssue::class,
@@ -335,6 +346,40 @@ return [
         'apdex_threshold_us' => (int) env('PERFORMANCE_APDEX_THRESHOLD_US', 300_000),
 
         'misery_factor' => (int) env('PERFORMANCE_MISERY_FACTOR', 4),
+
+        /*
+        | Die Erkenner der Leistungsprobleme (PF6), in der Reihenfolge, in der
+        | sie laufen — und die ist eine fachliche Entscheidung.
+        |
+        | Mehrere Muster passen auf dieselben Schritte: fünf identische Abfragen
+        | hintereinander sind doppelt, gleichartig **und** sähen mit einer
+        | Abfrage davor wie ein N+1 aus. Gemeldet werden soll die genaueste
+        | Aussage, denn nur sie sagt, was zu tun ist. Deshalb gilt „wer zuerst
+        | kommt, behält die Schritte" ({@see PerformanceScanner}), und deshalb
+        | steht hier:
+        |
+        |   1. „exakt dieselbe Abfrage"        — nichts abzuwägen, nur zu streichen
+        |   2. „gleichartig, aus einer Schleife" — Vorabladen oder Join
+        |   3. „gleichartig, nacheinander"      — bündeln oder nebenläufig
+        |
+        | Die Browser-Muster stehen ebenso geordnet: eine render-blockierende
+        | Datei ist dringender als eine bloß große, und dieselbe Datei kann
+        | beides sein.
+        |
+        | Ein neues Muster ist eine neue Klasse und eine neue Zeile. Wohin sie
+        | gehört, entscheidet die Frage: ist die neue Aussage genauer als eine
+        | bestehende, steht sie davor.
+        */
+        'detectors' => [
+            DuplicateQueries::class,
+            NPlusOneQueries::class,
+            ConsecutiveQueries::class,
+            SlowHttpCall::class,
+            RenderBlockingAsset::class,
+            OversizedAsset::class,
+            MainThreadBlock::class,
+            CacheMisses::class,
+        ],
 
     ],
 

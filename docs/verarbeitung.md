@@ -18,6 +18,7 @@ POST /api/{projekt}/envelope/     ─┴─▶ ingest_payloads (Rohdaten)
                                      ├ Scrubbing      (I7)
                                      ├ Stichprobe     (I9)
                                      ├ Antwortzeiten  (PF1) ─▶ transactions
+                                     ├ Leistungssuche (PF6) ─▶ Warteschlange „performance"
                                      ├ Normalisierung (I4)  ─▶ events
                                      ├ Grouping       (I5)
                                      └ Aggregation    (I6)
@@ -29,7 +30,11 @@ Was die Normalisierung aus einer Meldung macht — und warum sie nichts
 aussortiert —, steht in [normalisierung.md](normalisierung.md). Wie
 Transaktionen und ihre Einzelschritte abgelegt werden, steht in
 [antwortzeiten.md](antwortzeiten.md); die beiden Schritte fassen verschiedene
-Meldungsarten an und kommen sich nicht in die Quere.
+Meldungsarten an und kommen sich nicht in die Quere. Was danach in den
+gespeicherten Abläufen gesucht wird — N+1-Abfragen, doppelte Abfragen, langsame
+Aufrufe —, steht in [leistungsprobleme.md](leistungsprobleme.md); der Schritt
+`ScanPerformance` reiht dafür nur einen Auftrag ein und arbeitet selbst nichts
+ab.
 
 Was am Eingang ankommen **muss**, damit die Original-SDKs ohne Änderung hierher
 melden, steht in [compat/README.md](compat/README.md) — samt der Abweichungen zur
@@ -118,7 +123,7 @@ erneute Zustellung eine echte zweite Chance hat.
 ## Betrieb
 
 ```
-php artisan queue:work --queue=ingest,notifications,default
+php artisan queue:work --queue=ingest,notifications,performance,default
 php artisan ingest:status            # Rückstand, Dauern, Fehlschläge
 php artisan ingest:retry             # Gescheitertes erneut einreihen
 php artisan ingest:retry --project=7 --limit=100

@@ -20,6 +20,7 @@ use App\Http\Controllers\FingerprintRuleController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectFilterController;
 use App\Http\Controllers\ProjectKeyController;
+use App\Http\Controllers\ProjectPerformanceController;
 use App\Http\Controllers\ProjectPrivacyController;
 use App\Http\Controllers\ProjectTeamController;
 use App\Http\Controllers\SamplingRuleController;
@@ -139,6 +140,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // Datenschutz. Die Seite darf jedes Mitglied ansehen — was von einer
             // Meldung übrig bleibt, muss jeder wissen, der mit den Daten
             // arbeitet; geändert wird sie von der Verwaltung.
+            Route::get('{project}/leistungserkennung', [ProjectPerformanceController::class, 'index'])
+                ->name('projects.performance.index');
+            Route::patch('{project}/leistungserkennung', [ProjectPerformanceController::class, 'update'])
+                ->name('projects.performance.update');
+
             Route::get('{project}/datenschutz', [ProjectPrivacyController::class, 'index'])
                 ->name('projects.privacy.index');
             Route::patch('{project}/datenschutz', [ProjectPrivacyController::class, 'update'])

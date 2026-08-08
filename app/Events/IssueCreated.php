@@ -39,6 +39,7 @@ class IssueCreated implements ShouldBroadcast
         public int $issueId,
         public int $organizationId,
         public int $projectId,
+        public string $category,
         public string $title,
         public string $level,
         public string $occurredAt,

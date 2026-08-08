@@ -2,6 +2,7 @@
 
 namespace App\Support\Issues;
 
+use App\Enums\IssueCategory;
 use App\Enums\IssueSort;
 use App\Enums\IssueStatus;
 use App\Models\Issue;
@@ -70,6 +71,13 @@ final class IssueList
     public static function query(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?TagFilter $tag = null): Builder
     {
         $query = Issue::query()->with(['project:id,name,slug,organization_id', 'project.organization:id,slug']);
+
+        // Nur Fehler. Seit PF6 teilen sich Fehler und Leistungsprobleme die
+        // Tabelle, und ohne diese Zeile stünden langsame Abfragen zwischen den
+        // Ausnahmen. Sie steht hier und nicht im Aufrufer, damit es die
+        // **Fehlerliste** ist, die keine Leistungsprobleme zeigt, und nicht
+        // jede Ansicht, die zufällig daran gedacht hat.
+        $query->ofCategory(IssueCategory::Error);
 
         $filter->overlapping($query);
 

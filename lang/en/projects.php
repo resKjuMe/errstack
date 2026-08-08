@@ -78,6 +78,12 @@ return [
         'manage' => 'View rules',
     ],
 
+    'performance' => [
+        'title' => 'Performance detection',
+        'description' => 'When N+1 queries, slow calls or blocking resources count as a performance issue. Detection runs in the background over stored traces.',
+        'manage' => 'View thresholds',
+    ],
+
     'grouping' => [
         'title' => 'Grouping',
         'description' => 'Similar reports are folded into a single entry. Where that turns out too coarse or too fine, project rules correct it.',

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Issues;
 
+use App\Enums\IssueCategory;
 use App\Enums\QueueName;
 use App\Events\IssueCreated;
 use App\Jobs\ProcessIngestPayload;
@@ -123,6 +124,7 @@ class IssueBroadcastTest extends TestCase
             7,
             $project->organization_id,
             $project->id,
+            IssueCategory::Error->value,
             'RuntimeException',
             'error',
             Carbon::now()->toIso8601String(),
@@ -140,6 +142,10 @@ class IssueBroadcastTest extends TestCase
         // Das Projekt fährt in der Nutzlast mit, damit die Ansicht auf ihre
         // Auswahl filtern kann.
         $this->assertSame($project->id, $event->broadcastWith()['projectId']);
+
+        // Und die Kategorie ebenso: derselbe Kanal trägt seit PF6 auch die
+        // Leistungsprobleme, und die Fehlerliste muss sie aussortieren können.
+        $this->assertSame(IssueCategory::Error->value, $event->broadcastWith()['category']);
 
         // Die Aufnahme darf nicht darauf warten, dass ein Websocket-Server
         // antwortet.

@@ -81,6 +81,7 @@ export default function Show({
                 <Grouping project={project} />
 
                 <Sampling project={project} />
+                <PerformanceDetection project={project} />
                 <Privacy project={project} />
 
                 <InboundFilters project={project} />
@@ -398,6 +399,24 @@ function Sampling({ project }) {
         <Card title={t('projects.sampling.title')} description={t('projects.sampling.description')}>
             <Link href={project.samplingHref}>
                 <SecondaryButton type="button">{t('projects.sampling.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zu den Schwellen der Leistungserkennung. Ohne Bedingung aus demselben
+// Grund wie die Stichproben: sie erklären, warum ein bekanntes Problem nicht in
+// der Liste der Leistungsprobleme steht.
+function PerformanceDetection({ project }) {
+    const t = useT();
+
+    return (
+        <Card
+            title={t('projects.performance.title')}
+            description={t('projects.performance.description')}
+        >
+            <Link href={project.performanceHref}>
+                <SecondaryButton type="button">{t('projects.performance.manage')}</SecondaryButton>
             </Link>
         </Card>
     );

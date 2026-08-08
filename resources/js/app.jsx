@@ -23,6 +23,9 @@ import ProjectsCrons from './shell/pages/projects/Crons.jsx';
 import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
 import ProjectsFilters from './shell/pages/projects/Filters.jsx';
 import ProjectsSampling from './shell/pages/projects/Sampling.jsx';
+import ProjectsPerformance from './shell/pages/projects/Performance.jsx';
+import PerformanceIssues from './shell/pages/performance/Issues.jsx';
+import PerformanceIssueDetail from './shell/pages/performance/IssueDetail.jsx';
 import PrivacyIndex from './shell/pages/privacy/Index.jsx';
 import InvitationsAccept from './shell/pages/invitations/Accept.jsx';
 import ApiTokensIndex from './shell/pages/api-tokens/Index.jsx';
@@ -61,6 +64,9 @@ const pages = {
     'projects/Grouping': ProjectsGrouping,
     'projects/Filters': ProjectsFilters,
     'projects/Sampling': ProjectsSampling,
+    'projects/Performance': ProjectsPerformance,
+    'performance/Issues': PerformanceIssues,
+    'performance/IssueDetail': PerformanceIssueDetail,
     // Eine Seite für beide Ebenen — Projekt und Organisation liefern dieselbe
     // Nutzlast mit unterschiedlichem `scope`.
     'privacy/Index': PrivacyIndex,

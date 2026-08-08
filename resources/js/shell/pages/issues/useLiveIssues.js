@@ -61,6 +61,15 @@ export default function useLiveIssues(live, { auto, paused = false } = {}) {
                 return;
             }
 
+            // Der Kanal trägt seit PF6 auch die Leistungsprobleme — sie
+            // entstehen auf demselben Weg. In dieser Liste haben sie nichts zu
+            // suchen: ein „neuer Fehler"-Hinweis, hinter dem eine langsame
+            // Abfrage steckt, ist ein Fehlalarm, und das Nachladen brächte
+            // ohnehin keine neue Zeile.
+            if (payload.category !== 'error') {
+                return;
+            }
+
             if (!state.current.auto || state.current.paused) {
                 setPending((count) => count + 1);
 

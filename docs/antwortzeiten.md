@@ -30,6 +30,11 @@ erfolgreichen Seitenaufrufen.
 dasselbe: die Schritte, die Fehler gruppieren und zusammenfassen (I5, I6),
 sehen keine Transaktion.
 
+Aus einem gespeicherten Ablauf kann später trotzdem ein Eintrag in der
+Issue-Maschinerie werden — als **Leistungsproblem**, nicht als Fehler, und in
+einer eigenen Liste. Wie die Erkennung das macht und warum sie nie im
+Aufnahme-Request läuft, steht in [leistungsprobleme.md](leistungsprobleme.md).
+
 ## Was gespeichert wird
 
 | Tabelle | Inhalt |

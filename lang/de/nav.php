@@ -14,6 +14,7 @@ return [
         'issues' => 'Fehler',
         'tags' => 'Merkmale',
         'performance' => 'Leistung',
+        'performance_issues' => 'Leistungsprobleme',
         'projects' => 'Projekte',
         'organizations' => 'Organisationen',
         'components' => 'Bausteine',

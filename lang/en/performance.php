@@ -53,6 +53,9 @@ return [
         'microseconds' => 'µs',
         'milliseconds' => 'ms',
         'seconds' => 's',
+        'bytes' => 'B',
+        'kilobytes' => 'KB',
+        'megabytes' => 'MB',
     ],
 
     'empty' => [

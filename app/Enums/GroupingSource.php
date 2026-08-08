@@ -2,6 +2,8 @@
 
 namespace App\Enums;
 
+use App\Models\PerformanceDetection;
+
 /**
  * Woraus der Fingerabdruck einer Meldung entstanden ist.
  *
@@ -61,6 +63,21 @@ enum GroupingSource: string
      * verhindern soll.
      */
     case Empty = 'empty';
+
+    /**
+     * Die Erkennung eines Leistungsmusters hat den Fingerabdruck gebildet.
+     *
+     * Der einzige Fall, der nicht aus einer Meldung stammt, sondern aus einem
+     * bereits gespeicherten Ablauf ({@see PerformanceProblem}). Er steht
+     * trotzdem hier und die Gruppe in derselben Tabelle: „was gehört zusammen"
+     * ist bei einer wiederholten Abfrage dieselbe Frage wie bei einer
+     * wiederholten Ausnahme, und die Antwort trägt in beiden Fällen denselben
+     * Eintrag.
+     *
+     * Solche Gruppen haben keine Ereignisse — ihre Belege sind die Funde
+     * ({@see PerformanceDetection}).
+     */
+    case Performance = 'performance';
 
     public function label(): string
     {
