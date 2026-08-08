@@ -176,6 +176,41 @@ return [
         'discarded' => 'Gelöscht; gleichartige Meldungen werden künftig verworfen',
     ],
 
+    // Die Kommentare an einem Fehler (App\Support\Issues\IssueComments,
+    // resources/js/shell/pages/issues/detail/Comments.jsx).
+    'comments' => [
+        'title' => 'Kommentar schreiben',
+        'placeholder' => 'Was ist zu diesem Fehler zu sagen? Mit @ eine Person oder ein Team nennen.',
+        'hint' => 'Mit @ eine Person oder ein Team nennen — die Genannten werden benachrichtigt.',
+        'submit' => 'Kommentieren',
+        'edited' => 'bearbeitet',
+        'edited_at' => 'bearbeitet am :at',
+        'edit' => 'Bearbeiten',
+        'save' => 'Speichern',
+        'cancel' => 'Abbrechen',
+        'delete' => 'Löschen',
+        'delete_confirm' => 'Diesen Kommentar löschen? Das lässt sich nicht rückgängig machen.',
+        'no_suggestions' => 'Niemand gefunden.',
+
+        // Woran man in der Vorschlagsliste erkennt, was man nennt.
+        'kind' => [
+            'user' => 'Person',
+            'team' => 'Team',
+        ],
+
+        'flash' => [
+            'created' => 'Kommentar geschrieben.',
+            'updated' => 'Kommentar geändert.',
+            'deleted' => 'Kommentar gelöscht.',
+        ],
+
+        'notification' => [
+            'title' => ':actor hat dich in :project genannt',
+            'context_project' => 'Projekt',
+            'context_issue' => 'Fehler',
+        ],
+    ],
+
     'live' => [
         'new_one' => 'Ein neuer Fehler',
         'new_many' => ':count neue Fehler',

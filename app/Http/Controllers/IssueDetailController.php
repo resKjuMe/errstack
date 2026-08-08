@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\IssueCategory;
 use App\Models\Event;
 use App\Models\Issue;
+use App\Models\IssueComment;
 use App\Support\Issues\EventDetail;
 use App\Support\Issues\EventNavigation;
 use App\Support\Issues\IssueActionData;
@@ -50,11 +51,20 @@ class IssueDetailController extends Controller
             'event' => $event === null ? null : EventDetail::present($event),
             'navigation' => $event === null ? null : EventNavigation::links($issue, $event),
             'rawHref' => $event === null ? null : route('issues.events.raw', [$issue, $event]),
-            // Was mit diesem Fehler geschehen ist (S6). Der Verlauf steht auf
-            // der Detailseite und nicht im Änderungsprotokoll der Organisation:
-            // die Frage „warum ist der wieder offen?" stellt sich hier und
-            // nirgends sonst.
-            'activity' => IssueActivityFeed::forIssue($issue),
+            // Was mit diesem Fehler geschehen ist (S6) und was dazu gesagt
+            // wurde (S10). Der Verlauf steht auf der Detailseite und nicht im
+            // Änderungsprotokoll der Organisation: die Frage „warum ist der
+            // wieder offen?" stellt sich hier und nirgends sonst.
+            'activity' => IssueActivityFeed::forIssue($issue, $request->user()),
+            // Was die Oberfläche zum Schreiben braucht. Die Rechtefrage wird
+            // hier beantwortet und nicht dort: eine Schaltfläche, die beim
+            // Klick abgewiesen wird, ist schlimmer als keine.
+            'comments' => [
+                'canWrite' => Gate::allows('create', [IssueComment::class, $issue]),
+                'storeHref' => route('issues.comments.store', $issue),
+                'suggestHref' => route('issues.comments.suggest', $issue),
+                'limit' => IssueComment::BODY_LIMIT,
+            ],
             'actions' => IssueActionData::forViewer($issue),
         ]);
     }
