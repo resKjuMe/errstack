@@ -80,6 +80,7 @@ export default function Show({
 
                 <Grouping project={project} />
 
+                <Sampling project={project} />
                 <Privacy project={project} />
 
                 <InboundFilters project={project} />
@@ -382,6 +383,21 @@ function Grouping({ project }) {
         <Card title={t('projects.grouping.title')} description={t('projects.grouping.description')}>
             <Link href={project.groupingHref}>
                 <SecondaryButton type="button">{t('projects.grouping.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zu den Stichproben-Regeln. Ohne Bedingung wie die Gruppierung: sie
+// erklären, warum in der Performance-Übersicht mehr Aufrufe stehen, als
+// Messungen gespeichert sind.
+function Sampling({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.sampling.title')} description={t('projects.sampling.description')}>
+            <Link href={project.samplingHref}>
+                <SecondaryButton type="button">{t('projects.sampling.manage')}</SecondaryButton>
             </Link>
         </Card>
     );

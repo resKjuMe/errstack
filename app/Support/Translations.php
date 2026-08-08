@@ -31,6 +31,7 @@ final class Translations
         'grouping',
         'inbound',
         'invitations',
+        'issues',
         'nav',
         'notifications',
         'organizations',
@@ -38,6 +39,7 @@ final class Translations
         'profile',
         'project_keys',
         'projects',
+        'sampling',
         'teams',
     ];
 

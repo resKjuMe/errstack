@@ -119,6 +119,7 @@ return [
         'too_large' => 'too large',
         'too_many_items' => 'too many items',
         'duplicate' => 'duplicate delivery',
+        'sampled' => 'not part of the sample',
         'scrubbed' => 'not stored for privacy reasons',
         'filtered' => 'discarded by an inbound filter',
     ],
@@ -237,6 +238,23 @@ return [
         'manual' => 'Resolve manually only',
         'after_week' => 'After 7 days without a new occurrence',
         'after_month' => 'After 30 days without a new occurrence',
+    ],
+
+    'issue_status' => [
+        'unresolved' => 'Unresolved',
+        'resolved' => 'Resolved',
+        'ignored' => 'Ignored',
+    ],
+
+    'issue_priority' => [
+        'high' => 'High',
+        'medium' => 'Medium',
+        'low' => 'Low',
+    ],
+
+    'count_period' => [
+        'hour' => 'Hourly',
+        'day' => 'Daily',
     ],
 
 ];

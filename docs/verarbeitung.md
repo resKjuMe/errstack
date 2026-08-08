@@ -31,6 +31,10 @@ Transaktionen und ihre Einzelschritte abgelegt werden, steht in
 [antwortzeiten.md](antwortzeiten.md); die beiden Schritte fassen verschiedene
 Meldungsarten an und kommen sich nicht in die Quere.
 
+Was am Eingang ankommen **muss**, damit die Original-SDKs ohne Änderung hierher
+melden, steht in [compat/README.md](compat/README.md) — samt der Abweichungen zur
+Sentry-Spezifikation, die bis heute bestehen.
+
 ## Der Rahmen
 
 `App\Jobs\ProcessIngestPayload` ist der Job je Meldung — bei einem Envelope je

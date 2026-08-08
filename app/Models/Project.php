@@ -194,6 +194,21 @@ class Project extends Model
     }
 
     /**
+     * Die projektweiten Regeln, nach denen von den Antwortzeiten eine Stichprobe
+     * behalten wird (I9).
+     *
+     * Sie wirken ausschließlich auf Transaktionen. Fehler werden vollständig
+     * behalten — auch dann, wenn eine Regel auf ihren Transaktionsnamen zutreffen
+     * würde.
+     *
+     * @return HasMany<SamplingRule, $this>
+     */
+    public function samplingRules(): HasMany
+    {
+        return $this->hasMany(SamplingRule::class);
+    }
+
+    /**
      * Eigene Datenschutz-Regeln dieses Projekts.
      *
      * Nur die eigenen — die organisationsweiten hängen an der Organisation und

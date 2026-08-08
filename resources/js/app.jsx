@@ -12,12 +12,14 @@ import TeamsShow from './shell/pages/teams/Show.jsx';
 import NotificationsIndex from './shell/pages/notifications/Index.jsx';
 import NotificationsPreferences from './shell/pages/notifications/Preferences.jsx';
 import NotificationsUnsubscribe from './shell/pages/notifications/Unsubscribe.jsx';
+import IssuesIndex from './shell/pages/issues/Index.jsx';
 import ProjectsIndex from './shell/pages/projects/Index.jsx';
 import ProjectsShow from './shell/pages/projects/Show.jsx';
 import ProjectsKeys from './shell/pages/projects/Keys.jsx';
 import ProjectsCrons from './shell/pages/projects/Crons.jsx';
 import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
 import ProjectsFilters from './shell/pages/projects/Filters.jsx';
+import ProjectsSampling from './shell/pages/projects/Sampling.jsx';
 import PrivacyIndex from './shell/pages/privacy/Index.jsx';
 import InvitationsAccept from './shell/pages/invitations/Accept.jsx';
 import ApiTokensIndex from './shell/pages/api-tokens/Index.jsx';
@@ -43,12 +45,14 @@ const pages = {
     'notifications/Index': NotificationsIndex,
     'notifications/Preferences': NotificationsPreferences,
     'notifications/Unsubscribe': NotificationsUnsubscribe,
+    'issues/Index': IssuesIndex,
     'projects/Index': ProjectsIndex,
     'projects/Show': ProjectsShow,
     'projects/Keys': ProjectsKeys,
     'projects/Crons': ProjectsCrons,
     'projects/Grouping': ProjectsGrouping,
     'projects/Filters': ProjectsFilters,
+    'projects/Sampling': ProjectsSampling,
     // Eine Seite für beide Ebenen — Projekt und Organisation liefern dieselbe
     // Nutzlast mit unterschiedlichem `scope`.
     'privacy/Index': PrivacyIndex,

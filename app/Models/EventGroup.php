@@ -26,6 +26,7 @@ use Illuminate\Database\UniqueConstraintViolationException;
  *
  * @property int $id
  * @property int $project_id
+ * @property int|null $issue_id
  * @property string $fingerprint
  * @property GroupingSource $source
  * @property list<array{name: string, value: string}>|null $components
@@ -97,6 +98,21 @@ class EventGroup extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * Der Fehler-Eintrag, zu dem diese Gruppe gehört.
+     *
+     * `null`, solange die Aggregation nicht gelaufen ist — bei einer Gruppe aus
+     * der Zeit vor I6 und bei jeder, deren Kette vor dem Zählen abgebrochen ist.
+     * Ab S9 zeigen mehrere Gruppen auf denselben Eintrag; deshalb steht der
+     * Verweis hier und nicht dort.
+     *
+     * @return BelongsTo<Issue, $this>
+     */
+    public function issue(): BelongsTo
+    {
+        return $this->belongsTo(Issue::class);
     }
 
     /**

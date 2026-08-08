@@ -1,10 +1,12 @@
 <?php
 
+use App\Support\Ingest\Processing\Steps\AggregateIssue;
 use App\Support\Ingest\Processing\Steps\DecodePayload;
 use App\Support\Ingest\Processing\Steps\FilterEvent;
 use App\Support\Ingest\Processing\Steps\GroupEvent;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
+use App\Support\Ingest\Processing\Steps\SampleTransaction;
 use App\Support\Ingest\Processing\Steps\ScrubEvent;
 
 return [
@@ -101,8 +103,8 @@ return [
     |
     |   1. Entpacken     — Rohdaten zu Feld-Baum (Rahmen, hier)
     |   2. Eingangsfilter — uninteressante Meldungen aussortieren (I8)
-    |   3. Stichprobe    — Sampling für Performance-Daten (I9)
-    |   4. Scrubbing     — personenbezogene Daten entfernen (I7)
+    |   3. Scrubbing     — personenbezogene Daten entfernen (I7)
+    |   4. Stichprobe    — Sampling für Performance-Daten (I9)
     |   5. Antwortzeiten — Transaktionen und ihre Schritte ablegen (PF1)
     |   6. Normalisierung — Sentry-Schema in unser Modell (I4)
     |   7. Grouping      — Fingerabdruck und Gruppe bestimmen (I5)
@@ -115,18 +117,24 @@ return [
     | Sentry-Schema arbeitet und nicht mit unserem Fehler-Modell — mit dem hat
     | eine Transaktion nichts zu tun.
     |
-    | Das Scrubbing steht vor allem, was schreibt — und zwar auch hinter dem
-    | Eingangsfilter und der noch fehlenden Stichprobe: die sortieren aus, sie
-    | speichern nicht. Käme es vor ihnen, wäre die Bereinigung an einer Meldung
-    | getan, die gleich darauf verworfen wird.
+    | Das Scrubbing steht vor allem, was schreibt — und die Stichprobe steht
+    | deshalb dahinter und nicht davor: das Scrubbing schreibt die bereinigte
+    | Fassung über die Rohdaten in der Eingangsablage zurück. Stünde die
+    | Stichprobe davor, bliebe der Rumpf einer ausgesiebten Messung dauerhaft
+    | **unbereinigt** liegen — die Kette endet an einem `drop()`, und das
+    | Scrubbing käme nie an sie heran. Die zwei gesparten Regelwerk-Durchläufe je
+    | verworfener Messung sind der Preis dafür, und er ist der richtige.
     |
-    | Der Eingangsfilter arbeitet damit auf ungeschwärzten Daten, und das ist
-    | Voraussetzung und nicht Nachlässigkeit: die Absender-Sperrliste vergleicht
-    | Adressen, und ein Projekt, das Adressen nicht speichert, könnte sonst nach
-    | ihnen nicht filtern.
-    |
-    | Solange die noch fehlende Stichprobe fehlt, ist die Liste kürzer als der
-    | Plan: sie wird **vor** dem Scrubbing eingefügt, nicht dahinter.
+    | Der Eingangsfilter ist die eine Ausnahme davon und steht **vor** dem
+    | Scrubbing: die Absender-Sperrliste vergleicht Adressen, und ein Projekt,
+    | das Adressen nicht speichert, könnte sonst nach ihnen nicht filtern. Er
+    | arbeitet damit bewusst auf ungeschwärzten Daten. Der Einwand von oben gilt
+    | auch für ihn — was er verwirft, bleibt unbereinigt in der Eingangsablage
+    | liegen —, nur lässt er sich hier nicht durch Umsortieren auflösen: hinter
+    | dem Scrubbing wäre der Filter um sein wichtigstes Merkmal gebracht. Es
+    | bleibt ein bewusst in Kauf genommener Rest, und er ist auf die
+    | Eingangsablage begrenzt: gespeichert wird aus einer gefilterten Meldung
+    | sonst nichts.
     |
     | Ein neuer Schritt ist eine neue Klasse und eine neue Zeile. Ein
     | bestehender Schritt wird dafür nicht angefasst — auch nicht der Rahmen.
@@ -139,10 +147,55 @@ return [
             DecodePayload::class,
             FilterEvent::class,
             ScrubEvent::class,
+            SampleTransaction::class,
             RecordTransaction::class,
             NormalizeEvent::class,
             GroupEvent::class,
+            AggregateIssue::class,
         ],
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Stichproben
+    |--------------------------------------------------------------------------
+    |
+    | Von den gemeldeten Antwortzeiten wird nur ein Anteil gespeichert und in den
+    | Auswertungen wieder hochgerechnet. Die Rechnung dahinter: eine Anwendung mit
+    | hundert Aufrufen je Sekunde meldet im Monat 260 Millionen Transaktionen.
+    | Gebraucht wird davon nicht jeder Aufruf, sondern die Verteilung — und die
+    | steht in einer Stichprobe genauso.
+    |
+    | **Welcher Anteil, entscheiden die Regeln je Projekt** (Tabelle
+    | `sampling_rules`) und nicht diese Datei: die Quote für `GET /health` ist eine
+    | Frage an die, die die Antwortzeiten ansehen, und keine an die, die die
+    | Anwendung ausliefern. Hier stehen nur die beiden Werte, die gelten, wenn
+    | **keine** Regel zutrifft.
+    |
+    |   default_rate       — der Anteil ohne passende Regel. Eins: eine
+    |                        Stichprobe ist eine Entscheidung und darf keine
+    |                        Voreinstellung sein. Ein Betreiber, der pauschal
+    |                        aussieben will, setzt den Wert — dann ist es seine
+    |                        Entscheidung und nicht unsere.
+    |   minimum_per_window — wie viele Meldungen eines Vorgangs je Zeitfenster
+    |                        immer behalten werden. Greift nur bei einer Quote
+    |                        unter eins. Einer, weil ein Vorgang, der einmal je
+    |                        Fenster vorkommt, bei 1 % Quote mit 99 %
+    |                        Wahrscheinlichkeit ganz verschwindet — und der
+    |                        nächtliche Import ist genau so ein Vorgang.
+    |
+    | Fehler sind hiervon **nicht** betroffen. Die Stichprobe greift
+    | ausschließlich an Transaktionen; ein Absturz ist ein Einzelfall, und ein
+    | Einzelfall lässt sich nicht hochrechnen.
+    |
+    */
+
+    'sampling' => [
+
+        'default_rate' => (float) env('INGEST_SAMPLING_DEFAULT_RATE', 1.0),
+
+        'minimum_per_window' => (int) env('INGEST_SAMPLING_MINIMUM_PER_WINDOW', 1),
 
     ],
 

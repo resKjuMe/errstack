@@ -72,6 +72,12 @@ return [
         'manage' => 'Cronjobs ansehen',
     ],
 
+    'sampling' => [
+        'title' => 'Stichproben',
+        'description' => 'Von den Antwortzeiten wird nur ein einstellbarer Anteil gespeichert und in den Auswertungen hochgerechnet. Fehlermeldungen bleiben davon unberührt.',
+        'manage' => 'Regeln ansehen',
+    ],
+
     'grouping' => [
         'title' => 'Gruppierung',
         'description' => 'Gleichartige Meldungen werden zu einem Eintrag zusammengefasst. Greift das im Einzelfall zu grob oder zu fein, korrigieren projektweite Regeln es.',
