@@ -361,12 +361,20 @@ class WebVitalTest extends TestCase
         $this->assertSame(WebVital::values(), array_column($props['vitals'], 'key'));
         $this->assertSame([true, true, true, false, false, false], array_column($props['vitals'], 'core'));
 
+        // Die Navigation kommt seit U1 nach Gruppen sortiert (ShellData::nav);
+        // für diese Prüfung zählt nur, dass der Eintrag überhaupt darin steht.
         $shell = $props['shell'];
-        $links = is_array($shell) ? ($shell['links'] ?? []) : [];
+        $links = [];
+
+        foreach (is_array($shell) ? ($shell['nav'] ?? []) : [] as $group) {
+            foreach (is_array($group) ? ($group['links'] ?? []) : [] as $link) {
+                $links[] = $link;
+            }
+        }
 
         $this->assertContains(
             route('web-vitals.index'),
-            array_column(is_array($links) ? $links : [], 'href'),
+            array_column($links, 'href'),
         );
     }
 

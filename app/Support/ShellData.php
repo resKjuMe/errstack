@@ -41,7 +41,7 @@ final class ShellData
             'loginHref' => Route::has('login') ? route('login') : null,
             'csrf' => csrf_token(),
             'broadcast' => self::broadcast(),
-            'links' => self::links(),
+            'nav' => self::nav(),
             'menu' => self::menu(),
             'labels' => [
                 'guest' => __('nav.guest'),
@@ -49,6 +49,10 @@ final class ShellData
                 'signOut' => __('nav.sign_out'),
                 'menu' => __('nav.menu'),
                 'help' => __('common.show_help'),
+                'sidebar' => [
+                    'collapse' => __('nav.sidebar.collapse'),
+                    'expand' => __('nav.sidebar.expand'),
+                ],
                 'theme' => [
                     'light' => __('nav.theme.light'),
                     'dark' => __('nav.theme.dark'),
@@ -94,78 +98,140 @@ final class ShellData
     }
 
     /**
-     * Primärnavigation (Kopfzeile und Mobil-Menü).
+     * Primärnavigation der Seitenleiste, nach Themen gruppiert.
      *
-     * @return list<array{label: string, href: string, active: bool, icon?: string}>
+     * Die Gruppen folgen der Frage, was man gerade tut: laufend hinsehen
+     * (Überwachen), einer Auffälligkeit nachgehen (Untersuchen), eine
+     * Auslieferung nachvollziehen (Ausliefern), den Rahmen einrichten
+     * (Verwalten). Die Übersicht steht als Einstieg ohne Gruppe darüber.
+     *
+     * Eine Gruppe, deren Einträge sämtlich auf noch fehlende Routen zeigen,
+     * fällt samt Überschrift weg — sonst stünde in der Leiste eine leere
+     * Rubrik.
+     *
+     * @return list<array{label: string|null, links: list<array{label: string, href: string, active: bool, icon?: string}>}>
      */
-    private static function links(): array
+    private static function nav(): array
     {
-        return self::withExisting([
+        $groups = [
             [
-                'label' => __('nav.links.dashboard'),
-                'route' => 'dashboard',
-                'activePattern' => 'dashboard',
+                'label' => null,
+                'entries' => [
+                    [
+                        'label' => __('nav.links.dashboard'),
+                        'route' => 'dashboard',
+                        'activePattern' => 'dashboard',
+                        'icon' => 'dashboard',
+                    ],
+                ],
             ],
             [
-                'label' => __('nav.links.issues'),
-                'route' => 'issues.index',
-                'activePattern' => 'issues.*',
+                'label' => __('nav.groups.monitor'),
+                'entries' => [
+                    [
+                        'label' => __('nav.links.issues'),
+                        'route' => 'issues.index',
+                        'activePattern' => 'issues.*',
+                        'icon' => 'issues',
+                    ],
+                    [
+                        'label' => __('nav.links.feedback'),
+                        'route' => 'feedback.index',
+                        'activePattern' => 'feedback.*',
+                        'icon' => 'feedback',
+                    ],
+                    [
+                        'label' => __('nav.links.tags'),
+                        'route' => 'tags.index',
+                        'activePattern' => 'tags.*',
+                        'icon' => 'tags',
+                    ],
+                ],
             ],
             [
-                'label' => __('nav.links.tags'),
-                'route' => 'tags.index',
-                'activePattern' => 'tags.*',
+                'label' => __('nav.groups.investigate'),
+                'entries' => [
+                    [
+                        'label' => __('nav.links.performance'),
+                        'route' => 'performance.index',
+                        // Nicht `performance.*`: darunter läge auch die
+                        // Leistungsproblem-Liste, und beide Einträge stünden
+                        // dann gleichzeitig hervorgehoben in der Leiste.
+                        'activePattern' => 'performance.index',
+                        'icon' => 'performance',
+                    ],
+                    [
+                        'label' => __('nav.links.performance_issues'),
+                        'route' => 'performance.issues.index',
+                        'activePattern' => 'performance.issues.*',
+                        'icon' => 'performance_issues',
+                    ],
+                    [
+                        'label' => __('nav.links.web_vitals'),
+                        'route' => 'web-vitals.index',
+                        'activePattern' => 'web-vitals.*',
+                        'icon' => 'web_vitals',
+                    ],
+                    [
+                        'label' => __('nav.links.profiling'),
+                        'route' => 'profiling.index',
+                        'activePattern' => 'profiling.*',
+                        'icon' => 'profiling',
+                    ],
+                ],
             ],
             [
-                'label' => __('nav.links.feedback'),
-                'route' => 'feedback.index',
-                'activePattern' => 'feedback.*',
+                'label' => __('nav.groups.ship'),
+                'entries' => [
+                    [
+                        'label' => __('nav.links.releases'),
+                        'route' => 'releases.index',
+                        'activePattern' => 'releases.*',
+                        'icon' => 'releases',
+                    ],
+                ],
             ],
             [
-                'label' => __('nav.links.releases'),
-                'route' => 'releases.index',
-                'activePattern' => 'releases.*',
+                'label' => __('nav.groups.manage'),
+                'entries' => [
+                    [
+                        'label' => __('nav.links.projects'),
+                        'route' => 'projects.index',
+                        'activePattern' => 'projects.*',
+                        'icon' => 'projects',
+                    ],
+                    [
+                        'label' => __('nav.links.organizations'),
+                        'route' => 'organizations.index',
+                        'activePattern' => 'organizations.*',
+                        'icon' => 'organizations',
+                    ],
+                    [
+                        'label' => __('nav.links.components'),
+                        'route' => 'components',
+                        'activePattern' => 'components',
+                        'icon' => 'components',
+                    ],
+                ],
             ],
-            [
-                'label' => __('nav.links.performance'),
-                'route' => 'performance.index',
-                // Nicht `performance.*`: darunter läge auch die
-                // Leistungsproblem-Liste, und beide Einträge stünden dann
-                // gleichzeitig hervorgehoben in der Kopfzeile.
-                'activePattern' => 'performance.index',
-            ],
-            [
-                'label' => __('nav.links.performance_issues'),
-                'route' => 'performance.issues.index',
-                'activePattern' => 'performance.issues.*',
-            ],
-            [
-                'label' => __('nav.links.web_vitals'),
-                'route' => 'web-vitals.index',
-                'activePattern' => 'web-vitals.*',
-            ],
-            [
-                'label' => __('nav.links.profiling'),
-                'route' => 'profiling.index',
-                'activePattern' => 'profiling.*',
-            ],
-            [
-                'label' => __('nav.links.projects'),
-                'route' => 'projects.index',
-                'activePattern' => 'projects.*',
-            ],
-            [
-                'label' => __('nav.links.organizations'),
-                'route' => 'organizations.index',
-                'activePattern' => 'organizations.*',
-            ],
-            [
-                'label' => __('nav.links.components'),
-                'route' => 'components',
-                'activePattern' => 'components',
-                'icon' => 'components',
-            ],
-        ]);
+        ];
+
+        $nav = [];
+
+        foreach ($groups as $group) {
+            $links = self::withExisting($group['entries']);
+
+            if ($links === []) {
+                continue;
+            }
+
+            $nav[] = [
+                'label' => $group['label'],
+                'links' => $links,
+            ];
+        }
+
+        return $nav;
     }
 
     /**
