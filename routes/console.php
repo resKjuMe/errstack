@@ -78,6 +78,20 @@ Schedule::command('ops:watch')->everyMinute()->withoutOverlapping();
 // Eskalation zweimal melden.
 Schedule::command('issues:prioritize')->everyFifteenMinutes()->withoutOverlapping();
 
+// Brüche in den Antwortzeiten suchen (PF7).
+//
+// Stündlich, weil die Rechnung auf Stundenfenstern steht
+// ({@see App\Support\Performance\Trends\TrendSeries}): häufiger nachzusehen
+// legte denselben Verlauf noch einmal aus, ohne dass ein neues Fenster
+// dazugekommen wäre. Zur vollen Stunde plus fünf Minuten, damit die
+// Vorberechnung der letzten Minute sicher geschrieben ist — das Fenster, das
+// gerade zu Ende ging, ist das interessanteste.
+//
+// `withoutOverlapping`, weil der Durchlauf über viele Projekte länger als eine
+// Stunde brauchen kann: zwei gleichzeitige Läufe würden dieselben Brüche
+// feststellen und um dieselbe Zeile ringen.
+Schedule::command('performance:trends')->hourlyAt(5)->withoutOverlapping();
+
 // Fällige Sammelnachrichten der Bündelung verschicken (A6).
 //
 // Minütlich, weil das Fenster in Minuten eingestellt wird: ein gröberer Takt

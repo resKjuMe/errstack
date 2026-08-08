@@ -36,6 +36,7 @@ import ProjectsSampling from './shell/pages/projects/Sampling.jsx';
 import ProjectsPerformance from './shell/pages/projects/Performance.jsx';
 import PerformanceIssues from './shell/pages/performance/Issues.jsx';
 import PerformanceIssueDetail from './shell/pages/performance/IssueDetail.jsx';
+import PerformanceTrends from './shell/pages/performance/Trends.jsx';
 import ProfilingIndex from './shell/pages/profiling/Index.jsx';
 import ProfilingShow from './shell/pages/profiling/Show.jsx';
 import PrivacyIndex from './shell/pages/privacy/Index.jsx';
@@ -102,6 +103,7 @@ const pages = {
     'projects/Performance': ProjectsPerformance,
     'performance/Issues': PerformanceIssues,
     'performance/IssueDetail': PerformanceIssueDetail,
+    'performance/Trends': PerformanceTrends,
     // Übersicht und Einzelprofil sind zwei Seiten und nicht eine: die Übersicht
     // legt viele Profile übereinander, das Einzelprofil zeigt genau einen
     // Aufruf. Dieselbe Seite mit einer Weiche wäre an jeder zweiten Stelle eine

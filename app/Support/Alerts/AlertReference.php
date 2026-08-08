@@ -38,6 +38,21 @@ final class AlertReference
     }
 
     /**
+     * Ein Trendbruch (PF7): eine Kennung je Feststellung.
+     *
+     * Die Feststellung wird fortgeschrieben und nicht neu angelegt, solange
+     * derselbe Bruch gemeint ist — die Kennung bleibt damit über alle Meldungen
+     * zu **diesem** Umschlag dieselbe. Schlägt dieselbe Transaktion später
+     * erneut um, ist es eine neue Zeile und damit eine neue Kennung; genau so
+     * soll es sein: im Kanal stünden sonst zwei verschiedene Vorfälle
+     * untereinander, als wäre der zweite eine Ergänzung des ersten.
+     */
+    public static function forTrendDetection(int $detectionId): string
+    {
+        return 'TREND-'.$detectionId;
+    }
+
+    /**
      * Der gemeinsame Anfang aller Meldungen einer Fehler-Regel — der Weg, ihre
      * Zustellungen über alle Fehler hinweg zu finden.
      *

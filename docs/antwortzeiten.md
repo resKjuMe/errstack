@@ -198,5 +198,5 @@ Die Auswertung. Die Übersicht (PF2) liest aus diesen Tabellen — sie steht unt
 (`App\Support\Performance\TransactionOverview`), die Trace-Ansicht (PF4) unter
 `/spur/{trace_id}`. Detailseite mit Verteilung
 (PF3), Web Vitals (PF5), automatisch erkannte Probleme
-(PF6) und Trend-Erkennung (PF7) lesen ebenfalls von hier — geschrieben werden
-die Tabellen in diesem Teil.
+(PF6) und Trend-Erkennung (PF7, [docs/leistungstrends.md](leistungstrends.md))
+lesen ebenfalls von hier — geschrieben werden die Tabellen in diesem Teil.

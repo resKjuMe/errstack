@@ -51,6 +51,11 @@ class PerformanceController extends Controller
             'pagination' => $result->pagination(),
             'truncated' => $result->truncated,
             'groupLimit' => TransactionOverview::GROUP_LIMIT,
+            // Der Weg zu den Trendbrüchen (PF7), mit derselben Projektauswahl
+            // und demselben Zeitraum. Er steht hier und nicht in der
+            // Hauptnavigation: die Trend-Liste vertieft genau eine Spalte dieser
+            // Übersicht — den Pfeil —, und wer sie sucht, sucht sie hier.
+            'trendsHref' => route('performance.trends.index', $filter->formValues()),
         ]);
     }
 }
