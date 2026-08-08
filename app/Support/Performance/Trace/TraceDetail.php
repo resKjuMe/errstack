@@ -128,6 +128,10 @@ final class TraceDetail
     private static function errors(string $traceId, string $spanId, array $projectIds): array
     {
         return Event::query()
+            // Dieselbe knappe Auswahl wie im Wasserfall ({@see TraceView}): die
+            // Feld-Bäume einer Meldung gehören auf die Fehlerseite, nicht an
+            // einen Balken.
+            ->select(['id', 'project_id', 'event_group_id', 'event_id', 'trace_id', 'trace_span_id', 'title', 'culprit', 'level', 'occurred_at'])
             ->with('group:id,issue_id')
             ->where('trace_id', $traceId)
             ->where('trace_span_id', $spanId)

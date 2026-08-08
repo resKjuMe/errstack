@@ -115,6 +115,11 @@ final class TraceView
         $spans = $spans->take(self::SPAN_LIMIT);
 
         $errors = Event::query()
+            // Nur die Felder der Marke am Balken. Eine Meldung führt Stacktrace,
+            // Spuren und Umgebungsangaben als Feld-Bäume mit sich; fünfhundert
+            // davon vollständig zu laden wären Megabyte für eine Zeile Text je
+            // Fehler.
+            ->select(['id', 'project_id', 'event_group_id', 'event_id', 'trace_id', 'trace_span_id', 'title', 'culprit', 'level', 'occurred_at'])
             ->with('group:id,issue_id')
             ->where('trace_id', $traceId)
             ->whereIn('project_id', $projectIds)
@@ -194,14 +199,28 @@ final class TraceView
 
         // Die Lücken haben keine eigene Messung; ihre Spanne ist die ihrer
         // Kinder. Deshalb erst jetzt, wenn die Kinder hängen.
+        //
+        // Dabei fällt zugleich die Zeitachse ab: Anfang und Ende der ganzen
+        // Spur sind das Kleinste und das Größte über **alle** Knoten, nicht
+        // über die Wurzeln. Bei Diensten mit auseinanderlaufenden Uhren beginnt
+        // ein untergeordneter Schritt vor seinem Aufrufer — die Wurzel allein
+        // gefragt, begänne die Achse zu spät und alles davor klebte am Rand.
+        $started = null;
+        $finished = null;
+
         foreach ($roots as $root) {
-            self::span($root);
+            [$rootStart, $rootEnd] = self::span($root);
+
+            if ($rootStart !== null && ($started === null || $rootStart->lessThan($started))) {
+                $started = $rootStart;
+            }
+
+            if ($rootEnd !== null && ($finished === null || $rootEnd->greaterThan($finished))) {
+                $finished = $rootEnd;
+            }
         }
 
         self::sort($roots);
-
-        $started = self::earliest($roots);
-        $finished = self::latest($roots);
 
         return new self(
             traceId: $traceId,
@@ -442,38 +461,6 @@ final class TraceView
         foreach ($nodes as $node) {
             self::sort($node->children);
         }
-    }
-
-    /**
-     * @param  list<TraceNode>  $nodes
-     */
-    private static function earliest(array $nodes): ?CarbonImmutable
-    {
-        $earliest = null;
-
-        foreach ($nodes as $node) {
-            if ($node->startedAt !== null && ($earliest === null || $node->startedAt->lessThan($earliest))) {
-                $earliest = $node->startedAt;
-            }
-        }
-
-        return $earliest;
-    }
-
-    /**
-     * @param  list<TraceNode>  $nodes
-     */
-    private static function latest(array $nodes): ?CarbonImmutable
-    {
-        $latest = null;
-
-        foreach ($nodes as $node) {
-            if ($node->finishedAt !== null && ($latest === null || $node->finishedAt->greaterThan($latest))) {
-                $latest = $node->finishedAt;
-            }
-        }
-
-        return $latest;
     }
 
     /**

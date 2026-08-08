@@ -200,6 +200,24 @@ class TraceViewTest extends TestCase
         $this->assertSame([['name' => 'db.rows', 'value' => '12']], $props['span']['data']);
     }
 
+    public function test_the_timeline_begins_at_the_earliest_step_not_at_the_root(): void
+    {
+        [$user, $project] = $this->context();
+
+        // Zwei Dienste mit auseinanderlaufenden Uhren: der aufgerufene meldet
+        // einen Beginn **vor** dem seines Aufrufers. Nähme die Zeitachse nur die
+        // Wurzel, klebte alles davor am linken Rand.
+        $outer = $this->transaction($project, 'aaaaaaaaaaaaaaa1', null, '2026-08-08 12:00:00', 1_000_000);
+        $this->span($outer, 'aaaaaaaaaaaaaaa2', $outer->span_id, '2026-08-08 11:59:59', 500_000, 'http.client');
+
+        $waterfall = $this->waterfall($this->actingAs($user)->get($this->url()));
+        $rows = $waterfall['rows'];
+
+        $this->assertSame(2_000_000, $waterfall['durationUs']);
+        $this->assertSame(1_000_000, $rows[0]['offsetUs'], 'Die Wurzel beginnt eine Sekunde nach dem Anfang der Achse.');
+        $this->assertSame(0, $rows[1]['offsetUs'], 'Der frühere Schritt sitzt am Anfang der Achse.');
+    }
+
     public function test_a_broken_link_shows_the_trace_instead_of_an_error(): void
     {
         [$user, $project] = $this->context();
