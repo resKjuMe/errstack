@@ -301,10 +301,15 @@ final class IssueFields implements FieldResolver
         // ist keine an dessen Mitglieder. Wer „meins **und** das meiner Teams"
         // sehen will, schreibt `assigned:me or assigned:#Kasse` — die Sprache
         // kann das, und sie soll es sagen müssen.
-        $column = $assignee->team !== null ? 'assigned_team_id' : 'assigned_user_id';
-        $id = $assignee->team?->id ?? $assignee->user?->id;
+        if ($assignee->team !== null) {
+            $teamId = $assignee->team->id;
 
-        return static fn (Builder $query) => $query->where($column, $id);
+            return static fn (Builder $query) => $query->where('assigned_team_id', $teamId);
+        }
+
+        $userId = $assignee->user?->id;
+
+        return static fn (Builder $query) => $query->where('assigned_user_id', $userId);
     }
 
     /**

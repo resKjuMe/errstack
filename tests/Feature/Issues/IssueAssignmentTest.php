@@ -427,12 +427,14 @@ class IssueAssignmentTest extends TestCase
         $this->actingAs($user)
             ->get(route('issues.index', ['projects' => [$project->slug], 'q' => '']))
             ->assertInertia(function (AssertableInertia $page): void {
-                $views = collect($page->toArray()['props']['savedSearches']['views'])
-                    ->keyBy('key');
+                /** @var list<array{key: string, available: bool}> $rows */
+                $rows = $page->toArray()['props']['savedSearches']['views'];
 
-                $this->assertTrue($views['for_review']['available']);
-                $this->assertTrue($views['assigned']['available']);
-                $this->assertFalse($views['regressed']['available']);
+                $available = array_column($rows, 'available', 'key');
+
+                $this->assertTrue($available['for_review']);
+                $this->assertTrue($available['assigned']);
+                $this->assertFalse($available['regressed']);
             });
     }
 
@@ -447,7 +449,10 @@ class IssueAssignmentTest extends TestCase
             ->getJson(route('issues.assignment.suggest'))
             ->assertOk();
 
-        $values = collect($response->json('suggestions'))->pluck('value')->all();
+        /** @var list<array{value: string, label: string, kind: string}> $suggestions */
+        $suggestions = $response->json('suggestions');
+
+        $values = array_column($suggestions, 'value');
 
         $this->assertContains('me', $values);
         $this->assertContains('#Kasse', $values);
