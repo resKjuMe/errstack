@@ -278,6 +278,20 @@ class Project extends Model
     }
 
     /**
+     * Die hochgeladenen Bauartefakte aller Versionen dieses Projekts (R5).
+     *
+     * Sie hängen an einer Version und stehen trotzdem hier: die Beziehung ist
+     * das, was die Schnittstelle beim Löschen prüfen lässt, ob eine Kennung aus
+     * der Adresszeile überhaupt zu diesem Projekt gehört.
+     *
+     * @return HasMany<ReleaseArtifact, $this>
+     */
+    public function artifacts(): HasMany
+    {
+        return $this->hasMany(ReleaseArtifact::class);
+    }
+
+    /**
      * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo

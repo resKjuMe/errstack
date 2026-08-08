@@ -42,8 +42,13 @@ class ProjectController extends Controller
             Platform::from((string) $request->validated('platform')),
         );
 
+        // Weiter in den Einrichtungs-Assistenten und nicht in die Einstellungen:
+        // ein frisches Projekt hat nichts einzustellen, es hat etwas
+        // anzuschließen. Wer nur ein Projekt anlegen wollte, ist von dort mit
+        // einem Klick bei den Einstellungen — umgekehrt hätte niemand nach dem
+        // Weg gesucht, den er noch nicht kennt.
         return redirect()
-            ->route('projects.show', [$organization, $project])
+            ->route('projects.setup.index', [$organization, $project])
             ->with('status', __('projects.flash.created', ['name' => $project->name]));
     }
 

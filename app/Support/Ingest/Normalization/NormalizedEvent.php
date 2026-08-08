@@ -80,6 +80,18 @@ final class NormalizedEvent
          * Erzeugungsstelle mitzuändern.
          */
         public readonly ?array $fingerprint = null,
+
+        /**
+         * Die geladenen Dateien samt ihren Debug-Kennungen (`debug_meta`).
+         *
+         * Sie kamen mit der Rückübersetzung minimierter Stacktraces (R5) dazu und
+         * stehen — wie der Fingerabdruck — mit einem Vorgabewert am Ende der
+         * Liste, damit die Erzeugungsstellen der bisherigen Aufgaben unangetastet
+         * bleiben.
+         *
+         * @var array<string, mixed>|null
+         */
+        public readonly ?array $debugMeta = null,
     ) {}
 
     /**
@@ -191,6 +203,7 @@ final class NormalizedEvent
             'extra' => $this->extra,
             'sdk' => $this->sdk,
             'modules' => $this->modules,
+            'debug_meta' => $this->debugMeta,
             'unknown' => $this->unknown,
             'notes' => $this->notes,
             'fingerprint' => $this->fingerprint,

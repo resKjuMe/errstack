@@ -87,6 +87,11 @@ final class ReleaseList
     {
         $query = Release::query()
             ->with(['project:id,name,slug,organization_id', 'project.organization:id,slug'])
+            // Wie viele Bauartefakte hochgeladen sind (R5). Die Zahl steht in der
+            // Liste, weil „keine Quellkarten hochgeladen" sonst erst auf einer
+            // Fehlerseite auffällt — also dann, wenn es zu spät ist, um noch etwas
+            // daran zu haben.
+            ->withCount('artifacts')
             ->whereIn('project_id', $filter->projectIds())
             ->where(function (Builder $query) use ($filter): void {
                 $query
@@ -181,6 +186,10 @@ final class ReleaseList
             'newIssuesLabel' => Formats::number($counts['new']),
             'resolvedIssues' => $counts['resolved'],
             'resolvedIssuesLabel' => Formats::number($counts['resolved']),
+            // `artifacts_count` steht am Modell, sobald die Abfrage es mitgezählt
+            // hat; der Nullwert ist der Fall, in dem eine Version ohne diese Liste
+            // dargestellt wird.
+            'artifacts' => (int) ($release->artifacts_count ?? 0),
             // Der Weg von der Version in die Fehlerliste: „was ist mit dieser
             // Auslieferung dazugekommen?" ist die Frage, die man von hier aus
             // als Nächstes stellt.

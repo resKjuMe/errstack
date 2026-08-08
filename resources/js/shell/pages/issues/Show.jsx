@@ -23,7 +23,7 @@ import IssueActions from './IssueActions.jsx';
 // Die Reihenfolge der Abschnitte folgt dem, wonach jemand sucht: erst der
 // Stacktrace, dann die letzten Schritte, dann der Kontext. Abschnitte ohne
 // Inhalt erscheinen nicht.
-export default function Show({ issue, event, navigation, rawHref, activity, actions }) {
+export default function Show({ issue, event, navigation, rawHref, activity, comments, actions }) {
     const { shell } = usePage().props;
     const t = useT();
 
@@ -59,7 +59,11 @@ export default function Show({ issue, event, navigation, rawHref, activity, acti
                         title={t('issues.detail.exception.title')}
                         when={event.exceptions.length > 0}
                     >
-                        <StackTrace exceptions={event.exceptions} t={t} />
+                        <StackTrace
+                            exceptions={event.exceptions}
+                            symbolication={event.symbolication}
+                            t={t}
+                        />
                     </Section>
 
                     <Section
@@ -141,10 +145,12 @@ export default function Show({ issue, event, navigation, rawHref, activity, acti
 
             {/* Der Verlauf steht ganz unten: er beantwortet keine Frage, die man
                 vor einem offenen Stacktrace hat — aber die wichtigste, wenn ein
-                Fehler wieder auftaucht, den jemand für erledigt hielt. */}
+                Fehler wieder auftaucht, den jemand für erledigt hielt. Seit S10
+                stehen die Kommentare darin, und damit ist er auch die Absprache
+                zu diesem Fehler. */}
             <div className="mt-4">
                 <Section title={t('issues.activity.title')}>
-                    <Activity entries={activity ?? []} t={t} />
+                    <Activity activity={activity} comments={comments} t={t} />
                 </Section>
             </div>
         </>

@@ -22,6 +22,7 @@ import TagsIndex from './shell/pages/tags/Index.jsx';
 import TracesShow from './shell/pages/traces/Show.jsx';
 import ProjectsIndex from './shell/pages/projects/Index.jsx';
 import ProjectsShow from './shell/pages/projects/Show.jsx';
+import ProjectsSetup from './shell/pages/projects/Setup.jsx';
 import ProjectsKeys from './shell/pages/projects/Keys.jsx';
 import ProjectsAlerts from './shell/pages/projects/Alerts.jsx';
 import ProjectsIssueAlerts from './shell/pages/projects/IssueAlerts.jsx';
@@ -75,6 +76,11 @@ const pages = {
     'traces/Show': TracesShow,
     'projects/Index': ProjectsIndex,
     'projects/Show': ProjectsShow,
+    // Der Einrichtungs-Assistent. Eine eigene Seite und kein Abschnitt der
+    // Einstellungen: er wird einmal am Anfang gebraucht und danach selten —
+    // umgekehrt sind die Einstellungen eine Liste von Schaltern und keine
+    // Anleitung, der man von oben nach unten folgt.
+    'projects/Setup': ProjectsSetup,
     'projects/Keys': ProjectsKeys,
     'projects/Alerts': ProjectsAlerts,
     'projects/IssueAlerts': ProjectsIssueAlerts,

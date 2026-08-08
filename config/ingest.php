@@ -6,6 +6,7 @@ use App\Support\Ingest\Processing\Steps\EvaluateIssueAlerts;
 use App\Support\Ingest\Processing\Steps\FilterEvent;
 use App\Support\Ingest\Processing\Steps\GroupEvent;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
+use App\Support\Ingest\Processing\Steps\QueueSymbolication;
 use App\Support\Ingest\Processing\Steps\RecordProfile;
 use App\Support\Ingest\Processing\Steps\RecordRelease;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
@@ -178,6 +179,7 @@ return [
             AggregateIssue::class,
             RecordRelease::class,
             RecordUserReport::class,
+            QueueSymbolication::class,
             // Ganz zum Schluss: die Alarm-Regeln (A2) beziehen sich auf den
             // fortgeschriebenen Eintrag und auf die Fassung, in der er auftrat
             // — beides steht erst hinter den Schritten darüber fest.

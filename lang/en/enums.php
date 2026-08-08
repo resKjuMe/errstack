@@ -422,4 +422,31 @@ return [
         'min_size_kb' => 'Minimum size in KB',
     ],
 
+    'release_artifact_kind' => [
+        'bundle' => 'Bundle',
+        'source_map' => 'Source map',
+    ],
+
+    'symbolication_status' => [
+        'pending' => 'Being translated',
+        'mapped' => 'Fully translated',
+        'partial' => 'Partially translated',
+        'unmapped' => 'Not translated',
+        'failed' => 'Translation failed',
+    ],
+
+    'symbolication_diagnosis' => [
+        'no_artifacts' => 'No artifacts were uploaded for this release:',
+        'no_release' => 'The event carries no release — without one, no source map can be matched.',
+        'artifact_not_found' => 'No artifact for this path:',
+        'unknown_debug_id' => 'No artifact for this debug ID:',
+        'no_source_map_reference' => 'The bundle does not reference a source map:',
+        'source_map_missing' => 'The referenced source map was not uploaded:',
+        'invalid_source_map' => 'The source map cannot be read:',
+        'no_position' => 'The frame carries no line number:',
+        'no_mapping_for_position' => 'The source map has no entry for this position:',
+        'frame_limit_reached' => 'Beyond the per-event limit of translated frames:',
+        'no_source_content' => 'The source map does not embed the source text:',
+    ],
+
 ];

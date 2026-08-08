@@ -2,8 +2,12 @@
 
 namespace App\Support\Issues;
 
+use App\Enums\SymbolicationDiagnosis;
+use App\Http\Controllers\IssueDetailController;
 use App\Models\Event;
+use App\Models\EventSymbolication;
 use App\Support\Formats;
+use App\Support\Translations;
 use Illuminate\Support\Carbon;
 
 /**
@@ -44,6 +48,10 @@ final class EventDetail
             'receivedAtLabel' => Formats::dateTimeSeconds($event->received_at),
             'message' => self::message($event),
             'exceptions' => self::exceptions($event),
+            // Der zurückübersetzte Stacktrace (R5): eine zweite Sicht **neben**
+            // der gemeldeten, zwischen der sich umschalten lässt — nicht an ihrer
+            // Stelle.
+            'symbolication' => self::symbolication($event),
             'breadcrumbs' => self::breadcrumbs($event),
             'request' => $event->request,
             'user' => $event->user,
@@ -75,17 +83,111 @@ final class EventDetail
     }
 
     /**
+     * Der zurückübersetzte Stacktrace, sofern es einen gibt.
+     *
+     * **Die Zeile wird nicht nachgeladen, sondern erwartet.** Die Beziehung wird
+     * vom Aufrufer mitgeladen ({@see IssueDetailController});
+     * hier nachzufragen hieße, eine Abfrage in der Darstellung auszulösen — und
+     * zwar genau eine je aufgeschlagener Fehlerseite.
+     *
+     * `null` heißt „für diese Meldung ist keine Übersetzung vorgesehen". Der
+     * Unterschied zu einer vorhandenen Zeile mit `unmapped` ist der zwischen
+     * „kommt hier nicht vor" und „wurde versucht" — und nur im zweiten Fall hat
+     * die Anzeige etwas zu sagen.
+     *
+     * @return array<string, mixed>|null
+     */
+    private static function symbolication(Event $event): ?array
+    {
+        $record = $event->symbolication;
+
+        if ($record === null) {
+            return null;
+        }
+
+        $exceptions = is_array($record->exceptions) ? $record->exceptions : [];
+
+        return [
+            'status' => $record->status->value,
+            'statusLabel' => $record->status->label(),
+            'mappedFrames' => $record->mapped_frames,
+            'totalFrames' => $record->total_frames,
+            // Die Rahmen gehen durch dieselbe Darstellung wie die gemeldeten: sie
+            // liegen in derselben Form, und ein zweiter Weg wäre ein zweiter Ort
+            // für Fehler.
+            'exceptions' => $record->status->hasFrames()
+                ? self::presentExceptions($exceptions)
+                : [],
+            'diagnostics' => self::diagnostics($record),
+        ];
+    }
+
+    /**
+     * Die Gründe, warum Rahmen unübersetzt blieben — mit ihrem Text.
+     *
+     * Der Text kommt von hier und nicht aus der Oberfläche: übersetzt wird
+     * serverseitig, und die Aufzählungs-Texte gehören nicht zu den Gruppen, die
+     * React überhaupt bekommt ({@see Translations::GROUPS}). Ein
+     * unbekannter Grund — eine Zeile aus einer älteren Fassung — fällt weg statt
+     * die Anzeige mit einem Schlüssel zu füllen.
+     *
+     * @return list<array{reason: string, reasonLabel: string, detail: string|null, count: int}>
+     */
+    private static function diagnostics(EventSymbolication $record): array
+    {
+        $presented = [];
+
+        foreach ($record->diagnostics ?? [] as $diagnosis) {
+            // `tryFrom` und nicht `from`: in der Zeile kann ein Grund aus einer
+            // älteren Fassung stehen. Er fällt weg, statt die Anzeige mit einem
+            // Schlüssel zu füllen oder den Aufruf scheitern zu lassen.
+            $reason = SymbolicationDiagnosis::tryFrom($diagnosis['reason']);
+
+            if ($reason === null) {
+                continue;
+            }
+
+            $presented[] = [
+                'reason' => $reason->value,
+                'reasonLabel' => $reason->label(),
+                'detail' => self::text($diagnosis['detail']),
+                'count' => $diagnosis['count'],
+            ];
+        }
+
+        return $presented;
+    }
+
+    /**
      * Die Ausnahme und ihre Ursachen — zuletzt Geworfenes zuerst.
      *
      * @return list<array<string, mixed>>
      */
     private static function exceptions(Event $event): array
     {
-        $exceptions = $event->exceptions ?? [];
+        return self::presentExceptions($event->exceptions ?? []);
+    }
 
+    /**
+     * Ausnahmen in Leserichtung — aus den gemeldeten wie aus den
+     * zurückübersetzten.
+     *
+     * Eine Methode für beide, weil beide dieselbe Form haben und dieselbe
+     * Drehung brauchen. Zwei Wege hätten zur Folge, dass die zweite Sicht eines
+     * Tages anders aussieht als die erste, ohne dass es jemand entschieden hat.
+     *
+     * @param  list<array<string, mixed>>|array<mixed>  $exceptions
+     * @return list<array<string, mixed>>
+     */
+    private static function presentExceptions(array $exceptions): array
+    {
         $presented = [];
 
         foreach (array_reverse($exceptions) as $index => $exception) {
+            if (! is_array($exception)) {
+                continue;
+            }
+
             $frames = $exception['frames'] ?? null;
 
             $presented[] = [
@@ -135,10 +237,37 @@ final class EventDetail
                 'inApp' => ($frame['in_app'] ?? false) === true,
                 'context' => self::context($frame, $lineno),
                 'vars' => is_array($frame['vars'] ?? null) && $frame['vars'] !== [] ? $frame['vars'] : null,
+                // Woher dieser Rahmen kam, wenn er zurückübersetzt ist (R5). Er
+                // steht an einem übersetzten Rahmen und nirgends sonst — und er
+                // ist die einzige Möglichkeit zu erkennen, dass eine Übersetzung
+                // aus einem anderen Bauvorgang stammt und daneben liegt.
+                'minified' => self::minified($frame),
             ];
         }
 
         return $presented;
+    }
+
+    /**
+     * Die minimierte Stelle, aus der ein übersetzter Rahmen entstanden ist.
+     *
+     * @param  array<string, mixed>  $frame
+     * @return array{filename: string|null, function: string|null, lineno: int|null, colno: int|null}|null
+     */
+    private static function minified(array $frame): ?array
+    {
+        $minified = $frame['minified'] ?? null;
+
+        if (! is_array($minified) || $minified === []) {
+            return null;
+        }
+
+        return [
+            'filename' => self::text($minified['filename'] ?? null),
+            'function' => self::text($minified['function'] ?? null),
+            'lineno' => is_int($minified['lineno'] ?? null) ? $minified['lineno'] : null,
+            'colno' => is_int($minified['colno'] ?? null) ? $minified['colno'] : null,
+        ];
     }
 
     /**
