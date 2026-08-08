@@ -74,11 +74,31 @@ final class ProcessingMetrics
      */
     public function queued(): ?int
     {
-        try {
-            return Queue::size(QueueName::Ingest->value);
-        } catch (Throwable) {
-            return null;
+        return $this->queueSizes()[QueueName::Ingest->value];
+    }
+
+    /**
+     * Dasselbe für alle Warteschlangen der Anwendung.
+     *
+     * Erst nebeneinander sind die Zahlen zu gebrauchen: steht die Aufnahme
+     * still, während die Benachrichtigungen leer sind, fehlen Arbeiter für
+     * `ingest`; stauen sich alle gleichzeitig, läuft überhaupt keiner mehr.
+     *
+     * @return array<string, int|null>
+     */
+    public function queueSizes(): array
+    {
+        $sizes = [];
+
+        foreach (QueueName::cases() as $queue) {
+            try {
+                $sizes[$queue->value] = Queue::size($queue->value);
+            } catch (Throwable) {
+                $sizes[$queue->value] = null;
+            }
         }
+
+        return $sizes;
     }
 
     /**
@@ -105,13 +125,57 @@ final class ProcessingMetrics
             ->pluck('duration_ms')
             ->all();
 
-        $count = count($durations);
+        return self::summarize($durations);
+    }
+
+    /**
+     * Wie lange es von der Annahme bis zur Sichtbarkeit dauert.
+     *
+     * Die andere Hälfte der Wahrheit neben {@see durations()}: die misst, wie
+     * lange die Kette *rechnet*, diese hier, wie lange eine Meldung insgesamt
+     * unterwegs ist — Wartezeit in der Warteschlange eingeschlossen. Das ist
+     * die Zahl, die der Nutzer merkt. Sie geht auseinander, sobald zu wenige
+     * Arbeiter laufen: jeder einzelne Durchlauf bleibt schnell, die Meldung
+     * erscheint trotzdem erst Minuten später.
+     *
+     * @return array{count: int, avg_ms: int|null, p95_ms: int|null, max_ms: int|null}
+     */
+    public function latency(int $sample = 1000): array
+    {
+        $rows = IngestPayload::query()
+            ->where('processing_state', ProcessingState::Processed)
+            ->whereNotNull('processed_at')
+            ->orderByDesc('processed_at')
+            ->limit($sample)
+            ->get(['created_at', 'processed_at']);
+
+        $latencies = $rows
+            // Negative Werte kann es nicht geben; ein Uhrensprung auf dem
+            // Server erzeugt sie trotzdem. Auf null gedeckelt, damit ein
+            // einzelner Ausreißer nicht den Mittelwert nach unten zieht.
+            ->map(fn (IngestPayload $payload): int => max(0, (int) round(
+                $payload->created_at->diffInMilliseconds($payload->processed_at, absolute: false),
+            )))
+            ->all();
+
+        return self::summarize($latencies);
+    }
+
+    /**
+     * Mittelwert, langsamstes Zwanzigstel und Höchstwert einer Messreihe.
+     *
+     * @param  list<int>  $values
+     * @return array{count: int, avg_ms: int|null, p95_ms: int|null, max_ms: int|null}
+     */
+    private static function summarize(array $values): array
+    {
+        $count = count($values);
 
         if ($count === 0) {
             return ['count' => 0, 'avg_ms' => null, 'p95_ms' => null, 'max_ms' => null];
         }
 
-        sort($durations);
+        sort($values);
 
         // Nächstgelegener Rang: der kleinste Wert, unter oder auf dem 95 % der
         // Durchläufe liegen. `ceil` bestimmt den Rang, der Abzug macht daraus
@@ -120,9 +184,9 @@ final class ProcessingMetrics
 
         return [
             'count' => $count,
-            'avg_ms' => (int) round(array_sum($durations) / $count),
-            'p95_ms' => $durations[$index],
-            'max_ms' => $durations[$count - 1],
+            'avg_ms' => (int) round(array_sum($values) / $count),
+            'p95_ms' => $values[$index],
+            'max_ms' => $values[$count - 1],
         ];
     }
 

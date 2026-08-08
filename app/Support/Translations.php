@@ -38,6 +38,7 @@ final class Translations
         'issues',
         'nav',
         'notifications',
+        'operations',
         'organizations',
         'performance',
         'performance_issues',

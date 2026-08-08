@@ -2,8 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\ProcessIngestPayload;
-use App\Models\IngestPayload;
+use App\Support\Operations\IngestRetry;
 use Illuminate\Console\Command;
 
 /**
@@ -27,7 +26,7 @@ class IngestRetryCommand extends Command
 
     protected $description = 'Endgültig gescheiterte Meldungen erneut zur Verarbeitung einreihen';
 
-    public function handle(): int
+    public function handle(IngestRetry $retry): int
     {
         $limit = max(1, (int) $this->option('limit'));
 
@@ -41,30 +40,19 @@ class IngestRetryCommand extends Command
         /** @var list<int|string> $ids */
         $ids = (array) $this->option('id');
 
-        $payloads = IngestPayload::query()
-            ->failedProcessing()
-            ->when($project !== null, fn ($query) => $query->where('project_id', $project))
-            ->when($ids !== [], fn ($query) => $query->whereIn('id', $ids))
-            ->orderBy('id')
-            ->limit($limit)
-            ->get();
+        // Das Einreihen selbst steht in App\Support\Operations\IngestRetry —
+        // die Betriebsansicht (O5) hat dieselbe Schaltfläche, und zwei
+        // Umsetzungen desselben Ablaufs gehen genau an der Reihenfolge
+        // auseinander.
+        $count = $retry->queueFailed($project, $ids, $limit);
 
-        if ($payloads->isEmpty()) {
+        if ($count === 0) {
             $this->components->info('Keine gescheiterten Meldungen gefunden.');
 
             return self::SUCCESS;
         }
 
-        foreach ($payloads as $payload) {
-            // Erst zurückstellen, dann einreihen: ein Arbeiter, der den Job
-            // sofort abholt, sieht sonst noch den alten Zustand und hält die
-            // Meldung für erledigt.
-            $payload->resetProcessing();
-
-            ProcessIngestPayload::dispatch($payload);
-        }
-
-        $this->components->info($payloads->count().' Meldung(en) erneut eingereiht.');
+        $this->components->info($count.' Meldung(en) erneut eingereiht.');
 
         return self::SUCCESS;
     }

@@ -64,6 +64,20 @@ Alles hängt an `ERRSTACK_DSN`; ohne diese Angabe meldet nichts. Einrichtung und
 die einzelnen Meldewege stehen in
 [docs/selbstueberwachung.md](docs/selbstueberwachung.md).
 
+## Betrieb
+
+Ob die eigene Installation noch rund läuft, beantworten drei Stellen: `/health`
+für Ladeverteiler und fremde Überwachung (ohne Anmeldung, `200` oder `503` und
+sonst keine Auskunft), `/metrics` im Prometheus-Format (ausgeliefert **aus**,
+`ERRSTACK_METRICS_ENABLED`) und die Betriebsansicht im Nutzer-Menü unter
+**Betrieb** — Rückstand, Verarbeitungsdauern und alles Liegengebliebene, samt
+Schaltflächen zum erneuten Starten.
+
+Ein wachsender Rückstand ist kein Fehler und meldet sich deshalb nicht von
+selbst; `ops:watch` sieht minütlich nach und warnt, wenn die Schwelle
+*ununterbrochen* überschritten bleibt. Schwellen, Zugang und die Frist stehen in
+[docs/betrieb.md](docs/betrieb.md).
+
 ## Automatische Prüfungen
 
 Jeder Pull Request löst den Workflow `.github/workflows/ci.yml` aus. Die Jobs
@@ -117,6 +131,7 @@ php artisan queue:work --queue=ingest,notifications,performance,symbolication,de
 | `php artisan queue:failed` | Fehlerablage ansehen (Tabelle `failed_jobs`) |
 | `php artisan queue:retry all` | fehlgeschlagene Jobs erneut einreihen |
 | `php artisan queue:monitor ingest,notifications --max=100` | Warteschlangen-Länge überwachen |
+| `php artisan ops:watch` | Rückstand gegen die Schwellen prüfen und ggf. warnen |
 | `php artisan schedule:list` | geplante Aufgaben anzeigen |
 | `php artisan demo:ingest [--fail]` | Beispiel-Job einreihen (auch als Knopf auf der Übersicht) |
 

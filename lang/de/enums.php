@@ -214,6 +214,11 @@ return [
         'expect-staple' => 'OCSP-Stapling fehlgeschlagen',
     ],
 
+    'health_state' => [
+        'ok' => 'in Ordnung',
+        'failed' => 'gestört',
+    ],
+
     'processing_state' => [
         'pending' => 'wartet auf Auswertung',
         'processed' => 'ausgewertet',

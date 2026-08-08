@@ -27,6 +27,7 @@ return [
         'profile' => 'Profile',
         'notifications' => 'Notifications',
         'api_tokens' => 'Access tokens',
+        'operations' => 'Operations',
         'components' => 'Components',
     ],
 
