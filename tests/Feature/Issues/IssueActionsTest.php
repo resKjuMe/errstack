@@ -116,7 +116,37 @@ class IssueActionsTest extends TestCase
         $this->assertNotSame($newer->id, $issue->resolved_in_release_id);
     }
 
-    public function test_resolving_in_the_next_release_marks_the_flag_without_a_release(): void
+    /**
+     * „Im nächsten Release" merkt sich dieselbe Version wie „in dieser
+     * Version" — dort als **Bezugspunkt** und nicht als Ziel: behoben ist der
+     * Fehler in dem, was danach kommt. Ohne diesen Bezugspunkt wäre die
+     * Rückfallerkennung (S8) bei dieser Art zu erledigen blind.
+     */
+    public function test_resolving_in_the_next_release_remembers_the_release_it_refers_to(): void
+    {
+        [$user, $project] = $this->context();
+
+        $seen = Release::factory()->for($project)->create(['version' => '2.0.0']);
+        $issue = $this->issue($project, ['last_release_id' => $seen->id]);
+
+        $this->actingAs($user)->post(route('issues.actions.store'), [
+            'action' => 'resolve',
+            'mode' => 'next_release',
+            'issues' => [$issue->id],
+        ]);
+
+        $issue->refresh();
+
+        $this->assertTrue($issue->resolved_in_next_release);
+        $this->assertSame($seen->id, $issue->resolved_in_release_id);
+    }
+
+    /**
+     * Ohne je gesehene Version bleibt der Bezugspunkt leer — der Regelfall bei
+     * einem SDK ohne `release`-Angabe. Dann gilt wieder die einfache Aussage
+     * „ab jetzt weg".
+     */
+    public function test_resolving_in_the_next_release_without_a_release_keeps_the_flag_alone(): void
     {
         [$user, $project] = $this->context();
         $issue = $this->issue($project);

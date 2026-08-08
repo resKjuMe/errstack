@@ -50,12 +50,18 @@ final class EvaluateIssueAlerts implements ProcessingStep
         // diesem Ereignis beziehen.
         $current = $issue->fresh() ?? $issue;
 
+        // Der Rückfall kommt aus dem Schritt davor und nicht aus dem Eintrag:
+        // der ist inzwischen offen, und dass er eben noch erledigt war, ist
+        // ihm nicht mehr anzusehen ({@see DetectRegression::RESOLVED_AT}).
+        $regressedFrom = $context->get(DetectRegression::RESOLVED_AT);
+
         $this->evaluator->evaluate(new IssueAlertContext(
             issue: $current,
             event: $record,
             isNew: $context->get(AggregateIssue::WAS_NEW) === true,
             escalated: $context->get(AggregateIssue::ESCALATED) === true,
             occurredAt: CarbonImmutable::parse($record->occurred_at)->utc(),
+            regressedFrom: $regressedFrom instanceof CarbonImmutable ? $regressedFrom : null,
         ));
 
         $next($context);

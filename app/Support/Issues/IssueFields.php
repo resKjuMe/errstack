@@ -43,20 +43,19 @@ use Illuminate\Support\Facades\Date;
  *     ({@see EventTags}) — sie würden sonst das Aufräumen der
  *     Ereignisse überleben.
  *
- * **Was es noch nicht gibt, wird benannt und nicht erfunden.** `bookmarks:` und
- * `is:regressed` gehören zur Sprache, aber die Merkzettel (S6) und die
- * Rückfallerkennung (S8) sind eigene Aufgaben. Sie schränken deshalb nichts ein
- * und werden zurückgemeldet — eine Liste, die so tut, als hätte sie „wieder
- * aufgetreten" ausgewertet, ist schlimmer als eine, die sagt, dass sie es nicht
- * konnte.
+ * **Was es noch nicht gibt, wird benannt und nicht erfunden.** `bookmarks:`
+ * gehört zur Sprache, aber die Merkzettel (S6) sind eine eigene Aufgabe. Das
+ * Feld schränkt deshalb nichts ein und wird zurückgemeldet — eine Liste, die
+ * so tut, als hätte sie „gemerkt" ausgewertet, ist schlimmer als eine, die
+ * sagt, dass sie es nicht konnte.
  *
- * **Die Zuständigkeit (S7) ist seit dieser Aufgabe eine gewöhnliche Spalte.**
- * `assigned:`, `is:assigned`, `is:unassigned` und `is:for_review` lesen
- * `assigned_user_id`, `assigned_team_id` und `for_review_at` am Eintrag und
- * kosten damit so wenig wie `is:unresolved`. **Wen** ein Text bezeichnet,
- * entscheidet dabei nicht dieses Feld, sondern {@see IssueAssignee} — dieselbe
- * Auflösung wie im Formular der Aktionsleiste, damit „anna@example.com" hier und
- * dort dieselbe Person meint.
+ * **Die Zuständigkeit (S7) ist eine gewöhnliche Spalte.** `assigned:`,
+ * `is:assigned`, `is:unassigned` und `is:for_review` lesen `assigned_user_id`,
+ * `assigned_team_id` und `for_review_at` am Eintrag und kosten damit so wenig
+ * wie `is:unresolved`. **Wen** ein Text bezeichnet, entscheidet dabei nicht
+ * dieses Feld, sondern {@see IssueAssignee} — dieselbe Auflösung wie im
+ * Formular der Aktionsleiste, damit „anna@example.com" hier und dort dieselbe
+ * Person meint. Der Rückfall (S8) ebenso: `is:regressed` liest `regressed_at`.
  */
 final class IssueFields implements FieldResolver
 {
@@ -79,19 +78,25 @@ final class IssueFields implements FieldResolver
     ];
 
     /**
+     * Zustände, die nicht an `status` hängen.
+     *
+     * `is:regressed` fragt nicht, woran der Eintrag ist, sondern **wie** er
+     * dorthin kam: er ist offen wie jeder andere offene, aber von selbst und
+     * nicht durch eine Entscheidung (S8). Deshalb steht er in einer eigenen
+     * Spalte und nicht als vierter Fall in {@see IssueStatus} — die Begründung
+     * dazu in der Migration `add_issue_regression`.
+     *
+     * @var list<string>
+     */
+    private const MARKER_STATES = ['regressed'];
+
+    /**
      * Die Zustände, die `is:` über die Zuständigkeit beantwortet — sie lesen
      * keine `status`-Spalte und stehen deshalb neben {@see STATES}.
      *
      * @var list<string>
      */
     private const ASSIGNMENT_STATES = ['assigned', 'unassigned', 'for_review'];
-
-    /**
-     * Zustände, die es in der Sprache gibt und in den Daten noch nicht.
-     *
-     * @var list<string>
-     */
-    private const PENDING_STATES = ['regressed'];
 
     /**
      * Felder, die es in der Sprache gibt und in den Daten noch nicht.
@@ -220,14 +225,17 @@ final class IssueFields implements FieldResolver
      * und ein zweites Feld dafür wäre eine Unterscheidung, die nur das Schema
      * kennt.
      */
-    private function state(Condition $condition): ?Closure
+    private function state(Condition $condition): Closure
     {
         $value = mb_strtolower($condition->value);
 
-        if (in_array($value, self::PENDING_STATES, true)) {
-            $this->unavailable[] = $condition->field.':'.$condition->value;
+        if ($value === 'regressed') {
+            self::rejectComparator($condition);
 
-            return null;
+            // Der Zeitpunkt **ist** die Marke: „wieder aufgetreten" und „wann"
+            // stehen in einer Spalte (siehe die Migration). Ein Vergleich auf
+            // `null` ist deshalb die ganze Bedingung.
+            return static fn (Builder $query) => $query->whereNotNull('regressed_at');
         }
 
         $status = self::STATES[$value] ?? null;
@@ -240,7 +248,7 @@ final class IssueFields implements FieldResolver
                     'allowed' => implode(', ', [
                         ...array_keys(self::STATES),
                         ...self::ASSIGNMENT_STATES,
-                        ...self::PENDING_STATES,
+                        ...self::MARKER_STATES,
                     ]),
                 ]),
                 $condition->valuePosition,

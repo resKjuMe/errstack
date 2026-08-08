@@ -163,14 +163,39 @@ final class IssueAlertPreview
     ): bool {
         return match ($condition->type) {
             IssueAlertCondition::NewIssue => $issue->first_seen->greaterThanOrEqualTo($since),
-            IssueAlertCondition::Regression => $issue->status === IssueStatus::Resolved
-                && $issue->resolved_at !== null
-                && $issue->last_seen->greaterThan($issue->resolved_at),
+            IssueAlertCondition::Regression => self::regressed($issue, $since),
             IssueAlertCondition::Escalation => $awoken[$issue->id] ?? false,
             IssueAlertCondition::Frequency => $this->counts->events($issue, $condition->windowMinutes(), $now) > $condition->value,
             IssueAlertCondition::UserFrequency => $this->counts->users($issue, $condition->windowMinutes(), $now) > $condition->value,
             IssueAlertCondition::PercentChange => $this->percentChanged($condition, $issue, $now),
         };
+    }
+
+    /**
+     * Ist dieser Eintrag im betrachteten Zeitraum zurückgekommen?
+     *
+     * Zwei Fälle, seit es die Rückfallerkennung (S8) gibt. Der erste ist der
+     * übliche: der Eintrag ist von selbst wieder aufgegangen, und der Zeitpunkt
+     * steht an ihm. Der zweite bleibt daneben stehen, weil er nicht dasselbe
+     * ist — eine Meldung aus einer noch laufenden alten Fassung macht „erledigt
+     * in 1.4.2" nicht rückgängig, ist der Regel aber derselbe Anlass: der
+     * behobene Fehler trifft weiter ein.
+     *
+     * Die Vorschau kann dabei nur den **jetzigen** Stand befragen: sie zählt
+     * nach, was gewesen wäre, und hat dafür keine Historie der Zustände. Ein
+     * Eintrag, der zurückkam und seither erneut erledigt wurde, fehlt ihr
+     * deshalb — dieselbe Ungenauigkeit wie bei den übrigen Bedingungen, die
+     * über Zähler gehen.
+     */
+    private static function regressed(Issue $issue, CarbonImmutable $since): bool
+    {
+        if ($issue->regressed_at !== null) {
+            return $issue->regressed_at->greaterThanOrEqualTo($since);
+        }
+
+        return $issue->status === IssueStatus::Resolved
+            && $issue->resolved_at !== null
+            && $issue->last_seen->greaterThan($issue->resolved_at);
     }
 
     private function percentChanged(RuleCondition $condition, Issue $issue, CarbonImmutable $now): bool

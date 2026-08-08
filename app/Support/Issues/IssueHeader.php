@@ -61,6 +61,11 @@ final class IssueHeader
             'resolution' => self::resolution($issue),
             'ignore' => self::ignore($issue),
 
+            // Der Rückfall (S8): der Eintrag ist offen, aber nicht, weil jemand
+            // ihn geöffnet hat. Er steht neben dem Zustand und nicht in ihm —
+            // „wieder aufgetreten" beantwortet, wie er hierher kam, und nicht,
+            // woran er ist.
+            'regression' => self::regression($issue),
             // Wer sich kümmert (S7), und ob der Eintrag noch zur Prüfung liegt.
             // Beides gehört in den Kopf und nicht in den Verlauf: der Verlauf
             // sagt, **wann** zugewiesen wurde, der Kopf sagt, **wer** es jetzt
@@ -194,6 +199,30 @@ final class IssueHeader
             'by' => $issue->resolvedBy?->name,
             'release' => $issue->resolvedInRelease?->version,
             'nextRelease' => $issue->resolved_in_next_release,
+        ];
+    }
+
+    /**
+     * Der Rückfall — `null`, solange der Eintrag keiner ist.
+     *
+     * Die Version steht mit dabei, weil sie die eigentliche Auskunft ist: „ist
+     * wieder aufgetreten" beantwortet noch nicht, ob der Fix es nie in eine
+     * Auslieferung geschafft hat oder ob er es getan hat und trotzdem nicht
+     * hält. `null` bleibt sie, wenn die Meldung keine Version trug — der
+     * Regelfall bei einem SDK ohne `release`-Angabe.
+     *
+     * @return array{at: string|null, atLabel: string|null, release: string|null}|null
+     */
+    private static function regression(Issue $issue): ?array
+    {
+        if (! $issue->hasRegressed()) {
+            return null;
+        }
+
+        return [
+            'at' => $issue->regressed_at?->toIso8601String(),
+            'atLabel' => Formats::dateTime($issue->regressed_at),
+            'release' => $issue->regressedInRelease?->version,
         ];
     }
 
