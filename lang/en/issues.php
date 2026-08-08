@@ -176,6 +176,41 @@ return [
         'discarded' => 'Deleted; reports of the same kind will be discarded from now on',
     ],
 
+    // Comments on an issue (App\Support\Issues\IssueComments,
+    // resources/js/shell/pages/issues/detail/Comments.jsx).
+    'comments' => [
+        'title' => 'Write a comment',
+        'placeholder' => 'What is there to say about this issue? Use @ to mention a person or a team.',
+        'hint' => 'Use @ to mention a person or a team — everyone mentioned is notified.',
+        'submit' => 'Comment',
+        'edited' => 'edited',
+        'edited_at' => 'edited on :at',
+        'edit' => 'Edit',
+        'save' => 'Save',
+        'cancel' => 'Cancel',
+        'delete' => 'Delete',
+        'delete_confirm' => 'Delete this comment? This cannot be undone.',
+        'no_suggestions' => 'Nobody found.',
+
+        // How the suggestion list shows what is being mentioned.
+        'kind' => [
+            'user' => 'Person',
+            'team' => 'Team',
+        ],
+
+        'flash' => [
+            'created' => 'Comment written.',
+            'updated' => 'Comment changed.',
+            'deleted' => 'Comment deleted.',
+        ],
+
+        'notification' => [
+            'title' => ':actor mentioned you in :project',
+            'context_project' => 'Project',
+            'context_issue' => 'Issue',
+        ],
+    ],
+
     // Merging and splitting issues by hand (S9,
     // app/Support/Issues/IssueMerging).
     'merge' => [

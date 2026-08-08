@@ -21,6 +21,7 @@
 */
 
 use App\Http\Controllers\IssueActionController;
+use App\Http\Controllers\IssueCommentController;
 use App\Http\Controllers\IssueController;
 use App\Http\Controllers\IssueDetailController;
 use App\Http\Controllers\IssueMergeController;
@@ -69,6 +70,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('issues.events.show');
     Route::get('fehler/{issue}/ereignisse/{event}/rohdaten', [IssueDetailController::class, 'raw'])
         ->name('issues.events.raw');
+
+    // Die Kommentare eines Fehlers (S10). Sie stehen unter ihm, weil sie ihm
+    // gehören — anders als die Zustandsaktionen, die auch eine ganze Auswahl
+    // meinen können. Die Kennung des Fehlers steht auch im Pfad des einzelnen
+    // Kommentars: sie ist dort keine Verzierung, sondern wird geprüft (siehe
+    // IssueCommentController), damit eine vertauschte Adresszeile keinen
+    // fremden Kommentar unter fremdem Fehler ändert.
+    //
+    // Die Vorschläge fürs `@` stehen **vor** der Kommentarkennung, aus
+    // demselben Grund wie die Suchvorschläge oben: „vorschlaege" wäre dort
+    // sonst eine Kennung.
+    Route::get('fehler/{issue}/kommentare/vorschlaege', [IssueCommentController::class, 'suggest'])
+        ->name('issues.comments.suggest');
+    Route::post('fehler/{issue}/kommentare', [IssueCommentController::class, 'store'])
+        ->name('issues.comments.store');
+    Route::patch('fehler/{issue}/kommentare/{comment}', [IssueCommentController::class, 'update'])
+        ->name('issues.comments.update');
+    Route::delete('fehler/{issue}/kommentare/{comment}', [IssueCommentController::class, 'destroy'])
+        ->name('issues.comments.destroy');
 
     // Die Merkmale eines Fehlers (S3). Sie hängen am Eintrag und stehen deshalb
     // unter ihm — anders als die Liste, die keinen einzelnen Eintrag meint.
