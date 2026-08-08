@@ -42,6 +42,7 @@ final class Translations
         'projects',
         'releases',
         'sampling',
+        'tags',
         'teams',
     ];
 

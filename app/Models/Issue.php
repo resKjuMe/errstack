@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\EventLevel;
 use App\Enums\IssuePriority;
 use App\Enums\IssueStatus;
+use App\Support\Tags\TagAggregates;
 use Carbon\CarbonImmutable;
 use Database\Factories\IssueFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -135,12 +136,14 @@ class Issue extends Model
     /**
      * Nimmt ein Ereignis in die Zähler auf.
      *
-     * Vier Dinge, jedes für sich sperrfrei:
+     * Fünf Dinge, jedes für sich sperrfrei:
      *
      *   1. Den Anspruch auf das Zählen sichern ({@see Event::claimForCounting()}).
      *   2. Häufigkeit, Zeitpunkte und Grad am Eintrag fortschreiben.
      *   3. Den Zeitreihen-Zähler des Fensters hochsetzen.
      *   4. Den Betroffenen zählen, falls er neu ist.
+     *   5. Die Merkmale mitschreiben — Browser, Fassung, Server
+     *      ({@see TagAggregates::record()}).
      *
      * Der Anspruch steht am Anfang und nicht am Ende: läuft dieselbe Meldung
      * ein zweites Mal durch die Kette — nach einem Fehlschlag, nach einer
@@ -149,9 +152,9 @@ class Issue extends Model
      * erneuten Anlauf steigt, ist schlimmer als gar keiner: er sieht richtig aus.
      *
      * **Bewusst ohne umschließende Transaktion.** Bricht die Verbindung
-     * zwischen zwei der vier Schritte ab, steht die Häufigkeit um eins höher als
+     * zwischen zwei der fünf Schritte ab, steht die Häufigkeit um eins höher als
      * die Zeitreihe — und der erneute Anlauf holt es nicht nach, denn der
-     * Anspruch ist vergeben. Die Alternative wäre, alle vier in eine Transaktion
+     * Anspruch ist vergeben. Die Alternative wäre, alle fünf in eine Transaktion
      * zu legen: dann hielte jeder Arbeiter die Sperre auf der Zeile des
      * Eintrags bis zum Abschluss, und genau diese Zeile ist bei einem Ausfall
      * die, auf die alle gleichzeitig schreiben. Eine seltene Abweichung um eins
@@ -172,6 +175,13 @@ class Issue extends Model
         IssueCount::record($this, $occurred);
 
         IssueUser::record($this, $event);
+
+        // Die Merkmale hängen am selben Anspruch wie die übrigen Zähler und
+        // stehen deshalb hier und nicht in einem eigenen Verarbeitungsschritt:
+        // ein Schritt hinter diesem müsste den Anspruch ein zweites Mal
+        // beurteilen, und zwei Stellen, die „wurde das schon gezählt?"
+        // beantworten, sind eine zu viel.
+        TagAggregates::record($this, $event);
 
         return true;
     }

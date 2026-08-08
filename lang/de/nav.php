@@ -12,6 +12,7 @@ return [
     'links' => [
         'dashboard' => 'Übersicht',
         'issues' => 'Fehler',
+        'tags' => 'Merkmale',
         'releases' => 'Versionen',
         'performance' => 'Leistung',
         'projects' => 'Projekte',

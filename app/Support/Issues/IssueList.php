@@ -8,6 +8,7 @@ use App\Models\Issue;
 use App\Models\Project;
 use App\Support\Filters\GlobalFilter;
 use App\Support\Formats;
+use App\Support\Tags\TagFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -39,9 +40,9 @@ final class IssueList
      *
      * @return LengthAwarePaginator<int, array<string, mixed>>
      */
-    public static function paginate(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?IssueSearch $search = null): LengthAwarePaginator
+    public static function paginate(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?IssueSearch $search = null, ?TagFilter $tag = null): LengthAwarePaginator
     {
-        $page = self::query($filter, $sort, $status, $search)
+        $page = self::query($filter, $sort, $status, $search, $tag)
             ->paginate(self::PER_PAGE)
             ->withQueryString();
 
@@ -66,7 +67,7 @@ final class IssueList
      *
      * @return Builder<Issue>
      */
-    public static function query(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?IssueSearch $search = null): Builder
+    public static function query(GlobalFilter $filter, IssueSort $sort, ?IssueStatus $status, ?IssueSearch $search = null, ?TagFilter $tag = null): Builder
     {
         $query = Issue::query()->with([
             'project:id,name,slug,organization_id',
@@ -84,6 +85,10 @@ final class IssueList
         }
 
         $search?->apply($query);
+
+        // Die Merkmal-Einschränkung liest die vorberechneten Zähler und nicht
+        // die Ereignisse — dieselbe Zusage wie für den Rest dieser Liste.
+        $tag?->apply($query);
 
         $sort->apply($query);
 
@@ -131,6 +136,9 @@ final class IssueList
             'firstRelease' => $issue->firstRelease?->version,
             'lastRelease' => $issue->lastRelease?->version,
             'project' => self::project($issue),
+            // Der Weg zu den Merkmalen dieses Fehlers — welche Browser, welche
+            // Fassungen, welche Server ihn betrifft (S3).
+            'tagsHref' => route('issues.tags.index', $issue),
             'series' => $series,
         ];
     }

@@ -41,6 +41,17 @@ export default function IssueRow({ issue, selected, onToggle, showProject, trend
                             </Link>
                         </>
                     )}
+                    {/* Der Weg zu den Merkmalen: welche Browser, Fassungen und
+                        Server diesen Fehler betreffen. Er steht an jeder Zeile,
+                        weil die Frage „trifft das alle oder nur einen?" an jedem
+                        Fehler dieselbe ist. */}
+                    <span className="mx-2">·</span>
+                    <Link
+                        href={issue.tagsHref}
+                        className="underline hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                        {t('tags.link.issue')}
+                    </Link>
                 </p>
 
                 <ReleaseTrail issue={issue} t={t} />
