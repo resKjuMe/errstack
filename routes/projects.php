@@ -20,6 +20,7 @@ use App\Http\Controllers\FingerprintRuleController;
 use App\Http\Controllers\IssueAlertRuleController;
 use App\Http\Controllers\MetricAlertController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectDigestController;
 use App\Http\Controllers\ProjectFilterController;
 use App\Http\Controllers\ProjectKeyController;
 use App\Http\Controllers\ProjectPerformanceController;
@@ -200,6 +201,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('projects.performance.index');
             Route::patch('{project}/leistungserkennung', [ProjectPerformanceController::class, 'update'])
                 ->name('projects.performance.update');
+
+            // Bündelung der Benachrichtigungen (A6). Ansehen darf jedes
+            // Mitglied: sie beantwortet die Frage, warum eine Meldung erst mit
+            // Verzögerung kam — und die stellt sich der, der auf sie gewartet
+            // hat, nicht die Verwaltung.
+            Route::get('{project}/buendelung', [ProjectDigestController::class, 'index'])
+                ->name('projects.digest.index');
+            Route::patch('{project}/buendelung', [ProjectDigestController::class, 'update'])
+                ->name('projects.digest.update');
 
             Route::get('{project}/datenschutz', [ProjectPrivacyController::class, 'index'])
                 ->name('projects.privacy.index');

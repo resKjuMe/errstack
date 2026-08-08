@@ -80,6 +80,7 @@ export default function Show({
 
                 <MetricAlerts project={project} />
                 <IssueAlerts project={project} />
+                <Digest project={project} />
 
                 <CronMonitors project={project} />
 
@@ -500,6 +501,21 @@ function InboundFilters({ project }) {
         <Card title={t('projects.filters.title')} description={t('projects.filters.description')}>
             <Link href={project.filtersHref}>
                 <SecondaryButton type="button">{t('projects.filters.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zur Bündelung der Benachrichtigungen. Ohne Bedingung wie die
+// Eingangsfilter und aus demselben Grund: wer eine Meldung erst spät bekommen
+// hat, findet hier die Erklärung — und das ist nicht die Verwaltung.
+function Digest({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.digest.title')} description={t('projects.digest.description')}>
+            <Link href={project.digestHref}>
+                <SecondaryButton type="button">{t('projects.digest.manage')}</SecondaryButton>
             </Link>
         </Card>
     );

@@ -2,6 +2,7 @@
 
 namespace App\Support\IssueAlerts;
 
+use App\Enums\EventLevel;
 use App\Enums\IssueAlertAction;
 use App\Enums\IssueAlertCondition;
 use App\Enums\NotificationEventType;
@@ -141,6 +142,12 @@ final class IssueAlertNotifier
             // zuordnen.
             reference: 'ISSUE-'.$rule->id.'-'.$issue->id,
             occurredAt: Carbon::parse($context->occurredAt),
+            // `fatal` ist der Grad, bei dem die Anwendung stehen geblieben ist
+            // — eine solche Meldung wird nie gebündelt (A6), sondern geht
+            // einzeln und sofort hinaus. Ein `error` dagegen schon: die
+            // Fehlerwelle aus lauter gleichartigen Ausnahmen ist genau der
+            // Fall, für den die Bündelung gebaut wurde.
+            urgent: $context->event->level === EventLevel::Fatal,
         );
     }
 

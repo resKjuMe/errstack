@@ -41,6 +41,7 @@ export default function Preferences({
     transports,
     scopes,
     quietHours,
+    digestEnabled,
     unsubscribedAt,
     mutedCritical,
     hrefs,
@@ -91,6 +92,8 @@ export default function Preferences({
                 )}
 
                 <QuietHours quietHours={quietHours} href={hrefs.quietHours} />
+
+                <Digest enabled={digestEnabled} href={hrefs.digest} />
 
                 <Subscription unsubscribedAt={unsubscribedAt} href={hrefs.subscription} />
             </div>
@@ -377,6 +380,42 @@ function QuietHours({ quietHours, href }) {
                     )}
                 </div>
             </form>
+        </Card>
+    );
+}
+
+// Die Bündelung abschalten (A6). Sie wird je Projekt eingestellt, hier
+// widerspricht der Einzelne für sich — und zwar für alle Projekte zugleich:
+// wer Sammelnachrichten nicht mag, mag sie nirgends, und eine Einstellung je
+// Projekt wäre eine Liste, die niemand pflegt.
+function Digest({ enabled, href }) {
+    const t = useT();
+    const [processing, setProcessing] = useState(false);
+
+    const toggle = (next) => {
+        setProcessing(true);
+
+        router.post(
+            href,
+            { digest_enabled: next },
+            { preserveScroll: true, onFinish: () => setProcessing(false) }
+        );
+    };
+
+    return (
+        <Card
+            title={t('notifications.preferences.digest_title')}
+            description={
+                enabled
+                    ? t('notifications.preferences.digest_description_on')
+                    : t('notifications.preferences.digest_description_off')
+            }
+        >
+            <SecondaryButton type="button" disabled={processing} onClick={() => toggle(!enabled)}>
+                {enabled
+                    ? t('notifications.preferences.digest_disable')
+                    : t('notifications.preferences.digest_enable')}
+            </SecondaryButton>
         </Card>
     );
 }

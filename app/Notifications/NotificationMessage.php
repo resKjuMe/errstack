@@ -31,6 +31,16 @@ final readonly class NotificationMessage
         public ?Carbon $occurredAt = null,
         /** Kennung des Zustellversuchs — erst beim Einreihen bekannt. */
         public ?int $deliveryId = null,
+        /**
+         * Diese Meldung duldet keinen Aufschub: sie wird nie gebündelt (A6),
+         * sondern geht einzeln und sofort hinaus.
+         *
+         * Entschieden wird das vom Absender und nicht am Grad abgelesen:
+         * derselbe Grad steht an einer Meldung, die jemanden aus dem Bett holt,
+         * und an einer, die genauso gut in der Sammelnachricht von heute Abend
+         * stehen könnte.
+         */
+        public bool $urgent = false,
     ) {}
 
     /**
@@ -68,13 +78,16 @@ final readonly class NotificationMessage
             reference: $this->reference,
             occurredAt: $this->occurredAt,
             deliveryId: $deliveryId,
+            urgent: $this->urgent,
         );
     }
 
     /**
      * Nutzlast fürs Protokoll und für den allgemeinen Webhook. Die Kennung des
      * Zustellversuchs gehört bewusst nicht dazu: sie beschreibt den Versuch,
-     * nicht die Nachricht.
+     * nicht die Nachricht. Aus demselben Grund fehlt der Dringlichkeits-Schalter
+     * — er sagt, **wann** zugestellt wird, und nicht, was drinsteht; in einem
+     * Wartekorb (A6) liegt ohnehin nur, was nicht dringend war.
      *
      * @return array<string, mixed>
      */

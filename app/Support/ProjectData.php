@@ -127,6 +127,11 @@ final class ProjectData
                 // Ebenso ohne Bedingung: was von einer Meldung gespeichert wird,
                 // geht jeden an, der mit den Daten arbeitet.
                 'privacyHref' => route('projects.privacy.index', [$organization, $project]),
+                // Die Bündelung der Benachrichtigungen (A6) ebenfalls ohne
+                // Bedingung: sie erklärt, warum eine Meldung erst mit
+                // Verzögerung kam — und das fragt sich der, der auf sie
+                // gewartet hat.
+                'digestHref' => route('projects.digest.index', [$organization, $project]),
                 // Und ebenso die Eingangsfilter: wer eine Meldung vermisst, muss
                 // nachsehen können, ob ein Filter sie genommen hat.
                 'filtersHref' => route('projects.filters.index', [$organization, $project]),

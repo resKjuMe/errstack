@@ -27,6 +27,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('notifications.preferences.quiet-hours');
     Route::post('benachrichtigungen/einstellungen/abbestellen', [NotificationPreferenceController::class, 'subscription'])
         ->name('notifications.preferences.subscription');
+    // Die Bündelung für sich abschalten (A6) — die Gegenrichtung zur
+    // Einstellung am Projekt.
+    Route::post('benachrichtigungen/einstellungen/buendelung', [NotificationPreferenceController::class, 'digest'])
+        ->name('notifications.preferences.digest');
 
     Route::get('organisationen/{organization}/benachrichtigungen', [NotificationChannelController::class, 'index'])
         ->name('notifications.index');

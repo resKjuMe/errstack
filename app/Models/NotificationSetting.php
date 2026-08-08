@@ -22,9 +22,10 @@ use Illuminate\Support\Facades\Date;
  * @property string $quiet_from
  * @property string $quiet_until
  * @property string $timezone
+ * @property bool $digest_enabled
  * @property Carbon|null $unsubscribed_at
  */
-#[Fillable(['quiet_hours_enabled', 'quiet_from', 'quiet_until', 'timezone'])]
+#[Fillable(['quiet_hours_enabled', 'quiet_from', 'quiet_until', 'timezone', 'digest_enabled'])]
 class NotificationSetting extends Model
 {
     public const DEFAULT_FROM = '22:00';
@@ -95,6 +96,10 @@ class NotificationSetting extends Model
             'quiet_from' => self::DEFAULT_FROM,
             'quiet_until' => self::DEFAULT_UNTIL,
             'timezone' => (string) config('app.timezone', 'UTC'),
+            // Bündelung an: die Vorgabe muss die des Projekts durchlassen,
+            // sonst wäre dessen Einstellung wirkungslos, bis jeder Empfänger
+            // sie einzeln bestätigt hat (A6).
+            'digest_enabled' => true,
         ]);
 
         $setting->user_id = $user->id;
@@ -109,6 +114,7 @@ class NotificationSetting extends Model
     {
         return [
             'quiet_hours_enabled' => 'boolean',
+            'digest_enabled' => 'boolean',
             'unsubscribed_at' => 'datetime',
         ];
     }

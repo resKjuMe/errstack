@@ -29,6 +29,7 @@ import ProjectsIssueAlerts from './shell/pages/projects/IssueAlerts.jsx';
 import ProjectsCrons from './shell/pages/projects/Crons.jsx';
 import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
 import ProjectsFilters from './shell/pages/projects/Filters.jsx';
+import ProjectsDigest from './shell/pages/projects/Digest.jsx';
 import ProjectsSampling from './shell/pages/projects/Sampling.jsx';
 import ProjectsPerformance from './shell/pages/projects/Performance.jsx';
 import PerformanceIssues from './shell/pages/performance/Issues.jsx';
@@ -87,6 +88,7 @@ const pages = {
     'projects/Crons': ProjectsCrons,
     'projects/Grouping': ProjectsGrouping,
     'projects/Filters': ProjectsFilters,
+    'projects/Digest': ProjectsDigest,
     'projects/Sampling': ProjectsSampling,
     'projects/Performance': ProjectsPerformance,
     'performance/Issues': PerformanceIssues,
