@@ -192,6 +192,12 @@ return [
         'user_report' => 'User feedback',
     ],
 
+    'security_report_type' => [
+        'csp' => 'Content Security Policy violation',
+        'expect-ct' => 'Certificate Transparency violation',
+        'expect-staple' => 'OCSP stapling failure',
+    ],
+
     'processing_state' => [
         'pending' => 'awaiting processing',
         'processed' => 'processed',

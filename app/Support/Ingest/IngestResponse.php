@@ -52,6 +52,23 @@ final class IngestResponse
     }
 
     /**
+     * Ein Sicherheitsbericht des Browsers ist angenommen.
+     *
+     * `201` ohne Nummer, wie es auch die Sentry-Gegenstelle hält. Die Nummer
+     * fehlt nicht aus Versehen: der Bericht bringt keine mit, und die, die wir
+     * vergeben, hilft dem Absender nicht — dort steht kein SDK, das sie
+     * protokollieren könnte, sondern ein Browser, der die Antwort verwirft.
+     *
+     * Dieselbe Antwort auch für einen als Rauschen verworfenen Bericht: was ein
+     * Browser mit einem Fehlercode täte, ist unbestimmt, und in der Konsole der
+     * besuchten Seite stünde er ausgerechnet dort, wo nichts zu tun ist.
+     */
+    public static function securityAccepted(): JsonResponse
+    {
+        return new JsonResponse(new stdClass, 201);
+    }
+
+    /**
      * Abgewiesen. Der Grund geht in Kopfzeile und Rumpf.
      *
      * Die Kopfzeile wird von Zeilenumbrüchen befreit: sie entsteht teils aus

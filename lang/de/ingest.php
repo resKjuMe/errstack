@@ -10,5 +10,6 @@ return [
     'no_content' => 'Die Meldung hat keinen Inhalt.',
     'not_decodable' => 'Die Meldung ließ sich nicht entpacken.',
     'envelope_header' => 'Der Envelope beginnt nicht mit einer Kopfzeile aus JSON.',
+    'security_unknown' => 'Kein bekannter Sicherheitsbericht — erwartet werden csp-report, expect-ct-report oder expect-staple-report.',
 
 ];

@@ -192,6 +192,12 @@ return [
         'user_report' => 'Nutzer-Rückmeldung',
     ],
 
+    'security_report_type' => [
+        'csp' => 'Verstoß gegen die Sicherheitsrichtlinie',
+        'expect-ct' => 'Certificate Transparency verletzt',
+        'expect-staple' => 'OCSP-Stapling fehlgeschlagen',
+    ],
+
     'processing_state' => [
         'pending' => 'wartet auf Auswertung',
         'processed' => 'ausgewertet',
