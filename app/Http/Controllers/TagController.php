@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\GlobalFilterRequest;
-use App\Support\FilterData;
 use App\Support\Tags\TagAggregates;
 use App\Support\Tags\TagFacets;
 use App\Support\Tags\TagLinks;
@@ -33,7 +32,6 @@ class TagController extends Controller
         $projectIds = $filter->projectIds();
 
         return Inertia::render('tags/Index', [
-            'filter' => FilterData::bar($filter),
             'facets' => TagLinks::decorate(
                 TagFacets::forProjects($projectIds),
                 $filter,
@@ -55,7 +53,6 @@ class TagController extends Controller
         }
 
         return Inertia::render('tags/Index', [
-            'filter' => FilterData::bar($filter),
             'facets' => [],
             'detail' => TagLinks::decorateOne($detail, $filter),
             'overviewHref' => route('tags.index', $filter->formValues()),

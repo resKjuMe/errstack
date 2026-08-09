@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ReleaseListRequest;
-use App\Support\FilterData;
 use App\Support\Formats;
 use App\Support\Releases\ReleaseList;
 use Inertia\Inertia;
@@ -30,7 +29,6 @@ class ReleaseController extends Controller
         $releases = ReleaseList::paginate($filter);
 
         return Inertia::render('releases/Index', [
-            'filter' => FilterData::bar($filter),
             'releases' => $releases,
             'totalLabel' => Formats::number($releases->total()),
             // Die Umgebung wirkt nicht: eine Version wird als Ganzes

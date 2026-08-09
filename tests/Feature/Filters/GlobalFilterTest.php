@@ -277,6 +277,43 @@ class GlobalFilterTest extends TestCase
         $this->assertSame(0, $filter->apply(Environment::query(), 'last_seen_at')->count());
     }
 
+    /**
+     * Die Nutzlast der Leiste kommt vom Rahmen und nicht von der Seite: sie liegt
+     * an jeder Auswertungsseite an, ohne dass deren Controller sie mitgibt.
+     */
+    public function test_every_analysis_page_carries_the_filter_payload(): void
+    {
+        [$user, , $project] = $this->context();
+        Environment::factory()->for($project)->create(['name' => 'production']);
+
+        foreach (['/versionen', '/merkmale', '/leistung', '/rueckmeldungen'] as $path) {
+            $this->actingAs($user)
+                ->get($path.'?projects[]=webshop&environment=production&period=7d')
+                ->assertOk()
+                ->assertInertia(fn (AssertableInertia $page) => $page
+                    ->where('filter.value.projects', ['webshop'])
+                    ->where('filter.value.environment', 'production')
+                    ->where('filter.value.period', '7d')
+                );
+        }
+    }
+
+    /**
+     * Umgekehrt: wo es nichts auszuwerten gibt, gibt es auch keine Leiste. Das
+     * `null` ist das Zeichen, an dem der Rahmen sie weglässt.
+     */
+    public function test_pages_without_an_analysis_carry_no_filter(): void
+    {
+        [$user] = $this->context();
+
+        foreach (['/bausteine', '/profile'] as $path) {
+            $this->actingAs($user)
+                ->get($path)
+                ->assertOk()
+                ->assertInertia(fn (AssertableInertia $page) => $page->where('filter', null));
+        }
+    }
+
     protected function tearDown(): void
     {
         Carbon::setTestNow();

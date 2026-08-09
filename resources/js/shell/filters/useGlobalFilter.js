@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { router } from '@inertiajs/react';
 
-// Der gemeinsame Zugang zur globalen Filterleiste. Jede Auswertungsseite bekommt
-// vom Server die Nutzlast `filter` (App\Support\FilterData::bar) und ruft damit
-// diesen Hook auf; die Leiste selbst zeichnet FilterBar.jsx.
+// Der gemeinsame Zugang zur globalen Filterleiste. Die Nutzlast `filter`
+// (App\Support\FilterData::bar) kommt als geteilte Eigenschaft vom Server
+// ({@see useFilter.js}); damit ruft FilterBar.jsx diesen Hook auf.
 //
 // Der Zustand lebt in der Adresszeile, nicht in React: eine Änderung ist ein
 // Seitenaufruf mit neuen Parametern. Damit übersteht die Auswahl das Neuladen,

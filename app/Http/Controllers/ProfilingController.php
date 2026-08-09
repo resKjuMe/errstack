@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProfileIndexRequest;
 use App\Models\Profile;
 use App\Models\Transaction;
-use App\Support\FilterData;
 use App\Support\Profiling\CallTree;
 use App\Support\Profiling\FlamegraphData;
 use App\Support\Profiling\ProfileComparison;
@@ -59,7 +58,6 @@ class ProfilingController extends Controller
         $aggregate = $overview->aggregate();
 
         return Inertia::render('profiling/Index', [
-            'filter' => FilterData::bar($filter),
             'profiles' => $overview->profiles(self::LIST_LIMIT)
                 ->map(fn (Profile $profile): array => $this->row($profile))
                 ->all(),

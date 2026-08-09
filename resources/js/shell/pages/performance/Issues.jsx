@@ -2,9 +2,9 @@ import React from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
-import FilterBar from '../../components/FilterBar.jsx';
 import Pagination from '../../components/Pagination.jsx';
 import { InputLabel, SelectInput } from '../../components/Form.jsx';
+import useFilter from '../../filters/useFilter.js';
 import { useTranslations } from '../../i18n.js';
 import { duration } from './format.jsx';
 import Sparkline from '../issues/Sparkline.jsx';
@@ -21,7 +21,6 @@ import Sparkline from '../issues/Sparkline.jsx';
 //
 // Der Zustand steht wie überall vollständig in der Adresszeile.
 export default function Issues({
-    filter,
     issues,
     list,
     sortOptions,
@@ -32,6 +31,7 @@ export default function Issues({
     totalLabel,
 }) {
     const { shell } = usePage().props;
+    const filter = useFilter();
     const { t, formats } = useTranslations();
 
     // Sortierung, Zustand und Muster sind Felder dieser Seite; die übrigen
@@ -57,8 +57,6 @@ export default function Issues({
                 appName={shell.appName}
                 help={t('performance_issues.help')}
             />
-
-            <FilterBar filter={filter} />
 
             {environmentIgnored && (
                 <p className="mb-4 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">

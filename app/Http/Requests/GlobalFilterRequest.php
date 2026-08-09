@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\FilterPeriod;
 use App\Models\Environment;
+use App\Support\Filters\CurrentFilter;
 use App\Support\Filters\GlobalFilter;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -50,20 +51,27 @@ class GlobalFilterRequest extends FormRequest
 
     /**
      * Der aufgelöste Filter für die aktive Organisation des Betrachters.
+     *
+     * Er wird an der laufenden Anfrage hinterlegt ({@see CurrentFilter}): der
+     * Rahmen zeichnet die Filterleiste daraus, ohne ihn ein zweites Mal
+     * aufzulösen. Dass eine Seite ihn überhaupt anfordert, ist zugleich das
+     * Kennzeichen, dass sie eine Auswertungsseite ist und die Leiste bekommt.
      */
     public function filter(): GlobalFilter
     {
-        $user = $this->user();
-        $projects = $this->validated('projects');
+        return CurrentFilter::remember(request(), function (): GlobalFilter {
+            $user = $this->user();
+            $projects = $this->validated('projects');
 
-        return GlobalFilter::resolve($user->resolveCurrentOrganization(), $user, [
-            'projects' => is_array($projects) ? array_values($projects) : [],
-            'environment' => $this->stringOrNull($this->validated('environment')),
-            'period' => $this->stringOrNull($this->validated('period')),
-            'from' => $this->stringOrNull($this->validated('from')),
-            'to' => $this->stringOrNull($this->validated('to')),
-            'tz' => $this->stringOrNull($this->validated('tz')),
-        ]);
+            return GlobalFilter::resolve($user->resolveCurrentOrganization(), $user, [
+                'projects' => is_array($projects) ? array_values($projects) : [],
+                'environment' => $this->stringOrNull($this->validated('environment')),
+                'period' => $this->stringOrNull($this->validated('period')),
+                'from' => $this->stringOrNull($this->validated('from')),
+                'to' => $this->stringOrNull($this->validated('to')),
+                'tz' => $this->stringOrNull($this->validated('tz')),
+            ]);
+        });
     }
 
     private function stringOrNull(mixed $value): ?string
