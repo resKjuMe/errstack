@@ -8,6 +8,7 @@ use App\Http\Requests\OrganizationRequest;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Support\AuditLog;
+use App\Support\Filters\FilterQuery;
 use App\Support\OrganizationData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -141,6 +142,12 @@ class OrganizationController extends Controller
      * Adresse der **alten** Organisation zurück, und die schaltet dort prompt
      * wieder um. Wer auf der Fehlerliste wechselt, will die Fehler der neuen
      * Organisation sehen und nicht wieder bei null anfangen.
+     *
+     * Die Projektauswahl bleibt dabei zurück: Projekte gehören zu einer
+     * Organisation, und die der alten hat in der neuen nichts mehr zu suchen.
+     * Der Zeitraum und die übrigen Parameter der Seite bleiben stehen; man
+     * wechselt die Organisation, um denselben Ausschnitt woanders zu sehen
+     * ({@see FilterQuery}).
      */
     public function switch(Request $request, Organization $organization): RedirectResponse
     {
@@ -149,7 +156,7 @@ class OrganizationController extends Controller
         $request->user()->switchOrganization($organization);
 
         return redirect()
-            ->to($this->samePageIn($organization, url()->previous()))
+            ->to($this->samePageIn($organization, FilterQuery::withoutProjectSelection(url()->previous())))
             ->with('status', __('organizations.flash.switched', ['name' => $organization->name]));
     }
 
