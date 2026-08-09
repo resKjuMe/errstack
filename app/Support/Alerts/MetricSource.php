@@ -4,6 +4,8 @@ namespace App\Support\Alerts;
 
 use App\Enums\AlertMetric;
 use App\Models\MetricAlert;
+use App\Models\ReleaseSessionCount;
+use App\Models\ReleaseSessionUser;
 use App\Support\Discover\Aggregate;
 use App\Support\Discover\Aggregation;
 use App\Support\Discover\Dataset;
@@ -11,6 +13,7 @@ use App\Support\Discover\DiscoverEngine;
 use App\Support\Discover\DiscoverQuery;
 use App\Support\Discover\TimeRange;
 use App\Support\Search\SearchQuery;
+use LogicException;
 
 /**
  * Liest den Wert einer Kennzahl für ein Zeitfenster — die einzige Stelle, die weiß,
@@ -27,6 +30,12 @@ use App\Support\Search\SearchQuery;
  * Was hier bleibt, ist die **Übersetzung**: aus der Kennzahl eines Alarms wird eine
  * Quelle, eine Rechenart und eine Suchbedingung; aus der Antwort wird eine Ablesung,
  * die zwischen „null" und „unbekannt" unterscheidet ({@see MetricReading}).
+ *
+ * **Die Crash-Free-Rate liest an dem Motor vorbei** (R7): Sitzungen sind (noch) keine
+ * Quelle des Motors ({@see Dataset}), weil es die Tabelle erst seit dieser Aufgabe
+ * gibt. Solange das so ist, wäre die Alternative eine Kennzahl ohne Zahl dahinter.
+ * Sobald die Sitzungen dort als Quelle stehen, gehört diese Ablesung denselben Weg
+ * wie die übrigen — der Zweig hier ist der einzige, der dafür fällt.
  *
  * **Die Antwortzeiten kommen weiterhin aus den vorberechneten Fenstern** (PF1) und
  * nicht aus den Einzelmessungen — der Motor kennt beide Quellen, und die Wahl
@@ -49,6 +58,10 @@ final class MetricSource
      */
     public function read(MetricAlert $alert, MetricWindow $window): MetricReading
     {
+        if ($alert->metric->isSessionMetric()) {
+            return $this->sessions($alert, $window);
+        }
+
         $metric = $alert->metric;
         $query = $this->query($alert, $window);
         $row = $this->engine->table($query)->first();
@@ -85,6 +98,55 @@ final class MetricSource
         }
 
         return MetricReading::of($this->inDisplayUnit($metric, $value), $measured);
+    }
+
+    /**
+     * Die Crash-Free-Rate aus den Sitzungszahlen der Auslieferungen (R7).
+     *
+     * **Über alle Versionen** und nicht je Auslieferung: ein Alarm beantwortet
+     * die Frage „stürzt die Anwendung gerade häufiger ab als sonst", und die ist
+     * nicht an eine einzelne Version gerichtet. Nach einer schlechten
+     * Auslieferung schlägt er trotzdem an — deren Sitzungen sind ja genau die,
+     * die den Gesamtwert nach unten ziehen.
+     *
+     * Eine Abfrage über die vorberechneten Minuten-Fenster, wie bei den
+     * Antwortzeiten; die Nutzer-Fassung zählt über die vorverdichteten
+     * Nutzer-Zeilen und nicht über Einzelsitzungen.
+     */
+    private function sessions(MetricAlert $alert, MetricWindow $window): MetricReading
+    {
+        $overUsers = $alert->metric === AlertMetric::CrashFreeUsers;
+
+        $query = ($overUsers ? ReleaseSessionUser::query() : ReleaseSessionCount::query())
+            ->toBase()
+            ->where('project_id', $alert->project_id)
+            ->where('bucket_start', '>=', $window->from)
+            ->where('bucket_start', '<', $window->to);
+
+        if ($alert->environment !== null) {
+            $query->where('environment', $alert->environment);
+        }
+
+        $row = $query
+            ->selectRaw($overUsers
+                ? 'count(distinct user_key) as measured,'
+                    .' count(distinct case when crashed_count > 0 then user_key end) as crashed'
+                : 'sum(session_count) as measured, sum(crashed_count) as crashed')
+            ->first();
+
+        /** @var array<string, mixed> $values */
+        $values = $row === null ? [] : (array) $row;
+
+        $measured = (int) ($values['measured'] ?? 0);
+
+        // Keine Sitzungen heißt nicht „hundert Prozent absturzfrei", sondern
+        // „unbekannt" — und ein Alarm, der darauf Entwarnung gäbe, verstummte
+        // genau dann, wenn die Anwendung gar nicht mehr startet.
+        if ($measured === 0) {
+            return MetricReading::unknown();
+        }
+
+        return MetricReading::of((1 - (int) ($values['crashed'] ?? 0) / $measured) * 100, $measured);
     }
 
     /**
@@ -127,10 +189,18 @@ final class MetricSource
 
     /**
      * Welche Rechenart hinter der Kennzahl steht.
+     *
+     * Die Sitzungs-Kennzahlen stehen hier nicht als Lücke, sondern als Fall:
+     * sie kommen gar nicht bis hierher ({@see read()} zweigt vorher ab), und ein
+     * `default` würde genau das verdecken, sobald eine Kennzahl dazukommt.
      */
     private function aggregation(AlertMetric $metric): Aggregation
     {
         return match ($metric) {
+            AlertMetric::CrashFreeSessions,
+            AlertMetric::CrashFreeUsers => throw new LogicException(
+                'Die Sitzungs-Kennzahlen lesen an dem Auswertungs-Motor vorbei.',
+            ),
             AlertMetric::ErrorCount => Aggregation::of(Aggregate::Count),
             AlertMetric::TransactionThroughput => Aggregation::of(Aggregate::Sum, 'throughput'),
             AlertMetric::TransactionFailureRate => Aggregation::of(Aggregate::FailureRate),
