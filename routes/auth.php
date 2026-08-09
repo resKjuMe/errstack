@@ -19,7 +19,6 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -68,9 +67,8 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 
-    // Eigenes Konto verwalten — bewusst ohne `verified`: aus einem Tippfehler in
-    // der E-Mail-Adresse käme man sonst nicht mehr heraus.
-    Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Das eigene Konto — Profil und Zugriffstoken — liegt seit U6 im
+    // Einstellungsbereich: routes/settings/account.php. Es wird eingerichtet
+    // wie alles andere auch, nur eben für eine Person statt für eine
+    // Organisation.
 });

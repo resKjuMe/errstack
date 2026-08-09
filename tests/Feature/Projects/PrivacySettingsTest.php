@@ -42,7 +42,7 @@ class PrivacySettingsTest extends TestCase
 
     private function path(Organization $organization, Project $project): string
     {
-        return "/organisationen/{$organization->slug}/projekte/{$project->slug}/datenschutz";
+        return "/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}/datenschutz";
     }
 
     public function test_the_page_shows_the_options_and_the_built_in_rules(): void
@@ -106,7 +106,7 @@ class PrivacySettingsTest extends TestCase
         $this->assertSame(ScrubRuleType::Field, $rule->type);
         $this->assertSame('request.data', $rule->path);
 
-        $this->actingAs($owner)->patch("/datenschutz-regeln/{$rule->id}", [
+        $this->actingAs($owner)->patch("/einstellungen/datenschutz-regeln/{$rule->id}", [
             'type' => 'field',
             'expression' => 'kunden_*',
             'path' => '',
@@ -119,7 +119,7 @@ class PrivacySettingsTest extends TestCase
         $this->assertNull($rule->path, 'Ein leerer Abschnitt heißt „ganze Meldung".');
         $this->assertFalse($rule->is_active);
 
-        $this->actingAs($owner)->delete("/datenschutz-regeln/{$rule->id}")
+        $this->actingAs($owner)->delete("/einstellungen/datenschutz-regeln/{$rule->id}")
             ->assertSessionHasNoErrors();
 
         $this->assertSame(0, ScrubRule::query()->count());
@@ -129,7 +129,7 @@ class PrivacySettingsTest extends TestCase
     {
         [$owner, $organization, $project] = $this->project();
 
-        $this->actingAs($owner)->post("/organisationen/{$organization->slug}/datenschutz/regeln", [
+        $this->actingAs($owner)->post("/einstellungen/organisationen/{$organization->slug}/datenschutz/regeln", [
             'type' => 'pattern',
             'expression' => 'K-\d{6}',
             'path' => null,
@@ -250,7 +250,7 @@ class PrivacySettingsTest extends TestCase
 
         $foreign = ScrubRule::factory()->create(['expression' => 'fremd']);
 
-        $this->actingAs($owner)->patch("/datenschutz-regeln/{$foreign->id}", [
+        $this->actingAs($owner)->patch("/einstellungen/datenschutz-regeln/{$foreign->id}", [
             'type' => 'field',
             'expression' => 'gekapert',
             'is_active' => true,
@@ -266,7 +266,7 @@ class PrivacySettingsTest extends TestCase
         ScrubRule::factory()->create(['organization_id' => $organization->id, 'expression' => 'weit']);
         ScrubRule::factory()->forProject($project)->create(['expression' => 'eng']);
 
-        $this->actingAs($owner)->get("/organisationen/{$organization->slug}/datenschutz")
+        $this->actingAs($owner)->get("/einstellungen/organisationen/{$organization->slug}/datenschutz")
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('privacy/Index')

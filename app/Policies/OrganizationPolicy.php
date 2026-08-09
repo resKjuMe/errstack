@@ -88,6 +88,19 @@ class OrganizationPolicy
     }
 
     /**
+     * Kontingente der Organisation setzen (O1).
+     *
+     * Ab der Verwaltung, wie die Projekte: das Kontingent der Organisation
+     * deckelt alle ihre Projekte zusammen und ist damit die Grenze, an der eine
+     * Installation aufhört, Daten anzunehmen. Ansehen darf jedes Mitglied — wer
+     * eine Meldung vermisst, muss die Antwort finden können.
+     */
+    public function manageQuotas(User $user, Organization $organization): bool
+    {
+        return $this->atLeast($user, $organization, OrganizationRole::Admin);
+    }
+
+    /**
      * Repositories verbinden und wieder lösen (R2).
      *
      * Ab der Verwaltung, und aus demselben Grund wie bei den Projekten: ein

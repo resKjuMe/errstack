@@ -116,7 +116,7 @@ class NotificationPreferenceTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/benachrichtigungen/einstellungen/abbestellen', ['unsubscribed' => true])
+            ->post('/einstellungen/benachrichtigungen/eigene/abbestellen', ['unsubscribed' => true])
             ->assertSessionHasNoErrors();
 
         $preferences = $this->preferences();
@@ -130,7 +130,7 @@ class NotificationPreferenceTest extends TestCase
         [$user, $organization, $project] = $this->userWithProject();
 
         $this->actingAs($user)
-            ->get('/benachrichtigungen/einstellungen')
+            ->get('/einstellungen/benachrichtigungen/eigene')
             ->assertOk()
             ->assertInertia(
                 fn (AssertableInertia $page) => $page
@@ -154,7 +154,7 @@ class NotificationPreferenceTest extends TestCase
         }
 
         $this->actingAs($user)
-            ->get('/benachrichtigungen/einstellungen')
+            ->get('/einstellungen/benachrichtigungen/eigene')
             ->assertOk()
             ->assertInertia(
                 fn (AssertableInertia $page) => $page
@@ -169,7 +169,7 @@ class NotificationPreferenceTest extends TestCase
         [$user, $organization] = $this->userWithProject();
 
         $this->actingAs($user)
-            ->put('/benachrichtigungen/einstellungen', [
+            ->put('/einstellungen/benachrichtigungen/eigene', [
                 'scope' => "organization:{$organization->id}",
                 'preferences' => [
                     'deploy' => ['mail' => 'on', 'in_app' => 'inherit'],
@@ -191,7 +191,7 @@ class NotificationPreferenceTest extends TestCase
         NotificationPreference::put($user, PreferenceScope::forOrganization($organization), NotificationEventType::Deploy, NotificationTransport::Mail, true);
 
         $this->actingAs($user)
-            ->put('/benachrichtigungen/einstellungen', [
+            ->put('/einstellungen/benachrichtigungen/eigene', [
                 'scope' => "organization:{$organization->id}",
                 'preferences' => ['deploy' => ['mail' => 'inherit']],
             ])
@@ -207,7 +207,7 @@ class NotificationPreferenceTest extends TestCase
         $project = Project::createFor($organization, 'Kasse', Platform::Php);
 
         $this->actingAs($outsider)
-            ->put('/benachrichtigungen/einstellungen', [
+            ->put('/einstellungen/benachrichtigungen/eigene', [
                 'scope' => "project:{$project->id}",
                 'preferences' => ['alert' => ['mail' => 'off']],
             ])
@@ -221,7 +221,7 @@ class NotificationPreferenceTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->put('/benachrichtigungen/einstellungen/ruhezeiten', [
+            ->put('/einstellungen/benachrichtigungen/eigene/ruhezeiten', [
                 'quiet_hours_enabled' => true,
                 'quiet_from' => '22:00',
                 'quiet_until' => '22:00',

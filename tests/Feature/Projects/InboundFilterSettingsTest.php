@@ -45,7 +45,7 @@ class InboundFilterSettingsTest extends TestCase
 
     private function path(Organization $organization, Project $project): string
     {
-        return "/organisationen/{$organization->slug}/projekte/{$project->slug}/filter";
+        return "/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}/filter";
     }
 
     public function test_the_page_lists_every_filter_kind_with_its_switch(): void

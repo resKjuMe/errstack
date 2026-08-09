@@ -23,7 +23,7 @@ class MembershipTest extends TestCase
         $membership = $organization->setRole($member, OrganizationRole::Viewer);
 
         $this->actingAs($admin)
-            ->patch("/mitgliedschaften/{$membership->id}", ['role' => OrganizationRole::Member->value])
+            ->patch("/einstellungen/mitgliedschaften/{$membership->id}", ['role' => OrganizationRole::Member->value])
             ->assertSessionHasNoErrors();
 
         $this->assertSame(OrganizationRole::Member, $membership->refresh()->role);
@@ -37,7 +37,7 @@ class MembershipTest extends TestCase
         $membership = $organization->setRole($member, OrganizationRole::Member);
 
         $this->actingAs($owner)
-            ->patch("/mitgliedschaften/{$membership->id}", ['role' => 'chef'])
+            ->patch("/einstellungen/mitgliedschaften/{$membership->id}", ['role' => 'chef'])
             ->assertSessionHasErrors('role');
     }
 
@@ -48,7 +48,7 @@ class MembershipTest extends TestCase
         $membership = $organization->setRole($admin, OrganizationRole::Admin);
 
         $this->actingAs($admin)
-            ->patch("/mitgliedschaften/{$membership->id}", ['role' => OrganizationRole::Owner->value])
+            ->patch("/einstellungen/mitgliedschaften/{$membership->id}", ['role' => OrganizationRole::Owner->value])
             ->assertForbidden();
 
         $this->assertSame(OrganizationRole::Admin, $membership->refresh()->role);
@@ -62,14 +62,14 @@ class MembershipTest extends TestCase
         $membership = $organization->setRole($member, OrganizationRole::Member);
 
         $this->actingAs($admin)
-            ->patch("/mitgliedschaften/{$membership->id}", ['role' => OrganizationRole::Owner->value])
+            ->patch("/einstellungen/mitgliedschaften/{$membership->id}", ['role' => OrganizationRole::Owner->value])
             ->assertForbidden();
 
         $owner = User::factory()->create();
         $organization->setRole($owner, OrganizationRole::Owner);
 
         $this->actingAs($owner)
-            ->patch("/mitgliedschaften/{$membership->id}", ['role' => OrganizationRole::Owner->value])
+            ->patch("/einstellungen/mitgliedschaften/{$membership->id}", ['role' => OrganizationRole::Owner->value])
             ->assertSessionHasNoErrors();
 
         $this->assertSame(OrganizationRole::Owner, $membership->refresh()->role);
@@ -84,11 +84,11 @@ class MembershipTest extends TestCase
         $organization->setRole($admin, OrganizationRole::Admin);
 
         $this->actingAs($admin)
-            ->patch("/mitgliedschaften/{$ownerMembership->id}", ['role' => OrganizationRole::Member->value])
+            ->patch("/einstellungen/mitgliedschaften/{$ownerMembership->id}", ['role' => OrganizationRole::Member->value])
             ->assertForbidden();
 
         $this->actingAs($admin)
-            ->delete("/mitgliedschaften/{$ownerMembership->id}")
+            ->delete("/einstellungen/mitgliedschaften/{$ownerMembership->id}")
             ->assertForbidden();
     }
 
@@ -102,12 +102,12 @@ class MembershipTest extends TestCase
 
         // Solange es einen zweiten Besitzer gibt, ist die Herabstufung erlaubt …
         $this->actingAs($second)
-            ->patch("/mitgliedschaften/{$membership->id}", ['role' => OrganizationRole::Member->value])
+            ->patch("/einstellungen/mitgliedschaften/{$membership->id}", ['role' => OrganizationRole::Member->value])
             ->assertSessionHasNoErrors();
 
         // … für den letzten Besitzer aber nicht mehr.
         $this->actingAs($second)
-            ->delete("/mitgliedschaften/{$lastOwner->id}")
+            ->delete("/einstellungen/mitgliedschaften/{$lastOwner->id}")
             ->assertForbidden();
 
         $this->assertSame(OrganizationRole::Owner, $lastOwner->refresh()->role);
@@ -125,9 +125,9 @@ class MembershipTest extends TestCase
         $team->members()->attach($member);
 
         $this->actingAs($admin)
-            ->from("/organisationen/{$organization->slug}")
-            ->delete("/mitgliedschaften/{$membership->id}")
-            ->assertRedirect("/organisationen/{$organization->slug}");
+            ->from("/einstellungen/organisationen/{$organization->slug}")
+            ->delete("/einstellungen/mitgliedschaften/{$membership->id}")
+            ->assertRedirect("/einstellungen/organisationen/{$organization->slug}");
 
         $this->assertFalse($organization->hasMember($member));
         $this->assertNull($member->refresh()->current_organization_id);
@@ -142,7 +142,7 @@ class MembershipTest extends TestCase
         $membership = $organization->setRole($other, OrganizationRole::Member);
 
         $this->actingAs($member)
-            ->delete("/mitgliedschaften/{$membership->id}")
+            ->delete("/einstellungen/mitgliedschaften/{$membership->id}")
             ->assertForbidden();
 
         $this->assertTrue($organization->hasMember($other));
@@ -155,8 +155,8 @@ class MembershipTest extends TestCase
         $membership = $organization->setRole($member, OrganizationRole::Viewer);
 
         $this->actingAs($member)
-            ->delete("/mitgliedschaften/{$membership->id}")
-            ->assertRedirect('/organisationen');
+            ->delete("/einstellungen/mitgliedschaften/{$membership->id}")
+            ->assertRedirect('/einstellungen/organisationen');
 
         $this->assertFalse($organization->hasMember($member));
     }
@@ -172,7 +172,7 @@ class MembershipTest extends TestCase
         $organization->setRole($member, OrganizationRole::Member);
 
         $this->actingAs($admin)
-            ->get("/organisationen/{$organization->slug}")
+            ->get("/einstellungen/organisationen/{$organization->slug}")
             ->assertInertia(fn (AssertableInertia $page) => $page
                 // Die Verwaltung darf niemanden zum Besitzer machen …
                 ->where('members', fn (Collection $members) => $members
@@ -200,7 +200,7 @@ class MembershipTest extends TestCase
         $organization->setRole($second, OrganizationRole::Owner);
 
         $this->actingAs($second)
-            ->get("/organisationen/{$organization->slug}")
+            ->get("/einstellungen/organisationen/{$organization->slug}")
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('members', fn (Collection $members) => $members
                     ->firstWhere('userId', $owner->id)['assignableRoles'] !== []
@@ -214,7 +214,7 @@ class MembershipTest extends TestCase
         $membership = $organization->setRole(User::factory()->create(), OrganizationRole::Member);
 
         $this->actingAs(User::factory()->create())
-            ->delete("/mitgliedschaften/{$membership->id}")
+            ->delete("/einstellungen/mitgliedschaften/{$membership->id}")
             ->assertForbidden();
     }
 }

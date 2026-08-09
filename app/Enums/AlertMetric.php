@@ -2,6 +2,8 @@
 
 namespace App\Enums;
 
+use App\Support\Alerts\MetricSource;
+
 /**
  * Die Kennzahl, auf die ein Schwellwert-Alarm schaut.
  *
@@ -18,12 +20,13 @@ namespace App\Enums;
  * in den Daten ({@see isCount()}): eine Anzahl löst auf, ein Anteil hält den
  * Zustand.
  *
- * **Was hier (noch) fehlt und warum.** Die Aufgabenbeschreibung nennt auch Web
- * Vitals und die Crash-Free-Rate. Beide haben ihre eigene Aufgabe (PF5 bzw. R7)
- * und damit noch keine Datenquelle — eine Kennzahl anzubieten, hinter der nichts
+ * **Was hier (noch) fehlt und warum.** Die Aufgabenbeschreibung nennt auch die
+ * Web Vitals. Sie haben ihre eigene Aufgabe (PF5) und noch keine Zeitreihe, aus
+ * der sich ein Alarm rechnen ließe — eine Kennzahl anzubieten, hinter der nichts
  * steht, wäre ein Alarm, der nie auslöst und dabei aussieht, als überwache er
- * etwas. Sie kommen dazu, sobald ihre Zeitreihe existiert; an dieser Aufzählung
- * ist dafür eine Zeile zu ergänzen.
+ * etwas. Sie kommt dazu, sobald die Reihe existiert; an dieser Aufzählung ist
+ * dafür eine Zeile zu ergänzen. Die Crash-Free-Rate stand aus demselben Grund
+ * lange nicht hier — seit die Sitzungen erfasst werden (R7), steht sie.
  */
 enum AlertMetric: string
 {
@@ -48,6 +51,19 @@ enum AlertMetric: string
     /** Antwortzeit, die 99 % der Aufrufe unterschreiten (ms). */
     case TransactionDurationP99 = 'transaction_duration_p99';
 
+    /**
+     * Anteil der Sitzungen ohne Absturz, in Prozent (R7).
+     *
+     * Die Kennzahl, die nach einer Auslieferung zuerst kippt — und die einzige
+     * hier, bei der ein Alarm auf **fallende** Werte gestellt wird. Über alle
+     * Versionen gerechnet und nicht je Auslieferung: „stürzt gerade mehr ab als
+     * sonst" ist eine Frage an die Anwendung, nicht an eine einzelne Version.
+     */
+    case CrashFreeSessions = 'crash_free_sessions';
+
+    /** Derselbe Anteil über Menschen statt über Sitzungen (R7). */
+    case CrashFreeUsers = 'crash_free_users';
+
     public function label(): string
     {
         return __('enums.alert_metric.'.$this->value);
@@ -60,7 +76,9 @@ enum AlertMetric: string
     public function unit(): string
     {
         return match ($this) {
-            self::TransactionFailureRate => '%',
+            self::TransactionFailureRate,
+            self::CrashFreeSessions,
+            self::CrashFreeUsers => '%',
             self::TransactionDurationAvg,
             self::TransactionDurationP50,
             self::TransactionDurationP95,
@@ -86,14 +104,29 @@ enum AlertMetric: string
     }
 
     /**
-     * Liest die Kennzahl aus den Antwortzeit-Messungen statt aus den Fehlern?
+     * Liest die Kennzahl aus den Antwortzeit-Messungen?
      *
      * Nur solche Alarme lassen sich auf einen einzelnen Vorgang einschränken —
-     * einen Transaktionsnamen gibt es bei einer Fehlermeldung nicht.
+     * einen Transaktionsnamen gibt es weder an einer Fehlermeldung noch an einer
+     * Sitzung.
      */
     public function isTransactionMetric(): bool
     {
-        return $this !== self::ErrorCount;
+        return match ($this) {
+            self::ErrorCount, self::CrashFreeSessions, self::CrashFreeUsers => false,
+            default => true,
+        };
+    }
+
+    /**
+     * Liest die Kennzahl aus den Sitzungen (R7)?
+     *
+     * Die Unterscheidung, an der {@see MetricSource} seine
+     * Tabelle wählt — und die einzige Stelle, an der sie getroffen wird.
+     */
+    public function isSessionMetric(): bool
+    {
+        return $this === self::CrashFreeSessions || $this === self::CrashFreeUsers;
     }
 
     /**
@@ -116,6 +149,10 @@ enum AlertMetric: string
     {
         return match ($this) {
             self::TransactionFailureRate => 1,
+            // Zwei Stellen, weil die interessanten Werte alle knapp unter
+            // hundert liegen: zwischen 99,9 % und 99,95 % steht die Hälfte der
+            // Abstürze, und auf eine Stelle gerundet wäre beides dieselbe Zahl.
+            self::CrashFreeSessions, self::CrashFreeUsers => 2,
             default => 0,
         };
     }

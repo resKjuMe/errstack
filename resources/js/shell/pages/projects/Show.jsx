@@ -50,7 +50,7 @@ export default function Show({
                             {organization.name}
                         </Link>
                         <Link
-                            href="/projekte"
+                            href="/einstellungen/projekte"
                             className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                         >
                             {t('projects.show.all_projects')}
@@ -84,6 +84,7 @@ export default function Show({
                 <Digest project={project} />
 
                 <CronMonitors project={project} />
+                <UptimeMonitors project={project} />
 
                 <Grouping project={project} />
                 <Ownership project={project} />
@@ -93,6 +94,8 @@ export default function Show({
                 <Privacy project={project} />
 
                 <InboundFilters project={project} />
+                <Quotas project={project} />
+                <SpikeProtection project={project} />
 
                 {permissions.delete && <DeleteProject project={project} />}
             </div>
@@ -432,6 +435,21 @@ function CronMonitors({ project }) {
     );
 }
 
+// Weg zur Erreichbarkeits-Überwachung. Aus demselben Grund ohne Bedingung wie
+// die Cronjobs — und mit dem stärksten von allen: „ist es gerade da?" ist die
+// Frage, die während einer Störung jeder stellt.
+function UptimeMonitors({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.uptime.title')} description={t('projects.uptime.description')}>
+            <Link href={project.uptimeHref}>
+                <SecondaryButton type="button">{t('projects.uptime.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
 // Weg zu den Schwellwert-Alarmen. Ohne Bedingung: welche Alarme scharf sind,
 // ist die erste Frage, wenn etwas **nicht** gemeldet wurde — und die stellt
 // nicht nur die Verwaltung.
@@ -583,6 +601,21 @@ function InboundFilters({ project }) {
     );
 }
 
+// Weg zum Ausschlag-Schutz. Aus demselben Grund ohne Bedingung wie die
+// Eingangsfilter, nur dringlicher: eine Drosselung wirft Meldungen weg, und
+// weggeworfene Meldungen fehlen in der Liste, ohne eine Lücke zu hinterlassen.
+function SpikeProtection({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.spikes.title')} description={t('projects.spikes.description')}>
+            <Link href={project.spikesHref}>
+                <SecondaryButton type="button">{t('projects.spikes.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
 // Weg zur Bündelung der Benachrichtigungen. Ohne Bedingung wie die
 // Eingangsfilter und aus demselben Grund: wer eine Meldung erst spät bekommen
 // hat, findet hier die Erklärung — und das ist nicht die Verwaltung.
@@ -593,6 +626,22 @@ function Digest({ project }) {
         <Card title={t('projects.digest.title')} description={t('projects.digest.description')}>
             <Link href={project.digestHref}>
                 <SecondaryButton type="button">{t('projects.digest.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zu den Kontingenten. Ohne Bedingung wie die Eingangsfilter und aus einem
+// noch handfesteren Grund: ein aufgebrauchtes Kontingent ist die häufigste
+// Erklärung dafür, dass eine Anwendung plötzlich stumm ist — und wer das sucht,
+// ist selten die Verwaltung.
+function Quotas({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.quotas.title')} description={t('projects.quotas.description')}>
+            <Link href={project.quotasHref}>
+                <SecondaryButton type="button">{t('projects.quotas.manage')}</SecondaryButton>
             </Link>
         </Card>
     );

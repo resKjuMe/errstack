@@ -123,7 +123,7 @@ drei, in dieser Priorität: **`ingest`** (eingehende Fehlermeldungen) vor
 Reihenfolge steht in `App\Enums\QueueName` und gehört in jeden Worker-Aufruf:
 
 ```bash
-php artisan queue:work --queue=ingest,notifications,performance,symbolication,default --tries=3
+php artisan queue:work --queue=ingest,notifications,performance,symbolication,uptime,default --tries=3
 ```
 
 | Befehl | Zweck |
@@ -285,11 +285,21 @@ Deshalb steht in den Verlinkungen im Code weiterhin nur
 und Warteschlangen-Jobs — gibt es diese Vorbelegung nicht; dort wird die
 Organisation ausdrücklich mitgegeben.
 
+**Was eingerichtet wird, liegt unter `/einstellungen/…`:** Organisation, Teams,
+Projekte samt Schlüsseln und Regellisten, Datenschutz, Benachrichtigungen und das
+eigene Konto — mit eigener Unter-Navigation und ohne die globale Filterleiste
+(`routes/settings.php`, `App\Support\SettingsNav`). Der Schnitt ist derselbe wie
+bei Sentry: die Fachseiten zeigen Daten an, der Einstellungsbereich richtet den
+Rahmen dafür ein. Woran die Hülle ihn erkennt, ist eine Marke an der Anfrage
+(`App\Http\Middleware\SettingsArea`) und keine Liste von Seitennamen.
+
 Zwei Adressen liegen bewusst daneben: `/` ist der Einstieg ohne Organisation (er
 leitet auf die Übersicht der aktiven weiter — ein frisch angelegtes Konto hat noch
-keine), und die abgelösten organisationslosen Adressen (`/fehler`, `/versionen`, …)
-leiten dauerhaft auf ihre neue Form weiter, samt Filter-Parametern
-(`routes/legacy.php`). Die Schnittstellen-Adressen (`/api/…`, Datenaufnahme) sind
+keine), und die abgelösten Adressen leiten dauerhaft auf ihre neue Form weiter,
+samt Abfrage-Parametern (`routes/legacy.php`): die organisationslosen Fachseiten
+(`/fehler`, `/versionen`, …) auf die Form mit Organisation, die Verwaltungsseiten
+(`/organisationen/{slug}`, `/projekte`, `/zugriffstoken`, `/profile`, …) in den
+Einstellungsbereich. Die Schnittstellen-Adressen (`/api/…`, Datenaufnahme) sind
 davon unberührt.
 
 ## Aufbau

@@ -32,7 +32,7 @@ class ProjectSettingsTest extends TestCase
     public function test_the_settings_survive_a_reload(): void
     {
         [$user, $organization, $project] = $this->project();
-        $path = "/organisationen/{$organization->slug}/projekte/{$project->slug}";
+        $path = "/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}";
 
         $this->actingAs($user)->patch($path, [
             'name' => 'Webshop',
@@ -61,7 +61,7 @@ class ProjectSettingsTest extends TestCase
     {
         [$user, $organization, $project] = $this->project();
 
-        $this->actingAs($user)->patch("/organisationen/{$organization->slug}/projekte/webshop", [
+        $this->actingAs($user)->patch("/einstellungen/organisationen/{$organization->slug}/projekte/webshop", [
             'name' => 'Ganz neu',
             'platform' => $project->platform->value,
             'default_environment' => 'production',
@@ -76,7 +76,7 @@ class ProjectSettingsTest extends TestCase
     public function test_the_settings_are_checked(): void
     {
         [$user, $organization] = $this->project();
-        $path = "/organisationen/{$organization->slug}/projekte/webshop";
+        $path = "/einstellungen/organisationen/{$organization->slug}/projekte/webshop";
 
         $this->actingAs($user)->patch($path, [
             'name' => 'Webshop',
@@ -91,7 +91,7 @@ class ProjectSettingsTest extends TestCase
     public function test_members_may_read_the_settings_but_not_change_them(): void
     {
         [$member, $organization, $project] = $this->project(OrganizationRole::Member);
-        $path = "/organisationen/{$organization->slug}/projekte/{$project->slug}";
+        $path = "/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}";
 
         $this->actingAs($member)->get($path)
             ->assertOk()
@@ -118,7 +118,7 @@ class ProjectSettingsTest extends TestCase
         [$owner, $organization, $project] = $this->project();
 
         $this->actingAs($owner)
-            ->get("/organisationen/{$organization->slug}/projekte/{$project->slug}")
+            ->get("/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}")
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('permissions.manageKeys', true)
                 ->where('project.keysHref', route('projects.keys.index', [$organization, $project]))
@@ -129,7 +129,7 @@ class ProjectSettingsTest extends TestCase
     {
         [$owner, $organization, $project] = $this->project();
         $team = Team::factory()->for($organization)->create();
-        $path = "/organisationen/{$organization->slug}/projekte/{$project->slug}/teams";
+        $path = "/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}/teams";
 
         $this->actingAs($owner)->put($path, ['teams' => [$team->id]])
             ->assertSessionHasNoErrors();
@@ -146,7 +146,7 @@ class ProjectSettingsTest extends TestCase
         $foreign = Team::factory()->create();
 
         $this->actingAs($owner)
-            ->put("/organisationen/{$organization->slug}/projekte/{$project->slug}/teams", [
+            ->put("/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}/teams", [
                 'teams' => [$foreign->id],
             ])
             ->assertSessionHasErrors('teams.0');
@@ -163,7 +163,7 @@ class ProjectSettingsTest extends TestCase
         $project->teams()->attach($assigned);
 
         $this->actingAs($owner)
-            ->get("/organisationen/{$organization->slug}/projekte/{$project->slug}")
+            ->get("/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}")
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->has('teams', 2)
                 ->where('teams.0.name', 'Alpha')

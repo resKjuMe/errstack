@@ -194,19 +194,67 @@ final class DurationHistogram
      * Die Gegenrichtung ist {@see self::fromRowSums()}.
      *
      * @param  string  $column  Die Spalte, in der die Verteilung steht.
+     * @param  string  $prefix  Namensvorsatz der Aliasse — nötig, sobald zwei
+     *                          Verteilungen in einer Abfrage stehen.
      * @return list<string>
      */
-    public static function sumExpressions(string $column = 'duration_histogram'): array
+    public static function sumExpressions(string $column = 'duration_histogram', string $prefix = 'bucket'): array
     {
         $expressions = [];
 
         for ($bucket = 0; $bucket <= self::MAX_BUCKET; $bucket++) {
             $expressions[] = sprintf(
-                'sum(coalesce(json_extract(%s, \'$."%d"\'), 0)) as bucket_%d',
+                'sum(coalesce(json_extract(%s, \'$."%d"\'), 0)) as %s_%d',
                 $column,
                 $bucket,
+                $prefix,
                 $bucket,
             );
+        }
+
+        return $expressions;
+    }
+
+    /**
+     * Dasselbe für eine Spalte, in der eine **einzelne Dauer** steht — der Weg zu
+     * einem Perzentil über Zeilen, für die es keine Vorberechnung gibt (D1).
+     *
+     * Je Klasse eine bedingte Summe, und die Grenzen kommen aus
+     * {@see self::lowerBound()} statt aus einer zweiten Tabelle im Kopf. Warum nicht
+     * die Klasse in SQL gerechnet und danach gruppiert wird: dafür bräuchte es einen
+     * Logarithmus, den MySQL und SQLite verschieden (und SQLite je nach Übersetzung
+     * gar nicht) anbieten. Eine Summe kann jede Datenbank.
+     *
+     * Die Aliasse sind dieselben wie bei {@see self::sumExpressions()}, damit
+     * {@see self::fromRowSums()} beide Wege liest.
+     *
+     * @param  string  $column  Die Spalte oder der Ausdruck mit der Dauer.
+     * @param  string  $prefix  Namensvorsatz der Aliasse — nötig, sobald zwei
+     *                          Verteilungen in einer Abfrage stehen.
+     * @return list<string>
+     */
+    public static function countExpressions(string $column, string $prefix = 'bucket'): array
+    {
+        $expressions = [];
+
+        for ($bucket = 0; $bucket <= self::MAX_BUCKET; $bucket++) {
+            $lower = self::lowerBound($bucket);
+            $upper = self::lowerBound($bucket + 1);
+
+            // Die Grenzen sind genau die von {@see self::bucketFor()}, und die sind
+            // an zwei Stellen nicht gleichmäßig: die erste Klasse nimmt ihre
+            // Obergrenze mit (bis 100 µs einschließlich), weshalb die zweite oben
+            // **offen** beginnt; die letzte ist oben offen. Ein Ausdruck, der das
+            // glättete, zählte die Zweierpotenzen in die falsche Klasse — sichtbar
+            // nur an Messungen, die genau auf einer Klassengrenze liegen.
+            $condition = match (true) {
+                $bucket === 0 => sprintf('%s <= %d', $column, $upper),
+                $bucket === self::MAX_BUCKET => sprintf('%s >= %d', $column, $lower),
+                $bucket === 1 => sprintf('%1$s > %2$d and %1$s < %3$d', $column, $lower, $upper),
+                default => sprintf('%1$s >= %2$d and %1$s < %3$d', $column, $lower, $upper),
+            };
+
+            $expressions[] = sprintf('sum(case when %s then 1 else 0 end) as %s_%d', $condition, $prefix, $bucket);
         }
 
         return $expressions;
@@ -216,15 +264,16 @@ final class DurationHistogram
      * Baut aus den Klassensummen einer Ergebniszeile wieder eine Verteilung.
      *
      * @param  array<string, mixed>  $row
+     * @param  string  $prefix  Derselbe Namensvorsatz wie beim Erzeugen der Ausdrücke.
      */
-    public static function fromRowSums(array $row): self
+    public static function fromRowSums(array $row, string $prefix = 'bucket'): self
     {
         $buckets = [];
 
         for ($bucket = 0; $bucket <= self::MAX_BUCKET; $bucket++) {
             // Als Zeichenkette, wenn MySQL antwortet, und als Zahl bei SQLite —
             // die Summe einer Spalte kommt je nach Treiber verschieden zurück.
-            $count = (int) ($row['bucket_'.$bucket] ?? 0);
+            $count = (int) ($row[$prefix.'_'.$bucket] ?? 0);
 
             if ($count > 0) {
                 $buckets[$bucket] = $count;

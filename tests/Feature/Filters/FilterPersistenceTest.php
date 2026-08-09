@@ -87,9 +87,16 @@ class FilterPersistenceTest extends TestCase
         $this->assertStringContainsString('environment=production', $issues);
         $this->assertStringContainsString('period=7d', $issues);
 
-        // Die Verwaltung ist keine Auswertung: dort gibt es nichts zu filtern,
-        // und der Link bleibt nackt.
-        $this->assertStringNotContainsString('?', $links[__('nav.links.projects')]);
+        // Die Verwaltung ist keine Auswertung: dort gibt es nichts zu filtern.
+        // Seit U6 steht sie nicht mehr in der Hauptnavigation, sondern hinter
+        // dem Anker im Fuß — auch der bleibt nackt.
+        foreach ($this->navLinks($response) as $href) {
+            $this->assertStringContainsString('?', $href, "Ohne Filter: {$href}");
+        }
+
+        $footer = $response->viewData('page')['props']['shell']['footer'];
+
+        $this->assertStringNotContainsString('?', $footer[0]['href']);
     }
 
     /**
@@ -102,7 +109,7 @@ class FilterPersistenceTest extends TestCase
 
         $this->actingAs($user)->get($this->dashboard($organization).'?projects[]=webshop&period=7d')->assertOk();
 
-        $response = $this->actingAs($user)->get('/profile');
+        $response = $this->actingAs($user)->get(route('profile.edit'));
         $response->assertOk();
 
         $this->assertStringNotContainsString('?', $this->navLinks($response)[__('nav.links.issues')]);
@@ -241,7 +248,7 @@ class FilterPersistenceTest extends TestCase
         // ohne die Projektauswahl der alten.
         $this->actingAs($user)
             ->from($this->dashboard($organization).'?projects[]=webshop&period=7d')
-            ->post("/organisationen/{$other->slug}/wechseln")
+            ->post("/einstellungen/organisationen/{$other->slug}/wechseln")
             ->assertRedirect($this->dashboard($other).'?period=7d');
 
         $this->actingAs($user)
@@ -309,7 +316,7 @@ class FilterPersistenceTest extends TestCase
         [$user, $organization] = $this->context();
 
         $this->actingAs($user)->get($this->dashboard($organization).'?projects[]=webshop&period=7d')->assertOk();
-        $this->actingAs($user)->get('/profile')->assertOk();
+        $this->actingAs($user)->get(route('profile.edit'))->assertOk();
 
         $this->actingAs($user)
             ->get($this->dashboard($organization))

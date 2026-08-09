@@ -32,6 +32,7 @@ class IngestRejection extends RuntimeException
         private readonly string $key,
         private readonly int $status,
         private readonly array $replace = [],
+        private readonly ?int $retryAfter = null,
     ) {
         parent::__construct($key);
     }
@@ -59,8 +60,22 @@ class IngestRejection extends RuntimeException
         return new self($key, 400);
     }
 
+    /**
+     * Zu viel auf einmal, oder das Monatskontingent ist aufgebraucht (O1).
+     *
+     * Die einzige Abweisung mit einer Wartezeit — und die ist hier der
+     * eigentliche Inhalt der Antwort: `429` allein heißt „nicht jetzt", und ein
+     * SDK, das nicht weiß, wie lange, versucht es gleich wieder.
+     *
+     * @param  string  $key  Sprachschlüssel des Grundes (siehe lang/*\/ingest.php)
+     */
+    public static function rateLimited(string $key, int $retryAfter): self
+    {
+        return new self($key, 429, ['seconds' => $retryAfter], $retryAfter);
+    }
+
     public function render(Request $request): JsonResponse
     {
-        return IngestResponse::error(__($this->key, $this->replace), $this->status);
+        return IngestResponse::error(__($this->key, $this->replace), $this->status, $this->retryAfter);
     }
 }

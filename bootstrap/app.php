@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnforceIngestQuota;
 use App\Http\Middleware\EnsureApiOrganization;
 use App\Http\Middleware\EnsureApiScope;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -8,6 +9,7 @@ use App\Http\Middleware\ResolveApiToken;
 use App\Http\Middleware\ResolveIngestKey;
 use App\Http\Middleware\ResolveOrganization;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\ThrottleIngest;
 use App\Support\Api\ApiErrors;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -47,11 +49,19 @@ return Application::configure(basePath: dirname(__DIR__))
         // `ingest.key` ist die Anmeldung der Datenaufnahme — dort meldet keine
         // Person mit einem Token, sondern eine Anwendung mit ihrem
         // Client-Schlüssel.
+        //
+        // Davor und dahinter stehen die beiden Stufen der Begrenzung (O1):
+        // `ingest.throttle` bremst je Herkunft, noch bevor ein Schlüssel
+        // gesucht wurde (sonst wäre das Durchprobieren unbegrenzt),
+        // `ingest.quota:<datenart>` prüft die Kontingente des erkannten
+        // Schlüssels.
         $middleware->alias([
             'api.token' => ResolveApiToken::class,
             'api.organization' => EnsureApiOrganization::class,
             'scope' => EnsureApiScope::class,
             'ingest.key' => ResolveIngestKey::class,
+            'ingest.throttle' => ThrottleIngest::class,
+            'ingest.quota' => EnforceIngestQuota::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -41,7 +41,7 @@ class OwnershipRuleTest extends TestCase
 
     private function path(Organization $organization, Project $project, string $suffix = ''): string
     {
-        return "/organisationen/{$organization->slug}/projekte/{$project->slug}/zustaendigkeit{$suffix}";
+        return "/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}/zustaendigkeit{$suffix}";
     }
 
     /**

@@ -13,4 +13,7 @@ return [
     'envelope_header' => 'The envelope does not start with a JSON header line.',
     'security_unknown' => 'Not a known security report — expected csp-report, expect-ct-report or expect-staple-report.',
 
+    'rate_limited' => 'Too many events — please try again in :seconds seconds.',
+    'quota_exceeded' => 'The quota for this data type is used up for this month.',
+
 ];

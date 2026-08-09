@@ -13,4 +13,7 @@ return [
     'envelope_header' => 'Der Envelope beginnt nicht mit einer Kopfzeile aus JSON.',
     'security_unknown' => 'Kein bekannter Sicherheitsbericht — erwartet werden csp-report, expect-ct-report oder expect-staple-report.',
 
+    'rate_limited' => 'Zu viele Meldungen — bitte in :seconds Sekunden erneut versuchen.',
+    'quota_exceeded' => 'Das Kontingent dieser Datenart ist für diesen Monat aufgebraucht.',
+
 ];

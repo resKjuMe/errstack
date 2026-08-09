@@ -14,9 +14,15 @@
 | Kein `auth:sanctum`: hier meldet sich keine Person mit einem Token an, sondern
 | eine Anwendung mit ihrem Client-Schlüssel. Den prüft `ingest.key`.
 |
-| Die Ratenbegrenzung fehlt bewusst noch — Kontingente je Projekt und Schlüssel
-| sind ein eigener Schritt (O1) und gehören dann vor `ingest.key`, damit auch das
-| Durchprobieren von Schlüsseln gedrosselt wird.
+| Die Begrenzung (O1) läuft in zwei Stufen, und ihre Reihenfolge ist der Punkt:
+|
+|   ingest.throttle    — **vor** `ingest.key`, damit auch das Durchprobieren von
+|                        Schlüsseln gedrosselt wird. Zählt je Herkunft und fasst
+|                        die Datenbank nicht an.
+|   ingest.quota:<art> — dahinter, weil erst dort feststeht, wessen Kontingent
+|                        gilt. Der Parameter nennt die Datenart; wo keiner steht
+|                        (Envelope), prüft diese Stufe nur die Rate des
+|                        Schlüssels und die Datenarten fallen je Element an.
 |
 */
 
@@ -31,7 +37,9 @@ Route::post('{project}/store', [StoreController::class, 'store'])
     // Die Projektnummer, nicht der Slug: so steht sie in der DSN, und das SDK
     // schickt genau das, was dort steht.
     ->whereNumber('project')
-    ->middleware('ingest.key')
+    // Hier steht die Datenart fest: über diesen Weg kommen ausschließlich
+    // Fehlermeldungen.
+    ->middleware(['ingest.throttle', 'ingest.key', 'ingest.quota:errors'])
     ->name('ingest.store');
 
 // Der Weg heutiger SDKs: mehrere Elemente in einer Anfrage — Fehler,
@@ -39,7 +47,12 @@ Route::post('{project}/store', [StoreController::class, 'store'])
 // kennen den Envelope nicht, und keines von beiden soll ausgeschlossen werden.
 Route::post('{project}/envelope', [EnvelopeController::class, 'store'])
     ->whereNumber('project')
-    ->middleware('ingest.key')
+    // Ohne Datenart: was im Envelope steckt, weiß vor dem Zerlegen niemand.
+    // Geprüft wird hier die Rate des Schlüssels, die Kontingente je Datenart
+    // fallen Element für Element an (App\Support\Ingest\EnvelopeIntake) —
+    // und deshalb nimmt ein aufgebrauchtes Transaktions-Kontingent die
+    // Fehlermeldung daneben nicht mit.
+    ->middleware(['ingest.throttle', 'ingest.key', 'ingest.quota'])
     ->name('ingest.envelope');
 
 // Die Sicherheitsberichte des Browsers (CSP, Expect-CT, Expect-Staple). Auch
@@ -50,7 +63,9 @@ Route::post('{project}/envelope', [EnvelopeController::class, 'store'])
 // welcher Bericht ankam, steht ohnehin im Rumpf.
 Route::post('{project}/security', [SecurityController::class, 'store'])
     ->whereNumber('project')
-    ->middleware('ingest.key')
+    // Ein Sicherheitsbericht wird zu einer Fehlermeldung und zählt deshalb
+    // gegen dieselbe Datenart.
+    ->middleware(['ingest.throttle', 'ingest.key', 'ingest.quota:errors'])
     ->name('ingest.security');
 
 // Die Beschreibung einer betroffenen Person (M6) — und der Weg des
@@ -64,7 +79,11 @@ Route::post('{project}/security', [SecurityController::class, 'store'])
 Route::post('{project}/{feedback}', [UserFeedbackController::class, 'store'])
     ->whereNumber('project')
     ->where('feedback', 'user-feedback|user-report')
-    ->middleware(['throttle:ingest-feedback', 'ingest.key'])
+    // Kein `ingest.quota`: eine Rückmeldung ist die Beschreibung eines
+    // Menschen zu einem Ereignis, das bereits gezählt wurde
+    // ({@see App\Enums\IngestType::countsTowardEventQuota()}). Die
+    // Ratenbegrenzung darüber ist die eigene dieser Adresse.
+    ->middleware(['throttle:ingest-feedback', 'ingest.throttle', 'ingest.key'])
     ->name('ingest.feedback');
 
 // Lebenszeichen eines überwachten Cronjobs, ohne SDK: der Schlüssel steht hier
@@ -75,5 +94,5 @@ Route::match(['get', 'post'], '{project}/cron/{monitor}/{key}', [CheckInControll
     ->whereNumber('project')
     ->where('monitor', '[A-Za-z0-9._-]{1,64}')
     ->where('key', '[A-Za-z0-9]{1,64}')
-    ->middleware('ingest.key')
+    ->middleware(['ingest.throttle', 'ingest.key', 'ingest.quota:monitors'])
     ->name('ingest.cron');

@@ -19,7 +19,7 @@ class OrganizationTest extends TestCase
         $own = Organization::factory()->withMember($user, OrganizationRole::Member)->create(['name' => 'Eigene']);
         Organization::factory()->create(['name' => 'Fremde']);
 
-        $this->actingAs($user)->get('/organisationen')
+        $this->actingAs($user)->get('/einstellungen/organisationen')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('organizations/Index')
@@ -34,9 +34,9 @@ class OrganizationTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/organisationen', ['name' => 'Neue Firma'])
+            ->post('/einstellungen/organisationen', ['name' => 'Neue Firma'])
             ->assertSessionHasNoErrors()
-            ->assertRedirect('/organisationen/neue-firma');
+            ->assertRedirect('/einstellungen/organisationen/neue-firma');
 
         $organization = Organization::query()->where('slug', 'neue-firma')->firstOrFail();
 
@@ -48,8 +48,8 @@ class OrganizationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->actingAs($user)->post('/organisationen', ['name' => 'Doppelt']);
-        $this->actingAs($user)->post('/organisationen', ['name' => 'Doppelt']);
+        $this->actingAs($user)->post('/einstellungen/organisationen', ['name' => 'Doppelt']);
+        $this->actingAs($user)->post('/einstellungen/organisationen', ['name' => 'Doppelt']);
 
         $this->assertSame(['doppelt', 'doppelt-2'], Organization::query()->orderBy('id')->pluck('slug')->all());
     }
@@ -57,7 +57,7 @@ class OrganizationTest extends TestCase
     public function test_a_name_is_required(): void
     {
         $this->actingAs(User::factory()->create())
-            ->post('/organisationen', ['name' => ''])
+            ->post('/einstellungen/organisationen', ['name' => ''])
             ->assertSessionHasErrors('name');
     }
 
@@ -66,7 +66,7 @@ class OrganizationTest extends TestCase
         $organization = Organization::factory()->create();
 
         $this->actingAs(User::factory()->create())
-            ->get("/organisationen/{$organization->slug}")
+            ->get("/einstellungen/organisationen/{$organization->slug}")
             ->assertForbidden();
     }
 
@@ -77,7 +77,7 @@ class OrganizationTest extends TestCase
             $organization = Organization::factory()->withMember($user, $role)->create();
 
             $this->actingAs($user)
-                ->get("/organisationen/{$organization->slug}")
+                ->get("/einstellungen/organisationen/{$organization->slug}")
                 ->assertOk()
                 ->assertInertia(fn (AssertableInertia $page) => $page
                     ->component('organizations/Show')
@@ -95,7 +95,7 @@ class OrganizationTest extends TestCase
             $organization = Organization::factory()->withMember($user, $role)->create(['name' => 'Alt']);
 
             $response = $this->actingAs($user)
-                ->patch("/organisationen/{$organization->slug}", ['name' => 'Neu']);
+                ->patch("/einstellungen/organisationen/{$organization->slug}", ['name' => 'Neu']);
 
             if (in_array($role, $allowed, true)) {
                 $response->assertSessionHasNoErrors();
@@ -112,7 +112,7 @@ class OrganizationTest extends TestCase
         $user = User::factory()->create();
         $organization = Organization::factory()->withMember($user)->create(['name' => 'Alt', 'slug' => 'alt']);
 
-        $this->actingAs($user)->patch('/organisationen/alt', ['name' => 'Ganz neu']);
+        $this->actingAs($user)->patch('/einstellungen/organisationen/alt', ['name' => 'Ganz neu']);
 
         $this->assertSame('alt', $organization->refresh()->slug);
     }
@@ -123,15 +123,15 @@ class OrganizationTest extends TestCase
         $organization = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
 
         $this->actingAs($admin)
-            ->delete("/organisationen/{$organization->slug}")
+            ->delete("/einstellungen/organisationen/{$organization->slug}")
             ->assertForbidden();
 
         $owner = User::factory()->create();
         $organization->setRole($owner, OrganizationRole::Owner);
 
         $this->actingAs($owner)
-            ->delete("/organisationen/{$organization->slug}")
-            ->assertRedirect('/organisationen');
+            ->delete("/einstellungen/organisationen/{$organization->slug}")
+            ->assertRedirect('/einstellungen/organisationen');
 
         $this->assertDatabaseMissing('organizations', ['id' => $organization->id]);
     }
@@ -142,7 +142,7 @@ class OrganizationTest extends TestCase
         $organization = Organization::factory()->withMember($user)->create();
         $user->switchOrganization($organization);
 
-        $this->actingAs($user)->delete("/organisationen/{$organization->slug}");
+        $this->actingAs($user)->delete("/einstellungen/organisationen/{$organization->slug}");
 
         $this->assertNull($user->refresh()->current_organization_id);
     }
@@ -155,9 +155,9 @@ class OrganizationTest extends TestCase
         $user->switchOrganization($first);
 
         $this->actingAs($user)
-            ->from("/organisationen/{$second->slug}")
-            ->post("/organisationen/{$second->slug}/wechseln")
-            ->assertRedirect("/organisationen/{$second->slug}");
+            ->from("/einstellungen/organisationen/{$second->slug}")
+            ->post("/einstellungen/organisationen/{$second->slug}/wechseln")
+            ->assertRedirect("/einstellungen/organisationen/{$second->slug}");
 
         $this->assertSame($second->id, $user->refresh()->current_organization_id);
     }
@@ -168,7 +168,7 @@ class OrganizationTest extends TestCase
         $foreign = Organization::factory()->create();
 
         $this->actingAs($user)
-            ->post("/organisationen/{$foreign->slug}/wechseln")
+            ->post("/einstellungen/organisationen/{$foreign->slug}/wechseln")
             ->assertForbidden();
 
         $this->assertNull($user->refresh()->current_organization_id);
@@ -176,6 +176,6 @@ class OrganizationTest extends TestCase
 
     public function test_the_organization_pages_stay_closed_for_guests(): void
     {
-        $this->get('/organisationen')->assertRedirect('/login');
+        $this->get('/einstellungen/organisationen')->assertRedirect('/login');
     }
 }

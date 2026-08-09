@@ -77,7 +77,9 @@ function SwitchButton({ slug }) {
         <SecondaryButton
             type="button"
             disabled={processing}
-            onClick={() => post(`/organisationen/${slug}/wechseln`, { preserveScroll: true })}
+            onClick={() =>
+                post(`/einstellungen/organisationen/${slug}/wechseln`, { preserveScroll: true })
+            }
         >
             {t('organizations.index.switch')}
         </SecondaryButton>
@@ -90,7 +92,7 @@ function CreateOrganization() {
 
     const submit = (e) => {
         e.preventDefault();
-        post('/organisationen', { onSuccess: () => reset() });
+        post('/einstellungen/organisationen', { onSuccess: () => reset() });
     };
 
     return (
