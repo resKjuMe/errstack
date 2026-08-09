@@ -56,6 +56,9 @@ final class ProjectData
                     'platformShort' => $project->platform->shortLabel(),
                     'environment' => $project->default_environment,
                     'href' => route('projects.show', [$organization, $project]),
+                    // Der Weg zur Übersicht des Projekts (D5) — die Frage „wie
+                    // steht es" neben der Frage „wie ist es eingestellt".
+                    'overviewHref' => route('projects.overview', [$organization, $project]),
                     'teams' => $project->teams
                         ->sortBy(fn (Team $team): string => (string) $team->name)
                         ->pluck('name')
@@ -100,6 +103,7 @@ final class ProjectData
                 // eine Zuständigkeit wird.
                 'autoAssignSuspectCommits' => $project->auto_assign_suspect_commits,
                 'href' => route('projects.show', [$organization, $project]),
+                'overviewHref' => route('projects.overview', [$organization, $project]),
                 // Die DSN steht auf der Schlüssel-Seite; hier verweist nur der
                 // Link darauf, und auch der nur für die Verwaltung.
                 'keysHref' => $mayManageKeys ? route('projects.keys.index', [$organization, $project]) : null,

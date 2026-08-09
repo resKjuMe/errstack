@@ -52,6 +52,9 @@ class TeamController extends Controller
             'team' => [
                 'id' => $team->id,
                 'name' => $team->name,
+                // Der Weg zur Team-Sicht (D5): hier wird verwaltet, dort steht,
+                // was auf das Team wartet.
+                'overviewHref' => route('teams.overview', [$team->organization, $team]),
             ],
             'organization' => [
                 'slug' => $team->organization->slug,

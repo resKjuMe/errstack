@@ -15,6 +15,10 @@ return [
         'empty_read_only' => 'Die Verwaltung dieser Organisation legt Projekte an.',
     ],
 
+    'list' => [
+        'overview' => 'Übersicht',
+    ],
+
     'create' => [
         'title' => 'Neues Projekt',
         'description' => 'Wird in „:organization" angelegt. Die Einstellungen lassen sich danach ändern.',

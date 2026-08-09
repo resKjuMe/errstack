@@ -12,6 +12,7 @@ import OrganizationsIndex from './shell/pages/organizations/Index.jsx';
 import OrganizationsShow from './shell/pages/organizations/Show.jsx';
 import OrganizationsAuditLog from './shell/pages/organizations/AuditLog.jsx';
 import TeamsShow from './shell/pages/teams/Show.jsx';
+import TeamsOverview from './shell/pages/teams/Overview.jsx';
 import NotificationsIndex from './shell/pages/notifications/Index.jsx';
 import NotificationsPreferences from './shell/pages/notifications/Preferences.jsx';
 import NotificationsUnsubscribe from './shell/pages/notifications/Unsubscribe.jsx';
@@ -23,6 +24,7 @@ import FeedbackIndex from './shell/pages/feedback/Index.jsx';
 import TracesShow from './shell/pages/traces/Show.jsx';
 import ProjectsIndex from './shell/pages/projects/Index.jsx';
 import ProjectsShow from './shell/pages/projects/Show.jsx';
+import ProjectsOverview from './shell/pages/projects/Overview.jsx';
 import ProjectsSetup from './shell/pages/projects/Setup.jsx';
 import ProjectsKeys from './shell/pages/projects/Keys.jsx';
 import ProjectsAlerts from './shell/pages/projects/Alerts.jsx';
@@ -86,6 +88,9 @@ const pages = {
     'organizations/Show': OrganizationsShow,
     'organizations/AuditLog': OrganizationsAuditLog,
     'teams/Show': TeamsShow,
+    // Die Team-Sicht (D5): was auf das Team wartet. Getrennt von der
+    // Verwaltungsseite daneben — dort wird eingerichtet, hier nachgesehen.
+    'teams/Overview': TeamsOverview,
     'notifications/Index': NotificationsIndex,
     'notifications/Preferences': NotificationsPreferences,
     'notifications/Unsubscribe': NotificationsUnsubscribe,
@@ -102,6 +107,9 @@ const pages = {
     'traces/Show': TracesShow,
     'projects/Index': ProjectsIndex,
     'projects/Show': ProjectsShow,
+    // Die Projekt-Übersicht (D5). Eigene Seite neben den Stammdaten: die eine
+    // beantwortet „wie steht es“, die andere „wie ist es eingestellt“.
+    'projects/Overview': ProjectsOverview,
     // Der Einrichtungs-Assistent. Eine eigene Seite und kein Abschnitt der
     // Einstellungen: er wird einmal am Anfang gebraucht und danach selten —
     // umgekehrt sind die Einstellungen eine Liste von Schaltern und keine

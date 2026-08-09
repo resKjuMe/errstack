@@ -15,6 +15,10 @@ return [
         'empty_read_only' => 'The administrators of this organization create projects.',
     ],
 
+    'list' => [
+        'overview' => 'Overview',
+    ],
+
     'create' => [
         'title' => 'New project',
         'description' => 'Will be created in ":organization". The settings can be changed afterwards.',

@@ -4,6 +4,8 @@
 // App\Http\Controllers\TeamController und TeamMemberController.
 return [
 
+    'overview' => 'Team-Sicht',
+
     'help' => 'Teams bündeln Mitglieder innerhalb einer Organisation. Rechte hängen weiterhin an der Rolle in der Organisation, nicht am Team.',
 
     'settings' => [

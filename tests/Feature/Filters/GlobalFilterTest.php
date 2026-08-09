@@ -243,7 +243,7 @@ class GlobalFilterTest extends TestCase
                 ->where('filter.value.environment', 'production')
                 ->where('filter.value.period', '7d')
                 ->where('filter.timezone', 'Europe/Berlin')
-                ->where('selection.projects', ['Webshop'])
+                ->where('scope.projects', ['Webshop'])
                 ->has('filter.environmentOptions', 1)
                 ->has('filter.periodOptions', count(FilterPeriod::cases()))
             );
