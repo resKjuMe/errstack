@@ -38,6 +38,7 @@ return [
 
     'links' => [
         'dashboard' => 'Overview',
+        'dashboards' => 'Dashboards',
         'issues' => 'Issues',
         'tags' => 'Tags',
         'feedback' => 'Feedback',

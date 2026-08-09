@@ -29,6 +29,7 @@ final class Translations
         'components',
         'crons',
         'dashboard',
+        'dashboards',
         'discover',
         'feedback',
         'filters',

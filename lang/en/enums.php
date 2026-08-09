@@ -545,4 +545,13 @@ return [
         'failure_rate' => 'Failure rate',
     ],
 
+    'widget_type' => [
+        'line' => 'Line',
+        'area' => 'Area',
+        'bar' => 'Bars',
+        'table' => 'Table',
+        'big_number' => 'Big number',
+        'world_map' => 'World map',
+    ],
+
 ];
