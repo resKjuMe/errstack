@@ -213,6 +213,11 @@ class WidgetDataTest extends TestCase
     /**
      * Eine abgelehnte Abfrage ist eine Auskunft und kein Loch: der Motor sagt
      * mit Grund, warum er nicht gerechnet hat, und die Kachel gibt es weiter.
+     *
+     * Abgelehnt wird hier über die **Kennzahl** und nicht über ein unbekanntes
+     * Feld: ein bloßer Name ohne Entsprechung ist im Motor kein Fehler, sondern
+     * ein Merkmal ({@see AbstractDatasetFields::tagDefinition()}) — die Kachel
+     * bekäme also eine leere Tabelle und keine Meldung.
      */
     public function test_a_rejected_query_is_reported_at_the_widget(): void
     {
@@ -221,8 +226,8 @@ class WidgetDataTest extends TestCase
         $widget = $this->widget($dashboard, WidgetType::Table, [
             'query' => [
                 'dataset' => 'errors',
-                'fields' => ['gibt_es_nicht'],
-                'metrics' => ['count()'],
+                'fields' => [],
+                'metrics' => ['gibt_es_nicht()'],
                 'q' => '',
                 'sort' => '',
                 'limit' => 5,

@@ -13,6 +13,7 @@ use App\Support\Dashboards\DashboardTemplates;
 use App\Support\Discover\DiscoverData;
 use App\Support\Discover\DiscoverLimits;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -270,7 +271,14 @@ class DashboardsController extends Controller
             ->exists();
     }
 
-    private function organization(GlobalFilterRequest $request): Organization
+    /**
+     * Die Organisation der laufenden Anfrage — mit `Request` und nicht mit
+     * einem der beiden Formular-Requests getippt: `store()` bringt eine
+     * {@see DashboardRequest} mit, `index()` eine {@see GlobalFilterRequest},
+     * und {@see CurrentOrganization::for()} braucht von beiden nur, was jede
+     * Anfrage hat.
+     */
+    private function organization(Request $request): Organization
     {
         $organization = CurrentOrganization::for($request);
 

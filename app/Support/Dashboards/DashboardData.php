@@ -40,9 +40,9 @@ final class DashboardData
             'shared' => $dashboard->shared,
             'template' => $dashboard->template,
             'widgets' => (int) ($dashboard->widgets_count ?? $dashboard->widgets()->count()),
-            'owner' => $dashboard->user?->name ?? '',
+            'owner' => $dashboard->user->name,
             'own' => $dashboard->user_id === $viewer->id,
-            'updatedAt' => $dashboard->updated_at?->toIso8601ZuluString(),
+            'updatedAt' => $dashboard->updated_at->toIso8601ZuluString(),
             // Die Adressen kommen vom Server und werden nicht im Browser
             // zusammengesetzt: die Routen kennt Laravel, und eine im Browser
             // gebaute Adresse ist die Fassung von heute in einer Anwendung von
