@@ -42,6 +42,20 @@ $sweep = Schedule::command('crons:sweep')->everyMinute()->withoutOverlapping();
 // schließt genau diese Lücke ({@see App\Support\SelfMonitoring\ScheduleCheckIn}).
 ScheduleCheckIn::attach($sweep);
 
+// Die fälligen Erreichbarkeits-Prüfungen anstoßen (M2).
+//
+// Der vierte Fall derselben Art — und der einzige, der von **außen** schaut.
+// Die drei anderen laufen in der Anwendung und stellen fest, dass etwas
+// ausbleibt; dieser stellt fest, dass die Anwendung selbst nicht mehr da ist.
+// Ein Totalausfall erzeugt keine Fehlermeldung, weil nichts mehr läuft, was
+// eine schicken könnte.
+//
+// Minütlich, weil der kürzeste einstellbare Takt eine Minute ist
+// ({@see App\Models\UptimeMonitor::MINIMUM_INTERVAL_SECONDS}) — gröber wäre die
+// Einstellung eine Zusage, die niemand hält. `withoutOverlapping` gegen das
+// Auflaufen; geprüft wird ohnehin nicht hier, sondern in der Warteschlange.
+Schedule::command('uptime:sweep')->everyMinute()->withoutOverlapping();
+
 // Schwellwert-Alarme auf Kennzahlen auswerten (A3).
 //
 // Dieselbe Begründung wie beim Cronjob-Sweep: eine Kennzahl, die schlechter

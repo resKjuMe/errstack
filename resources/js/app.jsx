@@ -30,6 +30,7 @@ import ProjectsIssueAlerts from './shell/pages/projects/IssueAlerts.jsx';
 import ProjectsAlertOverview from './shell/pages/projects/AlertOverview.jsx';
 import ProjectsAlertDetail from './shell/pages/projects/AlertDetail.jsx';
 import ProjectsCrons from './shell/pages/projects/Crons.jsx';
+import ProjectsUptime from './shell/pages/projects/Uptime.jsx';
 import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
 import ProjectsFilters from './shell/pages/projects/Filters.jsx';
 import ProjectsDigest from './shell/pages/projects/Digest.jsx';
@@ -105,6 +106,7 @@ const pages = {
     'projects/AlertOverview': ProjectsAlertOverview,
     'projects/AlertDetail': ProjectsAlertDetail,
     'projects/Crons': ProjectsCrons,
+    'projects/Uptime': ProjectsUptime,
     'projects/Grouping': ProjectsGrouping,
     'projects/Filters': ProjectsFilters,
     'projects/Digest': ProjectsDigest,

@@ -39,6 +39,7 @@ return [
         'fallback' => 'Title and culprit',
         'empty' => 'Nothing to tell them apart',
         'performance' => 'Performance detection',
+        'uptime' => 'Uptime monitoring',
     ],
 
     'api_scope' => [
@@ -127,6 +128,22 @@ return [
         'timeout' => 'ran too long',
         'error' => 'failed',
         'disabled' => 'turned off',
+    ],
+
+    'uptime_status' => [
+        'unknown' => 'not checked yet',
+        'up' => 'reachable',
+        'degraded' => 'flaky',
+        'down' => 'down',
+        'disabled' => 'turned off',
+    ],
+
+    'uptime_check_outcome' => [
+        'up' => 'reachable',
+        'connection_failed' => 'unreachable',
+        'timeout' => 'timeout',
+        'status_mismatch' => 'unexpected status code',
+        'content_mismatch' => 'expected text missing',
     ],
 
     'delivery_status' => [

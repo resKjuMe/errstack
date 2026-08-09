@@ -81,6 +81,12 @@ return [
         'manage' => 'View cron jobs',
     ],
 
+    'uptime' => [
+        'title' => 'Uptime',
+        'description' => 'Regular checks from the outside catch a total outage — the one case no error report can cover, because nothing is left running.',
+        'manage' => 'View uptime',
+    ],
+
     'alerts' => [
         'title' => 'Alerts',
         'description' => 'Threshold alerts on metrics: error count, failure rate, throughput and response times. They speak up when a metric leaves its range — and again once it is back.',
