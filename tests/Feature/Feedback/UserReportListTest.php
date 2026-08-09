@@ -193,12 +193,15 @@ class UserReportListTest extends TestCase
      */
     public function test_an_outsider_may_not_change_a_report(): void
     {
-        [, , $project] = $this->context();
+        [, $organization, $project] = $this->context();
 
         $report = $this->report($project);
 
         $this->actingAs(User::factory()->create())
-            ->patch(route('feedback.status', $report), ['status' => UserReportStatus::Spam->value])
+            ->patch(
+                route('feedback.status', ['organization' => $organization, 'userReport' => $report]),
+                ['status' => UserReportStatus::Spam->value],
+            )
             ->assertForbidden();
     }
 

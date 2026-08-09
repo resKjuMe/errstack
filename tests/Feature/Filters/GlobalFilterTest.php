@@ -230,10 +230,10 @@ class GlobalFilterTest extends TestCase
 
     public function test_the_dashboard_ships_the_filter_and_keeps_the_selection_after_a_reload(): void
     {
-        [$user, , $project] = $this->context();
+        [$user, $organization, $project] = $this->context();
         Environment::factory()->for($project)->create(['name' => 'production']);
 
-        $url = '/?projects[]=webshop&environment=production&period=7d&tz=Europe%2FBerlin';
+        $url = route('dashboard', $organization).'?projects[]=webshop&environment=production&period=7d&tz=Europe%2FBerlin';
 
         $this->actingAs($user)->get($url)
             ->assertOk()
@@ -259,10 +259,10 @@ class GlobalFilterTest extends TestCase
 
     public function test_the_dashboard_rejects_a_reversed_own_period(): void
     {
-        [$user] = $this->context();
+        [$user, $organization] = $this->context();
 
         $this->actingAs($user)
-            ->get('/?period=custom&from=2026-08-05&to=2026-08-01')
+            ->get(route('dashboard', $organization).'?period=custom&from=2026-08-05&to=2026-08-01')
             ->assertSessionHasErrors('to');
     }
 

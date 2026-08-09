@@ -45,12 +45,19 @@ abstract class TestCase extends BaseTestCase
      * andere Organisation meint — der Zugriff auf eine fremde etwa —, gibt sie
      * ausdrücklich an: `route('issues.index', $fremde)`.
      *
+     * Eine vorhandene Vorbelegung wird nie **genommen**, nur gesetzt. Ein Test,
+     * der zwischendurch als Außenstehender auftritt („darf nicht"), meint dessen
+     * Konto und weiterhin die Adresse der Organisation, um die es geht — genau
+     * die Anfrage, die dort 403 bekommen soll.
+     *
      * @param  string|null  $guard
      */
     public function actingAs(Authenticatable $user, $guard = null): static
     {
-        if ($user instanceof User) {
-            URL::defaults(['organization' => $user->resolveCurrentOrganization()?->getRouteKey()]);
+        $organization = $user instanceof User ? $user->resolveCurrentOrganization() : null;
+
+        if ($organization !== null) {
+            URL::defaults(['organization' => $organization->getRouteKey()]);
         }
 
         return parent::actingAs($user, $guard);

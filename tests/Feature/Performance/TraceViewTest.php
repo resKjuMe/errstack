@@ -318,7 +318,10 @@ class TraceViewTest extends TestCase
 
     public function test_it_needs_an_account(): void
     {
-        $this->get($this->url())->assertRedirect('/login');
+        [, , $organization] = $this->context();
+
+        $this->get(route('traces.show', ['organization' => $organization, 'trace' => self::TRACE]))
+            ->assertRedirect('/login');
     }
 
     /**

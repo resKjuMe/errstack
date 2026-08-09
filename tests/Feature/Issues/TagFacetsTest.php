@@ -189,13 +189,13 @@ class TagFacetsTest extends TestCase
 
     public function test_a_stranger_does_not_get_to_see_the_tags(): void
     {
-        [, , $project] = $this->context();
+        [, $organization, $project] = $this->context();
         $issue = $this->issue($project);
 
         $stranger = User::factory()->create();
 
         $this->actingAs($stranger)
-            ->get(route('issues.tags.index', $issue))
+            ->get(route('issues.tags.index', ['organization' => $organization, 'issue' => $issue]))
             ->assertForbidden();
     }
 

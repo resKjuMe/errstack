@@ -82,13 +82,6 @@ return [
         'submit' => 'Organisation löschen',
     ],
 
-    // Der Aufruf einer Adresse, deren Organisation man nicht angehört. Der Text
-    // sagt bewusst nicht, ob es dort etwas zu sehen gäbe — nur, dass dieses
-    // Konto nicht dazugehört.
-    'errors' => [
-        'not_a_member' => 'Zu dieser Organisation gehört dieses Konto nicht.',
-    ],
-
     'flash' => [
         'created' => 'Organisation „:name" angelegt.',
         'updated' => 'Organisation gespeichert.',
