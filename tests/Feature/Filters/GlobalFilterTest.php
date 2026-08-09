@@ -283,12 +283,17 @@ class GlobalFilterTest extends TestCase
      */
     public function test_every_analysis_page_carries_the_filter_payload(): void
     {
-        [$user, , $project] = $this->context();
+        [$user, $organization, $project] = $this->context();
         Environment::factory()->for($project)->create(['name' => 'production']);
 
-        foreach (['/versionen', '/merkmale', '/leistung', '/rueckmeldungen'] as $path) {
+        // Über die Routen-Namen und nicht über die alten Wurzelpfade: die
+        // Fachseiten liegen seit U5 unter `/organisationen/{organisation}/…`,
+        // und `/versionen` beantwortet eine Weiterleitung statt der Seite.
+        $names = ['releases.index', 'tags.index', 'performance.index', 'feedback.index'];
+
+        foreach ($names as $name) {
             $this->actingAs($user)
-                ->get($path.'?projects[]=webshop&environment=production&period=7d')
+                ->get(route($name, $organization).'?projects[]=webshop&environment=production&period=7d')
                 ->assertOk()
                 ->assertInertia(fn (AssertableInertia $page) => $page
                     ->where('filter.value.projects', ['webshop'])

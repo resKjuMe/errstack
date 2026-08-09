@@ -73,7 +73,14 @@ class OperationsViewTest extends TestCase
     public function test_the_menu_entry_stays_hidden_for_everyone_else(): void
     {
         $operator = $this->operator();
+
+        // Mitglied einer eigenen Organisation: die Übersicht liegt seit U5 unter
+        // `/organisationen/{organisation}/…`, ein Konto ganz ohne Mitgliedschaft
+        // hat dort keine Adresse. Mitglied und nicht Besitzer, denn ohne
+        // gesetzte Liste ist der Besitzer der Betreiber — genau das soll hier
+        // nicht sein.
         $other = User::factory()->create();
+        Organization::factory()->withMember($other, OrganizationRole::Member)->create();
 
         $this->assertTrue($this->menuHasOperations($operator));
         $this->assertFalse($this->menuHasOperations($other));

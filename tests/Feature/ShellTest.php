@@ -25,7 +25,14 @@ class ShellTest extends TestCase
     private function signIn(): User
     {
         $user = User::factory()->create();
-        $user->switchOrganization(Organization::factory()->withMember($user)->create());
+
+        // Mitglied und nicht Besitzer: ohne gesetzte Betreiber-Liste gilt der
+        // Besitzer einer Organisation als Betreiber, und dann stünde in jeder
+        // Prüfung der Leiste nebenbei der Eintrag „Betrieb“. Wer ihn meint,
+        // sagt es ausdrücklich (Tests\Feature\Operations\OperationsViewTest).
+        $user->switchOrganization(
+            Organization::factory()->withMember($user, OrganizationRole::Member)->create(),
+        );
 
         $this->actingAs($user);
 
