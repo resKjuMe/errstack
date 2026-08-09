@@ -158,7 +158,7 @@ final class SavedQueryData
                 'sort' => $query->sort,
                 'limit' => $query->limit,
                 'interval' => $query->interval ?? '',
-                'period' => $filters->period?->value ?? '',
+                'period' => $filters->period->value ?? '',
                 'from' => $filters->from ?? '',
                 'to' => $filters->to ?? '',
                 'environment' => $filters->environment ?? '',

@@ -7,6 +7,7 @@ use App\Enums\OrganizationRole;
 use App\Enums\WidgetType;
 use App\Models\Dashboard;
 use App\Models\DashboardWidget;
+use App\Models\Environment;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\SavedQuery;
@@ -67,6 +68,7 @@ class SavedQueryTest extends TestCase
      * Die Eingabe, wie die Seite sie abschickt: die Frage in den Feldern der
      * Abfrage-Leiste, der Ausschnitt in denen der Filterleiste.
      *
+     * @param  array<string, mixed>  $overrides
      * @return array<string, mixed>
      */
     private function payload(array $overrides = []): array
@@ -202,7 +204,12 @@ class SavedQueryTest extends TestCase
      */
     public function test_ohne_gespeicherten_ausschnitt_bleibt_die_leiste_stehen(): void
     {
-        [$user, $organization] = $this->context();
+        [$user, $organization, $project] = $this->context();
+
+        // Die Leiste nimmt nur Umgebungen an, die es im Projekt gibt — sonst
+        // fällt die Angabe heraus, und der Link zeigte hier eine Wirkung, die
+        // die Seite selbst nicht hat.
+        Environment::factory()->for($project)->create(['name' => 'staging']);
 
         SavedQuery::factory()->for($organization)->for($user)->create(['name' => 'Alles']);
 
