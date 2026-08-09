@@ -288,7 +288,7 @@ class TraceViewTest extends TestCase
     {
         [$user] = $this->context();
 
-        $waterfall = $this->waterfall($this->actingAs($user)->get('/spur/'.str_repeat('b', 32)));
+        $waterfall = $this->waterfall($this->actingAs($user)->get(route('traces.show', ['trace' => str_repeat('b', 32)])));
 
         $this->assertSame([], $waterfall['rows']);
         $this->assertSame(0, $waterfall['durationUs']);
@@ -302,8 +302,8 @@ class TraceViewTest extends TestCase
         $error = $this->error($project, 'aaaaaaaaaaaaaaa1', 'Kaputt');
 
         $this->actingAs($user)
-            ->get('/spur/ereignis/'.$error->id)
-            ->assertRedirect('/spur/'.self::TRACE.'?schritt=aaaaaaaaaaaaaaa1');
+            ->get(route('traces.event', $error))
+            ->assertRedirect(route('traces.show', ['trace' => self::TRACE, 'schritt' => 'aaaaaaaaaaaaaaa1']));
     }
 
     public function test_the_way_into_a_trace_is_closed_for_foreign_errors(): void
@@ -313,12 +313,15 @@ class TraceViewTest extends TestCase
         $stranger = Project::factory()->for(Organization::factory())->create();
         $error = $this->error($stranger, 'aaaaaaaaaaaaaaa1', 'Fremd');
 
-        $this->actingAs($user)->get('/spur/ereignis/'.$error->id)->assertNotFound();
+        $this->actingAs($user)->get(route('traces.event', $error))->assertNotFound();
     }
 
     public function test_it_needs_an_account(): void
     {
-        $this->get($this->url())->assertRedirect('/login');
+        [, , $organization] = $this->context();
+
+        $this->get(route('traces.show', ['organization' => $organization, 'trace' => self::TRACE]))
+            ->assertRedirect('/login');
     }
 
     /**
@@ -383,7 +386,7 @@ class TraceViewTest extends TestCase
      */
     private function url(array $query = []): string
     {
-        return '/spur/'.self::TRACE.($query === [] ? '' : '?'.http_build_query($query));
+        return route('traces.show', ['trace' => self::TRACE] + $query);
     }
 
     /**

@@ -7,6 +7,7 @@ use App\Http\Requests\SavedSearchRequest;
 use App\Models\Organization;
 use App\Models\SavedSearch;
 use App\Models\SavedSearchDefault;
+use App\Support\CurrentOrganization;
 use App\Support\Issues\IssueViews;
 use App\Support\Issues\SavedSearchData;
 use Illuminate\Http\RedirectResponse;
@@ -146,15 +147,16 @@ class SavedSearchController extends Controller
     }
 
     /**
-     * Die Organisation, in der gespeichert wird — die aktive des Betrachters.
+     * Die Organisation, in der gespeichert wird — die aus der Adresse.
      *
-     * Sie steht nicht in der Anfrage, und das ist Absicht: die Fehlerliste
-     * gehört zur aktiven Organisation, und eine Suche, die in einer anderen
-     * landet, wäre dort unsichtbar und hier verschwunden.
+     * Sie steht nicht im Rumpf, und das ist Absicht: die Fehlerliste gehört zu
+     * der Organisation, unter deren Adresse sie aufgerufen wurde, und eine
+     * Suche, die in einer anderen landet, wäre dort unsichtbar und hier
+     * verschwunden.
      */
     private function organization(SavedSearchRequest $request): Organization
     {
-        $organization = $request->user()->resolveCurrentOrganization();
+        $organization = CurrentOrganization::for($request);
 
         if (! $organization instanceof Organization) {
             throw new NotFoundHttpException;

@@ -50,6 +50,6 @@ class RegisteredUserController extends Controller
 
         // `intended`, damit ein Einladungslink die Registrierung übersteht: wer
         // ohne Konto auf /einladung/… klickt, landet danach wieder dort.
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended(route('home', absolute: false));
     }
 }

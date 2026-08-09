@@ -6,6 +6,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\ReportSecurityViolations;
 use App\Http\Middleware\ResolveApiToken;
 use App\Http\Middleware\ResolveIngestKey;
+use App\Http\Middleware\ResolveOrganization;
 use App\Http\Middleware\SetLocale;
 use App\Support\Api\ApiErrors;
 use Illuminate\Foundation\Application;
@@ -28,6 +29,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             SetLocale::class,
+            // Bindet die Anfrage an die Organisation aus der Adresse — vor
+            // Inertia, weil das Grundgerüst (Navigation, Logo-Link) schon
+            // Adressen der Fachseiten baut und dafür den Slug braucht.
+            ResolveOrganization::class,
             HandleInertiaRequests::class,
             // Sagt dem Browser, wohin er Sicherheitsverstöße melden soll — an
             // die eigene Aufnahme. Ohne DSN tut die Zeile nichts.

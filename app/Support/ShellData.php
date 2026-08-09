@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
 /**
@@ -43,12 +44,15 @@ final class ShellData
                 'name' => $user->name,
                 'email' => $user->email,
             ],
-            'logoHref' => route('dashboard'),
+            // Ohne Organisation führt das Logo auf den Einstieg: der entscheidet
+            // selbst, wohin es geht — auf die Übersicht einer Organisation oder
+            // in die Liste, wo sich eine anlegen lässt.
+            'logoHref' => self::hasOrganization() ? route('dashboard') : url('/'),
             // Der Rückweg zur zuletzt ausgeführten Aktion (S6). Er steht in der
             // Hülle und nicht an der Seite, weil die Meldung samt Schaltfläche
             // in der Hülle erscheint — und weil eine Aktion aus der Liste auf
             // der Detailseite landen kann und umgekehrt.
-            'undoHref' => route('issues.actions.undo'),
+            'undoHref' => self::hasOrganization() ? route('issues.actions.undo') : null,
             'logoutHref' => Route::has('logout') ? route('logout') : null,
             'loginHref' => Route::has('login') ? route('login') : null,
             'csrf' => csrf_token(),
@@ -397,8 +401,21 @@ final class ShellData
     }
 
     /**
+     * Steht für diese Anfrage eine Organisation fest? Die Fachseiten liegen unter
+     * `/organisationen/{organisation}/…`, und ihre Adressen entstehen aus der
+     * Vorbelegung, die App\Http\Middleware\ResolveOrganization hinterlegt. Ohne
+     * sie — auf den Gast-Seiten und bei einem Konto ohne Mitgliedschaft — gibt es
+     * diese Adressen nicht, und ein Link darauf wäre keiner.
+     */
+    private static function hasOrganization(): bool
+    {
+        return filled(URL::getDefaultParameters()['organization'] ?? null);
+    }
+
+    /**
      * Baut Links aus Routen-Namen und lässt Einträge weg, deren Route (noch)
-     * nicht existiert.
+     * nicht existiert — oder die eine Organisation brauchen, die es gerade nicht
+     * gibt.
      *
      * `params` braucht nur, wer auf eine Route mit Platzhalter zeigt — etwa die
      * Einstellungen der aktiven Organisation.
@@ -411,7 +428,13 @@ final class ShellData
         $links = [];
 
         foreach ($entries as $entry) {
-            if (! Route::has($entry['route'])) {
+            $route = Route::getRoutes()->getByName($entry['route']);
+
+            if ($route === null) {
+                continue;
+            }
+
+            if (! self::hasOrganization() && in_array('organization', $route->parameterNames(), true)) {
                 continue;
             }
 

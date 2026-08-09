@@ -196,6 +196,8 @@ class ReleaseListTest extends TestCase
 
     public function test_the_page_requires_a_login(): void
     {
-        $this->get(route('releases.index'))->assertRedirect(route('login'));
+        [, $organization] = $this->context();
+
+        $this->get(route('releases.index', $organization))->assertRedirect(route('login'));
     }
 }

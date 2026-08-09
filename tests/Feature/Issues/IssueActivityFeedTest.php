@@ -55,6 +55,13 @@ class IssueActivityFeedTest extends TestCase
 
         $user->switchOrganization($organization);
 
+        // Angemeldet, weil die Leiste die Adressen ihrer Kommentare selbst baut:
+        // die liegen seit U5 unter `/organisationen/{organisation}/…`, und die
+        // Vorbelegung dafür setzt in der Anwendung die Middleware, im Test
+        // {@see \Tests\TestCase::actingAs()}. Die Leiste entsteht ohnehin nur
+        // für einen angemeldeten Betrachter.
+        $this->actingAs($user);
+
         return [$user, $project, $issue];
     }
 

@@ -55,7 +55,7 @@ final class TrendNotifier
             ]),
             body: $this->body($detection),
             level: NotificationLevel::Warning,
-            url: route('performance.trends.index'),
+            url: route('performance.trends.index', $project->organization),
             context: $this->context($detection),
             reference: AlertReference::forTrendDetection($detection->id),
             // Als veränderliches Carbon: die Nachricht nimmt genau das, und ein

@@ -230,10 +230,10 @@ class GlobalFilterTest extends TestCase
 
     public function test_the_dashboard_ships_the_filter_and_keeps_the_selection_after_a_reload(): void
     {
-        [$user, , $project] = $this->context();
+        [$user, $organization, $project] = $this->context();
         Environment::factory()->for($project)->create(['name' => 'production']);
 
-        $url = '/?projects[]=webshop&environment=production&period=7d&tz=Europe%2FBerlin';
+        $url = route('dashboard', $organization).'?projects[]=webshop&environment=production&period=7d&tz=Europe%2FBerlin';
 
         $this->actingAs($user)->get($url)
             ->assertOk()
@@ -259,10 +259,10 @@ class GlobalFilterTest extends TestCase
 
     public function test_the_dashboard_rejects_a_reversed_own_period(): void
     {
-        [$user] = $this->context();
+        [$user, $organization] = $this->context();
 
         $this->actingAs($user)
-            ->get('/?period=custom&from=2026-08-05&to=2026-08-01')
+            ->get(route('dashboard', $organization).'?period=custom&from=2026-08-05&to=2026-08-01')
             ->assertSessionHasErrors('to');
     }
 
@@ -283,12 +283,17 @@ class GlobalFilterTest extends TestCase
      */
     public function test_every_analysis_page_carries_the_filter_payload(): void
     {
-        [$user, , $project] = $this->context();
+        [$user, $organization, $project] = $this->context();
         Environment::factory()->for($project)->create(['name' => 'production']);
 
-        foreach (['/versionen', '/merkmale', '/leistung', '/rueckmeldungen'] as $path) {
+        // Über die Routen-Namen und nicht über die alten Wurzelpfade: die
+        // Fachseiten liegen seit U5 unter `/organisationen/{organisation}/…`,
+        // und `/versionen` beantwortet eine Weiterleitung statt der Seite.
+        $names = ['releases.index', 'tags.index', 'performance.index', 'feedback.index'];
+
+        foreach ($names as $name) {
             $this->actingAs($user)
-                ->get($path.'?projects[]=webshop&environment=production&period=7d')
+                ->get(route($name, $organization).'?projects[]=webshop&environment=production&period=7d')
                 ->assertOk()
                 ->assertInertia(fn (AssertableInertia $page) => $page
                     ->where('filter.value.projects', ['webshop'])

@@ -17,10 +17,22 @@ class ShellTest extends TestCase
     /**
      * Der Rahmen ist seit der Anmeldung (F3) nur angemeldet zu sehen — jeder Test,
      * der ihn prüft, braucht ein Konto.
+     *
+     * Und seit U5 eine Organisation: die Fachseiten liegen unter
+     * `/organisationen/{organisation}/…`, und ohne Mitgliedschaft gibt es diese
+     * Adressen für dieses Konto nicht — die Leiste hätte dann nichts zu zeigen.
      */
     private function signIn(): User
     {
         $user = User::factory()->create();
+
+        // Mitglied und nicht Besitzer: ohne gesetzte Betreiber-Liste gilt der
+        // Besitzer einer Organisation als Betreiber, und dann stünde in jeder
+        // Prüfung der Leiste nebenbei der Eintrag „Betrieb“. Wer ihn meint,
+        // sagt es ausdrücklich (Tests\Feature\Operations\OperationsViewTest).
+        $user->switchOrganization(
+            Organization::factory()->withMember($user, OrganizationRole::Member)->create(),
+        );
 
         $this->actingAs($user);
 
@@ -31,7 +43,7 @@ class ShellTest extends TestCase
     {
         $this->signIn();
 
-        $this->get('/')
+        $this->get(route('dashboard'))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Dashboard')
@@ -72,7 +84,7 @@ class ShellTest extends TestCase
     {
         $this->signIn();
 
-        $this->get('/')
+        $this->get(route('dashboard'))
             ->assertInertia(function (AssertableInertia $page) {
                 $nav = $page->toArray()['props']['shell']['nav'];
 
@@ -102,7 +114,7 @@ class ShellTest extends TestCase
         // dort ein leeres Kästchen.
         $this->signIn();
 
-        $this->get('/')
+        $this->get(route('dashboard'))
             ->assertInertia(function (AssertableInertia $page) {
                 foreach ($page->toArray()['props']['shell']['nav'] as $group) {
                     foreach ($group['links'] as $link) {
@@ -119,25 +131,25 @@ class ShellTest extends TestCase
         // Genau ein Eintrag ist hervorgehoben — die Antwort auf die Frage, wo
         // man gerade ist, gibt es nicht in doppelter Ausführung.
         $expectations = [
-            '/' => 'Übersicht',
-            '/bausteine' => 'Bausteine',
+            route('dashboard') => 'Übersicht',
+            route('components') => 'Bausteine',
             // Die Merkmal-Übersicht markiert sich selbst über ihr Muster
             // `tags.*` und nicht über die Adresse.
-            '/merkmale' => 'Merkmale',
+            route('tags.index') => 'Merkmale',
             // Die Auswertungsseite markiert sich über `performance.index`;
             // `performance.*` wäre hier falsch, darunter lägen auch die
             // Leistungsprobleme.
-            '/leistung' => 'Leistung',
-            '/leistungsprobleme' => 'Leistungsprobleme',
+            route('performance.index') => 'Leistung',
+            route('performance.issues.index') => 'Leistungsprobleme',
             // Das Ladeerlebnis ist ein eigener Eintrag: es misst, was der
             // Besucher erlebt, und nicht, was der Server braucht.
-            '/ladeerlebnis' => 'Ladeerlebnis',
-            // Die Profile liegen unterhalb von `/leistung`, gehören aber zu
+            route('web-vitals.index') => 'Ladeerlebnis',
+            // Die Profile liegen unterhalb von `leistung`, gehören aber zu
             // ihrem eigenen Muster `profiling.*`: die Adresse allein würde hier
             // zwei Einträge gleichzeitig markieren.
-            '/leistung/profile' => 'Profile',
-            '/versionen' => 'Versionen',
-            '/rueckmeldungen' => 'Rückmeldungen',
+            route('profiling.index') => 'Profile',
+            route('releases.index') => 'Versionen',
+            route('feedback.index') => 'Rückmeldungen',
         ];
 
         foreach ($expectations as $url => $expected) {
@@ -154,7 +166,7 @@ class ShellTest extends TestCase
     {
         $user = $this->signIn();
 
-        $this->get('/')
+        $this->get(route('dashboard'))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('shell.user.name', $user->name)
                 ->where('shell.user.email', $user->email)
@@ -187,7 +199,7 @@ class ShellTest extends TestCase
         $user->switchOrganization($current);
 
         $this->actingAs($user)
-            ->get('/')
+            ->get(route('dashboard'))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('shell.org.current.name', 'Anker AG')
                 ->where('shell.org.current.slug', $current->slug)
@@ -208,7 +220,7 @@ class ShellTest extends TestCase
         $organization = Organization::factory()->withMember($user, OrganizationRole::Owner)->create(['name' => 'Solo']);
 
         $this->actingAs($user)
-            ->get('/')
+            ->get(route('dashboard'))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('shell.org.current.name', 'Solo')
                 // Ein einzelnes Wort gibt zwei Buchstaben her.
@@ -229,14 +241,18 @@ class ShellTest extends TestCase
         $user->switchOrganization($current);
 
         // Genau der Weg, den der Umschalter geht: POST auf organizations.switch.
+        // Seit U5 steht die Organisation in der Adresse — der Wechsel führt
+        // deshalb auf dieselbe Seite unter dem neuen Slug und nicht zurück auf
+        // die Adresse der alten.
         $this->actingAs($user)
-            ->from(route('issues.index'))
+            ->from(route('issues.index', $current))
             ->post(route('organizations.switch', $other))
-            ->assertRedirect(route('issues.index'));
+            ->assertRedirect(route('issues.index', $other));
 
-        // Anschließend auf einer anderen Seite: die Wahl steckt am Konto und
-        // nicht in der Sitzung einer einzelnen Ansicht.
-        $this->get('/')
+        // Anschließend auf einer anderen Seite: die Wahl ist der Adresse
+        // gefolgt und steckt am Konto, nicht in der Sitzung einer einzelnen
+        // Ansicht.
+        $this->get(route('dashboard', $other))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('shell.org.current.name', 'Zeppelin GmbH')
                 ->where('shell.org.options', fn (Collection $options) => $options->pluck('name')->all() === ['Anker AG'])
@@ -251,7 +267,7 @@ class ShellTest extends TestCase
         $user->switchOrganization($organization);
 
         $this->actingAs($user)
-            ->get('/')
+            ->get(route('dashboard'))
             ->assertInertia(function (AssertableInertia $page) use ($organization) {
                 $footer = $page->toArray()['props']['shell']['footer'];
 
@@ -275,10 +291,12 @@ class ShellTest extends TestCase
     public function test_the_settings_anchor_falls_back_to_the_overview_without_an_organization(): void
     {
         // Ein frisch registriertes Konto gehört noch keiner Organisation an. Der
-        // Anker führt dann zur Übersicht — von dort entsteht die erste.
-        $this->signIn();
+        // Anker führt dann zur Übersicht — von dort entsteht die erste. Sie ist
+        // hier auch die aufgerufene Seite: die Fachseiten liegen seit U5 unter
+        // einer Organisation und gibt es für dieses Konto noch nicht.
+        $this->actingAs(User::factory()->create());
 
-        $this->get('/')
+        $this->get(route('organizations.index'))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('shell.org.current', null)
                 ->where('shell.org.options', [])
@@ -291,7 +309,7 @@ class ShellTest extends TestCase
         $this->signIn();
 
         // Anti-Flash-Script: setzt die .dark-Klasse synchron im <head>.
-        $this->get('/')
+        $this->get(route('dashboard'))
             ->assertOk()
             ->assertSee("localStorage.getItem('theme')", false)
             ->assertSee("classList.toggle('dark'", false);
@@ -302,7 +320,7 @@ class ShellTest extends TestCase
         $this->signIn();
 
         $this->withSession(['status' => 'Gespeichert.'])
-            ->get('/')
+            ->get(route('dashboard'))
             ->assertInertia(fn (AssertableInertia $page) => $page->where('flash.status', 'Gespeichert.'));
     }
 }

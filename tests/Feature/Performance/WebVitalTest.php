@@ -221,7 +221,7 @@ class WebVitalTest extends TestCase
 
         $props = $this->props($this->actingAs($user)->get($this->url([
             'name' => '/checkout',
-        ], '/ladeerlebnis/seite')));
+        ], 'web-vitals.show')));
 
         $detail = $props['detail'];
 
@@ -253,7 +253,7 @@ class WebVitalTest extends TestCase
         $props = $this->props($this->actingAs($user)->get($this->url([
             'name' => '/checkout',
             'vital' => 'cls',
-        ], '/ladeerlebnis/seite')));
+        ], 'web-vitals.show')));
 
         $this->assertSame('cls', $props['detail']['selected']);
         $this->assertSame('poor', $props['detail']['vitals']['cls']['rating']);
@@ -273,7 +273,7 @@ class WebVitalTest extends TestCase
 
         $props = $this->props($this->actingAs($user)->get($this->url([
             'name' => '/gibt-es-nicht',
-        ], '/ladeerlebnis/seite')));
+        ], 'web-vitals.show')));
 
         // Kein Fehler 404: der Name ist keine Datenzeile, sondern eine
         // Gruppierung, und ein Link auf „letzte 24 Stunden" ist morgen leer,
@@ -446,11 +446,15 @@ class WebVitalTest extends TestCase
      * Die Adresse einer der beiden Seiten. Die Zeitzone steht immer dabei, damit
      * der aufgelöste Zeitraum nicht von der Einstellung der Anwendung abhängt.
      *
+     * Gebaut über den Routen-Namen: die Organisation steckt seit U5 im Pfad, und
+     * die kommt aus derselben Vorbelegung, mit der die Anwendung ihre Links baut
+     * (siehe Tests\TestCase::actingAs()).
+     *
      * @param  array<string, mixed>  $query
      */
-    private function url(array $query = [], string $path = '/ladeerlebnis'): string
+    private function url(array $query = [], string $route = 'web-vitals.index'): string
     {
-        return $path.'?'.http_build_query($query + ['tz' => 'UTC']);
+        return route($route, $query + ['tz' => 'UTC']);
     }
 
     /**

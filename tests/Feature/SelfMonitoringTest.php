@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Organization;
 use App\Models\User;
 use App\Support\SelfMonitoring\DeployedVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -26,6 +27,8 @@ class SelfMonitoringTest extends TestCase
     private function signIn(): User
     {
         $user = User::factory()->create();
+        // Mit Organisation: die Übersicht liegt seit U5 unter ihrer Adresse.
+        $user->switchOrganization(Organization::factory()->withMember($user)->create());
 
         $this->actingAs($user);
 
@@ -42,7 +45,7 @@ class SelfMonitoringTest extends TestCase
         $this->withDsn();
         $this->signIn();
 
-        $response = $this->get('/');
+        $response = $this->get(route('dashboard'));
 
         // `Report-Only`: die Regel meldet, sie blockiert nicht. Eine
         // schärfende Richtlinie wäre eine Aussage über die Anwendung und
@@ -66,7 +69,7 @@ class SelfMonitoringTest extends TestCase
         config()->set('sentry.dsn', null);
         $this->signIn();
 
-        $this->get('/')->assertHeaderMissing('Content-Security-Policy-Report-Only');
+        $this->get(route('dashboard'))->assertHeaderMissing('Content-Security-Policy-Report-Only');
     }
 
     public function test_the_policy_can_be_switched_off(): void
@@ -75,7 +78,7 @@ class SelfMonitoringTest extends TestCase
         config()->set('selfmonitoring.csp.enabled', false);
         $this->signIn();
 
-        $this->get('/')->assertHeaderMissing('Content-Security-Policy-Report-Only');
+        $this->get(route('dashboard'))->assertHeaderMissing('Content-Security-Policy-Report-Only');
     }
 
     /**
@@ -96,7 +99,7 @@ class SelfMonitoringTest extends TestCase
         config()->set('selfmonitoring.browser.traces_sample_rate', 0.25);
         $this->signIn();
 
-        $this->get('/')->assertInertia(fn (AssertableInertia $page) => $page
+        $this->get(route('dashboard'))->assertInertia(fn (AssertableInertia $page) => $page
             // Dieselbe Angabe wie serverseitig und keine zweite: ein Wechsel
             // der Installation ist eine Zeile in der `.env` und kein Build.
             ->where('selfMonitoring.dsn', 'https://abc123@errstack.example/7')
@@ -109,7 +112,7 @@ class SelfMonitoringTest extends TestCase
         config()->set('sentry.dsn', null);
         $this->signIn();
 
-        $this->get('/')->assertInertia(fn (AssertableInertia $page) => $page
+        $this->get(route('dashboard'))->assertInertia(fn (AssertableInertia $page) => $page
             ->where('selfMonitoring', null)
         );
     }

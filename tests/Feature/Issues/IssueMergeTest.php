@@ -518,7 +518,7 @@ class IssueMergeTest extends TestCase
 
     public function test_an_outsider_cannot_merge(): void
     {
-        [, , $project] = $this->context();
+        [, $organization, $project] = $this->context();
 
         $outsider = User::factory()->create();
 
@@ -526,7 +526,7 @@ class IssueMergeTest extends TestCase
         $second = $this->issue($project, 'Zweiter', ['times_seen' => 5]);
 
         $this->actingAs($outsider)
-            ->post(route('issues.merge.store'), ['issues' => [$first->id, $second->id]])
+            ->post(route('issues.merge.store', $organization), ['issues' => [$first->id, $second->id]])
             ->assertForbidden();
 
         $this->assertNull($first->fresh()->merged_into_id);

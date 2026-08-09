@@ -81,6 +81,15 @@ final class AssignSuspectCommit implements ProcessingStep
             return;
         }
 
+        // Die Organisation für den Link in der Benachrichtigung. Hier läuft kein
+        // Aufruf, aus dem sie sich ergäbe (siehe ResolveOrganization) — die
+        // Aufnahme arbeitet in der Warteschlange.
+        $organization = $issue->project?->organization;
+
+        if ($organization === null) {
+            return;
+        }
+
         foreach (SuspectCommits::forEvent($issue, $record) as $suspect) {
             $author = $suspect->authorId() === null ? null : $suspect->commit->author;
 
@@ -95,7 +104,7 @@ final class AssignSuspectCommit implements ProcessingStep
             // ankommt — sie unterbleibt nur bei dem, der selbst zugewiesen hat.
             (new IssueActions)->assign(Issue::query()->whereKey($issue->id), $assignee);
 
-            $this->notifier->send($assignee, 1, [$issue->id], null);
+            $this->notifier->send($organization, $assignee, 1, [$issue->id], null);
 
             return;
         }

@@ -69,7 +69,9 @@ final class IssueMentionNotifier
                 // liest, muss sonst nachsehen, um zu wissen, ob es eilt.
                 body: Str::limit($comment->body, 280),
                 level: NotificationLevel::Info,
-                url: route('issues.show', $issue),
+                // Ausserhalb einer Anfrage gebaut: die Organisation gehört
+                // ausdrücklich dazu (siehe ResolveOrganization).
+                url: route('issues.show', ['organization' => $project->organization, 'issue' => $issue]),
                 context: [
                     __('issues.comments.notification.context_project') => $project->name,
                     __('issues.comments.notification.context_issue') => (string) ($issue->title ?? ''),

@@ -165,7 +165,7 @@ final class OwnershipAssignment
         // Weg und damit unter denselben persönlichen Einstellungen (A5). Ohne
         // Handelnden: „automatisch zugewiesen" ist die ehrliche Auskunft, und
         // niemand ist von der Meldung ausgenommen, weil niemand geklickt hat.
-        $this->notifier->send($assignee, $result->count, $result->undoIds, null);
+        $this->notifier->send($organization, $assignee, $result->count, $result->undoIds, null);
 
         return $assignee;
     }

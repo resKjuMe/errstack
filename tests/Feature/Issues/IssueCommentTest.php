@@ -86,12 +86,15 @@ class IssueCommentTest extends TestCase
 
     public function test_wer_die_organisation_nicht_kennt_darf_nicht_kommentieren(): void
     {
-        [, , , $issue] = $this->context();
+        [, $organization, , $issue] = $this->context();
 
         $outsider = User::factory()->create();
 
         $this->actingAs($outsider)
-            ->post(route('issues.comments.store', $issue), ['body' => 'Hallo?'])
+            ->post(
+                route('issues.comments.store', ['organization' => $organization, 'issue' => $issue]),
+                ['body' => 'Hallo?'],
+            )
             ->assertForbidden();
 
         $this->assertSame(0, IssueComment::query()->count());
