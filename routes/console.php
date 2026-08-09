@@ -101,6 +101,20 @@ Schedule::command('performance:trends')->hourlyAt(5)->withoutOverlapping();
 // der erste ihn abgeräumt hat.
 Schedule::command('notifications:flush-digests')->everyMinute()->withoutOverlapping();
 
+// Die Aufnahmemenge je Minute festschreiben und den Ausschlag-Schutz steuern (A7).
+//
+// Minütlich, weil die Minute die Einheit ist, in der eine Fehlerflut gemessen
+// wird: eine fehlerhafte Auslieferung erzeugt ihre Millionen Meldungen nicht
+// gleichmäßig über eine Stunde verteilt. Ein gröberer Takt hieße zugleich, dass
+// eine beendete Flut noch minutenlang gedrosselt bliebe — und dass die
+// gezählten Verwerfungen erst mit ebenso viel Verspätung in der Statistik
+// stehen.
+//
+// `withoutOverlapping` gegen das Auflaufen: der Durchlauf geht über alle
+// Projekte mit eingeschaltetem Schutz, und zwei gleichzeitige Läufe würden
+// dieselbe Minute zweimal verbuchen.
+Schedule::command('spikes:sweep')->everyMinute()->withoutOverlapping();
+
 // Der Wochenbericht je Projekt (A6).
 //
 // Montagmorgen und nicht Sonntagnacht: der Bericht ist zum Lesen da, und

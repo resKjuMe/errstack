@@ -29,6 +29,7 @@ use App\Http\Controllers\ProjectKeyController;
 use App\Http\Controllers\ProjectPerformanceController;
 use App\Http\Controllers\ProjectPrivacyController;
 use App\Http\Controllers\ProjectSetupController;
+use App\Http\Controllers\ProjectSpikeController;
 use App\Http\Controllers\ProjectTeamController;
 use App\Http\Controllers\SamplingRuleController;
 use App\Http\Controllers\ScrubRuleController;
@@ -229,6 +230,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('projects.sampling.toggle');
             Route::delete('{project}/stichproben/{sampling_rule}', [SamplingRuleController::class, 'destroy'])
                 ->name('projects.sampling.destroy');
+
+            // Der Ausschlag-Schutz (A7). Ansehen darf jedes Mitglied, aus
+            // demselben Grund wie bei Filtern und Stichproben: die Seite
+            // beantwortet „warum fehlen mir Meldungen?", und diese Frage stellt
+            // gerade der, der die Einstellung nicht ändern darf.
+            //
+            // Das Aufheben ist eine eigene Adresse und kein Sonderfall der
+            // Einstellungen: der Schalter gilt für die Zukunft, das Aufheben für
+            // genau den laufenden Vorfall.
+            Route::get('{project}/ausschlagschutz', [ProjectSpikeController::class, 'index'])
+                ->name('projects.spikes.index');
+            Route::patch('{project}/ausschlagschutz', [ProjectSpikeController::class, 'update'])
+                ->name('projects.spikes.update');
+            Route::post('{project}/ausschlagschutz/aufhebung', [ProjectSpikeController::class, 'release'])
+                ->name('projects.spikes.release');
 
             // Zuständigkeits-Regeln (R6). Der Parametername ist
             // `ownership_rule` — aus demselben Grund wie bei den übrigen

@@ -146,6 +146,11 @@ final class ProjectData
                 // Und ebenso die Eingangsfilter: wer eine Meldung vermisst, muss
                 // nachsehen können, ob ein Filter sie genommen hat.
                 'filtersHref' => route('projects.filters.index', [$organization, $project]),
+                // Der Ausschlag-Schutz (A7) aus demselben Grund und mit noch
+                // mehr Anlass: eine Drosselung nimmt Meldungen ohne Ansehen
+                // ihres Inhalts, und wer eine vermisst, findet die Zahl nur
+                // dort.
+                'spikesHref' => route('projects.spikes.index', [$organization, $project]),
                 // Und die Zuständigkeits-Regeln (R6) aus demselben Grund: sie
                 // beantworten „warum steht mein Name an diesem Fehler?", und
                 // diese Frage stellt gerade der, der die Regeln nicht ändern

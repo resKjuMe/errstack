@@ -129,6 +129,12 @@ return [
         'manage' => 'Configure filters',
     ],
 
+    'spikes' => [
+        'title' => 'Spike protection',
+        'description' => 'Unusual floods of events are detected from this project’s own history, ingestion is throttled and the team is notified. Whatever is dropped is counted and shown.',
+        'manage' => 'Open protection',
+    ],
+
     'digest' => [
         'title' => 'Bundle notifications',
         'description' => 'An error wave otherwise produces dozens of individual mails. A time window combines them into one digest; urgent notifications are unaffected.',

@@ -93,6 +93,7 @@ export default function Show({
                 <Privacy project={project} />
 
                 <InboundFilters project={project} />
+                <SpikeProtection project={project} />
 
                 {permissions.delete && <DeleteProject project={project} />}
             </div>
@@ -578,6 +579,21 @@ function InboundFilters({ project }) {
         <Card title={t('projects.filters.title')} description={t('projects.filters.description')}>
             <Link href={project.filtersHref}>
                 <SecondaryButton type="button">{t('projects.filters.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zum Ausschlag-Schutz. Aus demselben Grund ohne Bedingung wie die
+// Eingangsfilter, nur dringlicher: eine Drosselung wirft Meldungen weg, und
+// weggeworfene Meldungen fehlen in der Liste, ohne eine Lücke zu hinterlassen.
+function SpikeProtection({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.spikes.title')} description={t('projects.spikes.description')}>
+            <Link href={project.spikesHref}>
+                <SecondaryButton type="button">{t('projects.spikes.manage')}</SecondaryButton>
             </Link>
         </Card>
     );
