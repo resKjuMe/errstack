@@ -3,9 +3,9 @@
 namespace App\Support\Overviews;
 
 use App\Enums\AlertStatus;
+use App\Enums\QuotaScope;
 use App\Models\MetricAlert;
 use App\Models\Project;
-use App\Models\User;
 use App\Support\Discover\Dataset;
 use App\Support\Discover\DiscoverException;
 use App\Support\Filters\GlobalFilter;
@@ -85,7 +85,7 @@ final class OrganizationOverview
      *
      * @return array<string, mixed>
      */
-    public function panel(string $key, GlobalFilter $filter, User $viewer): array
+    public function panel(string $key, GlobalFilter $filter): array
     {
         // Ohne Organisation gibt es keine Zahlen — und niemanden, den das
         // beträfe: die Seite liegt unter der Organisation, und ohne
@@ -100,7 +100,7 @@ final class OrganizationOverview
                 'transactions' => $this->transactions($filter),
                 'projects' => $this->projects($filter),
                 'alerts' => $this->alerts($filter),
-                'quota' => $this->quota($filter, $viewer),
+                'quota' => $this->quota($filter),
                 // Erreichbar ist das nicht — die Route lässt nur die Kacheln
                 // aus self::PANELS durch. Es steht hier, damit die Weiche
                 // vollständig ist und nicht als Zufall funktioniert.
@@ -171,9 +171,14 @@ final class OrganizationOverview
     private function projects(GlobalFilter $filter): array
     {
         $counts = $this->engine->perProject(Dataset::Errors, $filter->projectIds(), $filter, 'count()');
+        // Projekte, die der Motor gar nicht gefragt hat (Obergrenze), bleiben
+        // draußen statt mit einer Null dazustehen — und die Kachel sagt es.
+        $asked = $filter->projects->filter(
+            fn (Project $project): bool => array_key_exists($project->id, $counts),
+        );
         $pending = OverviewSetup::pendingIds($filter->projects);
 
-        $rows = $filter->projects
+        $rows = $asked
             ->map(fn (Project $project): array => [
                 'key' => $project->slug,
                 'title' => $project->name,
@@ -197,7 +202,12 @@ final class OrganizationOverview
             ->values()
             ->all();
 
-        return OverviewPanel::rows('projects', $rows, route('projects.index'));
+        return OverviewPanel::rows(
+            'projects',
+            $rows,
+            route('projects.index'),
+            truncated: $asked->count() < $filter->projects->count(),
+        );
     }
 
     /**
@@ -264,17 +274,14 @@ final class OrganizationOverview
      *
      * @return array<string, mixed>
      */
-    private function quota(GlobalFilter $filter, User $viewer): array
+    private function quota(GlobalFilter $filter): array
     {
         if ($filter->organization === null) {
             return OverviewPanel::stats('quota', []);
         }
 
         $href = route('organizations.quotas.index', $filter->organization);
-        $quota = QuotaData::forOrganization($filter->organization, $viewer);
-
-        /** @var list<array<string, mixed>> $categories */
-        $categories = $quota['categories'];
+        $categories = QuotaData::categories(QuotaScope::Organization, $filter->organization->id);
 
         $stats = array_map(static fn (array $category): array => [
             'key' => $category['value'],

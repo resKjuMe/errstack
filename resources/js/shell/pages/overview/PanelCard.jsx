@@ -111,7 +111,32 @@ function Body({ status, panel, reload, emptyText, t, formats }) {
 
     return (
         <>
+            {/* Ein misslungenes Nachladen lässt die alten Zahlen stehen und
+                sagt es darüber — sie sind vom vorigen Ausschnitt und damit
+                möglicherweise nicht mehr die, nach denen gefragt wurde. */}
+            {status === 'failed' && (
+                <p className="mb-2 text-xs text-amber-700 dark:text-amber-400">
+                    {t('overview.panel.stale')}{' '}
+                    <button
+                        type="button"
+                        onClick={reload}
+                        className="font-medium text-rose-600 hover:text-rose-500 dark:text-rose-400"
+                    >
+                        {t('overview.panel.retry')}
+                    </button>
+                </p>
+            )}
+
             {panel.setup && <SetupHint setup={panel.setup} t={t} className="mb-3" />}
+
+            {/* Der Motor wird nicht über beliebig viele Projekte gefragt. Wo
+                die Grenze greift, steht es an der Kachel: ein Ausschnitt, der
+                wie das Ganze aussieht, ist die gefährlichere Anzeige. */}
+            {panel.truncated && (
+                <p className="mb-2 text-xs text-amber-700 dark:text-amber-400">
+                    {t('overview.panel.truncated')}
+                </p>
+            )}
 
             {panel.empty ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400">{fallback}</p>

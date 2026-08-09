@@ -41,7 +41,7 @@ class DashboardController extends Controller
     public function panel(GlobalFilterRequest $request, string $panel): JsonResponse
     {
         return response()->json([
-            'panel' => $this->overview->panel($panel, $request->filter(), $request->user()),
+            'panel' => $this->overview->panel($panel, $request->filter()),
         ]);
     }
 }

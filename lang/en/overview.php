@@ -12,6 +12,8 @@ return [
         'failed' => 'This panel could not be loaded.',
         'retry' => 'Try again',
         'unknown' => 'This panel does not exist.',
+        'stale' => 'These numbers are from the previous request — the new one failed.',
+        'truncated' => 'Only part of the projects is shown: the overview does not query more than that.',
         'all' => 'View all',
     ],
 

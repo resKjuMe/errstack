@@ -124,7 +124,12 @@ final class TeamOverview
             ->all();
 
         return OverviewPanel::withSetup(
-            OverviewPanel::rows('projects', $rows, route('projects.index')),
+            // Der Weg führt zur Verwaltung **dieses** Teams und nicht in die
+            // Projektliste der Organisation: die Kachel darüber zeigt die
+            // Projekte des Teams, und ein „Alles ansehen", das daneben vierzig
+            // fremde Projekte auflistet, ist kein „alles" von dem, was hier
+            // steht.
+            OverviewPanel::rows('projects', $rows, route('teams.show', $team)),
             OverviewSetup::hint($team->organization, $projects),
         );
     }
@@ -150,7 +155,7 @@ final class TeamOverview
         return OverviewPanel::rows(
             'review',
             $this->issueRows($issues, $team, fn (Issue $issue): ?string => Formats::dateTime($issue->for_review_at)),
-            OverviewLinks::to('issues.index', [], $filter, self::slugs($projects)),
+            self::issuesHref($projects, $filter),
         );
     }
 
@@ -187,7 +192,7 @@ final class TeamOverview
                 $team,
                 fn (Issue $issue): ?string => $issue->assignedUser?->name ?? $issue->assignedTeam?->name,
             ),
-            OverviewLinks::to('issues.index', [], $filter, self::slugs($projects)),
+            self::issuesHref($projects, $filter),
         );
     }
 
@@ -203,12 +208,12 @@ final class TeamOverview
      */
     private function issues(Collection $projects, GlobalFilter $filter): Builder
     {
-        return Issue::query()
+        $query = Issue::query()
             ->whereIn('project_id', $projects->pluck('id')->all())
             ->open()
-            ->standalone()
-            ->where('last_seen', '>=', $filter->fromUtc())
-            ->where('first_seen', '<=', $filter->toUtc());
+            ->standalone();
+
+        return $filter->applyOverlap($query);
     }
 
     /**
@@ -252,11 +257,20 @@ final class TeamOverview
     }
 
     /**
+     * Der Weg in die Fehlerliste dieser Projekte — oder keiner.
+     *
+     * **Ohne Projekte gibt es keinen Link.** Eine Adresse ohne `projects[]`
+     * bedeutet in der Filterleiste „alle Projekte der Organisation"; ein aus
+     * einer leeren Liste gebauter Link führte also ausgerechnet dorthin, wo
+     * diese Seite nicht hinzeigen darf. Das kommt vor, sobald ein Team keine
+     * Projekte hat oder die Leiste nur fremde auswählt.
+     *
      * @param  Collection<int, Project>  $projects
-     * @return list<string>
      */
-    private static function slugs(Collection $projects): array
+    private static function issuesHref(Collection $projects, GlobalFilter $filter): ?string
     {
-        return $projects->pluck('slug')->map(fn (mixed $slug): string => (string) $slug)->values()->all();
+        $slugs = $projects->pluck('slug')->map(fn (mixed $slug): string => (string) $slug)->values()->all();
+
+        return $slugs === [] ? null : OverviewLinks::to('issues.index', [], $filter, $slugs);
     }
 }

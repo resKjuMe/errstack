@@ -3,6 +3,7 @@ import { usePage } from '@inertiajs/react';
 import PageHead from '../components/PageHead.jsx';
 import Card from '../components/Card.jsx';
 import Flash from '../components/Flash.jsx';
+import LiveDemo from '../components/LiveDemo.jsx';
 import { useToast } from '../components/Toast.jsx';
 import {
     KpiTilesSkeleton,
@@ -100,6 +101,11 @@ export default function Components() {
                         <TableSkeleton rows={3} />
                     </div>
                 </section>
+
+                {/* Die Warteschlangen- und Broadcast-Probe. Sie stand bis D5 auf
+                    der Übersicht; dort steht jetzt eine Fachseite, und eine
+                    Probe gehört ohnehin auf die Musterseite. */}
+                <LiveDemo />
             </div>
         </>
     );

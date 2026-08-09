@@ -48,6 +48,22 @@ final class OverviewEngine
      */
     private const TARGET_POINTS = 60;
 
+    /**
+     * Wie viele Projekte eine Kachel höchstens abfragt.
+     *
+     * **Der Motor rechnet je Projekt, und daran ist nichts zu ändern** — die
+     * Grenzen, der Zwischenspeicher und die Rechte hängen daran. Eine Kachel
+     * über eine Organisation mit vierzig Projekten wären damit vierzig
+     * Abfragen, und die Zusage „lädt schnell" hinge an einer Zahl, die niemand
+     * beschränkt.
+     *
+     * Deshalb eine feste Obergrenze — und ein **Vermerk** an der Kachel, wenn
+     * sie greift ({@see OverviewPanel}). Stillschweigend zu kürzen wäre der
+     * schlechtere Weg: eine Rangliste aus fünfundzwanzig von vierzig Projekten
+     * sieht aus wie eine über alle.
+     */
+    private const MAX_PROJECTS = 25;
+
     public function __construct(private readonly DiscoverEngine $engine = new DiscoverEngine) {}
 
     /**
@@ -59,7 +75,7 @@ final class OverviewEngine
      * ohne Zeitpunkte zu vergleichen.
      *
      * @param  list<int>  $projectIds
-     * @return array{at: list<string>, values: list<float|null>, interval: string}
+     * @return array{at: list<string>, values: list<float|null>, interval: string, truncated: bool}
      *
      * @throws DiscoverException
      */
@@ -84,6 +100,7 @@ final class OverviewEngine
         // falschen Punkte addiert, wäre von einer richtigen nicht zu
         // unterscheiden.
         $sums = array_fill_keys($at, null);
+        [$projectIds, $truncated] = self::bounded($projectIds);
 
         foreach ($projectIds as $projectId) {
             $series = $this->engine->series(
@@ -101,7 +118,12 @@ final class OverviewEngine
             }
         }
 
-        return ['at' => $at, 'values' => array_values($sums), 'interval' => $interval->key];
+        return [
+            'at' => $at,
+            'values' => array_values($sums),
+            'interval' => $interval->key,
+            'truncated' => $truncated,
+        ];
     }
 
     /**
@@ -111,6 +133,10 @@ final class OverviewEngine
      * Gruppiert wird **nicht**: die Projektzugehörigkeit ist kein Feld des
      * Motors, sondern der Rahmen, in dem er rechnet. Eine Zeile je Projekt
      * entsteht deshalb aus einer Abfrage je Projekt.
+     *
+     * Mehr als {@see self::MAX_PROJECTS} Projekte werden nicht gefragt; welche
+     * fehlen, sieht der Aufrufer daran, dass sie im Ergebnis nicht vorkommen —
+     * er kann es an der Kachel vermerken.
      *
      * @param  list<int>  $projectIds
      * @return array<int, float|null> Projekt-id auf Wert
@@ -126,6 +152,7 @@ final class OverviewEngine
         $aggregation = $aggregation instanceof Aggregation ? $aggregation : Aggregation::parse($aggregation);
         $range = self::range($filter);
         $values = [];
+        [$projectIds] = self::bounded($projectIds);
 
         foreach ($projectIds as $projectId) {
             $result = $this->engine->table(
@@ -157,6 +184,21 @@ final class OverviewEngine
             ->withSearch($filter->environment === null ? '' : SearchQuery::term('environment', $filter->environment))
             ->measuring([$aggregation])
             ->inTimezone($filter->timezone);
+    }
+
+    /**
+     * Die Projekte, die eine Kachel tatsächlich abfragt — und ob dabei welche
+     * wegfielen.
+     *
+     * @param  list<int>  $projectIds
+     * @return array{list<int>, bool}
+     */
+    private static function bounded(array $projectIds): array
+    {
+        return [
+            array_slice($projectIds, 0, self::MAX_PROJECTS),
+            count($projectIds) > self::MAX_PROJECTS,
+        ];
     }
 
     /**

@@ -27,18 +27,31 @@ final class OverviewPanel
     /**
      * Ein Verlauf: eine Linie auf dem Raster des Motors.
      *
-     * @param  array{at: list<string>, values: list<float|null>, interval: string}  $series
+     * **Leer heißt hier: es ist nichts passiert — nicht: es liegt nichts vor.**
+     * Der Motor füllt fehlende Stützstellen einer Anzahl mit `0` und nicht mit
+     * `null`; eine Reihe aus lauter Nullen wäre also nach der Prüfung „gibt es
+     * überhaupt Werte" nicht leer und würde als flache Nulllinie gezeichnet —
+     * genau die Anzeige, die diese Klasse vermeiden soll. Maßgeblich ist
+     * deshalb die Summe: keine Werte **oder** Summe null.
+     *
+     * Das gilt, weil die Übersichten nur Anzahlen und Summen zeichnen
+     * ({@see OverviewEngine}). Käme je eine Kennzahl dazu, bei der `0` ein
+     * Messwert ist, muss diese Regel mit ihr wandern.
+     *
+     * @param  array{at: list<string>, values: list<float|null>, interval: string, truncated: bool}  $series
      * @param  array{key: string, label: string, format: string, unit: string}  $column
      * @return array<string, mixed>
      */
     public static function series(string $key, array $column, array $series, ?string $href = null): array
     {
         $values = array_filter($series['values'], static fn (?float $value): bool => $value !== null);
+        $total = $values === [] ? null : (float) array_sum($values);
 
         return self::of($key, 'series', [
             'series' => $series + ['column' => $column],
-            'total' => $values === [] ? null : array_sum($values),
-        ], $href, empty: $values === []);
+            'total' => $total,
+            'truncated' => $series['truncated'],
+        ], $href, empty: $total === null || $total === 0.0);
     }
 
     /**
@@ -64,12 +77,17 @@ final class OverviewPanel
      * @param  list<array<string, mixed>>  $stats
      * @return array<string, mixed>
      */
-    public static function rows(string $key, array $rows, ?string $href = null, array $stats = []): array
-    {
+    public static function rows(
+        string $key,
+        array $rows,
+        ?string $href = null,
+        array $stats = [],
+        bool $truncated = false,
+    ): array {
         return self::of(
             $key,
             'rows',
-            ['rows' => $rows, 'stats' => $stats],
+            ['rows' => $rows, 'stats' => $stats, 'truncated' => $truncated],
             $href,
             empty: $rows === [] && $stats === [],
         );
@@ -120,6 +138,11 @@ final class OverviewPanel
             'stats' => [],
             'rows' => [],
             'total' => null,
+            // Ob die Kachel nur einen Ausschnitt zeigt, weil der Motor nicht
+            // über beliebig viele Projekte gefragt wird. Sichtbar und nicht
+            // stillschweigend: ein Ausschnitt, der wie das Ganze aussieht, ist
+            // die gefährlichere Anzeige.
+            'truncated' => false,
             ...$payload,
         ];
     }

@@ -12,6 +12,8 @@ return [
         'failed' => 'Diese Kachel konnte nicht geladen werden.',
         'retry' => 'Erneut versuchen',
         'unknown' => 'Diese Kachel gibt es nicht.',
+        'stale' => 'Diese Zahlen sind vom vorigen Abruf — der neue ist fehlgeschlagen.',
+        'truncated' => 'Es zeigt nur einen Teil der Projekte: über mehr fragt die Übersicht nicht ab.',
         'all' => 'Alles ansehen',
     ],
 

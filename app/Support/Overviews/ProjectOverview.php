@@ -12,6 +12,7 @@ use App\Support\Discover\DiscoverException;
 use App\Support\Filters\GlobalFilter;
 use App\Support\Formats;
 use App\Support\Releases\Health\ReleaseHealth;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 /**
@@ -137,12 +138,12 @@ final class ProjectOverview
      */
     private function issues(Project $project, GlobalFilter $filter): array
     {
-        $issues = Issue::query()
+        $query = Issue::query()
             ->where('project_id', $project->id)
             ->open()
-            ->standalone()
-            ->where('last_seen', '>=', $filter->fromUtc())
-            ->where('first_seen', '<=', $filter->toUtc())
+            ->standalone();
+
+        $issues = $filter->applyOverlap($query)
             ->latestFirst()
             ->limit(self::MAX_ISSUES)
             ->get();
@@ -186,8 +187,22 @@ final class ProjectOverview
      */
     private function releases(Project $project, GlobalFilter $filter): array
     {
+        // Nur Auslieferungen, die den Zeitraum berühren — ausgeliefert darin
+        // oder darin noch aktiv. Die neuesten ohne diese Bedingung zu nehmen
+        // und ihre Gesundheit dann im Zeitraum zu rechnen ergäbe bei „letzte
+        // Stunde" eine Liste aus Strichen: drei Versionen, zu denen nichts zu
+        // sagen ist, sähen aus wie drei kaputte Messungen.
         $releases = Release::query()
             ->where('project_id', $project->id)
+            ->where(function (Builder $query) use ($filter): void {
+                $query
+                    ->whereBetween('released_at', [$filter->fromUtc(), $filter->toUtc()])
+                    ->orWhere(function (Builder $active) use ($filter): void {
+                        $active
+                            ->where('last_event_at', '>=', $filter->fromUtc())
+                            ->where('first_event_at', '<=', $filter->toUtc());
+                    });
+            })
             ->orderByDesc('released_at')
             ->orderByDesc('id')
             ->limit(self::MAX_RELEASES)

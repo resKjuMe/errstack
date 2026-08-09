@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Die Zahlen einer Kachel der Übersichtsseiten — je Kachel ein eigener Abruf.
 //
@@ -14,45 +14,59 @@ import { useCallback, useEffect, useState } from 'react';
 // kommt fertig vom Server und wird hier nicht zusammengesetzt: zwei Stellen,
 // die eine Filteradresse bauen, sind zwei Stellen, an denen sie auseinander
 // laufen kann.
+//
+// **Es läuft immer nur ein Abruf.** Auch der von Hand ausgelöste hängt am
+// Abbruch-Signal — sonst könnte eine Antwort auf die alte Frage nach einer
+// Antwort auf die neue eintreffen und die Kachel mit Zahlen füllen, die zu
+// einem Zeitraum gehören, der oben längst nicht mehr eingestellt ist. Genau
+// diese Verwechslung ist von außen nicht zu erkennen.
 export function usePanel(href) {
     const [state, setState] = useState({ status: 'loading', panel: null });
+    const running = useRef(null);
 
-    const load = useCallback(
-        (signal) => {
-            setState((current) => ({ status: 'loading', panel: current.panel }));
+    const load = useCallback(() => {
+        running.current?.abort();
 
-            return fetch(href, {
-                signal,
-                headers: { Accept: 'application/json' },
-                credentials: 'same-origin',
-            })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error(String(response.status));
-                    }
-
-                    return response.json();
-                })
-                .then((payload) => setState({ status: 'ready', panel: payload.panel }))
-                .catch((error) => {
-                    // Ein abgebrochener Abruf ist kein Fehler: er passiert bei
-                    // jedem Wechsel des Zeitraums, und eine Fehlermeldung dafür
-                    // wäre eine Meldung über das eigene Aufräumen.
-                    if (error.name !== 'AbortError') {
-                        setState({ status: 'failed', panel: null });
-                    }
-                });
-        },
-        [href]
-    );
-
-    useEffect(() => {
         const controller = new AbortController();
 
-        load(controller.signal);
+        running.current = controller;
 
-        return () => controller.abort();
+        setState((current) => ({ status: 'loading', panel: current.panel }));
+
+        return fetch(href, {
+            signal: controller.signal,
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(String(response.status));
+                }
+
+                return response.json();
+            })
+            .then((payload) => setState({ status: 'ready', panel: payload.panel }))
+            .catch((error) => {
+                // Ein abgebrochener Abruf ist kein Fehler: er passiert bei
+                // jedem Wechsel des Zeitraums, und eine Fehlermeldung dafür
+                // wäre eine Meldung über das eigene Aufräumen.
+                if (error.name === 'AbortError') {
+                    return;
+                }
+
+                // Die zuletzt geholten Zahlen bleiben stehen — mit dem Hinweis
+                // daneben. Sie zu löschen wäre der schlechtere Tausch: eine
+                // Kachel, die wegen eines misslungenen Nachladens leer wird,
+                // hat den Bildschirm ärmer gemacht, ohne etwas zu erklären.
+                setState((current) => ({ status: 'failed', panel: current.panel }));
+            });
+    }, [href]);
+
+    useEffect(() => {
+        load();
+
+        return () => running.current?.abort();
     }, [load]);
 
-    return { ...state, reload: () => load() };
+    return { ...state, reload: load };
 }

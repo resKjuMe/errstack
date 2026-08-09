@@ -171,6 +171,24 @@ class TeamOverviewTest extends TestCase
     }
 
     /**
+     * Ohne Projekte gibt es keinen Weg in die Fehlerliste: eine Adresse ohne
+     * Projektauswahl bedeutet dort „alle Projekte der Organisation" — genau
+     * das, was eine Team-Seite nicht zeigen darf.
+     */
+    public function test_without_projects_the_panel_offers_no_link(): void
+    {
+        $user = User::factory()->create();
+        $organization = Organization::factory()->withMember($user)->create();
+        $team = Team::factory()->for($organization)->create();
+        Project::factory()->for($organization)->create(['slug' => 'fremd']);
+        $user->switchOrganization($organization);
+
+        $panel = $this->panel($user, $organization, $team, 'review');
+
+        $this->assertNull($panel['href']);
+    }
+
+    /**
      * Wer der Organisation nicht angehört, sieht die Team-Sicht nicht.
      */
     public function test_a_stranger_cannot_read_the_overview(): void
