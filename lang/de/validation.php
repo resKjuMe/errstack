@@ -89,6 +89,7 @@ return [
         'default_environment' => 'Standard-Umgebung',
         'resolution_behavior' => 'Auflösungs-Verhalten',
         'retention_days' => 'Datenaufbewahrung',
+        'attachment_retention_days' => 'Aufbewahrung der Anhänge',
         'type' => 'Kanal',
         'role' => 'Die Rolle',
         'user_id' => 'Das Mitglied',

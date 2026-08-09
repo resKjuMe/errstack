@@ -424,6 +424,33 @@ return [
     ],
 
     // Which change may have caused this issue (R4).
+    // Attachments of an event (M5): screenshot, log file, memory dump.
+    'attachments' => [
+
+        'title' => 'Attachments',
+        'description' => 'Files the SDK sent along with this event. They have their own, '
+            .'shorter retention than the event itself: :days days.',
+
+        'received' => 'Received :time',
+        'expires' => 'Expires :time',
+
+        'image_alt' => 'Preview of :name',
+
+        'preview_show' => 'Show preview',
+        'preview_hide' => 'Hide preview',
+        'preview_loading' => 'Loading preview …',
+        'preview_failed' => 'The preview could not be loaded.',
+        'preview_truncated' => 'Only the beginning of the file — complete in the download.',
+
+        'delete' => 'Delete attachment',
+        'delete_confirm' => 'Delete this attachment permanently?',
+
+        'flash' => [
+            'deleted' => 'Attachment ":name" deleted.',
+        ],
+
+    ],
+
     'suspects' => [
 
         'title' => 'Suspect commits',

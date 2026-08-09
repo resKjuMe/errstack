@@ -70,6 +70,42 @@ class IngestPayloadFactory extends Factory
     }
 
     /**
+     * Ein Binärelement: Anhang oder Aufzeichnung.
+     *
+     * Nötig, weil {@see body()} JSON schreibt und ein Screenshot keines ist. Der
+     * Weg über {@see IngestPayload::accept()} wäre die Alternative und die
+     * umständlichere: er verlangt einen Projektschlüssel und legt damit auch das
+     * Projekt fest — hier soll ein Test einen Anhang an eine **bestimmte**
+     * Ereignisnummer hängen können, ohne den halben Aufnahmeweg nachzubauen.
+     *
+     * Verpackt wird wie in der Aufnahme am Inhalt und nicht am Typ, und
+     * `size_bytes` ist die Größe der Nutzdaten und nicht die der Spalte.
+     *
+     * @param  array<string, mixed>  $itemHeaders  Kopf des Envelope-Elements
+     *                                             (`filename`, `content_type`).
+     */
+    public function bytes(
+        string $payload,
+        IngestType $type = IngestType::Attachment,
+        array $itemHeaders = [],
+        ?string $eventId = null,
+    ): static {
+        return $this->state(function () use ($payload, $type, $itemHeaders, $eventId): array {
+            $isText = $payload === ''
+                || (mb_check_encoding($payload, 'UTF-8') && ! str_contains($payload, "\0"));
+
+            return [
+                'event_id' => IngestPayload::normalizeEventId($eventId) ?? IngestPayload::freshEventId(),
+                'type' => $type,
+                'item_headers' => $itemHeaders,
+                'payload' => $isText ? $payload : base64_encode($payload),
+                'payload_encoding' => $isText ? null : IngestPayload::ENCODING_BASE64,
+                'size_bytes' => strlen($payload),
+            ];
+        });
+    }
+
+    /**
      * Meldung, die über einen bestimmten Schlüssel hereinkam — wie im Betrieb,
      * wo jede Meldung ihre DSN mitbringt.
      */

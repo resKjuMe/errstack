@@ -37,7 +37,12 @@ return [
         'default_environment' => 'Default environment',
         'default_environment_hint' => 'Applies to reports that do not send an environment of their own.',
         'retention' => 'Data retention (days)',
+        'attachment_retention' => 'Attachment retention (days)',
+        'attachment_retention_hint' => 'Applies to screenshots, log files and memory dumps. '
+            .'They weigh many times as much as the event they belong to, and they are needed '
+            .'in the days somebody spends looking into the error.',
         'retention_label' => 'Data retention',
+        'attachment_retention_label' => 'Attachment retention',
         'retention_value' => ':days days',
 
         // The suspect commits switch (R4).

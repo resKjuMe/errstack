@@ -28,6 +28,7 @@
 
 use App\Http\Controllers\IssueActionController;
 use App\Http\Controllers\IssueAssignmentController;
+use App\Http\Controllers\IssueAttachmentController;
 use App\Http\Controllers\IssueCommentController;
 use App\Http\Controllers\IssueController;
 use App\Http\Controllers\IssueDetailController;
@@ -113,6 +114,24 @@ Route::middleware(['auth', 'verified'])
             ->name('issues.events.show');
         Route::get('fehler/{issue}/ereignisse/{event}/rohdaten', [IssueDetailController::class, 'raw'])
             ->name('issues.events.raw');
+
+        // Die Anhänge einer Meldung (M5). Sie stehen unter der Meldung und nicht
+        // unter dem Fehler: ein Screenshot gehört zu **einem** Absturz, so wie der
+        // Stacktrace darüber. Alle drei Kennungen stehen damit in der Adresszeile
+        // und werden geprüft (siehe IssueAttachmentController); eine Bindung über
+        // `scopeBindings` gibt es nicht, weil der Anhang absichtlich keinen
+        // Fremdschlüssel auf die Meldung trägt — er trifft regelmäßig vor ihr ein.
+        //
+        // Herunterladen und Ansehen sind zwei Adressen und nicht ein Schalter an
+        // einer: die eine liefert die Datei als Anhang aus, die andere inline in
+        // den Browser — und was inline darf, ist eine Sicherheitsentscheidung, die
+        // nicht an einem Abfrageparameter hängen soll.
+        Route::get('fehler/{issue}/ereignisse/{event}/anhaenge/{attachment}', [IssueAttachmentController::class, 'show'])
+            ->name('issues.attachments.show');
+        Route::get('fehler/{issue}/ereignisse/{event}/anhaenge/{attachment}/vorschau', [IssueAttachmentController::class, 'preview'])
+            ->name('issues.attachments.preview');
+        Route::delete('fehler/{issue}/ereignisse/{event}/anhaenge/{attachment}', [IssueAttachmentController::class, 'destroy'])
+            ->name('issues.attachments.destroy');
 
         // Die Kommentare eines Fehlers (S10). Sie stehen unter ihm, weil sie ihm
         // gehören — anders als die Zustandsaktionen, die auch eine ganze Auswahl

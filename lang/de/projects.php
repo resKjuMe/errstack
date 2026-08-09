@@ -37,7 +37,12 @@ return [
         'default_environment' => 'Standard-Umgebung',
         'default_environment_hint' => 'Gilt für Meldungen, die keine eigene Umgebung mitschicken.',
         'retention' => 'Datenaufbewahrung (Tage)',
+        'attachment_retention' => 'Aufbewahrung der Anhänge (Tage)',
+        'attachment_retention_hint' => 'Gilt für Screenshots, Logdateien und Speicherabbilder. '
+            .'Sie sind ein Vielfaches schwerer als die Meldung, an der sie hängen, und werden '
+            .'in den Tagen gebraucht, in denen jemand den Fehler untersucht.',
         'retention_label' => 'Datenaufbewahrung',
+        'attachment_retention_label' => 'Aufbewahrung der Anhänge',
         'retention_value' => ':days Tage',
 
         // Der Schalter zu den verdächtigen Commits (R4).

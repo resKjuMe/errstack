@@ -89,6 +89,7 @@ return [
         'default_environment' => 'Default environment',
         'resolution_behavior' => 'Resolution behaviour',
         'retention_days' => 'Data retention',
+        'attachment_retention_days' => 'Attachment retention',
         'type' => 'Channel',
         'role' => 'The role',
         'user_id' => 'The member',

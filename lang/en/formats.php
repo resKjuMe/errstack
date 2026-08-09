@@ -23,4 +23,11 @@ return [
     'duration_minutes' => ':value min',
     'duration_hours' => ':value h',
 
+    // File sizes (App\Support\Formats::bytes). Counted in binary units so that
+    // a file rejected by a "20 MB" limit is not shown as 20.9 MB.
+    'bytes' => ':value B',
+    'kilobytes' => ':value KB',
+    'megabytes' => ':value MB',
+    'gigabytes' => ':value GB',
+
 ];

@@ -23,4 +23,12 @@ return [
     'duration_minutes' => ':value min',
     'duration_hours' => ':value h',
 
+    // Dateigrößen (App\Support\Formats::bytes). Binär gerechnet, damit eine
+    // Datei, die an einer Grenze von „20 MB" scheitert, nicht als 20,9 MB
+    // dasteht.
+    'bytes' => ':value B',
+    'kilobytes' => ':value KB',
+    'megabytes' => ':value MB',
+    'gigabytes' => ':value GB',
+
 ];
