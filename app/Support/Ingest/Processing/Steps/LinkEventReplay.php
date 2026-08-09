@@ -10,7 +10,6 @@ use App\Models\ReplayError;
 use App\Support\Ingest\Processing\ProcessingContext;
 use App\Support\Ingest\Processing\ProcessingStep;
 use App\Support\Performance\PayloadReader;
-use Carbon\CarbonImmutable;
 use Closure;
 
 /**
@@ -73,8 +72,7 @@ final class LinkEventReplay implements ProcessingStep
         // Stichprobe hat nicht zugeschlagen), räumt die Aufbewahrungsfrist sie
         // weg wie jede andere.
         $occurredAt = PayloadReader::time($context->data['timestamp'] ?? null)
-            ?? $payload->created_at?->toImmutable()
-            ?? CarbonImmutable::now();
+            ?? $payload->created_at->toImmutable();
 
         $replay = Replay::findOrStart($project, $replayId, [
             'environment' => Environment::normalizeName(PayloadReader::text($context->data['environment'] ?? null, 64))

@@ -145,7 +145,7 @@ class ReplayController extends Controller
                 // eine Zeichenkette in Abschnittsgröße entsteht.
                 $inner = substr(trim($json), 1, -1);
 
-                if ($inner === '' || $inner === false) {
+                if ($inner === '') {
                     continue;
                 }
 

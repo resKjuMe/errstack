@@ -123,7 +123,7 @@ final class RecordReplay implements ProcessingStep
         $replay = Replay::findOrStart(
             $project,
             $metadata->replayId,
-            $metadata->attributes($payload->created_at?->toImmutable() ?? CarbonImmutable::now()),
+            $metadata->attributes($payload->created_at->toImmutable()),
         );
 
         $metadata->applyTo($replay);

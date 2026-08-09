@@ -337,7 +337,7 @@ final class ReplayTimeline
     {
         usort($track, static fn (array $a, array $b): int => ($a['offsetMs'] ?? 0) <=> ($b['offsetMs'] ?? 0));
 
-        return array_values($track);
+        return $track;
     }
 
     /**

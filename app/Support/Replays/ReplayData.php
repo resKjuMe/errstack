@@ -72,7 +72,7 @@ final class ReplayData
     public static function detail(Replay $replay): array
     {
         return self::row($replay) + [
-            'urls' => array_values($replay->urls ?? []),
+            'urls' => $replay->urls ?? [],
             'sdk' => $replay->sdk,
             'platform' => $replay->platform,
             'dist' => $replay->dist,
@@ -123,8 +123,11 @@ final class ReplayData
 
             $marks[] = [
                 'eventId' => $event->event_id,
-                'title' => $issue?->title ?? $event->title ?? $event->event_id,
-                'culprit' => $issue?->culprit ?? $event->culprit,
+                // `->` und nicht `?->`: das Null-Zusammenfassen deckt den
+                // fehlenden Eintrag mit ab, und ein zusätzliches `?->` wäre
+                // eine zweite Absicherung für denselben Fall.
+                'title' => $issue->title ?? $event->title ?? $event->event_id,
+                'culprit' => $issue->culprit ?? $event->culprit,
                 'level' => $event->level->value,
                 'occurredAt' => $occurredAt->toIso8601String(),
                 // Der Abstand zum Beginn — der Wert, mit dem der Abspieler
