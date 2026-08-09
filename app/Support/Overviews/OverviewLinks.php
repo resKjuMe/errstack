@@ -23,7 +23,9 @@ final class OverviewLinks
     /**
      * Eine Adresse mit dem Zustand der Filterleiste im Rücken.
      *
-     * @param  array<string, mixed>  $parameters  Pfad-Parameter der Route
+     * @param  array<array-key, mixed>  $parameters  Pfad-Parameter der Route —
+     *                                               der Reihe nach oder benannt,
+     *                                               wie `route()` sie nimmt
      * @param  list<string>|null  $projects  Projekt-Kürzel, auf die der Link zeigen
      *                                       soll — `null` übernimmt die Auswahl
      *                                       der Leiste unverändert

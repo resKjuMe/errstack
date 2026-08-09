@@ -107,7 +107,9 @@ class ProjectOverviewTest extends TestCase
             'projects' => [$other->slug],
         ]);
 
-        $this->assertSame(1.0, $panel['total']);
+        // Über JSON kommt aus 1.0 eine 1 zurück — verglichen wird der Wert,
+        // nicht seine Schreibweise.
+        $this->assertSame(1.0, (float) $panel['total']);
     }
 
     /**
@@ -171,8 +173,8 @@ class ProjectOverviewTest extends TestCase
         $panel = $this->panel($user, $organization, $project, 'ownership');
 
         $this->assertSame(['Zahlung'], array_column($panel['rows'], 'title'));
-        $this->assertSame(1.0, $panel['stats'][0]['value']);
-        $this->assertSame(1.0, $panel['stats'][1]['value']);
+        $this->assertSame(1.0, (float) $panel['stats'][0]['value']);
+        $this->assertSame(1.0, (float) $panel['stats'][1]['value']);
         $this->assertSame(route('teams.overview', [$organization, $team]), $panel['rows'][0]['href']);
     }
 

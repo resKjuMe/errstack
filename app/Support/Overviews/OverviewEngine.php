@@ -107,7 +107,7 @@ final class OverviewEngine
                 $this->query($dataset, $projectId, $range, $filter, $aggregation)->every($interval),
             );
 
-            foreach ($series->first()?->points ?? [] as $point) {
+            foreach ($series->first()->points ?? [] as $point) {
                 $key = $point->at->toIso8601ZuluString();
 
                 if (! array_key_exists($key, $sums)) {

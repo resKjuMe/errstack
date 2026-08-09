@@ -190,7 +190,7 @@ final class TeamOverview
             $this->issueRows(
                 $issues->loadMissing('assignedUser', 'assignedTeam'),
                 $team,
-                fn (Issue $issue): ?string => $issue->assignedUser?->name ?? $issue->assignedTeam?->name,
+                fn (Issue $issue): ?string => $issue->assignedUser->name ?? $issue->assignedTeam?->name,
             ),
             self::issuesHref($projects, $filter),
         );

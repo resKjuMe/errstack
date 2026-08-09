@@ -4,6 +4,7 @@ namespace Tests\Feature\Overviews;
 
 use App\Enums\AlertStatus;
 use App\Models\Event;
+use App\Models\IngestPayload;
 use App\Models\MetricAlert;
 use App\Models\Organization;
 use App\Models\Project;
@@ -64,8 +65,19 @@ class OrganizationOverviewTest extends TestCase
         return [$user, $organization, $project];
     }
 
+    /**
+     * Eine Meldung, wie sie über die Aufnahme hereinkommt: die Aufnahme-Zeile
+     * **und** das ausgewertete Ereignis.
+     *
+     * Beides, weil beide Seiten geprüft werden: die Kacheln zählen die
+     * Ereignisse, und ob ein Projekt überhaupt angeschlossen ist, entscheidet
+     * die Aufnahme ({@see App\Support\Overviews\OverviewSetup}). Nur ein
+     * Ereignis zu erzeugen wäre ein Zustand, den es im Betrieb nicht gibt.
+     */
     private function event(Project $project, string $at): Event
     {
+        IngestPayload::factory()->for($project)->create();
+
         return Event::factory()->for($project)->create([
             'occurred_at' => $at,
             'received_at' => $at,
@@ -132,8 +144,10 @@ class OrganizationOverviewTest extends TestCase
         $day = $this->panel($user, $organization, 'errors', ['period' => '24h', 'projects' => [$project->slug]]);
         $week = $this->panel($user, $organization, 'errors', ['period' => '7d', 'projects' => [$project->slug]]);
 
-        $this->assertSame(1.0, $day['total']);
-        $this->assertSame(2.0, $week['total']);
+        // Über JSON kommt aus 1.0 eine 1 zurück — verglichen wird der Wert,
+        // nicht seine Schreibweise.
+        $this->assertSame(1.0, (float) $day['total']);
+        $this->assertSame(2.0, (float) $week['total']);
     }
 
     /**
@@ -150,7 +164,7 @@ class OrganizationOverviewTest extends TestCase
 
         $panel = $this->panel($user, $organization, 'errors', ['period' => '24h']);
 
-        $this->assertSame(2.0, $panel['total']);
+        $this->assertSame(2.0, (float) $panel['total']);
     }
 
     /**
@@ -239,7 +253,12 @@ class OrganizationOverviewTest extends TestCase
     {
         [$user, $organization] = $this->context();
 
+        // Mit Weiterleitungen: unterhalb von `/organisationen` fängt die
+        // Umzugs-Weiterleitung (U6) alles ab, was es nicht gibt, und schickt es
+        // in den Einstellungsbereich — wo es dann den 404 gibt. Die Auskunft
+        // „gibt es nicht" ist dieselbe, sie kommt nur eine Adresse später.
         $this->actingAs($user)
+            ->followingRedirects()
             ->getJson(route('dashboard.panel', [$organization, 'panel' => 'gibtsnicht']))
             ->assertNotFound();
     }
