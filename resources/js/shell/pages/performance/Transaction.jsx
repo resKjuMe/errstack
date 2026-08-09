@@ -2,7 +2,6 @@ import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
-import FilterBar from '../../components/FilterBar.jsx';
 import { formatDateTime, formatNumber, useTranslations } from '../../i18n.js';
 import { duration, Missing, percent } from './format.jsx';
 
@@ -16,7 +15,7 @@ import { duration, Missing, percent } from './format.jsx';
 //
 // Ihr Zustand steht wie überall in der Adresszeile — Filterleiste, Name und
 // Operation. Ein Link auf diese Seite zeigt beim Empfänger dieselbe Auswertung.
-export default function Transaction({ filter, detail, overviewHref }) {
+export default function Transaction({ detail, overviewHref }) {
     const { shell } = usePage().props;
     const { t, formats } = useTranslations();
 
@@ -38,8 +37,6 @@ export default function Transaction({ filter, detail, overviewHref }) {
                     </ul>
                 }
             />
-
-            <FilterBar filter={filter} />
 
             <Card className="mb-4">
                 <div className="flex flex-wrap items-start justify-between gap-4">

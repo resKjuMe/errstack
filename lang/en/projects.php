@@ -37,7 +37,12 @@ return [
         'default_environment' => 'Default environment',
         'default_environment_hint' => 'Applies to reports that do not send an environment of their own.',
         'retention' => 'Data retention (days)',
+        'attachment_retention' => 'Attachment retention (days)',
+        'attachment_retention_hint' => 'Applies to screenshots, log files and memory dumps. '
+            .'They weigh many times as much as the event they belong to, and they are needed '
+            .'in the days somebody spends looking into the error.',
         'retention_label' => 'Data retention',
+        'attachment_retention_label' => 'Attachment retention',
         'retention_value' => ':days days',
 
         // The suspect commits switch (R4).
@@ -79,6 +84,12 @@ return [
         'title' => 'Cron jobs',
         'description' => 'Monitored cron jobs check in on every run. If the check-in fails to arrive, a message goes out — instead of the gap only showing up as missing data.',
         'manage' => 'View cron jobs',
+    ],
+
+    'uptime' => [
+        'title' => 'Uptime',
+        'description' => 'Regular checks from the outside catch a total outage — the one case no error report can cover, because nothing is left running.',
+        'manage' => 'View uptime',
     ],
 
     'alerts' => [
@@ -123,10 +134,22 @@ return [
         'manage' => 'View rules',
     ],
 
+    'quotas' => [
+        'title' => 'Quotas',
+        'description' => 'How much may come in per data type: monthly quota and rate per minute, plus the usage of this month and the count of what was rejected.',
+        'manage' => 'View quotas',
+    ],
+
     'filters' => [
         'title' => 'Inbound filters',
         'description' => 'Known noise — browser extensions, crawlers, local development — is discarded on arrival and only counted.',
         'manage' => 'Configure filters',
+    ],
+
+    'spikes' => [
+        'title' => 'Spike protection',
+        'description' => 'Unusual floods of events are detected from this project’s own history, ingestion is throttled and the team is notified. Whatever is dropped is counted and shown.',
+        'manage' => 'Open protection',
     ],
 
     'digest' => [

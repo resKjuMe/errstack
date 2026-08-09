@@ -41,6 +41,7 @@ return [
         'fallback' => 'Titel und Fehlerstelle',
         'empty' => 'Ohne unterscheidbaren Inhalt',
         'performance' => 'Leistungserkennung',
+        'uptime' => 'Erreichbarkeits-Überwachung',
     ],
 
     'api_scope' => [
@@ -131,6 +132,22 @@ return [
         'disabled' => 'abgeschaltet',
     ],
 
+    'uptime_status' => [
+        'unknown' => 'noch nicht geprüft',
+        'up' => 'erreichbar',
+        'degraded' => 'auffällig',
+        'down' => 'ausgefallen',
+        'disabled' => 'abgeschaltet',
+    ],
+
+    'uptime_check_outcome' => [
+        'up' => 'erreichbar',
+        'connection_failed' => 'nicht erreichbar',
+        'timeout' => 'Zeitüberschreitung',
+        'status_mismatch' => 'unerwarteter Statuscode',
+        'content_mismatch' => 'erwarteter Text fehlt',
+    ],
+
     'delivery_status' => [
         'pending' => 'unterwegs',
         'sent' => 'zugestellt',
@@ -152,7 +169,24 @@ return [
         'scrubbed' => 'aus Datenschutzgründen nicht gespeichert',
         'filtered' => 'vom Eingangsfilter aussortiert',
         'discarded' => 'gelöschter Fehler, künftig verworfen',
+        'throttled' => 'vom Ausschlag-Schutz gedrosselt',
         'orphaned' => 'ohne zugehörige Meldung',
+        'rate_limited' => 'Rate-Limit',
+        'quota_exceeded' => 'Kontingent aufgebraucht',
+    ],
+
+    'quota_category' => [
+        'errors' => 'Fehler',
+        'transactions' => 'Transaktionen',
+        'replays' => 'Aufzeichnungen',
+        'attachments' => 'Anhänge',
+        'monitors' => 'Cronjob-Lebenszeichen',
+    ],
+
+    'quota_scope' => [
+        'organization' => 'Organisation',
+        'project' => 'Projekt',
+        'key' => 'Client-Schlüssel',
     ],
 
     'inbound_filter_kind' => [
@@ -458,6 +492,14 @@ return [
         'D' => 'Gelöscht',
     ],
 
+    // Art eines Anhangs (M5). Sie entscheidet, was die Oberfläche mit der Datei
+    // tun darf — anzeigen oder ausschließlich zum Herunterladen anbieten.
+    'attachment_kind' => [
+        'image' => 'Bild',
+        'text' => 'Text',
+        'binary' => 'Datei',
+    ],
+
     'release_artifact_kind' => [
         'bundle' => 'Bundle',
         'source_map' => 'Quellkarte',
@@ -506,6 +548,36 @@ return [
         'good' => 'Gut',
         'needs_improvement' => 'Mäßig',
         'poor' => 'Schlecht',
+    ],
+    'discover_dataset' => [
+        'errors' => 'Fehlermeldungen',
+        'transactions' => 'Aufrufe (Einzelmessungen)',
+        'transaction_windows' => 'Aufrufe (Minuten-Fenster)',
+        'user_reports' => 'Rückmeldungen',
+    ],
+
+    'discover_aggregate' => [
+        'count' => 'Anzahl',
+        'count_unique' => 'Verschiedene Werte',
+        'sum' => 'Summe',
+        'avg' => 'Mittelwert',
+        'min' => 'Kleinster Wert',
+        'max' => 'Größter Wert',
+        'p50' => 'p50',
+        'p75' => 'p75',
+        'p95' => 'p95',
+        'p99' => 'p99',
+        'apdex' => 'Zufriedenheit (Apdex)',
+        'failure_rate' => 'Fehlerquote',
+    ],
+
+    'widget_type' => [
+        'line' => 'Linie',
+        'area' => 'Fläche',
+        'bar' => 'Balken',
+        'table' => 'Tabelle',
+        'big_number' => 'Große Zahl',
+        'world_map' => 'Weltkarte',
     ],
 
 ];

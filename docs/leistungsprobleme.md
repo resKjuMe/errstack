@@ -53,9 +53,10 @@ sein eigener Eintrag und aus der Erkennung würde ein Protokoll.
 
 **Getrennt bleibt die Ansicht.** Jede Liste filtert ausdrücklich nach einer
 Kategorie (`Issue::scopeOfCategory()`); es gibt keinen Bildschirm, der beide
-ungetrennt zeigt. Die Fehlerliste liegt unter `/fehler`, die Leistungsprobleme
-unter `/leistungsprobleme`, und die Detailseite eines Fehlers ist unter der
-Adresse eines Leistungsproblems nicht zu haben.
+ungetrennt zeigt. Die Fehlerliste liegt unter `/organisationen/{org}/fehler`, die
+Leistungsprobleme unter `/organisationen/{org}/leistungsprobleme`, und die
+Detailseite eines Fehlers ist unter der Adresse eines Leistungsproblems nicht zu
+haben.
 
 ## Die acht Muster
 
@@ -115,7 +116,7 @@ Abfrage aus dem Beleg.
 Welche Muster es gibt, entscheidet der Code (`PerformanceProblem`) — zu jedem
 gehört ein Erkenner, und ein Eintrag ohne diesen Code wäre eine Zeile, die
 nichts findet. Einstellbar ist, **ab wann** sie anschlagen, und ob sie laufen:
-`/organisationen/{org}/projekte/{projekt}/leistungserkennung`.
+`/einstellungen/organisationen/{org}/projekte/{projekt}/leistungserkennung`.
 
 Gespeichert wird nur, **was abweicht**. Ein Muster auf seinen Vorgabewerten
 bekommt keine Zeile in `performance_settings`, und eine bestehende verschwindet,

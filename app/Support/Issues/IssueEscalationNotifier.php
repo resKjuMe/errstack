@@ -64,7 +64,9 @@ final class IssueEscalationNotifier
                     'expected' => Formats::number((int) round($escalation->expected)),
                 ]),
                 level: NotificationLevel::Warning,
-                url: route('issues.show', $issue),
+                // Ausserhalb einer Anfrage gebaut: die Organisation gehört
+                // ausdrücklich dazu (siehe ResolveOrganization).
+                url: route('issues.show', ['organization' => $project->organization, 'issue' => $issue]),
                 context: array_filter([
                     __('issues.escalation.notification.context_project') => $project->name,
                     __('issues.escalation.notification.context_observed') => Formats::number($escalation->observed),

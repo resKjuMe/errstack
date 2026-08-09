@@ -97,7 +97,7 @@ diese eine Zeile die, auf die jeder Arbeiter schreiben will.
 
 ## Die Versionsliste
 
-`/versionen` zeigt je Version, wie viele Fehler **neu** dazugekommen sind und wie
+`/organisationen/{org}/versionen` zeigt je Version, wie viele Fehler **neu** dazugekommen sind und wie
 viele davon inzwischen **erledigt** sind. Beide Zahlen kommen aus einer Abfrage
 über `issues.first_release_id`, nicht aus einer je Zeile.
 

@@ -276,9 +276,10 @@ class IssueDetailTest extends TestCase
 
     public function test_the_detail_page_needs_a_signed_in_viewer(): void
     {
-        [, , $project] = $this->context();
+        [, $organization, $project] = $this->context();
 
-        $this->get(route('issues.show', $this->issue($project)))->assertRedirect(route('login'));
+        $this->get(route('issues.show', ['organization' => $organization, 'issue' => $this->issue($project)]))
+            ->assertRedirect(route('login'));
     }
 
     public function test_the_raw_view_carries_the_parsed_report_and_the_original(): void

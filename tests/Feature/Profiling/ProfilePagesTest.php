@@ -49,7 +49,7 @@ class ProfilePagesTest extends TestCase
      */
     private function url(array $query = []): string
     {
-        return '/leistung/profile?'.http_build_query($query + ['tz' => 'UTC']);
+        return route('profiling.index', $query + ['tz' => 'UTC']);
     }
 
     /**

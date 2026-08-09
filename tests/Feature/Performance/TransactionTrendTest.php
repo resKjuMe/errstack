@@ -137,7 +137,7 @@ class TransactionTrendTest extends TestCase
      */
     private function url(array $query = []): string
     {
-        return '/leistung/trends?'.http_build_query($query + ['tz' => 'UTC', 'period' => '7d']);
+        return route('performance.trends.index', $query + ['tz' => 'UTC', 'period' => '7d']);
     }
 
     /**

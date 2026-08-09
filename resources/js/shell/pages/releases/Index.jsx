@@ -2,9 +2,9 @@ import React from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
-import FilterBar from '../../components/FilterBar.jsx';
 import Pagination from '../../components/Pagination.jsx';
 import { InputLabel, SelectInput } from '../../components/Form.jsx';
+import useFilter from '../../filters/useFilter.js';
 import { useT } from '../../i18n.js';
 import HealthValue from './HealthValue.jsx';
 
@@ -16,15 +16,13 @@ import HealthValue from './HealthValue.jsx';
 // kaputt?" (die Crash-Free-Rate, R7). Die zweite ist der Grund für die
 // Sortierung: unter fünfzig Versionen die schlechteste zu suchen ist keine
 // Antwort.
-export default function Index({
-    filter,
-    releases,
-    sort,
-    sortOptions,
-    totalLabel,
-    environmentPartial,
-}) {
+//
+// Der Weg von hier aus führt über „neue Fehler" in die Fehlerliste, gefiltert
+// auf genau diese Version, und über die Version selbst auf ihre Detailseite mit
+// dem Vergleich zur Vorversion.
+export default function Index({ releases, sort, sortOptions, totalLabel, environmentPartial }) {
     const { shell } = usePage().props;
+    const filter = useFilter();
     const t = useT();
 
     const showProject = filter.value.projects.length !== 1;
@@ -48,8 +46,6 @@ export default function Index({
                 appName={shell.appName}
                 help={t('releases.help')}
             />
-
-            <FilterBar filter={filter} />
 
             {environmentPartial && (
                 <p className="mb-4 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">

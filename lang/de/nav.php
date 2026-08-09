@@ -14,33 +14,85 @@ return [
         'expand' => 'Leiste ausklappen',
     ],
 
+    // Umschalter für die Organisation am Kopf der Seitenleiste.
+    'org' => [
+        'label' => 'Organisation',
+        'switch' => 'Organisation wechseln',
+        'create' => 'Organisation anlegen',
+        'none' => 'Keine Organisation',
+    ],
+
+    // Feste Anker im Fuß der Seitenleiste.
+    'footer' => [
+        'settings' => 'Einstellungen',
+        'notifications' => 'Benachrichtigungen',
+    ],
+
+    // Unter-Navigation des Einstellungsbereichs (app/Support/SettingsNav).
+    'settings' => [
+        'groups' => [
+            'organization' => 'Organisation',
+            'projects' => 'Projekte',
+            'privacy' => 'Datenschutz und Aufnahme',
+            'notifications' => 'Benachrichtigungen',
+            'account' => 'Konto',
+        ],
+
+        'links' => [
+            'organization' => 'Stammdaten',
+            'organizations' => 'Alle Organisationen',
+            'audit_log' => 'Änderungsprotokoll',
+            'repositories' => 'Repositories',
+            'organization_quotas' => 'Kontingente',
+            'projects' => 'Alle Projekte',
+            'project' => 'Stammdaten',
+            'project_setup' => 'Einrichtung',
+            'project_keys' => 'Schlüssel und DSN',
+            'project_ownership' => 'Zuständigkeit',
+            'project_grouping' => 'Gruppierung',
+            'project_alerts' => 'Alarme',
+            'project_issue_alerts' => 'Alarmregeln',
+            'project_crons' => 'Cronjobs',
+            'project_uptime' => 'Erreichbarkeit',
+            'project_performance' => 'Leistungserkennung',
+            'project_quotas' => 'Kontingente',
+            'organization_privacy' => 'Datenschutz der Organisation',
+            'project_privacy' => 'Datenschutz des Projekts',
+            'project_filters' => 'Eingangsfilter',
+            'project_sampling' => 'Stichproben',
+            'project_spikes' => 'Ausschlag-Schutz',
+            'notification_channels' => 'Kanäle der Organisation',
+            'notification_preferences' => 'Eigene Benachrichtigungen',
+            'project_digest' => 'Bündelung',
+            'profile' => 'Profil',
+            'api_tokens' => 'Zugriffstoken',
+        ],
+    ],
+
     // Überschriften der Navigationsgruppen in der Seitenleiste.
     'groups' => [
         'monitor' => 'Überwachen',
         'investigate' => 'Untersuchen',
         'ship' => 'Ausliefern',
-        'manage' => 'Verwalten',
     ],
 
     'links' => [
         'dashboard' => 'Übersicht',
+        'dashboards' => 'Dashboards',
         'issues' => 'Fehler',
         'tags' => 'Merkmale',
         'feedback' => 'Rückmeldungen',
         'releases' => 'Versionen',
+        'discover' => 'Auswertung',
         'performance' => 'Leistung',
         'performance_issues' => 'Leistungsprobleme',
         'web_vitals' => 'Ladeerlebnis',
         'profiling' => 'Profile',
-        'projects' => 'Projekte',
-        'organizations' => 'Organisationen',
-        'components' => 'Bausteine',
+        'replays' => 'Aufzeichnungen',
     ],
 
     'menu_items' => [
         'profile' => 'Profil',
-        'notifications' => 'Benachrichtigungen',
-        'api_tokens' => 'Zugriffstoken',
         'operations' => 'Betrieb',
         'components' => 'Bausteine',
     ],

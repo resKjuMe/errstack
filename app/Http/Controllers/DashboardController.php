@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\GlobalFilterRequest;
-use App\Support\FilterData;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -19,7 +18,6 @@ class DashboardController extends Controller
         $filter = $request->filter();
 
         return Inertia::render('Dashboard', [
-            'filter' => FilterData::bar($filter),
             'selection' => [
                 'projects' => $filter->projects->pluck('name')->values()->all(),
                 'environment' => $filter->environment,

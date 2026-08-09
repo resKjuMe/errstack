@@ -123,7 +123,7 @@ drei, in dieser Priorität: **`ingest`** (eingehende Fehlermeldungen) vor
 Reihenfolge steht in `App\Enums\QueueName` und gehört in jeden Worker-Aufruf:
 
 ```bash
-php artisan queue:work --queue=ingest,notifications,performance,symbolication,default --tries=3
+php artisan queue:work --queue=ingest,notifications,performance,symbolication,uptime,default --tries=3
 ```
 
 | Befehl | Zweck |
@@ -267,6 +267,40 @@ printf '%s\n' \
     -H 'X-Sentry-Auth: Sentry sentry_version=7, sentry_key=<schlüssel>' \
     --data-binary @-
 ```
+
+## Adressen
+
+**Jede Fachseite trägt die Organisation im Pfad:**
+`/organisationen/{organisation}/fehler`, `…/versionen`, `…/leistung`,
+`…/uebersicht` und so fort — dieselbe Struktur wie bei Sentry, nur mit deutschen
+Abschnitten. Der Grund ist ein Link, der für sich steht: wer ihn verschickt,
+verschickt die Organisation mit, und beim Empfänger öffnet sich dasselbe,
+unabhängig davon, was der zuletzt angesehen hat.
+
+Aufgelöst wird sie in `App\Http\Middleware\ResolveOrganization`. Diese Stelle
+prüft die Mitgliedschaft (sonst 403), zieht die zuletzt gewählte Organisation auf
+die aus der Adresse nach und hinterlegt den Slug als Vorbelegung für `route()`.
+Deshalb steht in den Verlinkungen im Code weiterhin nur
+`route('issues.show', $issue)`. **Außerhalb einer Anfrage** — in Mails, Berichten
+und Warteschlangen-Jobs — gibt es diese Vorbelegung nicht; dort wird die
+Organisation ausdrücklich mitgegeben.
+
+**Was eingerichtet wird, liegt unter `/einstellungen/…`:** Organisation, Teams,
+Projekte samt Schlüsseln und Regellisten, Datenschutz, Benachrichtigungen und das
+eigene Konto — mit eigener Unter-Navigation und ohne die globale Filterleiste
+(`routes/settings.php`, `App\Support\SettingsNav`). Der Schnitt ist derselbe wie
+bei Sentry: die Fachseiten zeigen Daten an, der Einstellungsbereich richtet den
+Rahmen dafür ein. Woran die Hülle ihn erkennt, ist eine Marke an der Anfrage
+(`App\Http\Middleware\SettingsArea`) und keine Liste von Seitennamen.
+
+Zwei Adressen liegen bewusst daneben: `/` ist der Einstieg ohne Organisation (er
+leitet auf die Übersicht der aktiven weiter — ein frisch angelegtes Konto hat noch
+keine), und die abgelösten Adressen leiten dauerhaft auf ihre neue Form weiter,
+samt Abfrage-Parametern (`routes/legacy.php`): die organisationslosen Fachseiten
+(`/fehler`, `/versionen`, …) auf die Form mit Organisation, die Verwaltungsseiten
+(`/organisationen/{slug}`, `/projekte`, `/zugriffstoken`, `/profile`, …) in den
+Einstellungsbereich. Die Schnittstellen-Adressen (`/api/…`, Datenaufnahme) sind
+davon unberührt.
 
 ## Aufbau
 

@@ -41,6 +41,7 @@ return [
         'fallback' => 'Title and culprit',
         'empty' => 'Nothing to tell them apart',
         'performance' => 'Performance detection',
+        'uptime' => 'Uptime monitoring',
     ],
 
     'api_scope' => [
@@ -131,6 +132,22 @@ return [
         'disabled' => 'turned off',
     ],
 
+    'uptime_status' => [
+        'unknown' => 'not checked yet',
+        'up' => 'reachable',
+        'degraded' => 'flaky',
+        'down' => 'down',
+        'disabled' => 'turned off',
+    ],
+
+    'uptime_check_outcome' => [
+        'up' => 'reachable',
+        'connection_failed' => 'unreachable',
+        'timeout' => 'timeout',
+        'status_mismatch' => 'unexpected status code',
+        'content_mismatch' => 'expected text missing',
+    ],
+
     'delivery_status' => [
         'pending' => 'in transit',
         'sent' => 'delivered',
@@ -152,7 +169,24 @@ return [
         'scrubbed' => 'not stored for privacy reasons',
         'filtered' => 'discarded by an inbound filter',
         'discarded' => 'deleted issue, discarded from now on',
+        'throttled' => 'throttled by spike protection',
         'orphaned' => 'no matching event',
+        'rate_limited' => 'rate limit',
+        'quota_exceeded' => 'quota used up',
+    ],
+
+    'quota_category' => [
+        'errors' => 'Errors',
+        'transactions' => 'Transactions',
+        'replays' => 'Replays',
+        'attachments' => 'Attachments',
+        'monitors' => 'Cron check-ins',
+    ],
+
+    'quota_scope' => [
+        'organization' => 'Organization',
+        'project' => 'Project',
+        'key' => 'Client key',
     ],
 
     'inbound_filter_kind' => [
@@ -456,6 +490,14 @@ return [
         'D' => 'Removed',
     ],
 
+    // Kind of an attachment (M5). It decides what the interface may do with the
+    // file — show it, or offer it for download only.
+    'attachment_kind' => [
+        'image' => 'Image',
+        'text' => 'Text',
+        'binary' => 'File',
+    ],
+
     'release_artifact_kind' => [
         'bundle' => 'Bundle',
         'source_map' => 'Source map',
@@ -504,6 +546,36 @@ return [
         'good' => 'Good',
         'needs_improvement' => 'Needs improvement',
         'poor' => 'Poor',
+    ],
+    'discover_dataset' => [
+        'errors' => 'Errors',
+        'transactions' => 'Transactions (single measurements)',
+        'transaction_windows' => 'Transactions (minute windows)',
+        'user_reports' => 'User reports',
+    ],
+
+    'discover_aggregate' => [
+        'count' => 'Count',
+        'count_unique' => 'Distinct values',
+        'sum' => 'Sum',
+        'avg' => 'Average',
+        'min' => 'Minimum',
+        'max' => 'Maximum',
+        'p50' => 'p50',
+        'p75' => 'p75',
+        'p95' => 'p95',
+        'p99' => 'p99',
+        'apdex' => 'Apdex',
+        'failure_rate' => 'Failure rate',
+    ],
+
+    'widget_type' => [
+        'line' => 'Line',
+        'area' => 'Area',
+        'bar' => 'Bars',
+        'table' => 'Table',
+        'big_number' => 'Big number',
+        'world_map' => 'World map',
     ],
 
 ];

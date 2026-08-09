@@ -272,6 +272,27 @@ const MENU_ICONS = {
             <circle cx="7" cy="7" r="1.2" />
         </>
     ),
+    // Dashboards: vier Kacheln unterschiedlicher Größe — das Raster selbst und
+    // nicht eine der Darstellungsarten darin.
+    dashboards: (
+        <>
+            <rect x="3" y="3" width="8" height="7" rx="1" />
+            <rect x="13" y="3" width="8" height="4" rx="1" />
+            <rect x="3" y="12" width="8" height="9" rx="1" />
+            <rect x="13" y="9" width="8" height="12" rx="1" />
+        </>
+    ),
+    // Freie Auswertung: die Lupe über einem Balkendiagramm — selbst
+    // zusammengestellte Zahlen, nicht eine fertige Ansicht.
+    discover: (
+        <>
+            <path d="M4 20V10" />
+            <path d="M9 20v-6" />
+            <path d="M14 20V4" />
+            <circle cx="18" cy="15" r="3" />
+            <path d="m20.2 17.2 1.8 1.8" />
+        </>
+    ),
     // Leistung: die Anzeige eines Tachometers.
     performance: (
         <>
@@ -305,6 +326,14 @@ const MENU_ICONS = {
             <rect x="3" y="16" width="7" height="4" rx="1" />
         </>
     ),
+    // Aufzeichnungen: der Bildschirm mit dem Abspielzeichen darauf.
+    replays: (
+        <>
+            <rect x="2" y="4" width="20" height="14" rx="2" />
+            <path d="M10 9.5v3l3-1.5z" />
+            <path d="M8 21h8" />
+        </>
+    ),
     // Versionen: das ausgelieferte Paket.
     releases: (
         <>
@@ -326,6 +355,28 @@ const MENU_ICONS = {
             <path d="M9 7h2" />
             <path d="M9 11h2" />
             <path d="M9 15h2" />
+        </>
+    ),
+    // Einstellungen: das Zahnrad im Fuß der Leiste. Sechs Zähne als Speichen um
+    // die Nabe — als geschlossener Umriss gezeichnet wäre der Pfad ein Vielfaches
+    // so lang und bei 20 px nicht besser zu erkennen.
+    settings: (
+        <>
+            <circle cx="12" cy="12" r="3.2" />
+            <circle cx="12" cy="12" r="8" />
+            <path d="M12 4v2.5" />
+            <path d="M12 17.5V20" />
+            <path d="m4.9 8 2.2 1.3" />
+            <path d="m16.9 14.7 2.2 1.3" />
+            <path d="m4.9 16 2.2-1.3" />
+            <path d="m16.9 9.3 2.2-1.3" />
+        </>
+    ),
+    // Anlegen: das Pluszeichen im Menü des Umschalters.
+    plus: (
+        <>
+            <path d="M12 5v14" />
+            <path d="M5 12h14" />
         </>
     ),
 };

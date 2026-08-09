@@ -24,6 +24,7 @@
         "@sentry/react": "^10.69.0",
         "pusher-js": "^8.6.0",
         "react": "^19.2.8",
-        "react-dom": "^19.2.8"
+        "react-dom": "^19.2.8",
+        "rrweb-player": "^2.1.1"
     }
 }

@@ -184,8 +184,8 @@ class AlertOverviewTest extends TestCase
             ->get(route('projects.alert-overview.index', [$organization, $project]).'?zeitraum=vorgestern&zustand=lila')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('filter.period', '24h')
-                ->where('filter.state', 'all'));
+                ->where('alertFilter.period', '24h')
+                ->where('alertFilter.state', 'all'));
     }
 
     public function test_the_detail_page_shows_the_history_and_the_deliveries_of_that_rule(): void

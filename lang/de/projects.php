@@ -37,7 +37,12 @@ return [
         'default_environment' => 'Standard-Umgebung',
         'default_environment_hint' => 'Gilt für Meldungen, die keine eigene Umgebung mitschicken.',
         'retention' => 'Datenaufbewahrung (Tage)',
+        'attachment_retention' => 'Aufbewahrung der Anhänge (Tage)',
+        'attachment_retention_hint' => 'Gilt für Screenshots, Logdateien und Speicherabbilder. '
+            .'Sie sind ein Vielfaches schwerer als die Meldung, an der sie hängen, und werden '
+            .'in den Tagen gebraucht, in denen jemand den Fehler untersucht.',
         'retention_label' => 'Datenaufbewahrung',
+        'attachment_retention_label' => 'Aufbewahrung der Anhänge',
         'retention_value' => ':days Tage',
 
         // Der Schalter zu den verdächtigen Commits (R4).
@@ -79,6 +84,12 @@ return [
         'title' => 'Cronjobs',
         'description' => 'Überwachte Cronjobs melden sich bei jedem Lauf. Bleibt die Meldung aus, kommt eine Nachricht — statt dass es erst auffällt, wenn Daten fehlen.',
         'manage' => 'Cronjobs ansehen',
+    ],
+
+    'uptime' => [
+        'title' => 'Erreichbarkeit',
+        'description' => 'Regelmäßige Prüfungen von außen erkennen einen Totalausfall — den einzigen Fall, den keine Fehlermeldung melden kann, weil dann nichts mehr läuft.',
+        'manage' => 'Erreichbarkeit ansehen',
     ],
 
     'alerts' => [
@@ -123,10 +134,22 @@ return [
         'manage' => 'Regeln ansehen',
     ],
 
+    'quotas' => [
+        'title' => 'Kontingente',
+        'description' => 'Wie viel je Datenart hereinkommen darf: Monatskontingent und Rate je Minute, dazu der Verbrauch dieses Monats und die Zählung dessen, was abgewiesen wurde.',
+        'manage' => 'Kontingente ansehen',
+    ],
+
     'filters' => [
         'title' => 'Eingangsfilter',
         'description' => 'Bekanntes Rauschen — Browser-Erweiterungen, Crawler, lokale Entwicklung — wird beim Eingang verworfen und nur noch gezählt.',
         'manage' => 'Filter einstellen',
+    ],
+
+    'spikes' => [
+        'title' => 'Ausschlag-Schutz',
+        'description' => 'Ungewöhnliche Fehlerfluten werden am Verlauf dieses Projekts erkannt, die Aufnahme wird gedrosselt und das Team benachrichtigt. Verworfenes wird gezählt und ausgewiesen.',
+        'manage' => 'Schutz ansehen',
     ],
 
     'digest' => [

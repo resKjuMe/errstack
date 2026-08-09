@@ -3,6 +3,7 @@
 namespace App\Enums;
 
 use App\Models\IngestDiscard;
+use App\Support\Ingest\Spikes\SpikeSweep;
 
 /**
  * Warum die Aufnahme ein Element verworfen hat.
@@ -94,6 +95,46 @@ enum DiscardReason: string
      * auseinanderhalten können.
      */
     case Orphaned = 'orphaned';
+
+    /**
+     * Die Ratenbegrenzung hat gegriffen: es kam in einer Minute mehr, als für
+     * diesen Schlüssel, dieses Projekt oder diese Organisation erlaubt ist (O1).
+     *
+     * Die Kategorie trägt die Datenart ({@see QuotaCategory}); bei der Grenze
+     * des Schlüssels bleibt sie leer, weil dessen Wert für alles gilt, was über
+     * ihn hereinkommt.
+     */
+    case RateLimited = 'rate_limited';
+
+    /**
+     * Das Monatskontingent dieser Datenart ist aufgebraucht (O1).
+     *
+     * Ein eigener Grund neben `rate_limited`, obwohl beide aus derselben
+     * Einstellung stammen: die Antwort darauf ist eine andere. Eine gerissene
+     * Rate ist in der nächsten Minute vorbei und heißt „zu schnell"; ein
+     * aufgebrauchtes Kontingent hält bis zum Monatsersten und heißt „zu viel".
+     * In einer Zahl zusammengefasst wüsste niemand, ob er den Absender drosseln
+     * oder das Kontingent anheben muss.
+     */
+    case QuotaExceeded = 'quota_exceeded';
+
+    /**
+     * Der Ausschlag-Schutz drosselt gerade (A7).
+     *
+     * Ein eigener Grund und nicht `filtered`, obwohl beide auf einer Einstellung
+     * des Projekts beruhen: der Eingangsfilter nimmt eine bestimmte Art von
+     * Meldung und lässt alles andere durch, hier trifft es die nächste Meldung
+     * ohne Ansehen ihres Inhalts. Wer die Zahlen ansieht, muss „diese Meldung
+     * wollten wir nicht" von „diese Meldung kam zur falschen Minute"
+     * unterscheiden können — die eine Zahl beschreibt eine Regel, die andere
+     * einen Vorfall.
+     *
+     * Gezählt wird auch hier vollständig: die Drosselung wirft weg, aber nie
+     * unbemerkt. Weil in genau diesem Moment sehr viel wegzuwerfen ist, kommt
+     * die Zahl gesammelt je Minute aus dem Zwischenspeicher und nicht Meldung
+     * für Meldung ({@see SpikeSweep}).
+     */
+    case Throttled = 'throttled';
 
     public function label(): string
     {

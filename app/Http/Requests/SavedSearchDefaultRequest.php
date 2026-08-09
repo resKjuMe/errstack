@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Project;
+use App\Support\CurrentOrganization;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -40,7 +41,7 @@ class SavedSearchDefaultRequest extends FormRequest
      */
     public function project(): Project
     {
-        $organization = $this->user()->resolveCurrentOrganization();
+        $organization = CurrentOrganization::for($this);
 
         $project = $organization?->projects()
             ->where('slug', (string) $this->validated('project'))

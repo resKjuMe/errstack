@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
-import FilterBar from '../../components/FilterBar.jsx';
 import { useT } from '../../i18n.js';
 import { TagDetail, TagFacets, TagsEmpty } from '../tags/TagBreakdown.jsx';
 
@@ -10,7 +9,7 @@ import { TagDetail, TagFacets, TagsEmpty } from '../tags/TagBreakdown.jsx';
 //
 // Dieselbe Darstellung wie auf der Projekt-Ebene (../tags/TagBreakdown.jsx);
 // verschieden ist nur der Kopf und worüber gezählt wurde.
-export default function Tags({ filter, issue, facets, detail, issuesHref, valueLimit }) {
+export default function Tags({ issue, facets, detail, issuesHref, valueLimit }) {
     const { shell } = usePage().props;
     const t = useT();
 
@@ -43,8 +42,6 @@ export default function Tags({ filter, issue, facets, detail, issuesHref, valueL
                     {t('tags.issue.back')}
                 </Link>
             </div>
-
-            <FilterBar filter={filter} />
 
             <p className="mb-4 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
                 {t('tags.period_ignored')}

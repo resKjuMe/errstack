@@ -30,13 +30,13 @@ class InvitationTest extends TestCase
         $organization = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
 
         $this->actingAs($admin)
-            ->from("/organisationen/{$organization->slug}")
-            ->post("/organisationen/{$organization->slug}/einladungen", [
+            ->from("/einstellungen/organisationen/{$organization->slug}")
+            ->post("/einstellungen/organisationen/{$organization->slug}/einladungen", [
                 'email' => 'neu@example.com',
                 'role' => OrganizationRole::Member->value,
             ])
             ->assertSessionHasNoErrors()
-            ->assertRedirect("/organisationen/{$organization->slug}");
+            ->assertRedirect("/einstellungen/organisationen/{$organization->slug}");
 
         $this->assertDatabaseHas('organization_invitations', [
             'organization_id' => $organization->id,
@@ -58,7 +58,7 @@ class InvitationTest extends TestCase
             $organization = Organization::factory()->withMember($user, $role)->create();
 
             $this->actingAs($user)
-                ->post("/organisationen/{$organization->slug}/einladungen", [
+                ->post("/einstellungen/organisationen/{$organization->slug}/einladungen", [
                     'email' => 'neu@example.com',
                     'role' => OrganizationRole::Member->value,
                 ])
@@ -77,7 +77,7 @@ class InvitationTest extends TestCase
         $organization = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
 
         $this->actingAs($admin)
-            ->post("/organisationen/{$organization->slug}/einladungen", [
+            ->post("/einstellungen/organisationen/{$organization->slug}/einladungen", [
                 'email' => 'chef@example.com',
                 'role' => OrganizationRole::Owner->value,
             ])
@@ -89,7 +89,7 @@ class InvitationTest extends TestCase
         $organization->setRole($owner, OrganizationRole::Owner);
 
         $this->actingAs($owner)
-            ->post("/organisationen/{$organization->slug}/einladungen", [
+            ->post("/einstellungen/organisationen/{$organization->slug}/einladungen", [
                 'email' => 'chef@example.com',
                 'role' => OrganizationRole::Owner->value,
             ])
@@ -109,7 +109,7 @@ class InvitationTest extends TestCase
         $token = $invitation->token;
 
         $this->actingAs($owner)
-            ->patch("/einladungen/{$invitation->id}", ['role' => OrganizationRole::Admin->value])
+            ->patch("/einstellungen/einladungen/{$invitation->id}", ['role' => OrganizationRole::Admin->value])
             ->assertSessionHasNoErrors();
 
         $invitation->refresh();
@@ -129,7 +129,7 @@ class InvitationTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->patch("/einladungen/{$invitation->id}", ['role' => OrganizationRole::Owner->value])
+            ->patch("/einstellungen/einladungen/{$invitation->id}", ['role' => OrganizationRole::Owner->value])
             ->assertForbidden();
 
         $this->assertSame(OrganizationRole::Member, $invitation->refresh()->role);
@@ -149,7 +149,7 @@ class InvitationTest extends TestCase
 
         $this->actingAs($admin)
             ->post("/einladung/{$invitation->token}")
-            ->assertRedirect("/organisationen/{$organization->slug}");
+            ->assertRedirect("/einstellungen/organisationen/{$organization->slug}");
 
         $this->assertSame(OrganizationRole::Admin, $organization->roleFor($admin));
         $this->assertDatabaseMissing('organization_invitations', ['id' => $invitation->id]);
@@ -161,7 +161,7 @@ class InvitationTest extends TestCase
         $organization = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
 
         $this->actingAs($admin)
-            ->get("/organisationen/{$organization->slug}")
+            ->get("/einstellungen/organisationen/{$organization->slug}")
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('invitableRoles', fn (Collection $roles) => $roles->pluck('value')->all() === ['admin', 'member', 'viewer'])
             );
@@ -170,7 +170,7 @@ class InvitationTest extends TestCase
         $organization->setRole($owner, OrganizationRole::Owner);
 
         $this->actingAs($owner)
-            ->get("/organisationen/{$organization->slug}")
+            ->get("/einstellungen/organisationen/{$organization->slug}")
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('invitableRoles', fn (Collection $roles) => $roles->pluck('value')->all() === ['owner', 'admin', 'member', 'viewer'])
             );
@@ -186,7 +186,7 @@ class InvitationTest extends TestCase
         ]);
 
         $this->actingAs($owner)
-            ->post("/organisationen/{$organization->slug}/einladungen", [
+            ->post("/einstellungen/organisationen/{$organization->slug}/einladungen", [
                 'email' => 'doppelt@example.com',
                 'role' => OrganizationRole::Member->value,
             ])
@@ -203,7 +203,7 @@ class InvitationTest extends TestCase
         $organization->setRole($member, OrganizationRole::Member);
 
         $this->actingAs($owner)
-            ->post("/organisationen/{$organization->slug}/einladungen", [
+            ->post("/einstellungen/organisationen/{$organization->slug}/einladungen", [
                 'email' => 'dabei@example.com',
                 'role' => OrganizationRole::Member->value,
             ])
@@ -231,7 +231,7 @@ class InvitationTest extends TestCase
 
         $this->actingAs($invited)
             ->post("/einladung/{$invitation->token}")
-            ->assertRedirect("/organisationen/{$organization->slug}");
+            ->assertRedirect("/einstellungen/organisationen/{$organization->slug}");
 
         $this->assertSame(OrganizationRole::Member, $organization->roleFor($invited));
         $this->assertSame($organization->id, $invited->refresh()->current_organization_id);
@@ -309,9 +309,9 @@ class InvitationTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->from("/organisationen/{$organization->slug}")
-            ->delete("/einladungen/{$invitation->id}")
-            ->assertRedirect("/organisationen/{$organization->slug}");
+            ->from("/einstellungen/organisationen/{$organization->slug}")
+            ->delete("/einstellungen/einladungen/{$invitation->id}")
+            ->assertRedirect("/einstellungen/organisationen/{$organization->slug}");
 
         $this->assertDatabaseMissing('organization_invitations', ['id' => $invitation->id]);
     }
@@ -325,7 +325,7 @@ class InvitationTest extends TestCase
         ]);
 
         $this->actingAs(User::factory()->create())
-            ->delete("/einladungen/{$invitation->id}")
+            ->delete("/einstellungen/einladungen/{$invitation->id}")
             ->assertForbidden();
 
         $this->assertModelExists($invitation);

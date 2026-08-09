@@ -22,7 +22,7 @@ Meldung (Stacktrace, Adresse, Merkmale)
 ```
 
 Die Seite steht unter **Projekt ▸ Zuständigkeit**
-(`/organisationen/<org>/projekte/<projekt>/zustaendigkeit`). Ansehen darf sie
+(`/einstellungen/organisationen/<org>/projekte/<projekt>/zustaendigkeit`). Ansehen darf sie
 jedes Mitglied — sie ist die Antwort auf „warum steht mein Name an diesem
 Fehler?" —, ändern nur die Verwaltung.
 

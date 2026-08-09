@@ -8,16 +8,19 @@ use App\Support\Ingest\Processing\Steps\DetectRegression;
 use App\Support\Ingest\Processing\Steps\EvaluateIssueAlerts;
 use App\Support\Ingest\Processing\Steps\FilterEvent;
 use App\Support\Ingest\Processing\Steps\GroupEvent;
+use App\Support\Ingest\Processing\Steps\LinkEventReplay;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
 use App\Support\Ingest\Processing\Steps\QueueSymbolication;
 use App\Support\Ingest\Processing\Steps\RecordProfile;
 use App\Support\Ingest\Processing\Steps\RecordRelease;
+use App\Support\Ingest\Processing\Steps\RecordReplay;
 use App\Support\Ingest\Processing\Steps\RecordSession;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
 use App\Support\Ingest\Processing\Steps\RecordUserReport;
 use App\Support\Ingest\Processing\Steps\SampleTransaction;
 use App\Support\Ingest\Processing\Steps\ScanPerformance;
 use App\Support\Ingest\Processing\Steps\ScrubEvent;
+use App\Support\Ingest\Processing\Steps\StoreAttachment;
 use App\Support\Performance\Detection\Detectors\CacheMisses;
 use App\Support\Performance\Detection\Detectors\ConsecutiveQueries;
 use App\Support\Performance\Detection\Detectors\DuplicateQueries;
@@ -122,16 +125,18 @@ return [
     |   1. Entpacken     — Rohdaten zu Feld-Baum (Rahmen, hier)
     |   2. Eingangsfilter — uninteressante Meldungen aussortieren (I8)
     |   3. Scrubbing     — personenbezogene Daten entfernen (I7)
-    |   4. Stichprobe    — Sampling für Performance-Daten (I9)
-    |   5. Antwortzeiten — Transaktionen und ihre Schritte ablegen (PF1)
-    |   6. Profile       — Sample-Profile an ihrer Transaktion ablegen (M4)
-    |   7. Leistungssuche — den abgelegten Ablauf zur Erkennung einreihen (PF6)
-    |   8. Normalisierung — Sentry-Schema in unser Modell (I4)
-    |   9. Grouping      — Fingerabdruck und Gruppe bestimmen (I5)
-    |  10. Aggregation   — Zähler und Issue fortschreiben (I6)
-    |  11. Sitzungen    — Release-Gesundheit fortschreiben (R7)
-    |  12. Version       — Auslieferung erfassen und verknüpfen (R1)
-    |  13. Rückfall      — erledigten Fehler wieder aufmachen (S8)
+    |   4. Anhänge       — Datei ablegen und an ihre Meldung hängen (M5)
+    |   5. Stichprobe    — Sampling für Performance-Daten (I9)
+    |   6. Antwortzeiten — Transaktionen und ihre Schritte ablegen (PF1)
+    |   7. Profile       — Sample-Profile an ihrer Transaktion ablegen (M4)
+    |   7a. Aufzeichnung — Sitzungs-Replays ablegen und mit Fehlern verknüpfen (M3)
+    |   8. Leistungssuche — den abgelegten Ablauf zur Erkennung einreihen (PF6)
+    |   9. Normalisierung — Sentry-Schema in unser Modell (I4)
+    |  10. Grouping      — Fingerabdruck und Gruppe bestimmen (I5)
+    |  11. Aggregation   — Zähler und Issue fortschreiben (I6)
+    |  12. Sitzungen    — Release-Gesundheit fortschreiben (R7)
+    |  13. Version       — Auslieferung erfassen und verknüpfen (R1)
+    |  14. Rückfall      — erledigten Fehler wieder aufmachen (S8)
     |
     | Der Rückfall steht hinter der Version, weil er sie braucht: „erledigt in
     | 1.4.2" ist erst durch eine **neuere** Fassung widerlegt, und welche das
@@ -146,7 +151,7 @@ return [
     | Reihenfolge innerhalb dieser Kette hilft dort nicht weiter, weshalb der Job
     | eines Profils zusätzlich einen Vorsprung bekommt (siehe „Profile" unten).
     |
-    | Die Antwortzeiten stehen deshalb an fünfter Stelle und nicht früher: der
+    | Die Antwortzeiten stehen deshalb hinter der Stichprobe und nicht früher: der
     | Schritt **schreibt**, und was er schreibt, darf keine personenbezogenen
     | Daten mehr enthalten und keine Messung sein, die die Stichprobe gar nicht
     | behalten wollte. Vor der Normalisierung steht er, weil er mit dem
@@ -183,9 +188,23 @@ return [
             DecodePayload::class,
             FilterEvent::class,
             ScrubEvent::class,
+            // Anhänge (M5) direkt hinter dem Schwärzen: dort fällt die
+            // Entscheidung, ob das Projekt Dateien überhaupt speichert, und ein
+            // Anhang, der verworfen wird, soll nicht vorher abgelegt worden sein.
+            // Vor allem Weiteren, weil er mit den Schritten darunter nichts zu
+            // tun hat — eine Datei ist keine Fehlermeldung.
+            StoreAttachment::class,
             SampleTransaction::class,
             RecordTransaction::class,
             RecordProfile::class,
+            // Die Aufzeichnungen (M3) unmittelbar dahinter, und zwar als Paar:
+            // erst die Ablage der Sitzung selbst, dann die Verknüpfung eines
+            // Fehlers mit ihr. Die Reihenfolge der beiden ist gleichgültig — sie
+            // fassen verschiedene Element-Typen an —, ihre Stelle in der Kette
+            // dagegen nicht: sie schreiben, und alles, was schreibt, steht hinter
+            // dem Scrubbing.
+            RecordReplay::class,
+            LinkEventReplay::class,
             ScanPerformance::class,
             NormalizeEvent::class,
             GroupEvent::class,
@@ -241,6 +260,39 @@ return [
     'feedback' => [
 
         'max_per_minute' => (int) env('INGEST_FEEDBACK_MAX_PER_MINUTE', 5),
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Kontingente
+    |--------------------------------------------------------------------------
+    |
+    | Wie viel eine Organisation, ein Projekt oder ein Schlüssel aufnehmen darf,
+    | steht **nicht** hier, sondern in der Datenbank (Tabelle `quotas` und
+    | `project_keys.rate_limit_per_minute`): das sind Entscheidungen derer, die
+    | die Daten ansehen und bezahlen, und sie fallen je Projekt verschieden aus.
+    | Hier steht nur die grobe Bremse davor.
+    |
+    |   requests_per_minute — wie viele Anfragen eine Herkunft (Absender-Adresse
+    |                         und mitgeschickter Schlüssel) je Minute an die
+    |                         Aufnahme richten darf. Sie greift **vor** der
+    |                         Anmeldung und ist damit die einzige Grenze, die
+    |                         auch für Anfragen ohne gültigen Schlüssel gilt —
+    |                         ohne sie wäre das Durchprobieren von Schlüsseln
+    |                         unbegrenzt.
+    |
+    | Der Wert ist bewusst hoch: hier soll niemand gebremst werden, der
+    | berechtigt meldet — eine Anwendung unter Last schickt in der Minute
+    | tausende Meldungen, und was ein Projekt davon behalten darf, entscheidet
+    | sein Kontingent eine Stufe später. Null schaltet die Stufe ab, für
+    | Installationen hinter einem vorgelagerten Wächter, der dasselbe besser kann.
+    |
+    */
+
+    'quotas' => [
+
+        'requests_per_minute' => (int) env('INGEST_MAX_REQUESTS_PER_MINUTE', 5000),
 
     ],
 

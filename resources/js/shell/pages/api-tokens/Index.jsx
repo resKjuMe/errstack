@@ -149,7 +149,9 @@ function TokenCard({ token }) {
                         type="button"
                         disabled={processing}
                         onClick={() =>
-                            destroy(`/zugriffstoken/${token.id}`, { preserveScroll: true })
+                            destroy(`/einstellungen/konto/zugriffstoken/${token.id}`, {
+                                preserveScroll: true,
+                            })
                         }
                     >
                         {t('api_tokens.card.revoke')}
@@ -180,7 +182,7 @@ function CreateToken({ kinds, scopeGroups }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post('/zugriffstoken', { onSuccess: () => reset() });
+        post('/einstellungen/konto/zugriffstoken', { onSuccess: () => reset() });
     };
 
     return (

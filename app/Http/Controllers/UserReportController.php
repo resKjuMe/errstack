@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Models\UserReport;
 use App\Support\Feedback\UserReportList;
 use App\Support\Feedback\UserReportNotifier;
-use App\Support\FilterData;
 use App\Support\Formats;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,7 +40,6 @@ class UserReportController extends Controller
         $reports = UserReportList::paginate($filter, $viewer, $request->status(), $request->assignee());
 
         return Inertia::render('feedback/Index', [
-            'filter' => FilterData::bar($filter),
             'reports' => $reports,
             'list' => $request->listValues(),
             'totalLabel' => Formats::number($reports->total()),

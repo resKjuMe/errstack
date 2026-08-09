@@ -23,10 +23,11 @@ return [
     'duration_minutes' => ':value min',
     'duration_hours' => ':value h',
 
-    // File sizes (App\Support\Formats::bytes). In steps of a thousand rather than
-    // 1024: the number gets compared to what a build tool reports.
-    'bytes' => ':value bytes',
-    'kilobytes' => ':value kB',
+    // File sizes (App\Support\Formats::bytes). Counted in binary units so that
+    // a file rejected by a "20 MB" limit is not shown as 20.9 MB.
+    'bytes' => ':value B',
+    'kilobytes' => ':value KB',
     'megabytes' => ':value MB',
+    'gigabytes' => ':value GB',
 
 ];

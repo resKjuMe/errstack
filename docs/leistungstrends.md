@@ -23,7 +23,7 @@ transaction_aggregates            (PF1, Anzahl + Verteilung je Minute)
                  ▼
    transaction_trend_detections   eine Zeile je Transaktion und Richtung
                  │
-                 ▼  /leistung/trends
+                 ▼  /organisationen/{org}/leistung/trends
    TrendList                      Liste, Filter, „gesehen"
 ```
 

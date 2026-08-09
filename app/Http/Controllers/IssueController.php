@@ -7,7 +7,6 @@ use App\Enums\IssueStatus;
 use App\Events\IssueCreated;
 use App\Http\Requests\IssueListRequest;
 use App\Models\Project;
-use App\Support\FilterData;
 use App\Support\Filters\GlobalFilter;
 use App\Support\Formats;
 use App\Support\Issues\IssueActionData;
@@ -48,7 +47,6 @@ class IssueController extends Controller
         $issues = IssueList::paginate($filter, $request->sort(), $request->status(), $search);
 
         return Inertia::render('issues/Index', [
-            'filter' => FilterData::bar($filter),
             'issues' => $issues,
             'list' => $request->listValues(),
             // Der Weg zur projektweiten Merkmal-Übersicht, mit derselben

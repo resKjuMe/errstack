@@ -203,6 +203,9 @@ class IssueSearchSuggestionTest extends TestCase
 
     public function test_the_suggestions_need_a_signed_in_viewer(): void
     {
-        $this->get(route('issues.search.suggest'))->assertRedirect(route('login'));
+        [, $project] = $this->context();
+
+        $this->get(route('issues.search.suggest', $project->organization))
+            ->assertRedirect(route('login'));
     }
 }

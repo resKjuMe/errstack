@@ -3,14 +3,16 @@
 namespace App\Support;
 
 use App\Enums\FilterPeriod;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Project;
 use App\Support\Filters\GlobalFilter;
 
 /**
- * Nutzlast der globalen Filterleiste. Jede Auswertungsseite gibt sie unter dem
- * Schlüssel `filter` mit; die Leiste selbst ist ein Baustein der Shell
- * (resources/js/shell/components/FilterBar.jsx) und braucht deshalb überall
- * dieselbe Form.
+ * Nutzlast der globalen Filterleiste. Sie liegt als geteilte Eigenschaft `filter`
+ * an der Antwort und nicht an der einzelnen Seite ({@see HandleInertiaRequests}):
+ * die Leiste ist ein Baustein des Rahmens
+ * (resources/js/shell/components/FilterBar.jsx) und wird dort genau einmal
+ * gezeichnet.
  */
 final class FilterData
 {

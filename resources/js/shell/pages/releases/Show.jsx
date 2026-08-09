@@ -2,7 +2,6 @@ import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
-import FilterBar from '../../components/FilterBar.jsx';
 import { useT } from '../../i18n.js';
 import AdoptionChart from './AdoptionChart.jsx';
 import HealthValue from './HealthValue.jsx';
@@ -17,10 +16,11 @@ import HealthValue from './HealthValue.jsx';
 // Auslieferung gut war.
 //
 // Zeitraum und Umgebung kommen aus der Filterleiste (F7) und gelten für jede
-// Zahl auf dieser Seite. Die Projektauswahl fehlt in der Leiste: welches Projekt
-// gemeint ist, sagt die Version.
+// Zahl auf dieser Seite. Gezeichnet wird die Leiste von der AppShell; die
+// Projektauswahl fehlt darin, weil der Controller sie abbestellt
+// (FilterData::bar(projects: false)) — welches Projekt gemeint ist, sagt die
+// Version.
 export default function Show({
-    filter,
     release,
     health,
     comparison,
@@ -55,8 +55,6 @@ export default function Show({
                     </Link>
                 }
             />
-
-            <FilterBar filter={filter} />
 
             <Card className="mb-4">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-gray-400">

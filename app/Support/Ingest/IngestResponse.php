@@ -74,12 +74,21 @@ final class IngestResponse
      * Die Kopfzeile wird von Zeilenumbrüchen befreit: sie entsteht teils aus
      * Meldungstexten, und ein Umbruch darin würde die Antwort zerlegen.
      */
-    public static function error(string $reason, int $status): JsonResponse
+    public static function error(string $reason, int $status, ?int $retryAfter = null): JsonResponse
     {
         $header = trim(preg_replace('/\s+/', ' ', $reason) ?? '');
 
-        return new JsonResponse(['detail' => $reason], $status, [
-            self::ERROR_HEADER => $header,
-        ]);
+        $headers = [self::ERROR_HEADER => $header];
+
+        // `Retry-After` ist keine Höflichkeit, sondern der Unterschied zwischen
+        // einer wirksamen Begrenzung und einer, die nichts spart: ohne die
+        // Angabe versucht ein SDK es nach seinem eigenen Zeitplan erneut, und
+        // der ist bei einer Fehlerwelle „gleich wieder". Die Sentry-SDKs lesen
+        // die Kopfzeile aus und schweigen so lange.
+        if ($retryAfter !== null) {
+            $headers['Retry-After'] = (string) max(1, $retryAfter);
+        }
+
+        return new JsonResponse(['detail' => $reason], $status, $headers);
     }
 }

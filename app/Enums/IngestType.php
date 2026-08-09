@@ -84,17 +84,27 @@ enum IngestType: string
     }
 
     /**
-     * Zählt eine Meldung dieser Art gegen das Ereignis-Kontingent des Projekts?
+     * Zählt eine Meldung dieser Art als Ereignis — als eine der Meldungen also,
+     * deren Menge das Aufkommen eines Projekts ausmacht?
      *
-     * Die Abrechnung selbst ist O1 und gibt es noch nicht — die Zusage aber
-     * schon, und sie steht hier statt in einem Kommentar, damit sie prüfbar ist:
-     * eine Rückmeldung ist die Beschreibung eines Menschen zu einem Ereignis,
-     * das bereits gezählt wurde. Sie ein zweites Mal zu zählen hieße, das
-     * Nachfragen bei den Betroffenen zu bepreisen.
+     * Die Frage stellen zwei Stellen mit zwei verschiedenen Absichten, und
+     * beide bekommen dieselbe Antwort: der Ausschlag-Schutz (A7) entscheidet
+     * daran, was er bei einer Flut wegdrosselt, und die Rückmeldungen (M6)
+     * begründen daran, warum sie nichts kosten. Eine Rückmeldung ist die
+     * Beschreibung eines Menschen zu einem Ereignis, das bereits gezählt wurde;
+     * sie ein zweites Mal zu zählen hieße, das Nachfragen bei den Betroffenen zu
+     * bepreisen. Ebenso wenig zählen die Buchhaltungs-Elemente: ein
+     * Lebenszeichen, eine Verworfen-Meldung des SDK und ein Anhang sind keine
+     * Ereignisse, sondern Angaben über welche.
      *
-     * Ebenso wenig zählen die Buchhaltungs-Elemente: ein Lebenszeichen, eine
-     * Verworfen-Meldung des SDK und ein Anhang sind keine Ereignisse, sondern
-     * Angaben über welche.
+     * **Nicht zu verwechseln mit den Kontingenten (O1).** Die begrenzen je
+     * Datenart und fragen deshalb etwas anderes: gegen *welches* Kontingent
+     * zählt dieser Typ ({@see QuotaCategory::forIngestType()})? Dort zählen ein
+     * Anhang und ein Lebenszeichen sehr wohl — sie haben ein eigenes
+     * Kontingent —, und eine Sitzung zählt nicht, weil ein Kontingent auf sie
+     * die Release-Gesundheit verfälschen würde statt Daten zu sparen. Die
+     * beiden Aufzählungen sind deshalb absichtlich verschieden und keine
+     * Doppelung.
      */
     public function countsTowardEventQuota(): bool
     {

@@ -16,6 +16,7 @@ POST /api/{projekt}/envelope/     ─┴─▶ ingest_payloads (Rohdaten)
                                      ├ Entpacken      (Rahmen)
                                      ├ Eingangsfilter (I8)
                                      ├ Scrubbing      (I7)
+                                     ├ Anhänge        (M5) ─▶ event_attachments (+ Ablage)
                                      ├ Stichprobe     (I9)
                                      ├ Antwortzeiten  (PF1) ─▶ transactions
                                      ├ Leistungssuche (PF6) ─▶ Warteschlange „performance"
@@ -28,6 +29,10 @@ POST /api/{projekt}/envelope/     ─┴─▶ ingest_payloads (Rohdaten)
 
 Was der Eingangsfilter aussortiert — und was von einer aussortierten Meldung
 bleibt —, steht in [eingangsfilter.md](eingangsfilter.md).
+Wohin Screenshots, Logdateien und Speicherabbilder gelegt werden — und warum ein
+Anhang seine Meldung nur als Nummer kennt —, steht in
+[anhaenge.md](anhaenge.md); der Schritt steht unmittelbar hinter dem Scrubbing,
+weil dort die Entscheidung fällt, ob das Projekt Dateien überhaupt speichert.
 Was die Normalisierung aus einer Meldung macht — und warum sie nichts
 aussortiert —, steht in [normalisierung.md](normalisierung.md). Wie
 Transaktionen und ihre Einzelschritte abgelegt werden, steht in
@@ -129,7 +134,7 @@ erneute Zustellung eine echte zweite Chance hat.
 ## Betrieb
 
 ```
-php artisan queue:work --queue=ingest,notifications,performance,symbolication,default
+php artisan queue:work --queue=ingest,notifications,performance,symbolication,uptime,default
 php artisan ingest:status            # Rückstand, Dauern, Fehlschläge
 php artisan ingest:retry             # Gescheitertes erneut einreihen
 php artisan ingest:retry --project=7 --limit=100

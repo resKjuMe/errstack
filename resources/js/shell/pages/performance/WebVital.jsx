@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
-import FilterBar from '../../components/FilterBar.jsx';
+import useFilter from '../../filters/useFilter.js';
 import { filterQuery } from '../../filters/useGlobalFilter.js';
 import { formatDateTime, formatNumber, useTranslations } from '../../i18n.js';
 import { Missing } from './format.jsx';
@@ -21,8 +21,9 @@ import {
 // Komponente. Das ist derselbe Grundsatz wie überall — ein Link muss zeigen,
 // was der Absender gesehen hat —, hier aber besonders wichtig: „schau dir das
 // LCP dieser Seite an" ist genau die Nachricht, die man verschickt.
-export default function WebVital({ filter, detail, vitals, overviewHref }) {
+export default function WebVital({ detail, vitals, overviewHref }) {
     const { shell } = usePage().props;
+    const filter = useFilter();
     const { t, formats } = useTranslations();
 
     const selected = vitals.find((vital) => vital.key === detail.selected) ?? vitals[0];
@@ -55,8 +56,6 @@ export default function WebVital({ filter, detail, vitals, overviewHref }) {
                     </ul>
                 }
             />
-
-            <FilterBar filter={filter} />
 
             <Card className="mb-4">
                 <div className="flex flex-wrap items-start justify-between gap-4">

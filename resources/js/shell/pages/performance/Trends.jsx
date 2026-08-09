@@ -2,9 +2,9 @@ import React from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
-import FilterBar from '../../components/FilterBar.jsx';
 import Pagination from '../../components/Pagination.jsx';
 import { InputLabel, SecondaryButton, SelectInput } from '../../components/Form.jsx';
+import useFilter from '../../filters/useFilter.js';
 import { useTranslations } from '../../i18n.js';
 import { duration } from './format.jsx';
 
@@ -18,7 +18,6 @@ import { duration } from './format.jsx';
 //
 // Der Zustand steht wie überall vollständig in der Adresszeile.
 export default function Trends({
-    filter,
     trends,
     list,
     sortOptions,
@@ -29,6 +28,7 @@ export default function Trends({
     overviewHref,
 }) {
     const { shell } = usePage().props;
+    const filter = useFilter();
     const { t, formats } = useTranslations();
 
     // Sortierung, Richtung und Stand sind Felder dieser Seite; die übrigen
@@ -52,8 +52,6 @@ export default function Trends({
                 appName={shell.appName}
                 help={t('performance_trends.help')}
             />
-
-            <FilterBar filter={filter} />
 
             <Card className="mb-4">
                 <div className="flex flex-wrap items-end gap-4">
