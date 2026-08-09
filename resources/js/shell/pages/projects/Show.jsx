@@ -86,6 +86,7 @@ export default function Show({
                 <CronMonitors project={project} />
 
                 <Grouping project={project} />
+                <Ownership project={project} />
 
                 <Sampling project={project} />
                 <PerformanceDetection project={project} />
@@ -495,6 +496,25 @@ function Grouping({ project }) {
         <Card title={t('projects.grouping.title')} description={t('projects.grouping.description')}>
             <Link href={project.groupingHref}>
                 <SecondaryButton type="button">{t('projects.grouping.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zu den Zuständigkeits-Regeln (R6). Direkt unter der Gruppierung, weil
+// beide dieselbe Reihenfolge-Frage stellen und weil das, was gruppiert wurde,
+// als nächstes jemandem gehören will. Ebenfalls ohne Bedingung: die Liste ist
+// die Antwort auf „warum steht mein Name an diesem Fehler?".
+function Ownership({ project }) {
+    const t = useT();
+
+    return (
+        <Card
+            title={t('projects.ownership.title')}
+            description={t('projects.ownership.description')}
+        >
+            <Link href={project.ownershipHref}>
+                <SecondaryButton type="button">{t('projects.ownership.manage')}</SecondaryButton>
             </Link>
         </Card>
     );

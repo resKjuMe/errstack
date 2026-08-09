@@ -1,11 +1,16 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
+import OrganizationSwitcher from './OrganizationSwitcher.jsx';
 import ThemeToggle from './ThemeToggle.jsx';
 import { MenuIcon } from '../icons.jsx';
 
-// Aufklappbares Menü für schmale Viewports (< sm): dieselben Navigationsgruppen
-// wie die Seitenleiste, dann ein Block mit Name/E-Mail, Theme-Umschalter und den
-// Menü-Einträgen inkl. Logout.
+// Aufklappbares Menü für schmale Viewports (< sm): oben die Organisation,
+// darunter dieselben Navigationsgruppen wie die Seitenleiste, dann ein Block mit
+// Name/E-Mail, Theme-Umschalter und den Menü-Einträgen inkl. Logout.
+//
+// Der Umschalter für die Organisation steht auch hier: die Seitenleiste ist auf
+// schmalen Viewports ausgeblendet, und ohne ihn wäre der Wechsel dort nur über
+// die Seite „Organisationen" zu erreichen — genau der Umweg, den U2 abschafft.
 const linkBase =
     'block w-full border-l-4 py-2 pe-4 ps-3 text-start text-base font-medium transition duration-150 ease-in-out focus:outline-none';
 const linkActive =
@@ -25,15 +30,23 @@ function ResponsiveLink({ href, active, icon, children }) {
 }
 
 export default function MobileMenu({ shell, open }) {
-    // Navigationsgruppen und Menü-Einträge stehen hier untereinander — Einträge,
-    // die schon oben in der Navigation erscheinen, werden nicht doppelt gezeigt.
+    // Navigationsgruppen, Anker und Menü-Einträge stehen hier untereinander —
+    // Einträge, die schon oben in der Navigation oder als Anker erscheinen,
+    // werden nicht doppelt gezeigt.
     const navHrefs = shell.nav.flatMap((group) => group.links.map((link) => link.href));
-    const menuItems = shell.menu.filter((item) => !navHrefs.includes(item.href));
+    const shownHrefs = [...navHrefs, ...shell.footer.map((link) => link.href)];
+    const menuItems = shell.menu.filter((item) => !shownHrefs.includes(item.href));
 
     return (
         <div
             className={`${open ? 'block' : 'hidden'} border-b border-gray-200 bg-white sm:hidden dark:border-gray-700 dark:bg-gray-800`}
         >
+            {shell.org && (
+                <div className="border-b border-gray-200 px-2 py-2 dark:border-gray-700">
+                    <OrganizationSwitcher org={shell.org} labels={shell.labels.org} />
+                </div>
+            )}
+
             <div className="space-y-4 pb-3 pt-2">
                 {shell.nav.map((group, index) => (
                     <div key={group.label ?? `group-${index}`}>
@@ -75,6 +88,12 @@ export default function MobileMenu({ shell, open }) {
                 </div>
 
                 <div className="mt-3 space-y-1">
+                    {shell.footer.map((link) => (
+                        <ResponsiveLink key={link.href} href={link.href} icon={link.icon}>
+                            {link.label}
+                        </ResponsiveLink>
+                    ))}
+
                     {menuItems.map((item) => (
                         <ResponsiveLink key={item.href} href={item.href} icon={item.icon}>
                             {item.label}

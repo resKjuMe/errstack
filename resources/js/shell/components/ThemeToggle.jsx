@@ -21,7 +21,15 @@ const NEXT = { light: 'dark', dark: 'system', system: 'light' };
 
 const ICONS = { light: SunIcon, dark: MoonIcon, system: MonitorIcon };
 
-export default function ThemeToggle({ labels, className = '' }) {
+// Zwei Hüllen für denselben Umschalter: als Symbol (Mobil-Menü) und als Zeile mit
+// Beschriftung. Als Zeile steht das Design im Nutzer-Menü unter seinem Namen,
+// statt als Symbol ohne Text daneben zu hängen. Der Zyklus bleibt derselbe.
+const VARIANTS = {
+    icon: 'inline-flex items-center justify-center rounded-md p-2 text-gray-500 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-700 focus:outline-none dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 ',
+    row: 'flex w-full items-center gap-2 px-4 py-2 text-start text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:bg-gray-700 ',
+};
+
+export default function ThemeToggle({ labels, variant = 'icon', className = '' }) {
     const [mode, setMode] = useState(() => localStorage.getItem('theme') || 'system');
 
     // Auf Wechsel der Systemeinstellung reagieren, solange 'system' aktiv ist.
@@ -46,15 +54,19 @@ export default function ThemeToggle({ labels, className = '' }) {
         <button
             type="button"
             onClick={cycle}
-            title={label}
+            title={variant === 'row' ? undefined : label}
             aria-label={label}
             data-theme-mode={mode}
-            className={
-                'inline-flex items-center justify-center rounded-md p-2 text-gray-500 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-700 focus:outline-none dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 ' +
-                className
-            }
+            className={(VARIANTS[variant] ?? VARIANTS.icon) + className}
         >
-            <Icon className="h-5 w-5" />
+            <Icon
+                className={
+                    variant === 'row'
+                        ? 'h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500'
+                        : 'h-5 w-5'
+                }
+            />
+            {variant === 'row' && <span className="truncate">{label}</span>}
         </button>
     );
 }

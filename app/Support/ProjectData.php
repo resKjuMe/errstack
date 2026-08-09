@@ -146,6 +146,11 @@ final class ProjectData
                 // Und ebenso die Eingangsfilter: wer eine Meldung vermisst, muss
                 // nachsehen können, ob ein Filter sie genommen hat.
                 'filtersHref' => route('projects.filters.index', [$organization, $project]),
+                // Und die Zuständigkeits-Regeln (R6) aus demselben Grund: sie
+                // beantworten „warum steht mein Name an diesem Fehler?", und
+                // diese Frage stellt gerade der, der die Regeln nicht ändern
+                // darf.
+                'ownershipHref' => route('projects.ownership.index', [$organization, $project]),
             ],
             'organization' => [
                 'slug' => $organization->slug,

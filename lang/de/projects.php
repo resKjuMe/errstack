@@ -99,6 +99,12 @@ return [
         'manage' => 'Verlauf ansehen',
     ],
 
+    'ownership' => [
+        'title' => 'Zuständigkeit',
+        'description' => 'Wer sich um einen Fehler kümmert, hängt davon ab, wo er passiert ist. Regeln auf Pfad, Adresse, Modul oder Merkmal schlagen die Zuständigen vor — auf Wunsch weisen sie auch zu.',
+        'manage' => 'Regeln ansehen',
+    ],
+
     'sampling' => [
         'title' => 'Stichproben',
         'description' => 'Von den Antwortzeiten wird nur ein einstellbarer Anteil gespeichert und in den Auswertungen hochgerechnet. Fehlermeldungen bleiben davon unberührt.',

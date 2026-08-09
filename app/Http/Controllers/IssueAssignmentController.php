@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Event;
 use App\Models\Issue;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Models\Team;
 use App\Models\User;
 use App\Support\Issues\EventNavigation;
 use App\Support\Issues\IssueAssignee;
+use App\Support\Ownership\OwnershipAssignment;
+use App\Support\Ownership\OwnershipSubjects;
 use App\Support\Releases\SuspectCommits;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,15 +35,21 @@ use Illuminate\Support\Facades\Gate;
  * zweite Weg, denselben Zuständigen zu benennen, und der erste, der bei einer
  * Änderung übersehen wird.
  *
- * **Die Autoren der verdächtigen Commits führen die Liste an** (R4) — aber nur,
- * wenn der Aufruf sagt, um welchen Fehler es geht (`?issue=`). Ohne die Angabe
- * bleibt es bei „wer kommt überhaupt in Frage": eine Sammelaktion über zwölf
- * Einträge hat keinen Stacktrace, gegen den sich etwas abgleichen ließe. Der
- * Unterschied ist für den Aufrufer keiner — er bekommt eine geordnete Liste, und
- * woher ihre Reihenfolge stammt, ist die Sache dieser Klasse.
+ * **Zwei Herleitungen führen die Liste an, und beide nur, wenn der Aufruf sagt,
+ * um welchen Fehler es geht** (`?issue=`). Ohne die Angabe bleibt es bei „wer
+ * kommt überhaupt in Frage": eine Sammelaktion über zwölf Einträge hat keinen
+ * Stacktrace, gegen den sich etwas abgleichen ließe.
  *
- * **Die Zuständigkeits-Regeln (R6) kommen später** und werden sich an dieselbe
- * Stelle setzen.
+ *   1. **Die Zuständigkeits-Regeln** (R6) — sie stehen ganz oben, weil sie das
+ *      einzige sind, was jemand ausdrücklich **entschieden** hat: „Fehler aus
+ *      `src/billing/*` gehören der Kasse".
+ *   2. **Die Autoren der verdächtigen Commits** (R4) — ein Abgleich, der sich
+ *      irren kann, und deshalb hinter der Entscheidung.
+ *
+ * Beide bringen ihre Begründung als `hint` mit; ein Vorschlag, der oben steht
+ * und nicht sagt, warum, sieht aus wie eine willkürliche Sortierung. Für den
+ * Aufrufer ist das kein Unterschied — er bekommt eine geordnete Liste, und woher
+ * ihre Reihenfolge stammt, ist die Sache dieser Klasse.
  */
 class IssueAssignmentController extends Controller
 {
@@ -67,18 +77,29 @@ class IssueAssignmentController extends Controller
         }
 
         $term = trim((string) $request->query('q', ''));
+        $issue = $this->issue($request, $organization);
 
-        // Die Autoren der verdächtigen Commits (R4) — sie stehen ganz oben, weil
-        // sie als Einzige eine Begründung mitbringen. Wer schon hier steht,
-        // erscheint weiter unten nicht noch einmal.
-        $suspects = $this->suspects($request, $term);
-        $seen = array_column($suspects, 'id');
+        // Die beiden Herleitungen, in ihrer Rangfolge. Wer schon hier steht,
+        // erscheint weiter unten nicht noch einmal — derselbe Name zweimal sieht
+        // nach einem Fehler aus.
+        $ownership = $this->ownership($issue, $term);
+        $suspects = $this->suspects($issue, $term, array_column($ownership, 'value'));
+
+        $leading = [...$ownership, ...$suspects];
+
+        // Zwei Kennungen für zwei Fragen: `value` (der Text) schließt Teams mit
+        // ein und dient dem Ausblenden in der Team- und Mitgliederliste; `id`
+        // gibt es nur bei Konten und ist das, wonach die Abfrage der Mitglieder
+        // filtern kann. Die Kennung selbst geht nicht mit hinaus — sie ist eine
+        // Hilfsgröße dieser Klasse und kein Teil der Auskunft.
+        $seen = array_values(array_filter(array_column($leading, 'id')));
+        $taken = array_column($leading, 'value');
 
         return response()->json([
             'suggestions' => [
                 ...array_map(
                     static fn (array $suggestion): array => Arr::except($suggestion, ['id']),
-                    $suspects,
+                    $leading,
                 ),
                 // Der Betrachter selbst danach und mit dem festen Text `me`:
                 // „mir zuweisen" ist der häufigste Fall, und `me` bleibt
@@ -86,34 +107,96 @@ class IssueAssignmentController extends Controller
                 ...$this->self($viewer, $term, $seen),
                 // Dann die Teams: sie sind die wenigeren und die, die man
                 // seltener ausgeschrieben im Kopf hat.
-                ...$this->teams($organization, $term),
+                ...$this->without($this->teams($organization, $term), $taken),
                 ...$this->members($organization, $viewer, $term, $seen),
             ],
         ]);
     }
 
     /**
-     * Die Autoren der verdächtigen Commits — sofern der Aufruf einen Fehler
-     * nennt und der Betrachter ihn sehen darf.
+     * Der Fehler, um den es geht — oder `null`.
      *
-     * Vorgeschlagen werden nur Autoren **mit Konto**: eine Adresse aus einem
-     * Repository ist keine Zuständigkeit, die sich vergeben ließe. Die
-     * Begründung reist als `hint` mit — ein Vorschlag, der ganz oben steht und
-     * nicht sagt, warum, sieht aus wie eine willkürliche Sortierung.
-     *
-     * @return list<array{id: int, value: string, label: string, kind: string, hint: string}>
+     * **Ohne `?issue=` gibt es keinen**, und das ist der Regelfall bei einer
+     * Sammelaktion. Ein Fehler, den der Betrachter nicht sehen darf oder der
+     * einer anderen Organisation gehört, wird still übergangen: die Liste ist
+     * eine Auswahlhilfe und nicht der Ort, an dem sich die Sichtbarkeit von
+     * Einträgen erfragen lässt.
      */
-    private function suspects(Request $request, string $term): array
+    private function issue(Request $request, Organization $organization): ?Issue
     {
         $id = $request->query('issue');
 
         if (! is_string($id) || ! ctype_digit($id)) {
+            return null;
+        }
+
+        $issue = Issue::query()->with('project.organization')->find((int) $id);
+
+        if ($issue === null || $issue->project?->organization_id !== $organization->id) {
+            return null;
+        }
+
+        return Gate::denies('view', $issue) ? null : $issue;
+    }
+
+    /**
+     * Was die Zuständigkeits-Regeln zu diesem Fehler sagen (R6).
+     *
+     * Ausgewertet wird gegen das **zuletzt** gesehene Ereignis: der Eintrag
+     * selbst trägt weder Pfade noch Merkmale, und der Ort eines Fehlers kann
+     * sich über die Zeit verschieben — im ältesten Ereignis steht nach einem
+     * Umbau ein Pfad, den es nicht mehr gibt. Dieselbe Wahl wie bei den
+     * verdächtigen Commits, und dieselbe Quelle ({@see EventNavigation}).
+     *
+     * @return list<array{id: int|null, value: string, label: string, kind: string, hint: string}>
+     */
+    private function ownership(?Issue $issue, string $term): array
+    {
+        $project = $issue?->project;
+        $event = $issue === null ? null : EventNavigation::newest($issue);
+
+        if (! $project instanceof Project || ! $event instanceof Event) {
             return [];
         }
 
-        $issue = Issue::query()->find((int) $id);
+        $suggestions = [];
 
-        if ($issue === null || Gate::denies('view', $issue)) {
+        foreach (app(OwnershipAssignment::class)->suggest(OwnershipSubjects::fromEvent($event), $project) as $match) {
+            $assignee = $match['assignee'];
+            $rule = $match['rule'];
+
+            if (! $this->matches($assignee->label(), $term)) {
+                continue;
+            }
+
+            $suggestions[] = [
+                // Nur bei einer Person: ein Team hat keine Kontokennung, und die
+                // Mitgliederliste darunter filtert nach genau der.
+                'id' => $assignee->user?->id,
+                'value' => $assignee->term(),
+                'label' => $assignee->label(),
+                'kind' => 'ownership',
+                'hint' => __('ownership.suggestion', ['pattern' => $rule->expression()]),
+            ];
+        }
+
+        return array_slice($suggestions, 0, self::LIMIT);
+    }
+
+    /**
+     * Die Autoren der verdächtigen Commits (R4).
+     *
+     * Vorgeschlagen werden nur Autoren **mit Konto**: eine Adresse aus einem
+     * Repository ist keine Zuständigkeit, die sich vergeben ließe. Die
+     * Begründung reist als `hint` mit — ein Vorschlag, der weit oben steht und
+     * nicht sagt, warum, sieht aus wie eine willkürliche Sortierung.
+     *
+     * @param  list<string>  $taken  Zuständige, die als Regeltreffer schon oben stehen
+     * @return list<array{id: int|null, value: string, label: string, kind: string, hint: string}>
+     */
+    private function suspects(?Issue $issue, string $term, array $taken = []): array
+    {
+        if ($issue === null) {
             return [];
         }
 
@@ -130,20 +213,26 @@ class IssueAssignmentController extends Controller
                 continue;
             }
 
-            $suggestions[] = [
+            $entry = [
                 'id' => $author->id,
                 'value' => IssueAssignee::forUser($author)->term(),
                 'label' => $author->name,
                 'kind' => 'suspect',
                 'hint' => __('issues.suspects.suggestion', ['sha' => $suspect->commit->shortSha()]),
             ];
+
+            if (in_array($entry['value'], $taken, true)) {
+                continue;
+            }
+
+            $suggestions[] = $entry;
         }
 
         return $suggestions;
     }
 
     /**
-     * @param  list<int>  $seen  Konten, die als Verdächtige schon oben stehen
+     * @param  list<int>  $seen  Konten, die als Vorschlag schon oben stehen
      * @return list<array{value: string, label: string, kind: string}>
      */
     private function self(?User $viewer, string $term, array $seen = []): array
@@ -186,7 +275,7 @@ class IssueAssignmentController extends Controller
      * Die Mitglieder der Organisation — der Betrachter selbst nicht noch einmal,
      * er steht schon oben.
      *
-     * @param  list<int>  $seen  Konten, die als Verdächtige schon oben stehen
+     * @param  list<int>  $seen  Konten, die als Vorschlag schon oben stehen
      * @return list<array{value: string, label: string, kind: string}>
      */
     private function members(Organization $organization, ?User $viewer, string $term, array $seen = []): array
@@ -211,6 +300,24 @@ class IssueAssignmentController extends Controller
                 'kind' => 'user',
             ])
             ->all();
+    }
+
+    /**
+     * Dieselbe Liste ohne die Zuständigen, die schon oben stehen.
+     *
+     * Für die Teams, die als Einzige nicht über eine Kontokennung ausgeschlossen
+     * werden können — ein Team hat keine.
+     *
+     * @param  list<array{value: string, label: string, kind: string}>  $suggestions
+     * @param  list<string>  $taken
+     * @return list<array{value: string, label: string, kind: string}>
+     */
+    private function without(array $suggestions, array $taken): array
+    {
+        return array_values(array_filter(
+            $suggestions,
+            static fn (array $suggestion): bool => ! in_array($suggestion['value'], $taken, true),
+        ));
     }
 
     /**

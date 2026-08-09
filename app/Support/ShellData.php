@@ -2,9 +2,13 @@
 
 namespace App\Support;
 
+use App\Models\Membership;
+use App\Models\Organization;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 /**
  * Nutzlast für das React-Grundgerüst (resources/js/shell): Navigations-Links,
@@ -25,6 +29,14 @@ final class ShellData
     {
         $user = Auth::user();
 
+        // Die aktive Organisation über resolveCurrentOrganization() und nicht
+        // über das Feld selbst: die Leiste soll dieselbe Organisation nennen,
+        // mit der die Seiten arbeiten (ProjectController, GlobalFilter …).
+        // Zeigt das Feld auf eine Organisation, der das Konto nicht mehr
+        // angehört, zieht die Methode es nach — sonst stünde oben ein Name, den
+        // keine Seite darunter benutzt.
+        $organization = $user?->resolveCurrentOrganization();
+
         return [
             'appName' => config('app.name', 'Errstack'),
             'user' => $user === null ? null : [
@@ -43,12 +55,20 @@ final class ShellData
             'broadcast' => self::broadcast(),
             'nav' => self::nav(),
             'menu' => self::menu(),
+            'org' => $user === null ? null : self::org($user, $organization),
+            'footer' => self::footer($organization),
             'labels' => [
                 'guest' => __('nav.guest'),
                 'signIn' => __('nav.sign_in'),
                 'signOut' => __('nav.sign_out'),
                 'menu' => __('nav.menu'),
                 'help' => __('common.show_help'),
+                'org' => [
+                    'label' => __('nav.org.label'),
+                    'switch' => __('nav.org.switch'),
+                    'create' => __('nav.org.create'),
+                    'none' => __('nav.org.none'),
+                ],
                 'sidebar' => [
                     'collapse' => __('nav.sidebar.collapse'),
                     'expand' => __('nav.sidebar.expand'),
@@ -235,6 +255,105 @@ final class ShellData
     }
 
     /**
+     * Der Umschalter am Kopf der Seitenleiste: die aktive Organisation, die
+     * übrigen zur Auswahl und der Weg zu einer neuen.
+     *
+     * `options` enthält bewusst **nicht** die aktive Organisation: sie steht
+     * schon in der Schaltfläche darüber, und ein Eintrag, der auf den eigenen
+     * Zustand wechselt, wäre nur ein Klick ins Leere. Wer zu genau einer
+     * Organisation gehört, findet im Menü daher allein den Anlege-Eintrag.
+     *
+     * Gewechselt wird über `organizations.switch` — dieselbe Route, die die
+     * Organisationsseite benutzt. Ein zweiter Weg, die aktive Organisation zu
+     * setzen, entsteht hier nicht.
+     *
+     * @return array{current: array{name: string, slug: string, initials: string}|null, options: list<array{name: string, slug: string, initials: string, switchHref: string}>, createHref: string|null}
+     */
+    private static function org(User $user, ?Organization $current): array
+    {
+        $others = $user->memberships()
+            ->with('organization')
+            ->get()
+            ->reject(fn (Membership $membership): bool => $membership->organization_id === $current?->id)
+            ->sortBy(fn (Membership $membership): string => (string) $membership->organization->name)
+            ->values();
+
+        return [
+            'current' => $current === null ? null : [
+                'name' => $current->name,
+                'slug' => $current->slug,
+                'initials' => self::initials($current->name),
+            ],
+            'options' => $others->map(fn (Membership $membership): array => [
+                'name' => $membership->organization->name,
+                'slug' => $membership->organization->slug,
+                'initials' => self::initials($membership->organization->name),
+                'switchHref' => route('organizations.switch', $membership->organization),
+            ])->all(),
+            // Anlegen darf nicht jeder (OrganizationPolicy::create). Steht der
+            // Eintrag trotzdem im Menü, führt er in eine abgelehnte Anfrage.
+            // Ziel ist die Übersicht: dort steht das Formular.
+            'createHref' => Gate::allows('create', Organization::class)
+                ? route('organizations.index')
+                : null,
+        ];
+    }
+
+    /**
+     * Kürzel der Organisation: bis zu zwei Anfangsbuchstaben. Es steht neben dem
+     * Namen und ist in der eingeklappten Leiste alles, was von der Organisation
+     * bleibt — der Slug wäre dort zu lang.
+     */
+    private static function initials(string $name): string
+    {
+        $words = preg_split('/\s+/', trim($name), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        $letters = array_map(
+            fn (string $word): string => Str::upper(Str::substr($word, 0, 1)),
+            array_slice($words, 0, 2),
+        );
+
+        // Ein einzelnes Wort gibt zwei Buchstaben her („Errstack" → „ER").
+        if (count($letters) === 1) {
+            return Str::upper(Str::substr($words[0], 0, 2));
+        }
+
+        return implode('', $letters);
+    }
+
+    /**
+     * Die festen Anker im Fuß der Seitenleiste: Einstellungen und
+     * Benachrichtigungen.
+     *
+     * Die Einstellungen zeigen auf die aktive Organisation — dort wird
+     * eingerichtet, was für alle darunter gilt. Ohne Organisation bleibt die
+     * Übersicht als Ziel: von dort führt der Weg zur ersten. Umgeräumt werden
+     * die Einstellungsseiten selbst in U6.
+     *
+     * @return list<array{label: string, href: string, active: bool, icon?: string}>
+     */
+    private static function footer(?Organization $current): array
+    {
+        $settings = $current === null
+            ? ['route' => 'organizations.index', 'activePattern' => 'organizations.index']
+            : ['route' => 'organizations.show', 'params' => [$current], 'activePattern' => 'organizations.show'];
+
+        return self::withExisting([
+            [
+                'label' => __('nav.footer.settings'),
+                'icon' => 'settings',
+                ...$settings,
+            ],
+            [
+                'label' => __('nav.footer.notifications'),
+                'route' => 'notifications.preferences',
+                'activePattern' => 'notifications.preferences*',
+                'icon' => 'bell',
+            ],
+        ]);
+    }
+
+    /**
      * Einträge des Nutzer-Menüs (Dropdown rechts, im Mobil-Menü unten).
      *
      * @return list<array{label: string, href: string, active: bool, icon?: string}>
@@ -259,12 +378,9 @@ final class ShellData
                 'activePattern' => 'operations.*',
                 'icon' => 'pulse',
             ]] : []),
-            [
-                'label' => __('nav.menu_items.notifications'),
-                'route' => 'notifications.preferences',
-                'activePattern' => 'notifications.preferences*',
-                'icon' => 'bell',
-            ],
+            // Die Benachrichtigungen stehen seit U2 als eigener Anker im Fuß der
+            // Leiste (self::footer) und hier deshalb nicht mehr: derselbe Weg
+            // zweimal in derselben Leiste ist einer zu viel.
             [
                 'label' => __('nav.menu_items.api_tokens'),
                 'route' => 'api-tokens.index',
@@ -284,7 +400,10 @@ final class ShellData
      * Baut Links aus Routen-Namen und lässt Einträge weg, deren Route (noch)
      * nicht existiert.
      *
-     * @param  list<array{label: string, route: string, activePattern: string, icon?: string}>  $entries
+     * `params` braucht nur, wer auf eine Route mit Platzhalter zeigt — etwa die
+     * Einstellungen der aktiven Organisation.
+     *
+     * @param  list<array{label: string, route: string, activePattern: string, params?: array<array-key, mixed>, icon?: string}>  $entries
      * @return list<array{label: string, href: string, active: bool, icon?: string}>
      */
     private static function withExisting(array $entries): array
@@ -298,7 +417,7 @@ final class ShellData
 
             $link = [
                 'label' => $entry['label'],
-                'href' => route($entry['route']),
+                'href' => route($entry['route'], $entry['params'] ?? []),
                 'active' => request()->routeIs($entry['activePattern']),
             ];
 
