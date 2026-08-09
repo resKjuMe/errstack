@@ -4,12 +4,14 @@ namespace App\Support\Ingest;
 
 use App\Enums\DiscardReason;
 use App\Enums\IngestType;
+use App\Enums\QuotaCategory;
 use App\Jobs\ProcessIngestPayload;
 use App\Models\IngestDiscard;
 use App\Models\IngestPayload;
 use App\Models\ProjectKey;
 use App\Support\Crons\CheckInIntake;
 use App\Support\Crons\CheckInPayload;
+use App\Support\Ingest\Quotas\QuotaGuard;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -42,12 +44,14 @@ final class EnvelopeIntake
      * @param  int  $maxItemBytes  Obergrenze für ein JSON-Element.
      * @param  int  $maxAttachmentBytes  Obergrenze für Anhänge und Aufzeichnungen.
      * @param  CheckInIntake  $checkIns  Verarbeitung der Cronjob-Lebenszeichen.
+     * @param  QuotaGuard  $quotas  Kontingente je Datenart (O1).
      */
     public function __construct(
         private readonly int $maxItems,
         private readonly int $maxItemBytes,
         private readonly int $maxAttachmentBytes,
         private readonly CheckInIntake $checkIns,
+        private readonly QuotaGuard $quotas,
     ) {}
 
     public static function fromConfig(): self
@@ -57,6 +61,7 @@ final class EnvelopeIntake
             maxItemBytes: (int) config('ingest.envelope.max_item_bytes'),
             maxAttachmentBytes: (int) config('ingest.envelope.max_attachment_bytes'),
             checkIns: app(CheckInIntake::class),
+            quotas: app(QuotaGuard::class),
         );
     }
 
@@ -129,6 +134,22 @@ final class EnvelopeIntake
         if (! $type->isBinary() && $item->decoded() === null) {
             $this->discard($key, DiscardReason::Unreadable, $type->value, 1, [
                 'meldung' => 'Nutzdaten des Elements sind kein JSON-Objekt.',
+            ]);
+
+            return;
+        }
+
+        // Das Kontingent zuletzt und erst hier: geprüft wird je Element und
+        // nicht je Envelope, damit ein aufgebrauchtes Kontingent der einen
+        // Datenart die anderen in derselben Anfrage nicht mitnimmt. Genau das
+        // ist die Zusage, dass ein überzogenes Transaktions-Kontingent
+        // Fehlermeldungen nicht härter trifft als eingestellt.
+        $verdict = $this->quotas->admit($key, QuotaCategory::forIngestType($type));
+
+        if ($verdict->denied()) {
+            $this->discard($key, $verdict->reason ?? DiscardReason::RateLimited, $verdict->discardCategory() ?? $type->value, 1, [
+                'ebene' => $verdict->scope?->value,
+                'wartezeit' => $verdict->retryAfter,
             ]);
 
             return;

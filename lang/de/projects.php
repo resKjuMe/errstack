@@ -123,6 +123,12 @@ return [
         'manage' => 'Regeln ansehen',
     ],
 
+    'quotas' => [
+        'title' => 'Kontingente',
+        'description' => 'Wie viel je Datenart hereinkommen darf: Monatskontingent und Rate je Minute, dazu der Verbrauch dieses Monats und die Zählung dessen, was abgewiesen wurde.',
+        'manage' => 'Kontingente ansehen',
+    ],
+
     'filters' => [
         'title' => 'Eingangsfilter',
         'description' => 'Bekanntes Rauschen — Browser-Erweiterungen, Crawler, lokale Entwicklung — wird beim Eingang verworfen und nur noch gezählt.',

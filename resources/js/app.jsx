@@ -32,6 +32,9 @@ import ProjectsAlertDetail from './shell/pages/projects/AlertDetail.jsx';
 import ProjectsCrons from './shell/pages/projects/Crons.jsx';
 import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
 import ProjectsFilters from './shell/pages/projects/Filters.jsx';
+// Eine Seite für beide Ebenen: die Kontingente eines Projekts und die einer
+// Organisation unterscheiden sich im Gegenstand, nicht im Aufbau.
+import Quotas from './shell/pages/quotas/Quotas.jsx';
 import ProjectsDigest from './shell/pages/projects/Digest.jsx';
 import ProjectsSampling from './shell/pages/projects/Sampling.jsx';
 import ProjectsPerformance from './shell/pages/projects/Performance.jsx';
@@ -106,6 +109,8 @@ const pages = {
     'projects/Crons': ProjectsCrons,
     'projects/Grouping': ProjectsGrouping,
     'projects/Filters': ProjectsFilters,
+    'projects/Quotas': Quotas,
+    'organizations/Quotas': Quotas,
     'projects/Digest': ProjectsDigest,
     'projects/Sampling': ProjectsSampling,
     'projects/Performance': ProjectsPerformance,

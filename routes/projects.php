@@ -28,6 +28,7 @@ use App\Http\Controllers\ProjectFilterController;
 use App\Http\Controllers\ProjectKeyController;
 use App\Http\Controllers\ProjectPerformanceController;
 use App\Http\Controllers\ProjectPrivacyController;
+use App\Http\Controllers\ProjectQuotaController;
 use App\Http\Controllers\ProjectSetupController;
 use App\Http\Controllers\ProjectTeamController;
 use App\Http\Controllers\SamplingRuleController;
@@ -118,6 +119,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('projects.grouping.toggle');
             Route::delete('{project}/gruppierung/{fingerprint_rule}', [FingerprintRuleController::class, 'destroy'])
                 ->name('projects.grouping.destroy');
+
+            // Kontingente (O1). Ansehen darf jedes Mitglied: ein
+            // aufgebrauchtes Kontingent ist die häufigste Erklärung dafür, dass
+            // eine Anwendung plötzlich stumm ist — und wer sie sucht, ist
+            // selten die Verwaltung.
+            Route::get('{project}/kontingente', [ProjectQuotaController::class, 'index'])
+                ->name('projects.quotas.index');
+            Route::patch('{project}/kontingente', [ProjectQuotaController::class, 'update'])
+                ->name('projects.quotas.update');
 
             // Eingangsfilter. Der Parametername ist `inbound_filter_rule` und
             // nicht `eintrag`, weil `scopeBindings` daraus die Beziehung am

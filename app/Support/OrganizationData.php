@@ -58,6 +58,11 @@ final class OrganizationData
             // Änderungsprotokoll enthalten sie keine Angaben über Personen,
             // sondern nur, welche Angaben nicht gespeichert werden.
             'privacyHref' => route('organizations.privacy.index', $organization),
+            // Die Kontingente (O1) ebenfalls für jedes Mitglied: sie sagen,
+            // wie viel diese Organisation insgesamt aufnehmen darf — und sind
+            // damit die Antwort darauf, warum ein Projekt mit großzügiger
+            // eigener Grenze trotzdem abgewiesen wird.
+            'quotasHref' => route('organizations.quotas.index', $organization),
             // Woher der Code kommt (R2). Wie die Datenschutz-Regeln darf jedes
             // Mitglied die Liste ansehen: sie sagt nur, aus welchen Repositories
             // die Auslieferungen dieser Organisation stammen.

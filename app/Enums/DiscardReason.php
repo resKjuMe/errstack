@@ -95,6 +95,28 @@ enum DiscardReason: string
      */
     case Orphaned = 'orphaned';
 
+    /**
+     * Die Ratenbegrenzung hat gegriffen: es kam in einer Minute mehr, als für
+     * diesen Schlüssel, dieses Projekt oder diese Organisation erlaubt ist (O1).
+     *
+     * Die Kategorie trägt die Datenart ({@see QuotaCategory}); bei der Grenze
+     * des Schlüssels bleibt sie leer, weil dessen Wert für alles gilt, was über
+     * ihn hereinkommt.
+     */
+    case RateLimited = 'rate_limited';
+
+    /**
+     * Das Monatskontingent dieser Datenart ist aufgebraucht (O1).
+     *
+     * Ein eigener Grund neben `rate_limited`, obwohl beide aus derselben
+     * Einstellung stammen: die Antwort darauf ist eine andere. Eine gerissene
+     * Rate ist in der nächsten Minute vorbei und heißt „zu schnell"; ein
+     * aufgebrauchtes Kontingent hält bis zum Monatsersten und heißt „zu viel".
+     * In einer Zahl zusammengefasst wüsste niemand, ob er den Absender drosseln
+     * oder das Kontingent anheben muss.
+     */
+    case QuotaExceeded = 'quota_exceeded';
+
     public function label(): string
     {
         return __('enums.discard_reason.'.$this->value);

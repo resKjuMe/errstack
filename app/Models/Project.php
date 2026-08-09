@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Platform;
+use App\Enums\QuotaScope;
 use App\Enums\ResolutionBehavior;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -329,6 +330,17 @@ class Project extends Model
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class)->withTimestamps();
+    }
+
+    /**
+     * Kontingente hängen über Ebene und Kennung an diesem Datensatz und nicht
+     * über einen Fremdschlüssel ({@see Quota}) — hinter einer Löschung räumt
+     * deshalb dieser Haken auf. Ohne ihn läge eine Grenze für eine Kennung
+     * herum, die es nicht mehr gibt.
+     */
+    protected static function booted(): void
+    {
+        self::deleted(static fn (self $model) => Quota::forget(QuotaScope::Project, $model->id));
     }
 
     /**

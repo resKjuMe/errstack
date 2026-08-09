@@ -17,6 +17,7 @@ use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationInvitationController;
 use App\Http\Controllers\OrganizationPrivacyController;
+use App\Http\Controllers\OrganizationQuotaController;
 use App\Http\Controllers\RepositoryController;
 use App\Http\Controllers\ScrubRuleController;
 use App\Http\Controllers\TeamController;
@@ -49,6 +50,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Organisationsweiter Datenschutz: Regeln, die für alle Projekte gelten.
     // Geändert und gelöscht werden sie über `scrub-rules.*` weiter unten — die
     // Regel weiß selbst, zu welcher Ebene sie gehört.
+    // Kontingente der Organisation (O1): sie gelten über allen Projekten
+    // zusammen. Ansehen darf jedes Mitglied, ändern die Verwaltung.
+    Route::get('organisationen/{organization}/kontingente', [OrganizationQuotaController::class, 'index'])
+        ->name('organizations.quotas.index');
+    Route::patch('organisationen/{organization}/kontingente', [OrganizationQuotaController::class, 'update'])
+        ->name('organizations.quotas.update');
+
     Route::get('organisationen/{organization}/datenschutz', [OrganizationPrivacyController::class, 'index'])
         ->name('organizations.privacy.index');
     Route::post('organisationen/{organization}/datenschutz/regeln', [ScrubRuleController::class, 'store'])

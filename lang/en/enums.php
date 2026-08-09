@@ -151,6 +151,22 @@ return [
         'filtered' => 'discarded by an inbound filter',
         'discarded' => 'deleted issue, discarded from now on',
         'orphaned' => 'no matching event',
+        'rate_limited' => 'rate limit',
+        'quota_exceeded' => 'quota used up',
+    ],
+
+    'quota_category' => [
+        'errors' => 'Errors',
+        'transactions' => 'Transactions',
+        'replays' => 'Replays',
+        'attachments' => 'Attachments',
+        'monitors' => 'Cron check-ins',
+    ],
+
+    'quota_scope' => [
+        'organization' => 'Organization',
+        'project' => 'Project',
+        'key' => 'Client key',
     ],
 
     'inbound_filter_kind' => [
