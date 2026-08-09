@@ -29,6 +29,7 @@ final class Translations
         'components',
         'crons',
         'dashboard',
+        'discover',
         'feedback',
         'filters',
         'grouping',
@@ -56,6 +57,7 @@ final class Translations
         'tags',
         'teams',
         'traces',
+        'uptime',
         'web_vitals',
     ];
 

@@ -129,7 +129,7 @@ erneute Zustellung eine echte zweite Chance hat.
 ## Betrieb
 
 ```
-php artisan queue:work --queue=ingest,notifications,performance,symbolication,default
+php artisan queue:work --queue=ingest,notifications,performance,symbolication,uptime,default
 php artisan ingest:status            # Rückstand, Dauern, Fehlschläge
 php artisan ingest:retry             # Gescheitertes erneut einreihen
 php artisan ingest:retry --project=7 --limit=100

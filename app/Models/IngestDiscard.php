@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\DiscardOrigin;
 use App\Enums\DiscardReason;
+use App\Support\Ingest\Spikes\SpikeSweep;
 use Database\Factories\IngestDiscardFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -48,7 +49,29 @@ class IngestDiscard extends Model
         ?string $category = null,
         int $quantity = 1,
     ): void {
-        self::record($key, DiscardOrigin::Server, $reason->value, $category, $quantity);
+        self::record($key->project_id, $key->id, DiscardOrigin::Server, $reason->value, $category, $quantity);
+    }
+
+    /**
+     * Schreibt eine Verwerfung mit, die das ganze Projekt betraf — ohne
+     * Schlüssel.
+     *
+     * Der Fall ist die Drosselung des Ausschlag-Schutzes (A7): sie ist eine
+     * Entscheidung über das Projekt und nicht über einen Schlüssel, und sie
+     * wird nicht Meldung für Meldung verbucht, sondern gesammelt je Minute
+     * ({@see SpikeSweep}) — bei einer Flut wäre die
+     * Zählung sonst teurer als das Ablegen, gegen das sie schützt. Zu diesem
+     * Zeitpunkt lässt sich nicht mehr sagen, über welchen Schlüssel die
+     * einzelnen Meldungen hereinkamen; einen davon einzutragen wäre eine
+     * erfundene Angabe.
+     */
+    public static function forProject(
+        Project $project,
+        DiscardReason $reason,
+        ?string $category = null,
+        int $quantity = 1,
+    ): void {
+        self::record($project->id, null, DiscardOrigin::Server, $reason->value, $category, $quantity);
     }
 
     /**
@@ -71,7 +94,7 @@ class IngestDiscard extends Model
             return;
         }
 
-        self::record($key, DiscardOrigin::Client, $reason, self::sanitize($category, 32), $quantity);
+        self::record($key->project_id, $key->id, DiscardOrigin::Client, $reason, self::sanitize($category, 32), $quantity);
     }
 
     /**
@@ -84,7 +107,8 @@ class IngestDiscard extends Model
      * die Auswertung summiert ohnehin.
      */
     private static function record(
-        ProjectKey $key,
+        int $projectId,
+        ?int $keyId,
         DiscardOrigin $origin,
         string $reason,
         ?string $category,
@@ -97,13 +121,14 @@ class IngestDiscard extends Model
         $bucket = self::bucket();
 
         $existing = self::query()
-            ->where('project_id', $key->project_id)
-            ->where('project_key_id', $key->id)
+            ->where('project_id', $projectId)
             ->where('origin', $origin->value)
             ->where('reason', $reason)
             ->where('bucket', $bucket)
-            // Getrennt, weil `where('category', null)` zu `category = null`
-            // wird und das nie zutrifft.
+            // Getrennt, weil `where('spalte', null)` zu `spalte = null` wird
+            // und das nie zutrifft.
+            ->when($keyId === null, fn ($query) => $query->whereNull('project_key_id'))
+            ->when($keyId !== null, fn ($query) => $query->where('project_key_id', $keyId))
             ->when($category === null, fn ($query) => $query->whereNull('category'))
             ->when($category !== null, fn ($query) => $query->where('category', $category))
             ->first();
@@ -116,8 +141,8 @@ class IngestDiscard extends Model
 
         $entry = new self;
 
-        $entry->project_id = $key->project_id;
-        $entry->project_key_id = $key->id;
+        $entry->project_id = $projectId;
+        $entry->project_key_id = $keyId;
         $entry->origin = $origin;
         $entry->reason = $reason;
         $entry->category = $category;

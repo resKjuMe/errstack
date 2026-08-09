@@ -228,7 +228,7 @@ class SettingsAreaTest extends TestCase
     }
 
     /**
-     * @return list<array{0: string, 1: string}>
+     * @return array<string, array{0: string, 1: string}>
      */
     public static function movedAddresses(): array
     {

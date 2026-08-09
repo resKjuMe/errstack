@@ -9,6 +9,7 @@ use App\Models\IngestPayload;
 use App\Support\Ingest\IngestBody;
 use App\Support\Ingest\IngestContext;
 use App\Support\Ingest\IngestResponse;
+use App\Support\Ingest\Spikes\SpikeGuard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use stdClass;
@@ -29,6 +30,8 @@ use stdClass;
  */
 class StoreController extends Controller
 {
+    public function __construct(private readonly SpikeGuard $spikes) {}
+
     public function store(Request $request): JsonResponse
     {
         $payload = IngestBody::decode($request);
@@ -47,6 +50,16 @@ class StoreController extends Controller
         // keine Kennung, unter der er seine Meldung wiederfindet.
         $eventId = IngestPayload::normalizeEventId($event->event_id ?? null)
             ?? IngestPayload::freshEventId();
+
+        // Der Ausschlag-Schutz (A7). Er steht vor dem Ablegen und trotzdem
+        // hinter der Nummer: die Antwort bleibt in jedem Fall eine 200 mit
+        // Kennung. Ein SDK, das eine Ablehnung sieht, versucht es erneut — und
+        // eine Wiederholung ist das Letzte, was eine Anwendung braucht, die
+        // gerade zu viel meldet. Stillschweigend verschwindet dabei nichts: der
+        // Schutz zählt jedes Ereignis, das er nimmt.
+        if (! $this->spikes->allows(IngestContext::key($request))) {
+            return IngestResponse::accepted($eventId);
+        }
 
         $accepted = IngestPayload::accept(
             key: IngestContext::key($request),

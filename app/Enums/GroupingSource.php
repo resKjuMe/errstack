@@ -3,6 +3,7 @@
 namespace App\Enums;
 
 use App\Models\PerformanceDetection;
+use App\Models\UptimeOutage;
 
 /**
  * Woraus der Fingerabdruck einer Meldung entstanden ist.
@@ -78,6 +79,20 @@ enum GroupingSource: string
      * ({@see PerformanceDetection}).
      */
     case Performance = 'performance';
+
+    /**
+     * Die Erreichbarkeits-Überwachung hat den Fingerabdruck gebildet (M2).
+     *
+     * Der zweite Fall, der nicht aus einer Meldung stammt, sondern aus einer
+     * Feststellung von außen. Gebildet wird er über die Kennung des Monitors:
+     * „die Startseite war weg" ist bei jedem Vorfall dieselbe Aussage und
+     * gehört deshalb in dieselbe Gruppe — wie oft es passiert ist, sagt die
+     * Häufigkeit des Eintrags.
+     *
+     * Solche Gruppen haben keine Ereignisse — ihre Belege sind die Ausfälle
+     * ({@see UptimeOutage}).
+     */
+    case Uptime = 'uptime';
 
     public function label(): string
     {

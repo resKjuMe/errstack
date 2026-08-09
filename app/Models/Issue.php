@@ -9,6 +9,7 @@ use App\Enums\IssueStatus;
 use App\Enums\PerformanceProblem;
 use App\Support\Issues\IssueActions;
 use App\Support\Tags\TagAggregates;
+use App\Support\Uptime\UptimeRecorder;
 use Carbon\CarbonImmutable;
 use Database\Factories\IssueFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -297,6 +298,88 @@ class Issue extends Model
         $group->refresh();
 
         return self::query()->findOrFail($group->issue_id);
+    }
+
+    /**
+     * Findet den Eintrag eines überwachten Ziels oder legt ihn an (M2).
+     *
+     * Derselbe Ablauf wie bei einem Fehler und bei einem Leistungsproblem, mit
+     * derselben Wettlaufsituation und derselben Lösung ({@see forGroup()}) — die
+     * Gruppe entscheidet über die bedingte Zuweisung, wer den Eintrag anlegen
+     * durfte.
+     *
+     * Die Kategorie ist `error` und nicht etwas Eigenes: ein Ausfall ist die
+     * Antwort auf „was ist kaputt?", und genau danach sucht jemand in der
+     * Fehlerliste. Der Grad ebenso — eine nicht erreichbare Anwendung ist kein
+     * Hinweis, auch dann nicht, wenn dabei nichts abgestürzt ist.
+     *
+     * Auch hier gilt: die Angaben stammen vom **ersten** Ausfall und werden
+     * nicht nachgeführt. Sie beschreiben, womit dieser Eintrag angefangen hat.
+     */
+    public static function forUptime(EventGroup $group, UptimeOutage $outage, string $title, ?string $culprit): self
+    {
+        if ($group->issue_id !== null) {
+            $existing = self::query()->find($group->issue_id);
+
+            if ($existing !== null) {
+                return $existing->head();
+            }
+        }
+
+        $issue = self::query()->create([
+            'project_id' => $group->project_id,
+            'category' => IssueCategory::Error,
+            'title' => $title,
+            'culprit' => $culprit,
+            // Die Art ist der Grund des Ausfalls. Wie die Klasse der Ausnahme
+            // bei einem Fehler beantwortet sie „was für eine Sorte Problem ist
+            // das" und trägt denselben Filter.
+            'type' => $outage->outcome->value,
+            'level' => EventLevel::Error,
+            'status' => IssueStatus::DEFAULT,
+            'priority' => IssuePriority::DEFAULT,
+            'first_seen' => $outage->started_at,
+            'last_seen' => $outage->started_at,
+            'for_review_at' => CarbonImmutable::now(),
+        ]);
+
+        $claimed = EventGroup::query()
+            ->whereKey($group->id)
+            ->whereNull('issue_id')
+            ->update(['issue_id' => $issue->id]);
+
+        if ($claimed === 1) {
+            $group->issue_id = $issue->id;
+
+            return $issue;
+        }
+
+        $issue->delete();
+
+        $group->refresh();
+
+        return self::query()->findOrFail($group->issue_id);
+    }
+
+    /**
+     * Nimmt einen Ausfall in die Zähler auf.
+     *
+     * **Ohne eigenen Anspruch auf das Zählen**, wie {@see recordDetection()}:
+     * den hat der Ausfall schon beim Eröffnen erworben — es gibt je Monitor
+     * höchstens einen offenen, und diese Methode wird nur für einen **frisch
+     * eröffneten** gerufen ({@see UptimeRecorder}).
+     *
+     * Ohne Betroffene: ein Ausfall trifft alle, die es gerade versuchen, und
+     * genau die sieht die Überwachung nicht. Eine Eins an dieser Stelle wäre
+     * eine Zahl, die aussieht wie eine Messung.
+     */
+    public function recordOutage(UptimeOutage $outage): void
+    {
+        $occurred = CarbonImmutable::parse($outage->started_at)->utc();
+
+        $this->bump($occurred, EventLevel::Error);
+
+        IssueCount::record($this, $occurred);
     }
 
     /**

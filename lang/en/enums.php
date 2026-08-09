@@ -28,6 +28,8 @@ return [
         'transaction_duration_p50' => 'Response time (p50)',
         'transaction_duration_p95' => 'Response time (p95)',
         'transaction_duration_p99' => 'Response time (p99)',
+        'crash_free_sessions' => 'Crash-free sessions',
+        'crash_free_users' => 'Crash-free users',
     ],
 
     'grouping_source' => [
@@ -39,6 +41,7 @@ return [
         'fallback' => 'Title and culprit',
         'empty' => 'Nothing to tell them apart',
         'performance' => 'Performance detection',
+        'uptime' => 'Uptime monitoring',
     ],
 
     'api_scope' => [
@@ -129,6 +132,22 @@ return [
         'disabled' => 'turned off',
     ],
 
+    'uptime_status' => [
+        'unknown' => 'not checked yet',
+        'up' => 'reachable',
+        'degraded' => 'flaky',
+        'down' => 'down',
+        'disabled' => 'turned off',
+    ],
+
+    'uptime_check_outcome' => [
+        'up' => 'reachable',
+        'connection_failed' => 'unreachable',
+        'timeout' => 'timeout',
+        'status_mismatch' => 'unexpected status code',
+        'content_mismatch' => 'expected text missing',
+    ],
+
     'delivery_status' => [
         'pending' => 'in transit',
         'sent' => 'delivered',
@@ -150,6 +169,7 @@ return [
         'scrubbed' => 'not stored for privacy reasons',
         'filtered' => 'discarded by an inbound filter',
         'discarded' => 'deleted issue, discarded from now on',
+        'throttled' => 'throttled by spike protection',
         'orphaned' => 'no matching event',
     ],
 
@@ -201,6 +221,14 @@ return [
         'client_report' => 'Client report of the SDK',
         'user_report' => 'User feedback',
         'feedback' => 'User feedback (new form)',
+    ],
+
+    'session_status' => [
+        'ok' => 'running',
+        'exited' => 'ended',
+        'errored' => 'ended with errors',
+        'crashed' => 'crashed',
+        'abnormal' => 'ended abnormally',
     ],
 
     'user_report_status' => [
@@ -494,6 +522,27 @@ return [
         'good' => 'Good',
         'needs_improvement' => 'Needs improvement',
         'poor' => 'Poor',
+    ],
+    'discover_dataset' => [
+        'errors' => 'Errors',
+        'transactions' => 'Transactions (single measurements)',
+        'transaction_windows' => 'Transactions (minute windows)',
+        'user_reports' => 'User reports',
+    ],
+
+    'discover_aggregate' => [
+        'count' => 'Count',
+        'count_unique' => 'Distinct values',
+        'sum' => 'Sum',
+        'avg' => 'Average',
+        'min' => 'Minimum',
+        'max' => 'Maximum',
+        'p50' => 'p50',
+        'p75' => 'p75',
+        'p95' => 'p95',
+        'p99' => 'p99',
+        'apdex' => 'Apdex',
+        'failure_rate' => 'Failure rate',
     ],
 
 ];

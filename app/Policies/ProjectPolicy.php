@@ -58,6 +58,23 @@ class ProjectPolicy
     }
 
     /**
+     * Überwachte Ziele anlegen, ändern und löschen (M2).
+     *
+     * Dasselbe Recht wie für die Cronjob-Überwachung, und dieselbe Trennung:
+     * **ansehen** darf jedes Mitglied. Die Seite ist die Antwort auf „ist die
+     * Anwendung gerade erreichbar?", und diese Frage stellt sich während einer
+     * Störung jeder — nicht nur die Verwaltung.
+     *
+     * Warum das Ändern trotzdem beschränkt ist: ein Monitor ruft in festem Takt
+     * eine fremde Adresse auf. Wer ihn anlegen darf, kann die Anwendung Lasten
+     * an Ziele schicken lassen, die ihr nicht gehören.
+     */
+    public function manageUptime(User $user, Project $project): bool
+    {
+        return $user->can('manageProjects', $project->organization);
+    }
+
+    /**
      * Fingerprint-Regeln anlegen, ändern und löschen.
      *
      * Dasselbe Recht wie für die übrigen Einstellungen, und das ist hier keine
