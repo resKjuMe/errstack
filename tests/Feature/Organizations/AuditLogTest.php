@@ -29,7 +29,7 @@ class AuditLogTest extends TestCase
         $membership = $organization->setRole($member, OrganizationRole::Viewer);
 
         $this->actingAs($admin)
-            ->patch("/mitgliedschaften/{$membership->id}", ['role' => OrganizationRole::Member->value])
+            ->patch("/einstellungen/mitgliedschaften/{$membership->id}", ['role' => OrganizationRole::Member->value])
             ->assertSessionHasNoErrors();
 
         $entry = $this->lastEntry($organization);
@@ -55,7 +55,7 @@ class AuditLogTest extends TestCase
         $membership = $organization->setRole($member, OrganizationRole::Member);
 
         $this->actingAs($admin)
-            ->patch("/mitgliedschaften/{$membership->id}", ['role' => OrganizationRole::Member->value])
+            ->patch("/einstellungen/mitgliedschaften/{$membership->id}", ['role' => OrganizationRole::Member->value])
             ->assertSessionHasNoErrors();
 
         $this->assertSame(0, $organization->auditLogEntries()->count());
@@ -70,10 +70,10 @@ class AuditLogTest extends TestCase
         $membership = $organization->setRole($member, OrganizationRole::Member);
         $ownMembership = $organization->setRole($leaver, OrganizationRole::Viewer);
 
-        $this->actingAs($admin)->delete("/mitgliedschaften/{$membership->id}");
+        $this->actingAs($admin)->delete("/einstellungen/mitgliedschaften/{$membership->id}");
         $removed = $this->lastEntry($organization);
 
-        $this->actingAs($leaver)->delete("/mitgliedschaften/{$ownMembership->id}");
+        $this->actingAs($leaver)->delete("/einstellungen/mitgliedschaften/{$ownMembership->id}");
         $left = $this->lastEntry($organization);
 
         $this->assertSame(AuditAction::MembershipRemoved, $removed->action);
@@ -91,7 +91,7 @@ class AuditLogTest extends TestCase
         $organization = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
 
         $this->actingAs($admin)
-            ->post("/organisationen/{$organization->slug}/einladungen", [
+            ->post("/einstellungen/organisationen/{$organization->slug}/einladungen", [
                 'email' => 'neu@example.com',
                 'role' => OrganizationRole::Viewer->value,
             ])
@@ -100,12 +100,12 @@ class AuditLogTest extends TestCase
         $invitation = $organization->invitations()->firstOrFail();
         $sent = $this->lastEntry($organization);
 
-        $this->actingAs($admin)->patch("/einladungen/{$invitation->id}", [
+        $this->actingAs($admin)->patch("/einstellungen/einladungen/{$invitation->id}", [
             'role' => OrganizationRole::Member->value,
         ]);
         $changed = $this->lastEntry($organization);
 
-        $this->actingAs($admin)->delete("/einladungen/{$invitation->id}");
+        $this->actingAs($admin)->delete("/einstellungen/einladungen/{$invitation->id}");
         $revoked = $this->lastEntry($organization);
 
         $this->assertSame(AuditAction::InvitationSent, $sent->action);
@@ -143,18 +143,18 @@ class AuditLogTest extends TestCase
     {
         $owner = User::factory()->create();
 
-        $this->actingAs($owner)->post('/organisationen', ['name' => 'Nordlicht']);
+        $this->actingAs($owner)->post('/einstellungen/organisationen', ['name' => 'Nordlicht']);
         $organization = Organization::query()->where('name', 'Nordlicht')->firstOrFail();
 
-        $this->actingAs($owner)->patch("/organisationen/{$organization->slug}", ['name' => 'Südlicht']);
-        $this->actingAs($owner)->post("/organisationen/{$organization->slug}/teams", ['name' => 'Bereitschaft']);
+        $this->actingAs($owner)->patch("/einstellungen/organisationen/{$organization->slug}", ['name' => 'Südlicht']);
+        $this->actingAs($owner)->post("/einstellungen/organisationen/{$organization->slug}/teams", ['name' => 'Bereitschaft']);
 
         $team = $organization->teams()->firstOrFail();
 
-        $this->actingAs($owner)->patch("/teams/{$team->id}", ['name' => 'Rufbereitschaft']);
-        $this->actingAs($owner)->post("/teams/{$team->id}/mitglieder", ['user_id' => $owner->id]);
-        $this->actingAs($owner)->delete("/teams/{$team->id}/mitglieder/{$owner->id}");
-        $this->actingAs($owner)->delete("/teams/{$team->id}");
+        $this->actingAs($owner)->patch("/einstellungen/teams/{$team->id}", ['name' => 'Rufbereitschaft']);
+        $this->actingAs($owner)->post("/einstellungen/teams/{$team->id}/mitglieder", ['user_id' => $owner->id]);
+        $this->actingAs($owner)->delete("/einstellungen/teams/{$team->id}/mitglieder/{$owner->id}");
+        $this->actingAs($owner)->delete("/einstellungen/teams/{$team->id}");
 
         $this->assertSame([
             AuditAction::OrganizationCreated,
@@ -173,7 +173,7 @@ class AuditLogTest extends TestCase
         $organization = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
         $team = Team::factory()->for($organization)->create(['name' => 'Bereitschaft']);
 
-        $this->actingAs($admin)->delete("/teams/{$team->id}");
+        $this->actingAs($admin)->delete("/einstellungen/teams/{$team->id}");
 
         $entry = $this->lastEntry($organization);
 
@@ -236,7 +236,7 @@ class AuditLogTest extends TestCase
 
         $this->travelBack();
 
-        $url = "/organisationen/{$organization->slug}/protokoll";
+        $url = "/einstellungen/organisationen/{$organization->slug}/protokoll";
 
         $this->actingAs($admin)
             ->get("{$url}?actor={$admin->id}")
@@ -264,7 +264,7 @@ class AuditLogTest extends TestCase
         $organization = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
 
         $this->actingAs($admin)
-            ->get("/organisationen/{$organization->slug}/protokoll?from=2026-03-20&to=2026-03-10")
+            ->get("/einstellungen/organisationen/{$organization->slug}/protokoll?from=2026-03-20&to=2026-03-10")
             ->assertSessionHasErrors('to');
     }
 
@@ -284,7 +284,7 @@ class AuditLogTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin)
-            ->get("/organisationen/{$organization->slug}/protokoll/export?action=".AuditAction::TeamCreated->value);
+            ->get("/einstellungen/organisationen/{$organization->slug}/protokoll/export?action=".AuditAction::TeamCreated->value);
 
         $response->assertOk();
         $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
@@ -302,7 +302,7 @@ class AuditLogTest extends TestCase
     public function test_only_the_administration_sees_the_log(): void
     {
         $organization = Organization::factory()->create();
-        $url = "/organisationen/{$organization->slug}/protokoll";
+        $url = "/einstellungen/organisationen/{$organization->slug}/protokoll";
 
         foreach ([OrganizationRole::Member, OrganizationRole::Viewer] as $role) {
             $user = User::factory()->create();
@@ -330,13 +330,13 @@ class AuditLogTest extends TestCase
         $organization->setRole($member, OrganizationRole::Member);
 
         $this->actingAs($admin)
-            ->get("/organisationen/{$organization->slug}")
+            ->get("/einstellungen/organisationen/{$organization->slug}")
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('permissions.viewAuditLog', true)
                 ->where('auditLogHref', route('organizations.audit-log.index', $organization)));
 
         $this->actingAs($member)
-            ->get("/organisationen/{$organization->slug}")
+            ->get("/einstellungen/organisationen/{$organization->slug}")
             ->assertInertia(fn (AssertableInertia $page) => $page->where('permissions.viewAuditLog', false));
     }
 
@@ -350,7 +350,7 @@ class AuditLogTest extends TestCase
         AuditLogEntry::factory()->for($foreign)->create();
 
         $this->actingAs($admin)
-            ->get("/organisationen/{$organization->slug}/protokoll")
+            ->get("/einstellungen/organisationen/{$organization->slug}/protokoll")
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('entries.data', fn (Collection $entries): bool => $entries->count() === 1));
     }

@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Http\Middleware\SettingsArea;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
@@ -11,7 +12,6 @@ use App\Support\Filters\RememberedFilter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
 /**
@@ -67,6 +67,11 @@ final class ShellData
             'menu' => self::menu(),
             'org' => $user === null ? null : self::org($user, $organization),
             'footer' => self::footer($organization),
+            // Die Unter-Navigation des Einstellungsbereichs — und zugleich das
+            // Zeichen, dass diese Seite eine Einstellungsseite ist: die Hülle
+            // zeichnet daraufhin den zweiten Rahmen und keine Filterleiste.
+            // Überall sonst steht hier null, und die Seiten sehen aus wie bisher.
+            'settings' => SettingsArea::active() ? SettingsNav::build() : null,
             'labels' => [
                 'guest' => __('nav.guest'),
                 'signIn' => __('nav.sign_in'),
@@ -132,8 +137,14 @@ final class ShellData
      *
      * Die Gruppen folgen der Frage, was man gerade tut: laufend hinsehen
      * (Überwachen), einer Auffälligkeit nachgehen (Untersuchen), eine
-     * Auslieferung nachvollziehen (Ausliefern), den Rahmen einrichten
-     * (Verwalten). Die Übersicht steht als Einstieg ohne Gruppe darüber.
+     * Auslieferung nachvollziehen (Ausliefern). Die Übersicht steht als Einstieg
+     * ohne Gruppe darüber.
+     *
+     * Was eingerichtet wird, steht seit U6 nicht mehr darunter: „Projekte" und
+     * „Organisationen" waren als Punkte neben „Fehler" die Einladung, das eine
+     * für das andere zu halten. Sie liegen jetzt im Einstellungsbereich, den der
+     * Anker im Fuß der Leiste öffnet ({@see footer()}). Hier steht nur noch,
+     * wozu man Daten ansieht.
      *
      * Eine Gruppe, deren Einträge sämtlich auf noch fehlende Routen zeigen,
      * fällt samt Überschrift weg — sonst stünde in der Leiste eine leere
@@ -186,6 +197,17 @@ final class ShellData
                 'label' => __('nav.groups.investigate'),
                 'entries' => [
                     [
+                        // Die freie Auswertung steht vor den fest gebauten
+                        // Seiten der Gruppe: sie beantwortet die Fragen, die
+                        // dort nicht vorgesehen sind, und ist damit der
+                        // Einstieg und nicht der Nachtrag.
+                        'label' => __('nav.links.discover'),
+                        'route' => 'discover.index',
+                        'activePattern' => 'discover.*',
+                        'icon' => 'discover',
+                        'filtered' => true,
+                    ],
+                    [
                         'label' => __('nav.links.performance'),
                         'route' => 'performance.index',
                         // Nicht `performance.*`: darunter läge auch die
@@ -227,29 +249,6 @@ final class ShellData
                         'activePattern' => 'releases.*',
                         'icon' => 'releases',
                         'filtered' => true,
-                    ],
-                ],
-            ],
-            [
-                'label' => __('nav.groups.manage'),
-                'entries' => [
-                    [
-                        'label' => __('nav.links.projects'),
-                        'route' => 'projects.index',
-                        'activePattern' => 'projects.*',
-                        'icon' => 'projects',
-                    ],
-                    [
-                        'label' => __('nav.links.organizations'),
-                        'route' => 'organizations.index',
-                        'activePattern' => 'organizations.*',
-                        'icon' => 'organizations',
-                    ],
-                    [
-                        'label' => __('nav.links.components'),
-                        'route' => 'components',
-                        'activePattern' => 'components',
-                        'icon' => 'components',
                     ],
                 ],
             ],
@@ -344,10 +343,11 @@ final class ShellData
      * Die festen Anker im Fuß der Seitenleiste: Einstellungen und
      * Benachrichtigungen.
      *
-     * Die Einstellungen zeigen auf die aktive Organisation — dort wird
-     * eingerichtet, was für alle darunter gilt. Ohne Organisation bleibt die
-     * Übersicht als Ziel: von dort führt der Weg zur ersten. Umgeräumt werden
-     * die Einstellungsseiten selbst in U6.
+     * Die Einstellungen öffnen den Bereich bei den Stammdaten der aktiven
+     * Organisation — dort wird eingerichtet, was für alle darunter gilt, und von
+     * dort führt die Unter-Navigation ({@see SettingsNav}) zu allem Übrigen.
+     * Ohne Organisation bleibt die Liste als Ziel: von dort führt der Weg zur
+     * ersten.
      *
      * @return list<array{label: string, href: string, active: bool, icon?: string}>
      */
@@ -400,12 +400,16 @@ final class ShellData
             // Die Benachrichtigungen stehen seit U2 als eigener Anker im Fuß der
             // Leiste (self::footer) und hier deshalb nicht mehr: derselbe Weg
             // zweimal in derselben Leiste ist einer zu viel.
-            [
-                'label' => __('nav.menu_items.api_tokens'),
-                'route' => 'api-tokens.index',
-                'activePattern' => 'api-tokens.*',
-                'icon' => 'key',
-            ],
+            //
+            // Die Zugriffstoken standen bis U6 hier. Sie sind mit allem anderen,
+            // was eingerichtet wird, in den Einstellungsbereich gewandert
+            // (Gruppe „Konto"): ein Token ist eine Einstellung und kein
+            // Menüpunkt, und wer eines sucht, sucht es nicht hinter dem eigenen
+            // Namen.
+            //
+            // Das Profil bleibt: es ist das Konto selbst, und der kurze Weg
+            // dorthin gehört in das Menü, das den Namen trägt. In der
+            // Unter-Navigation der Einstellungen steht es zusätzlich.
             [
                 'label' => __('nav.menu_items.components'),
                 'route' => 'components',
@@ -416,64 +420,39 @@ final class ShellData
     }
 
     /**
-     * Steht für diese Anfrage eine Organisation fest? Die Fachseiten liegen unter
-     * `/organisationen/{organisation}/…`, und ihre Adressen entstehen aus der
-     * Vorbelegung, die App\Http\Middleware\ResolveOrganization hinterlegt. Ohne
-     * sie — auf den Gast-Seiten und bei einem Konto ohne Mitgliedschaft — gibt es
-     * diese Adressen nicht, und ein Link darauf wäre keiner.
+     * Steht für diese Anfrage eine Organisation fest?
+     *
+     * @see NavLinks::hasOrganization()
      */
     private static function hasOrganization(): bool
     {
-        return filled(URL::getDefaultParameters()['organization'] ?? null);
+        return NavLinks::hasOrganization();
     }
 
     /**
-     * Baut Links aus Routen-Namen und lässt Einträge weg, deren Route (noch)
-     * nicht existiert — oder die eine Organisation brauchen, die es gerade nicht
-     * gibt.
+     * Baut Links aus Routen-Namen und lässt weg, was es (noch) nicht gibt.
      *
-     * `params` braucht nur, wer auf eine Route mit Platzhalter zeigt — etwa die
-     * Einstellungen der aktiven Organisation.
+     * Dieselbe Stelle, die auch die Unter-Navigation des Einstellungsbereichs
+     * benutzt ({@see SettingsNav}) — beide Leisten sollen bei einer fehlenden
+     * Route dasselbe tun, nämlich schweigen.
      *
      * `filtered` markiert die Auswertungsseiten: ihre Links tragen den Filter
      * dieses Aufrufs mit, damit die Auswahl den Seitenwechsel übersteht. Der
      * Grund, warum das nicht dem gemerkten Stand allein überlassen bleibt, steht
-     * bei {@see self::filtered()}.
+     * bei {@see self::filtered()}. Die Unter-Navigation der Einstellungen kennt
+     * das Kennzeichen nicht — dort gibt es nichts zu filtern.
      *
-     * @param  list<array{label: string, route: string, activePattern: string, params?: array<array-key, mixed>, icon?: string, filtered?: bool}>  $entries
+     * @param  list<array{label: string, route: string, activePattern: string|list<string>, params?: array<array-key, mixed>, icon?: string, filtered?: bool}>  $entries
      * @return list<array{label: string, href: string, active: bool, icon?: string}>
      */
     private static function withExisting(array $entries): array
     {
-        $links = [];
-
-        foreach ($entries as $entry) {
-            $route = Route::getRoutes()->getByName($entry['route']);
-
-            if ($route === null) {
-                continue;
-            }
-
-            if (! self::hasOrganization() && in_array('organization', $route->parameterNames(), true)) {
-                continue;
-            }
-
-            $href = route($entry['route'], $entry['params'] ?? []);
-
-            $link = [
-                'label' => $entry['label'],
-                'href' => ($entry['filtered'] ?? false) ? self::filtered($href) : $href,
-                'active' => request()->routeIs($entry['activePattern']),
-            ];
-
-            if (isset($entry['icon'])) {
-                $link['icon'] = $entry['icon'];
-            }
-
-            $links[] = $link;
-        }
-
-        return $links;
+        return NavLinks::build(
+            $entries,
+            fn (string $href, array $entry): string => ($entry['filtered'] ?? false)
+                ? self::filtered($href)
+                : $href,
+        );
     }
 
     /**

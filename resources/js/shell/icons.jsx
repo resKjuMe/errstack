@@ -272,6 +272,17 @@ const MENU_ICONS = {
             <circle cx="7" cy="7" r="1.2" />
         </>
     ),
+    // Freie Auswertung: die Lupe über einem Balkendiagramm — selbst
+    // zusammengestellte Zahlen, nicht eine fertige Ansicht.
+    discover: (
+        <>
+            <path d="M4 20V10" />
+            <path d="M9 20v-6" />
+            <path d="M14 20V4" />
+            <circle cx="18" cy="15" r="3" />
+            <path d="m20.2 17.2 1.8 1.8" />
+        </>
+    ),
     // Leistung: die Anzeige eines Tachometers.
     performance: (
         <>

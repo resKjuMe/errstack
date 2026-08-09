@@ -38,7 +38,7 @@ class FingerprintRuleTest extends TestCase
 
     private function path(Organization $organization, Project $project): string
     {
-        return "/organisationen/{$organization->slug}/projekte/{$project->slug}/gruppierung";
+        return "/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}/gruppierung";
     }
 
     /**

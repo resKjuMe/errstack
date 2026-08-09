@@ -37,7 +37,7 @@ nicht mit.**
 
 | Ebene | Wo eingestellt | Gilt für |
 |---|---|---|
-| Organisation | `/organisationen/{organisation}/kontingente` | alle Projekte zusammen, je Datenart |
+| Organisation | `/einstellungen/organisationen/{organisation}/kontingente` | alle Projekte zusammen, je Datenart |
 | Projekt | `…/projekte/{projekt}/kontingente` | dieses Projekt, je Datenart |
 | Client-Schlüssel | Schlüssel-Seite (`rate_limit_per_minute`) | alles, was über ihn hereinkommt |
 

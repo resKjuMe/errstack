@@ -49,6 +49,7 @@ import PerformanceIssueDetail from './shell/pages/performance/IssueDetail.jsx';
 import PerformanceTrends from './shell/pages/performance/Trends.jsx';
 import WebVitalsIndex from './shell/pages/performance/WebVitals.jsx';
 import WebVitalShow from './shell/pages/performance/WebVital.jsx';
+import DiscoverIndex from './shell/pages/discover/Index.jsx';
 import ProfilingIndex from './shell/pages/profiling/Index.jsx';
 import ProfilingShow from './shell/pages/profiling/Show.jsx';
 import ReleasesIndex from './shell/pages/releases/Index.jsx';
@@ -132,6 +133,9 @@ const pages = {
     'performance/WebVitals': WebVitalsIndex,
     'performance/WebVital': WebVitalShow,
     'performance/Trends': PerformanceTrends,
+    // Die freie Auswertung. Eine Seite und nicht zwei: Tabelle und Diagramm
+    // sind dieselbe Abfrage, einmal mit und einmal ohne Schrittweite.
+    'discover/Index': DiscoverIndex,
     // Übersicht und Einzelprofil sind zwei Seiten und nicht eine: die Übersicht
     // legt viele Profile übereinander, das Einzelprofil zeigt genau einen
     // Aufruf. Dieselbe Seite mit einer Weiche wäre an jeder zweiten Stelle eine

@@ -69,7 +69,7 @@ class IssueAlertManagementTest extends TestCase
 
     private function url(Organization $organization, Project $project, string $suffix = ''): string
     {
-        return "/organisationen/{$organization->slug}/projekte/{$project->slug}/alarmregeln".$suffix;
+        return "/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}/alarmregeln".$suffix;
     }
 
     public function test_every_member_may_look_at_the_rules(): void

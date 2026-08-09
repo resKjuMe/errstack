@@ -28,6 +28,8 @@ return [
         'transaction_duration_p50' => 'Antwortzeit (p50)',
         'transaction_duration_p95' => 'Antwortzeit (p95)',
         'transaction_duration_p99' => 'Antwortzeit (p99)',
+        'crash_free_sessions' => 'Absturzfreie Sitzungen',
+        'crash_free_users' => 'Absturzfreie Nutzer',
     ],
 
     'grouping_source' => [
@@ -235,6 +237,14 @@ return [
         'client_report' => 'Verworfen-Meldung des SDK',
         'user_report' => 'Nutzer-Rückmeldung',
         'feedback' => 'Nutzer-Rückmeldung (neue Form)',
+    ],
+
+    'session_status' => [
+        'ok' => 'läuft',
+        'exited' => 'beendet',
+        'errored' => 'mit Fehlern beendet',
+        'crashed' => 'abgestürzt',
+        'abnormal' => 'abgebrochen',
     ],
 
     'user_report_status' => [

@@ -233,7 +233,13 @@ class EnvelopeEndpointTest extends TestCase
         ]))->assertStatus(200);
 
         $this->assertSame(IngestType::Session, IngestPayload::query()->sole()->type);
-        $this->assertSame(DiscardReason::Unreadable->value, IngestDiscard::query()->sole()->reason);
+
+        // Auf die Fehlermeldung eingeschränkt: die Sitzung daneben ist heil
+        // durch die Aufnahme gekommen und wird erst später gezählt — sie nennt
+        // keine Version und taugt damit nicht für die Release-Gesundheit (R7).
+        $discard = IngestDiscard::query()->where('category', IngestType::Event->value)->sole();
+
+        $this->assertSame(DiscardReason::Unreadable->value, $discard->reason);
     }
 
     /**
@@ -516,8 +522,10 @@ class EnvelopeEndpointTest extends TestCase
 
         $this->assertSame(IngestType::Session, IngestPayload::query()->sole()->type);
 
-        $discard = IngestDiscard::query()->sole();
-        $this->assertSame(DiscardReason::TooLarge->value, $discard->reason);
+        // Wie oben auf die Fehlermeldung eingeschränkt — die Sitzung daneben
+        // wird für sich gezählt, weil sie keine Version nennt (R7).
+        $discard = IngestDiscard::query()->where('reason', DiscardReason::TooLarge->value)->sole();
+
         $this->assertSame('event', $discard->category);
     }
 

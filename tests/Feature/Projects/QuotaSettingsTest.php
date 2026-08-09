@@ -40,7 +40,7 @@ class QuotaSettingsTest extends TestCase
 
     private function url(Project $project): string
     {
-        return "/organisationen/{$project->organization->slug}/projekte/{$project->slug}/kontingente";
+        return "/einstellungen/organisationen/{$project->organization->slug}/projekte/{$project->slug}/kontingente";
     }
 
     public function test_a_member_may_look_at_the_quotas(): void
@@ -152,7 +152,7 @@ class QuotaSettingsTest extends TestCase
         /** @var Organization $organization */
         $organization = $project->organization;
 
-        $url = "/organisationen/{$organization->slug}/kontingente";
+        $url = "/einstellungen/organisationen/{$organization->slug}/kontingente";
 
         $this->get($url)
             ->assertOk()

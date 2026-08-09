@@ -12,6 +12,7 @@ use App\Support\Ingest\Processing\Steps\NormalizeEvent;
 use App\Support\Ingest\Processing\Steps\QueueSymbolication;
 use App\Support\Ingest\Processing\Steps\RecordProfile;
 use App\Support\Ingest\Processing\Steps\RecordRelease;
+use App\Support\Ingest\Processing\Steps\RecordSession;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
 use App\Support\Ingest\Processing\Steps\RecordUserReport;
 use App\Support\Ingest\Processing\Steps\SampleTransaction;
@@ -128,8 +129,9 @@ return [
     |   8. Normalisierung — Sentry-Schema in unser Modell (I4)
     |   9. Grouping      — Fingerabdruck und Gruppe bestimmen (I5)
     |  10. Aggregation   — Zähler und Issue fortschreiben (I6)
-    |  11. Version       — Auslieferung erfassen und verknüpfen (R1)
-    |  12. Rückfall      — erledigten Fehler wieder aufmachen (S8)
+    |  11. Sitzungen    — Release-Gesundheit fortschreiben (R7)
+    |  12. Version       — Auslieferung erfassen und verknüpfen (R1)
+    |  13. Rückfall      — erledigten Fehler wieder aufmachen (S8)
     |
     | Der Rückfall steht hinter der Version, weil er sie braucht: „erledigt in
     | 1.4.2" ist erst durch eine **neuere** Fassung widerlegt, und welche das
@@ -194,6 +196,11 @@ return [
             // eine Meldung über einen neuen Fehler schon weiß, wer sich
             // kümmert.
             AssignOwner::class,
+            // Die Sitzungen (R7) unmittelbar vor der Version, weil beide
+            // dasselbe tun — die eine Seite aus Fehlern und Antwortzeiten, die
+            // andere aus Sitzungen —, und weil für beide dieselbe Bedingung
+            // gilt: erfasst wird nur, was Filter und Scrubbing überstanden hat.
+            RecordSession::class,
             RecordRelease::class,
             DetectRegression::class,
             RecordUserReport::class,

@@ -148,7 +148,8 @@ Liste genannt — sonst sähe sie aus, als hätte sie den Begriff ausgewertet.
 
 - **Gesundheit und Verbreitung** einer Version (wie viele Sitzungen und Nutzer
   mit ihr abstürzen, wie schnell sie sich ausbreitet) sind Fragen an die
-  Sitzungsdaten — R7.
+  Sitzungsdaten und stehen in [release-gesundheit.md](release-gesundheit.md) —
+  R7.
 - **Quellkarten und die Rückübersetzung minimierter Stacktraces** stehen in
   [quellkarten.md](quellkarten.md) — R5. Die Artefakte hängen an einer Version;
   was mit ihnen geschieht, ist eine eigene Frage.

@@ -26,6 +26,7 @@
 */
 
 use App\Http\Controllers\LegacyOrganizationRedirectController;
+use App\Http\Controllers\MovedSettingsRedirectController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -44,5 +45,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get($root.'/{legacyPath?}', LegacyOrganizationRedirectController::class)
             ->where('legacyPath', '.*')
             ->name('legacy.'.$root);
+    }
+});
+
+/*
+| Und die Verwaltungsseiten, die mit U6 in den Einstellungsbereich gezogen sind
+| (`/organisationen/{slug}`, `/projekte`, `/zugriffstoken`, `/profile`, …).
+|
+| Dieselbe Bauart, derselbe Grund — nur dass hier der Anfang des Pfades getauscht
+| wird statt einer davorgesetzt ({@see MovedSettingsRedirectController}).
+|
+| Auch das steht ganz am Ende und greift damit nur, wo keine echte Route mehr
+| liegt: unter `/organisationen/{slug}/…` liegen weiterhin die Fachseiten, und
+| die beantworten ihre Adressen selbst.
+*/
+Route::middleware('auth')->group(function () {
+    foreach (MovedSettingsRedirectController::roots() as $root) {
+        Route::get($root.'/{movedPath?}', MovedSettingsRedirectController::class)
+            ->where('movedPath', '.*')
+            ->name('moved.'.$root);
     }
 });

@@ -28,6 +28,8 @@ return [
         'transaction_duration_p50' => 'Response time (p50)',
         'transaction_duration_p95' => 'Response time (p95)',
         'transaction_duration_p99' => 'Response time (p99)',
+        'crash_free_sessions' => 'Crash-free sessions',
+        'crash_free_users' => 'Crash-free users',
     ],
 
     'grouping_source' => [
@@ -235,6 +237,14 @@ return [
         'client_report' => 'Client report of the SDK',
         'user_report' => 'User feedback',
         'feedback' => 'User feedback (new form)',
+    ],
+
+    'session_status' => [
+        'ok' => 'running',
+        'exited' => 'ended',
+        'errored' => 'ended with errors',
+        'crashed' => 'crashed',
+        'abnormal' => 'ended abnormally',
     ],
 
     'user_report_status' => [
