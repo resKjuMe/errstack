@@ -20,7 +20,7 @@ class NotificationChannelTest extends TestCase
         $organization = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
 
         $this->actingAs($admin)
-            ->post("/organisationen/{$organization->slug}/benachrichtigungen", [
+            ->post("/einstellungen/organisationen/{$organization->slug}/benachrichtigungen", [
                 'type' => 'slack',
                 'name' => 'Bereitschaft',
                 'config' => ['webhook_url' => 'https://hooks.slack.com/services/T000/B000/xxx'],
@@ -41,7 +41,7 @@ class NotificationChannelTest extends TestCase
         $organization = Organization::factory()->withMember($member, OrganizationRole::Member)->create();
 
         $this->actingAs($member)
-            ->post("/organisationen/{$organization->slug}/benachrichtigungen", [
+            ->post("/einstellungen/organisationen/{$organization->slug}/benachrichtigungen", [
                 'type' => 'slack',
                 'name' => 'Heimlich',
                 'config' => ['webhook_url' => 'https://hooks.slack.com/services/T000/B000/xxx'],
@@ -57,7 +57,7 @@ class NotificationChannelTest extends TestCase
         $organization = Organization::factory()->withMember(User::factory()->create())->create();
 
         $this->actingAs($outsider)
-            ->get("/organisationen/{$organization->slug}/benachrichtigungen")
+            ->get("/einstellungen/organisationen/{$organization->slug}/benachrichtigungen")
             ->assertForbidden();
     }
 
@@ -71,7 +71,7 @@ class NotificationChannelTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin)
-            ->get("/organisationen/{$organization->slug}/benachrichtigungen")
+            ->get("/einstellungen/organisationen/{$organization->slug}/benachrichtigungen")
             ->assertOk();
 
         $response->assertInertia(
@@ -96,7 +96,7 @@ class NotificationChannelTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->patch("/benachrichtigungen/{$channel->id}", [
+            ->patch("/einstellungen/benachrichtigungen/{$channel->id}", [
                 'name' => 'Neu',
                 'is_active' => true,
                 'config' => ['url' => 'https://example.com/anders', 'secret' => ''],
@@ -117,7 +117,7 @@ class NotificationChannelTest extends TestCase
 
         // Eine Discord-URL ist für Slack keine gültige Adresse.
         $this->actingAs($admin)
-            ->post("/organisationen/{$organization->slug}/benachrichtigungen", [
+            ->post("/einstellungen/organisationen/{$organization->slug}/benachrichtigungen", [
                 'type' => 'slack',
                 'name' => 'Falsch',
                 'config' => ['webhook_url' => 'https://discord.com/api/webhooks/1/xxx'],
@@ -133,7 +133,7 @@ class NotificationChannelTest extends TestCase
         $organization = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
 
         $this->actingAs($admin)
-            ->post("/organisationen/{$organization->slug}/benachrichtigungen", [
+            ->post("/einstellungen/organisationen/{$organization->slug}/benachrichtigungen", [
                 'type' => 'brieftaube',
                 'name' => 'Luftpost',
                 'config' => [],
@@ -147,7 +147,7 @@ class NotificationChannelTest extends TestCase
         $organization = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
 
         $this->actingAs($admin)
-            ->post("/organisationen/{$organization->slug}/benachrichtigungen", [
+            ->post("/einstellungen/organisationen/{$organization->slug}/benachrichtigungen", [
                 'type' => 'mail',
                 'name' => 'Verteiler',
                 'config' => ['recipients' => "team@example.com\nbereitschaft@example.com"],
@@ -167,7 +167,7 @@ class NotificationChannelTest extends TestCase
         NotificationChannel::factory()->for($organization)->create(['name' => 'Bereitschaft']);
 
         $this->actingAs($admin)
-            ->post("/organisationen/{$organization->slug}/benachrichtigungen", [
+            ->post("/einstellungen/organisationen/{$organization->slug}/benachrichtigungen", [
                 'type' => 'slack',
                 'name' => 'Bereitschaft',
                 'config' => ['webhook_url' => 'https://hooks.slack.com/services/T000/B000/xxx'],
@@ -178,7 +178,7 @@ class NotificationChannelTest extends TestCase
         $other = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
 
         $this->actingAs($admin)
-            ->post("/organisationen/{$other->slug}/benachrichtigungen", [
+            ->post("/einstellungen/organisationen/{$other->slug}/benachrichtigungen", [
                 'type' => 'slack',
                 'name' => 'Bereitschaft',
                 'config' => ['webhook_url' => 'https://hooks.slack.com/services/T000/B000/xxx'],
@@ -193,7 +193,7 @@ class NotificationChannelTest extends TestCase
         $channel = NotificationChannel::factory()->for($organization)->create();
 
         $this->actingAs($admin)
-            ->delete("/benachrichtigungen/{$channel->id}")
+            ->delete("/einstellungen/benachrichtigungen/{$channel->id}")
             ->assertSessionHasNoErrors();
 
         $this->assertDatabaseCount('notification_channels', 0);
@@ -206,7 +206,7 @@ class NotificationChannelTest extends TestCase
         NotificationChannel::factory()->for($organization)->create();
 
         $this->actingAs($viewer)
-            ->get("/organisationen/{$organization->slug}/benachrichtigungen")
+            ->get("/einstellungen/organisationen/{$organization->slug}/benachrichtigungen")
             ->assertOk()
             ->assertInertia(
                 fn (AssertableInertia $page) => $page

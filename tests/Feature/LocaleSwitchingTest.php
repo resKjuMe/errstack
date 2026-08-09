@@ -23,7 +23,7 @@ class LocaleSwitchingTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'en']);
 
-        $response = $this->actingAs($user)->get('/profile')->assertOk();
+        $response = $this->actingAs($user)->get('/einstellungen/konto/profil')->assertOk();
 
         $props = self::propsOf($response);
 
@@ -39,7 +39,7 @@ class LocaleSwitchingTest extends TestCase
 
         $props = self::propsOf(
             $this->actingAs($user)
-                ->get('/profile', ['Accept-Language' => 'en-US,en;q=0.9'])
+                ->get('/einstellungen/konto/profil', ['Accept-Language' => 'en-US,en;q=0.9'])
                 ->assertOk(),
         );
 
@@ -56,7 +56,7 @@ class LocaleSwitchingTest extends TestCase
 
         $props = self::propsOf(
             $this->actingAs($user)
-                ->get('/profile', ['Accept-Language' => 'fr-FR,fr;q=0.9'])
+                ->get('/einstellungen/konto/profil', ['Accept-Language' => 'fr-FR,fr;q=0.9'])
                 ->assertOk(),
         );
 
@@ -85,7 +85,7 @@ class LocaleSwitchingTest extends TestCase
 
         $props = self::propsOf(
             $this->actingAs($user)
-                ->get('/profile', ['Accept-Language' => 'en-US,en;q=0.9'])
+                ->get('/einstellungen/konto/profil', ['Accept-Language' => 'en-US,en;q=0.9'])
                 ->assertOk(),
         );
 
@@ -97,24 +97,24 @@ class LocaleSwitchingTest extends TestCase
         $user = User::factory()->create(['locale' => null]);
 
         $this->actingAs($user)
-            ->patch('/profile', [
+            ->patch('/einstellungen/konto/profil', [
                 'name' => $user->name,
                 'email' => $user->email,
                 'locale' => 'en',
             ])
-            ->assertRedirect('/profile');
+            ->assertRedirect('/einstellungen/konto/profil');
 
         $this->assertSame('en', $user->refresh()->locale);
 
         // Und wieder zurück auf „keine eigene Wahl": das leere Auswahlfeld
         // kommt als leerer Text an und darf nicht als Sprache landen.
         $this->actingAs($user)
-            ->patch('/profile', [
+            ->patch('/einstellungen/konto/profil', [
                 'name' => $user->name,
                 'email' => $user->email,
                 'locale' => '',
             ])
-            ->assertRedirect('/profile');
+            ->assertRedirect('/einstellungen/konto/profil');
 
         $this->assertNull($user->refresh()->locale);
     }
@@ -124,8 +124,8 @@ class LocaleSwitchingTest extends TestCase
         $user = User::factory()->create(['locale' => 'de']);
 
         $this->actingAs($user)
-            ->from('/profile')
-            ->patch('/profile', [
+            ->from('/einstellungen/konto/profil')
+            ->patch('/einstellungen/konto/profil', [
                 'name' => $user->name,
                 'email' => $user->email,
                 'locale' => 'kl',
@@ -140,7 +140,7 @@ class LocaleSwitchingTest extends TestCase
         $user = User::factory()->create(['locale' => 'en']);
 
         $this->actingAs($user)
-            ->from('/profile')
+            ->from('/einstellungen/konto/profil')
             ->put('/password', [])
             ->assertSessionHasErrors([
                 'password' => 'The password is required.',
@@ -161,12 +161,12 @@ class LocaleSwitchingTest extends TestCase
         $organization = Organization::factory()->withMember($inviter)->create();
 
         $this->actingAs($inviter)
-            ->from("/organisationen/{$organization->slug}")
-            ->post("/organisationen/{$organization->slug}/einladungen", [
+            ->from("/einstellungen/organisationen/{$organization->slug}")
+            ->post("/einstellungen/organisationen/{$organization->slug}/einladungen", [
                 'email' => $recipient->email,
                 'role' => 'member',
             ])
-            ->assertRedirect("/organisationen/{$organization->slug}");
+            ->assertRedirect("/einstellungen/organisationen/{$organization->slug}");
 
         Mail::assertQueued(
             OrganizationInvitationMail::class,

@@ -53,8 +53,12 @@ require __DIR__.'/performance.php';
 require __DIR__.'/releases.php';
 require __DIR__.'/profiling.php';
 require __DIR__.'/traces.php';
-require __DIR__.'/api-tokens.php';
 require __DIR__.'/operations.php';
+
+// Alles, was eingerichtet wird, unter `/einstellungen/…` — mit eigener
+// Unter-Navigation und ohne Filterleiste (U6). Vor den abgelösten Adressen,
+// damit deren Weiterleitungen auf etwas zeigen, das es schon gibt.
+require __DIR__.'/settings.php';
 
 // Zum Schluss: die alten, organisationslosen Adressen der Fachseiten. Sie
 // stehen hinter allem anderen, damit sie nur greifen, wo keine echte Route mehr

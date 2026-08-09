@@ -28,7 +28,7 @@ class ApiTokenTest extends TestCase
         ApiToken::issue($user, $organization, $user, 'Eigenes', [ApiScope::ProjectRead]);
         ApiToken::issue($other, $other, null, 'Fremdes', [ApiScope::ProjectRead]);
 
-        $this->actingAs($user)->get('/zugriffstoken')
+        $this->actingAs($user)->get('/einstellungen/konto/zugriffstoken')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('api-tokens/Index')
@@ -43,24 +43,24 @@ class ApiTokenTest extends TestCase
         $user = User::factory()->create();
         Organization::factory()->withMember($user)->create();
 
-        $this->actingAs($user)->post('/zugriffstoken', [
+        $this->actingAs($user)->post('/einstellungen/konto/zugriffstoken', [
             'name' => 'Aus der CI',
             'kind' => 'personal',
             'scopes' => ['project:read'],
             'expires_in_days' => null,
         ])
-            ->assertRedirect('/zugriffstoken')
+            ->assertRedirect('/einstellungen/konto/zugriffstoken')
             ->assertSessionHas('createdToken.name', 'Aus der CI');
 
         $value = session('createdToken')['value'];
         $this->assertIsString($value);
 
         // Erster Aufruf nach dem Anlegen: der Wert ist da …
-        $this->actingAs($user)->get('/zugriffstoken')
+        $this->actingAs($user)->get('/einstellungen/konto/zugriffstoken')
             ->assertInertia(fn (AssertableInertia $page) => $page->where('createdToken.value', $value));
 
         // … und beim nächsten Aufruf nicht mehr.
-        $this->actingAs($user)->get('/zugriffstoken')
+        $this->actingAs($user)->get('/einstellungen/konto/zugriffstoken')
             ->assertInertia(fn (AssertableInertia $page) => $page->where('createdToken', null));
 
         // Gespeichert ist nur der Abdruck, nie der Wert selbst.
@@ -77,14 +77,14 @@ class ApiTokenTest extends TestCase
         Organization::factory()->withMember($viewer, OrganizationRole::Viewer)->create();
 
         // Lesend darf lesende Bereiche vergeben …
-        $this->actingAs($viewer)->post('/zugriffstoken', [
+        $this->actingAs($viewer)->post('/einstellungen/konto/zugriffstoken', [
             'name' => 'Nur lesen',
             'kind' => 'personal',
             'scopes' => ['project:read'],
         ])->assertSessionHasNoErrors();
 
         // … aber keine schreibenden.
-        $this->actingAs($viewer)->post('/zugriffstoken', [
+        $this->actingAs($viewer)->post('/einstellungen/konto/zugriffstoken', [
             'name' => 'Doch schreiben',
             'kind' => 'personal',
             'scopes' => ['project:write'],
@@ -98,7 +98,7 @@ class ApiTokenTest extends TestCase
         $member = User::factory()->create();
         $organization = Organization::factory()->withMember($member, OrganizationRole::Member)->create();
 
-        $this->actingAs($member)->post('/zugriffstoken', [
+        $this->actingAs($member)->post('/einstellungen/konto/zugriffstoken', [
             'name' => 'Server',
             'kind' => 'organization',
             'scopes' => ['project:read'],
@@ -107,7 +107,7 @@ class ApiTokenTest extends TestCase
         $admin = User::factory()->create();
         $organization->setRole($admin, OrganizationRole::Admin);
 
-        $this->actingAs($admin)->post('/zugriffstoken', [
+        $this->actingAs($admin)->post('/einstellungen/konto/zugriffstoken', [
             'name' => 'Server',
             'kind' => 'organization',
             'scopes' => ['project:read'],
@@ -126,8 +126,8 @@ class ApiTokenTest extends TestCase
 
         $payload = ['name' => 'Doppelt', 'kind' => 'personal', 'scopes' => ['project:read']];
 
-        $this->actingAs($user)->post('/zugriffstoken', $payload)->assertSessionHasNoErrors();
-        $this->actingAs($user)->post('/zugriffstoken', $payload)->assertSessionHasErrors('name');
+        $this->actingAs($user)->post('/einstellungen/konto/zugriffstoken', $payload)->assertSessionHasNoErrors();
+        $this->actingAs($user)->post('/einstellungen/konto/zugriffstoken', $payload)->assertSessionHasErrors('name');
     }
 
     public function test_the_own_token_can_be_revoked(): void
@@ -137,8 +137,8 @@ class ApiTokenTest extends TestCase
         $token = ApiToken::issue($user, $organization, $user, 'Weg damit', [ApiScope::ProjectRead]);
 
         $this->actingAs($user)
-            ->delete('/zugriffstoken/'.$token->accessToken->getKey())
-            ->assertRedirect('/zugriffstoken');
+            ->delete('/einstellungen/konto/zugriffstoken/'.$token->accessToken->getKey())
+            ->assertRedirect('/einstellungen/konto/zugriffstoken');
 
         $this->assertSame(0, ApiToken::query()->count());
     }
@@ -154,7 +154,7 @@ class ApiTokenTest extends TestCase
         $token = ApiToken::issue($owner, $organization, $owner, 'Fremd', [ApiScope::ProjectRead]);
 
         $this->actingAs($member)
-            ->delete('/zugriffstoken/'.$token->accessToken->getKey())
+            ->delete('/einstellungen/konto/zugriffstoken/'.$token->accessToken->getKey())
             ->assertForbidden();
 
         $this->assertSame(1, ApiToken::query()->count());
@@ -169,14 +169,14 @@ class ApiTokenTest extends TestCase
         Organization::factory()->withMember($outsider)->create();
 
         $this->actingAs($outsider)
-            ->delete('/zugriffstoken/'.$token->accessToken->getKey())
+            ->delete('/einstellungen/konto/zugriffstoken/'.$token->accessToken->getKey())
             ->assertForbidden();
     }
 
     public function test_without_an_organization_the_page_points_to_the_organizations(): void
     {
         $this->actingAs(User::factory()->create())
-            ->get('/zugriffstoken')
-            ->assertRedirect('/organisationen');
+            ->get('/einstellungen/konto/zugriffstoken')
+            ->assertRedirect('/einstellungen/organisationen');
     }
 }

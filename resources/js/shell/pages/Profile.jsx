@@ -80,7 +80,7 @@ function ProfileInformation({ user, localeOptions, status }) {
 
     const submit = (e) => {
         e.preventDefault();
-        patch('/profile');
+        patch('/einstellungen/konto/profil');
     };
 
     return (
@@ -317,7 +317,7 @@ function DeleteAccount() {
 
     const submit = (e) => {
         e.preventDefault();
-        destroy('/profile', { errorBag: 'userDeletion', preserveScroll: true });
+        destroy('/einstellungen/konto/profil', { errorBag: 'userDeletion', preserveScroll: true });
     };
 
     return (

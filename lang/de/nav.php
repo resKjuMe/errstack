@@ -28,12 +28,48 @@ return [
         'notifications' => 'Benachrichtigungen',
     ],
 
+    // Unter-Navigation des Einstellungsbereichs (app/Support/SettingsNav).
+    'settings' => [
+        'groups' => [
+            'organization' => 'Organisation',
+            'projects' => 'Projekte',
+            'privacy' => 'Datenschutz und Aufnahme',
+            'notifications' => 'Benachrichtigungen',
+            'account' => 'Konto',
+        ],
+
+        'links' => [
+            'organization' => 'Stammdaten',
+            'organizations' => 'Alle Organisationen',
+            'audit_log' => 'Änderungsprotokoll',
+            'repositories' => 'Repositories',
+            'projects' => 'Alle Projekte',
+            'project' => 'Stammdaten',
+            'project_setup' => 'Einrichtung',
+            'project_keys' => 'Schlüssel und DSN',
+            'project_ownership' => 'Zuständigkeit',
+            'project_grouping' => 'Gruppierung',
+            'project_alerts' => 'Alarme',
+            'project_issue_alerts' => 'Alarmregeln',
+            'project_crons' => 'Cronjobs',
+            'project_performance' => 'Leistungserkennung',
+            'organization_privacy' => 'Datenschutz der Organisation',
+            'project_privacy' => 'Datenschutz des Projekts',
+            'project_filters' => 'Eingangsfilter',
+            'project_sampling' => 'Stichproben',
+            'notification_channels' => 'Kanäle der Organisation',
+            'notification_preferences' => 'Eigene Benachrichtigungen',
+            'project_digest' => 'Bündelung',
+            'profile' => 'Profil',
+            'api_tokens' => 'Zugriffstoken',
+        ],
+    ],
+
     // Überschriften der Navigationsgruppen in der Seitenleiste.
     'groups' => [
         'monitor' => 'Überwachen',
         'investigate' => 'Untersuchen',
         'ship' => 'Ausliefern',
-        'manage' => 'Verwalten',
     ],
 
     'links' => [
@@ -46,14 +82,10 @@ return [
         'performance_issues' => 'Leistungsprobleme',
         'web_vitals' => 'Ladeerlebnis',
         'profiling' => 'Profile',
-        'projects' => 'Projekte',
-        'organizations' => 'Organisationen',
-        'components' => 'Bausteine',
     ],
 
     'menu_items' => [
         'profile' => 'Profil',
-        'api_tokens' => 'Zugriffstoken',
         'operations' => 'Betrieb',
         'components' => 'Bausteine',
     ],

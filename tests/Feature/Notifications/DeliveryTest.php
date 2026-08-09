@@ -37,7 +37,7 @@ class DeliveryTest extends TestCase
         $channel = NotificationChannel::factory()->for($organization)->slack()->create();
 
         $this->actingAs($admin)
-            ->post("/benachrichtigungen/{$channel->id}/test")
+            ->post("/einstellungen/benachrichtigungen/{$channel->id}/test")
             ->assertSessionHasNoErrors();
 
         // Kein einziger Aufruf nach außen im Web-Request — genau das ist die
@@ -60,7 +60,7 @@ class DeliveryTest extends TestCase
         $channel = NotificationChannel::factory()->for($organization)->create();
 
         $this->actingAs($member)
-            ->post("/benachrichtigungen/{$channel->id}/test")
+            ->post("/einstellungen/benachrichtigungen/{$channel->id}/test")
             ->assertForbidden();
 
         Queue::assertNothingPushed();
@@ -144,7 +144,7 @@ class DeliveryTest extends TestCase
         $delivery->markFailed('Ziel war weg.');
 
         $this->actingAs($admin)
-            ->post("/zustellungen/{$delivery->id}/wiederholen")
+            ->post("/einstellungen/zustellungen/{$delivery->id}/wiederholen")
             ->assertSessionHasNoErrors();
 
         Queue::assertPushed(DeliverNotification::class);
@@ -167,7 +167,7 @@ class DeliveryTest extends TestCase
         $delivery->recordAttempt(DeliveryResult::success(200));
 
         $this->actingAs($admin)
-            ->post("/zustellungen/{$delivery->id}/wiederholen")
+            ->post("/einstellungen/zustellungen/{$delivery->id}/wiederholen")
             ->assertSessionHasNoErrors();
 
         Queue::assertNothingPushed();

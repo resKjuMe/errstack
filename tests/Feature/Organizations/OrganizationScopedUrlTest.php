@@ -238,7 +238,13 @@ class OrganizationScopedUrlTest extends TestCase
         }
 
         $this->assertNotContains('Fehler', $labels);
-        $this->assertContains('Organisationen', $labels);
         $this->assertNull($shell['undoHref']);
+
+        // Seit U6 führt die Hauptnavigation die Verwaltung nicht mehr; der Weg
+        // zur ersten Organisation steht als Anker im Fuß der Leiste.
+        $this->assertContains(
+            route('organizations.index'),
+            array_column($shell['footer'], 'href'),
+        );
     }
 }

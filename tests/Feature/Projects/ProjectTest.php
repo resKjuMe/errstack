@@ -24,7 +24,7 @@ class ProjectTest extends TestCase
         Project::createFor($organization, 'Webshop', Platform::Php);
         Project::createFor(Organization::factory()->withMember($user)->create(), 'Anderswo', Platform::Go);
 
-        $this->actingAs($user)->get('/projekte')
+        $this->actingAs($user)->get('/einstellungen/projekte')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('projects/Index')
@@ -39,7 +39,7 @@ class ProjectTest extends TestCase
 
     public function test_the_overview_stays_usable_without_an_organization(): void
     {
-        $this->actingAs(User::factory()->create())->get('/projekte')
+        $this->actingAs(User::factory()->create())->get('/einstellungen/projekte')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('projects/Index')
@@ -55,14 +55,14 @@ class ProjectTest extends TestCase
         $organization = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
 
         $this->actingAs($admin)
-            ->post("/organisationen/{$organization->slug}/projekte", [
+            ->post("/einstellungen/organisationen/{$organization->slug}/projekte", [
                 'name' => 'Webshop',
                 'platform' => 'php',
             ])
             ->assertSessionHasNoErrors()
             // Weiter in den Einrichtungs-Assistenten (O8): ein frisches Projekt
             // hat nichts einzustellen, es hat etwas anzuschließen.
-            ->assertRedirect("/organisationen/{$organization->slug}/projekte/webshop/einrichtung");
+            ->assertRedirect("/einstellungen/organisationen/{$organization->slug}/projekte/webshop/einrichtung");
 
         $project = Project::query()->where('slug', 'webshop')->firstOrFail();
 
@@ -81,7 +81,7 @@ class ProjectTest extends TestCase
         $organization = Organization::factory()->withMember($member, OrganizationRole::Member)->create();
 
         $this->actingAs($member)
-            ->post("/organisationen/{$organization->slug}/projekte", [
+            ->post("/einstellungen/organisationen/{$organization->slug}/projekte", [
                 'name' => 'Heimlich',
                 'platform' => 'php',
             ])
@@ -96,11 +96,11 @@ class ProjectTest extends TestCase
         $organization = Organization::factory()->withMember($user)->create();
 
         $this->actingAs($user)
-            ->post("/organisationen/{$organization->slug}/projekte", ['name' => '', 'platform' => ''])
+            ->post("/einstellungen/organisationen/{$organization->slug}/projekte", ['name' => '', 'platform' => ''])
             ->assertSessionHasErrors(['name', 'platform']);
 
         $this->actingAs($user)
-            ->post("/organisationen/{$organization->slug}/projekte", ['name' => 'X', 'platform' => 'cobol'])
+            ->post("/einstellungen/organisationen/{$organization->slug}/projekte", ['name' => 'X', 'platform' => 'cobol'])
             ->assertSessionHasErrors('platform');
     }
 
@@ -110,9 +110,9 @@ class ProjectTest extends TestCase
         $organization = Organization::factory()->withMember($user)->create();
         $other = Organization::factory()->withMember($user)->create();
 
-        $this->actingAs($user)->post("/organisationen/{$organization->slug}/projekte", ['name' => 'Doppelt', 'platform' => 'php']);
-        $this->actingAs($user)->post("/organisationen/{$organization->slug}/projekte", ['name' => 'Doppelt', 'platform' => 'php']);
-        $this->actingAs($user)->post("/organisationen/{$other->slug}/projekte", ['name' => 'Doppelt', 'platform' => 'php']);
+        $this->actingAs($user)->post("/einstellungen/organisationen/{$organization->slug}/projekte", ['name' => 'Doppelt', 'platform' => 'php']);
+        $this->actingAs($user)->post("/einstellungen/organisationen/{$organization->slug}/projekte", ['name' => 'Doppelt', 'platform' => 'php']);
+        $this->actingAs($user)->post("/einstellungen/organisationen/{$other->slug}/projekte", ['name' => 'Doppelt', 'platform' => 'php']);
 
         $this->assertSame(
             ['doppelt', 'doppelt-2'],
@@ -129,7 +129,7 @@ class ProjectTest extends TestCase
             $project = Project::factory()->for($organization)->create();
 
             $this->actingAs($user)
-                ->get("/organisationen/{$organization->slug}/projekte/{$project->slug}")
+                ->get("/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}")
                 ->assertOk()
                 ->assertInertia(fn (AssertableInertia $page) => $page
                     ->component('projects/Show')
@@ -143,7 +143,7 @@ class ProjectTest extends TestCase
         $project = Project::factory()->create();
 
         $this->actingAs(User::factory()->create())
-            ->get("/organisationen/{$project->organization->slug}/projekte/{$project->slug}")
+            ->get("/einstellungen/organisationen/{$project->organization->slug}/projekte/{$project->slug}")
             ->assertForbidden();
     }
 
@@ -155,7 +155,7 @@ class ProjectTest extends TestCase
         $project = Project::factory()->for($organization)->create();
 
         $this->actingAs($user)
-            ->get("/organisationen/{$other->slug}/projekte/{$project->slug}")
+            ->get("/einstellungen/organisationen/{$other->slug}/projekte/{$project->slug}")
             ->assertNotFound();
     }
 
@@ -164,7 +164,7 @@ class ProjectTest extends TestCase
         $member = User::factory()->create();
         $organization = Organization::factory()->withMember($member, OrganizationRole::Member)->create();
         $project = Project::factory()->for($organization)->create();
-        $path = "/organisationen/{$organization->slug}/projekte/{$project->slug}";
+        $path = "/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}";
 
         $this->actingAs($member)->delete($path)->assertForbidden();
         $this->assertDatabaseHas('projects', ['id' => $project->id]);
@@ -172,7 +172,7 @@ class ProjectTest extends TestCase
         $admin = User::factory()->create();
         $organization->setRole($admin, OrganizationRole::Admin);
 
-        $this->actingAs($admin)->delete($path)->assertRedirect('/projekte');
+        $this->actingAs($admin)->delete($path)->assertRedirect('/einstellungen/projekte');
         $this->assertDatabaseMissing('projects', ['id' => $project->id]);
     }
 
@@ -185,7 +185,7 @@ class ProjectTest extends TestCase
         $project->teams()->attach($team);
 
         $this->actingAs($owner)
-            ->delete("/organisationen/{$organization->slug}/projekte/{$project->slug}");
+            ->delete("/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}");
 
         $this->assertDatabaseCount('project_team', 0);
         $this->assertDatabaseHas('teams', ['id' => $team->id]);
@@ -197,13 +197,13 @@ class ProjectTest extends TestCase
         $organization = Organization::factory()->withMember($owner)->create();
         Project::factory()->for($organization)->create();
 
-        $this->actingAs($owner)->delete("/organisationen/{$organization->slug}");
+        $this->actingAs($owner)->delete("/einstellungen/organisationen/{$organization->slug}");
 
         $this->assertDatabaseCount('projects', 0);
     }
 
     public function test_the_project_pages_stay_closed_for_guests(): void
     {
-        $this->get('/projekte')->assertRedirect('/login');
+        $this->get('/einstellungen/projekte')->assertRedirect('/login');
     }
 }

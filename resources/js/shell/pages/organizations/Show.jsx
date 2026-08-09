@@ -62,7 +62,7 @@ export default function Show({
                             {t('organizations.show.repositories')}
                         </Link>
                         <Link
-                            href="/organisationen"
+                            href="/einstellungen/organisationen"
                             className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                         >
                             {t('organizations.show.all_organizations')}
@@ -227,7 +227,9 @@ function RemoveMember({ member }) {
         <DangerButton
             type="button"
             disabled={processing}
-            onClick={() => destroy(`/mitgliedschaften/${member.id}`, { preserveScroll: true })}
+            onClick={() =>
+                destroy(`/einstellungen/mitgliedschaften/${member.id}`, { preserveScroll: true })
+            }
         >
             {t(member.isSelf ? 'organizations.members.leave' : 'organizations.members.remove')}
         </DangerButton>
@@ -368,7 +370,9 @@ function WithdrawInvitation({ invitation }) {
         <DangerButton
             type="button"
             disabled={processing}
-            onClick={() => destroy(`/einladungen/${invitation.id}`, { preserveScroll: true })}
+            onClick={() =>
+                destroy(`/einstellungen/einladungen/${invitation.id}`, { preserveScroll: true })
+            }
         >
             {t('organizations.invitations.withdraw')}
         </DangerButton>

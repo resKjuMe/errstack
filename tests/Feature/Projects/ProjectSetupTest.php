@@ -37,14 +37,14 @@ class ProjectSetupTest extends TestCase
 
     private function path(Organization $organization, Project $project): string
     {
-        return "/organisationen/{$organization->slug}/projekte/{$project->slug}/einrichtung";
+        return "/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}/einrichtung";
     }
 
     public function test_a_new_project_leads_straight_into_the_wizard(): void
     {
         [$user, $organization] = $this->project();
 
-        $response = $this->actingAs($user)->post("/organisationen/{$organization->slug}/projekte", [
+        $response = $this->actingAs($user)->post("/einstellungen/organisationen/{$organization->slug}/projekte", [
             'name' => 'Kasse',
             'platform' => Platform::Node->value,
         ]);
@@ -268,7 +268,7 @@ class ProjectSetupTest extends TestCase
         [$user, $organization, $project] = $this->project();
 
         $this->actingAs($user)
-            ->get("/organisationen/{$organization->slug}/projekte/{$project->slug}")
+            ->get("/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}")
             ->assertInertia(fn (AssertableInertia $page) => $page
                 // Die Nutzlast trägt die volle Adresse (`route()`), nicht den
                 // Pfad — der Vergleich muss dieselbe Quelle nehmen.
@@ -285,7 +285,7 @@ class ProjectSetupTest extends TestCase
         [$user, $organization, $project] = $this->project(OrganizationRole::Member);
 
         $this->actingAs($user)
-            ->get("/organisationen/{$organization->slug}/projekte/{$project->slug}")
+            ->get("/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}")
             ->assertInertia(fn (AssertableInertia $page) => $page->where('project.setupHref', null));
     }
 }

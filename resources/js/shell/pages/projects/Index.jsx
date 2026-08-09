@@ -43,7 +43,7 @@ export default function Index({ organization, permissions, projects, platformOpt
                     description={t('projects.index.no_organization_description')}
                 >
                     <Link
-                        href="/organisationen"
+                        href="/einstellungen/organisationen"
                         className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                     >
                         {t('projects.index.to_organizations')}
