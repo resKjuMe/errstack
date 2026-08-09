@@ -42,6 +42,7 @@ return [
         'tags' => 'Tags',
         'feedback' => 'Feedback',
         'releases' => 'Releases',
+        'discover' => 'Discover',
         'performance' => 'Performance',
         'performance_issues' => 'Performance issues',
         'web_vitals' => 'Web Vitals',
