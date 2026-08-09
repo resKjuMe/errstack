@@ -490,6 +490,14 @@ return [
         'D' => 'Removed',
     ],
 
+    // Kind of an attachment (M5). It decides what the interface may do with the
+    // file — show it, or offer it for download only.
+    'attachment_kind' => [
+        'image' => 'Image',
+        'text' => 'Text',
+        'binary' => 'File',
+    ],
+
     'release_artifact_kind' => [
         'bundle' => 'Bundle',
         'source_map' => 'Source map',

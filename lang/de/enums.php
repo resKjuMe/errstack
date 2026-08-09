@@ -492,6 +492,14 @@ return [
         'D' => 'Gelöscht',
     ],
 
+    // Art eines Anhangs (M5). Sie entscheidet, was die Oberfläche mit der Datei
+    // tun darf — anzeigen oder ausschließlich zum Herunterladen anbieten.
+    'attachment_kind' => [
+        'image' => 'Bild',
+        'text' => 'Text',
+        'binary' => 'Datei',
+    ],
+
     'release_artifact_kind' => [
         'bundle' => 'Bundle',
         'source_map' => 'Quellkarte',

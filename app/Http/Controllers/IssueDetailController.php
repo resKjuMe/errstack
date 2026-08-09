@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\EventSymbolication;
 use App\Models\Issue;
 use App\Models\IssueComment;
+use App\Support\Attachments\AttachmentData;
 use App\Support\Issues\EventDetail;
 use App\Support\Issues\EventNavigation;
 use App\Support\Issues\IssueActionData;
@@ -84,6 +85,14 @@ class IssueDetailController extends Controller
             // Repository kommt eine leere Liste heraus — dann fehlt der Bereich,
             // statt leer dazustehen.
             'suspects' => SuspectCommitData::present(SuspectCommits::forEvent($issue, $event)),
+            // Die Dateien zu dieser Meldung (M5): Screenshot, Logdatei,
+            // Speicherabbild. Sie hängen an der angezeigten Meldung und nicht am
+            // Fehler — beim Blättern wechseln sie mit. Ohne Meldung gibt es keine
+            // Anhänge; die Oberfläche bekommt dann `null` und lässt den Bereich
+            // weg, statt einen leeren Kasten zu zeigen.
+            'attachments' => $event === null
+                ? null
+                : AttachmentData::forEvent($issue, $event, $request->user()),
             // Die Sitzungs-Aufzeichnungen zu **dieser** Meldung (M3) — die
             // Antwort auf „wie ist er überhaupt dorthin gekommen", die weder
             // Stacktrace noch Breadcrumbs geben. Berechnet und nicht

@@ -4,6 +4,7 @@ import PageHead from '../../components/PageHead.jsx';
 import { SecondaryButton } from '../../components/Form.jsx';
 import { useT } from '../../i18n.js';
 import Activity from './detail/Activity.jsx';
+import Attachments from './detail/Attachments.jsx';
 import Breadcrumbs from './detail/Breadcrumbs.jsx';
 import EventNav from './detail/EventNav.jsx';
 import RawData from './detail/RawData.jsx';
@@ -31,6 +32,7 @@ export default function Show({
     navigation,
     rawHref,
     suspects,
+    attachments,
     replays,
     activity,
     comments,
@@ -122,6 +124,23 @@ export default function Show({
                         when={event.breadcrumbs.length > 0}
                     >
                         <Breadcrumbs breadcrumbs={event.breadcrumbs} t={t} />
+                    </Section>
+
+                    {/* Die Anhänge stehen hinter den letzten Schritten und vor
+                        der Anfrage (M5): ein Screenshot zeigt, was der Mensch vor
+                        dem Absturz gesehen hat — das gehört zur Erzählung des
+                        Fehlers und nicht zu den technischen Feldern darunter.
+                        Ohne Anhänge fehlt der Bereich ganz; ein leerer Kasten
+                        wäre auf fast jeder Fehlerseite zu sehen, weil die
+                        meisten SDKs von sich aus keine Dateien mitschicken. */}
+                    <Section
+                        title={t('issues.attachments.title')}
+                        description={t('issues.attachments.description', {
+                            days: attachments?.retentionDays ?? 0,
+                        })}
+                        when={(attachments?.items.length ?? 0) > 0}
+                    >
+                        <Attachments attachments={attachments} t={t} />
                     </Section>
 
                     <Section

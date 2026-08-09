@@ -90,6 +90,10 @@ final class ProjectData
                 'defaultEnvironment' => $project->default_environment,
                 'resolutionBehavior' => $project->resolution_behavior->value,
                 'retentionDays' => $project->retention_days,
+                // Die eigene Frist der Anhänge (M5) — sie steht neben der der
+                // Ereignisse und nicht darin: wer Meldungen ein Jahr behalten
+                // will, will nicht ein Jahr Speicherabbilder behalten.
+                'attachmentRetentionDays' => $project->attachment_retention_days,
                 // Ob ein neuer Fehler von selbst an den Autor des
                 // verdächtigsten Commits geht (R4). Angezeigt werden die
                 // Verdächtigen immer; das hier ist die Frage, ob daraus auch

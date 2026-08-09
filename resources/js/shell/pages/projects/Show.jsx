@@ -111,6 +111,7 @@ function Settings({ project, platformOptions, resolutionOptions }) {
         default_environment: project.defaultEnvironment,
         resolution_behavior: project.resolutionBehavior,
         retention_days: project.retentionDays,
+        attachment_retention_days: project.attachmentRetentionDays,
         auto_assign_suspect_commits: project.autoAssignSuspectCommits,
     });
 
@@ -188,6 +189,33 @@ function Settings({ project, platformOptions, resolutionOptions }) {
                         <InputError message={errors.retention_days} className="mt-2" />
                     </div>
 
+                    {/* Die Anhänge haben ihre eigene Frist (M5) und stehen deshalb
+                        als eigenes Feld daneben: eine Datei ist ein Vielfaches
+                        schwerer als die Meldung, an der sie hängt — wer Meldungen
+                        ein Jahr behalten will, will nicht ein Jahr
+                        Speicherabbilder behalten. */}
+                    <div>
+                        <InputLabel
+                            htmlFor="attachment_retention_days"
+                            value={t('projects.settings.attachment_retention')}
+                        />
+                        <TextInput
+                            id="attachment_retention_days"
+                            name="attachment_retention_days"
+                            type="number"
+                            min="1"
+                            max="365"
+                            value={data.attachment_retention_days}
+                            required
+                            className="mt-1"
+                            onChange={(e) => setData('attachment_retention_days', e.target.value)}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {t('projects.settings.attachment_retention_hint')}
+                        </p>
+                        <InputError message={errors.attachment_retention_days} className="mt-2" />
+                    </div>
+
                     <div className="md:col-span-2">
                         <InputLabel
                             htmlFor="resolution_behavior"
@@ -254,6 +282,12 @@ function ReadOnlySettings({ project, resolutionOptions }) {
         [
             t('projects.settings.retention_label'),
             t('projects.settings.retention_value', { days: project.retentionDays }),
+        ],
+        [
+            t('projects.settings.attachment_retention_label'),
+            t('projects.settings.retention_value', {
+                days: project.attachmentRetentionDays,
+            }),
         ],
         [
             t('projects.settings.auto_assign'),

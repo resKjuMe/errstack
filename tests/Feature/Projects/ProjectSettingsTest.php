@@ -40,6 +40,7 @@ class ProjectSettingsTest extends TestCase
             'default_environment' => 'staging',
             'resolution_behavior' => 'after_week',
             'retention_days' => 90,
+            'attachment_retention_days' => 14,
         ])->assertSessionHasNoErrors();
 
         $project->refresh();
@@ -48,12 +49,14 @@ class ProjectSettingsTest extends TestCase
         $this->assertSame('staging', $project->default_environment);
         $this->assertSame(ResolutionBehavior::AfterWeek, $project->resolution_behavior);
         $this->assertSame(90, $project->retention_days);
+        $this->assertSame(14, $project->attachment_retention_days);
 
         $this->actingAs($user)->get($path)
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('project.defaultEnvironment', 'staging')
                 ->where('project.resolutionBehavior', 'after_week')
                 ->where('project.retentionDays', 90)
+                ->where('project.attachmentRetentionDays', 14)
             );
     }
 
@@ -67,6 +70,7 @@ class ProjectSettingsTest extends TestCase
             'default_environment' => 'production',
             'resolution_behavior' => 'manual',
             'retention_days' => 30,
+            'attachment_retention_days' => 7,
         ])->assertSessionHasNoErrors();
 
         $this->assertSame('webshop', $project->refresh()->slug);
@@ -85,7 +89,13 @@ class ProjectSettingsTest extends TestCase
             'default_environment' => 'Produktion live',
             'resolution_behavior' => 'irgendwann',
             'retention_days' => 0,
-        ])->assertSessionHasErrors(['default_environment', 'resolution_behavior', 'retention_days']);
+            'attachment_retention_days' => 400,
+        ])->assertSessionHasErrors([
+            'default_environment',
+            'resolution_behavior',
+            'retention_days',
+            'attachment_retention_days',
+        ]);
     }
 
     public function test_members_may_read_the_settings_but_not_change_them(): void
@@ -108,6 +118,7 @@ class ProjectSettingsTest extends TestCase
             'default_environment' => 'production',
             'resolution_behavior' => 'manual',
             'retention_days' => 30,
+            'attachment_retention_days' => 7,
         ])->assertForbidden();
 
         $this->assertSame('Webshop', $project->refresh()->name);

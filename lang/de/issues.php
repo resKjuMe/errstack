@@ -430,6 +430,34 @@ return [
     // vergleicht die Dateien und Zeilen des Stacktrace mit denen, die die
     // Commits der betroffenen Auslieferungen angefasst haben
     // (app/Support/Releases/SuspectCommits).
+    // Anhänge einer Meldung (M5): Screenshot, Logdatei, Speicherabbild.
+    'attachments' => [
+
+        'title' => 'Anhänge',
+        'description' => 'Dateien, die das SDK zu dieser Meldung mitgeschickt hat. '
+            .'Sie haben eine eigene, kürzere Aufbewahrung als die Meldung selbst: '
+            .':days Tage.',
+
+        'received' => 'Eingetroffen :time',
+        'expires' => 'Verfällt :time',
+
+        'image_alt' => 'Vorschau von :name',
+
+        'preview_show' => 'Vorschau anzeigen',
+        'preview_hide' => 'Vorschau ausblenden',
+        'preview_loading' => 'Vorschau wird geladen …',
+        'preview_failed' => 'Die Vorschau ließ sich nicht laden.',
+        'preview_truncated' => 'Nur der Anfang der Datei — vollständig im Download.',
+
+        'delete' => 'Anhang löschen',
+        'delete_confirm' => 'Diesen Anhang endgültig löschen?',
+
+        'flash' => [
+            'deleted' => 'Anhang „:name" gelöscht.',
+        ],
+
+    ],
+
     'suspects' => [
 
         'title' => 'Verdächtige Commits',

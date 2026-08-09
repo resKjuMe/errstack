@@ -115,6 +115,18 @@ Schedule::command('performance:trends')->hourlyAt(5)->withoutOverlapping();
 // der erste ihn abgeräumt hat.
 Schedule::command('notifications:flush-digests')->everyMinute()->withoutOverlapping();
 
+// Abgelaufene Anhänge wegräumen (M5).
+//
+// Täglich und nicht minütlich: die Frist wird in Tagen gerechnet, und ein
+// feinerer Takt lässt keinen Anhang früher ablaufen — er sieht denselben Bestand
+// nur öfter durch. Nachts, weil der Durchlauf Dateien vom Laufwerk löscht und das
+// bei einem Objektspeicher eine Anfrage je Datei ist.
+//
+// `withoutOverlapping`, weil ein erster Durchlauf über einen großen Altbestand
+// länger als einen Tag brauchen kann: zwei gleichzeitige Läufe würden um
+// dieselben Zeilen ringen.
+Schedule::command('attachments:prune')->dailyAt('03:20')->withoutOverlapping();
+
 // Die Aufnahmemenge je Minute festschreiben und den Ausschlag-Schutz steuern (A7).
 //
 // Minütlich, weil die Minute die Einheit ist, in der eine Fehlerflut gemessen

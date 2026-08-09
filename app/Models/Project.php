@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\Platform;
 use App\Enums\QuotaScope;
 use App\Enums\ResolutionBehavior;
+use App\Support\Attachments\AttachmentStore;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -27,6 +28,7 @@ use Illuminate\Support\Str;
  * @property string $default_environment
  * @property ResolutionBehavior $resolution_behavior
  * @property int $retention_days
+ * @property int $attachment_retention_days
  * @property int|null $replay_retention_days
  * @property int $digest_window_minutes
  * @property int $digest_min_events
@@ -54,6 +56,7 @@ use Illuminate\Support\Str;
     'default_environment',
     'resolution_behavior',
     'retention_days',
+    'attachment_retention_days',
     'replay_retention_days',
     'digest_window_minutes',
     'digest_min_events',
@@ -87,6 +90,36 @@ class Project extends Model
     public const FIRST_KEY_NAME = 'Standard';
 
     /**
+     * Was ein gelöschtes Projekt außerhalb der Datenbank hinterlässt.
+     *
+     * Die Zeilen nehmen die Fremdschlüssel mit — die Dateien auf dem Laufwerk
+     * nicht. Bei den Anhängen (M5) ist das keine Kleinigkeit: sie sind der
+     * größte Posten des Bestands, und mit der Zeile fällt der einzige Verweis
+     * weg, über den das nächtliche Aufräumen sie noch finden könnte. Ein
+     * gelöschtes Projekt hinterließe damit dauerhaft belegten Platz, den niemand
+     * mehr erklären kann.
+     *
+     * `deleted` und nicht `deleting`: erst wenn das Löschen durch ist, sollen die
+     * Dateien fallen. Der Fehlerfall bleibt im Protokoll und hält das Löschen
+     * nicht auf ({@see AttachmentStore::forgetProject()}) — ein Projekt, das laut
+     * Datenbank weg ist, aber laut Oberfläche nicht gelöscht werden konnte, wäre
+     * die schlechtere Antwort.
+     *
+     * Aus demselben Grund hängt hier das Vergessen der Kontingente: sie hängen
+     * über Ebene und Kennung an diesem Datensatz und nicht über einen
+     * Fremdschlüssel ({@see Quota}). Ohne den Haken läge eine Grenze für eine
+     * Kennung herum, die es nicht mehr gibt.
+     */
+    protected static function booted(): void
+    {
+        static::deleted(function (self $project): void {
+            app(AttachmentStore::class)->forgetProject($project->id);
+
+            Quota::forget(QuotaScope::Project, $project->id);
+        });
+    }
+
+    /**
      * In der Adresszeile steht der Slug hinter der Organisation
      * (`/organisationen/{organisation}/projekte/{projekt}`).
      */
@@ -111,7 +144,14 @@ class Project extends Model
         // Projekt und erster Schlüssel gehören zusammen: ein Projekt ohne
         // Schlüssel hätte keine Adresse, an die gemeldet werden könnte.
         return DB::transaction(function () use ($organization, $name, $platform, $attributes): self {
-            $project = new self(array_merge($attributes, [
+            $project = new self(array_merge([
+                // Die Frist der Anhänge (M5) kommt aus der Einstellung des
+                // Betreibers und nicht aus dem Spalten-Vorgabewert: der steht im
+                // Schema und ließe sich nach dem Migrieren nicht mehr ändern. Sie
+                // steht **vor** `$attributes`, damit ein Aufrufer sie überschreiben
+                // kann.
+                'attachment_retention_days' => (int) config('attachments.retention_days'),
+            ], $attributes, [
                 'name' => $name,
                 'platform' => $platform,
             ]));
@@ -376,17 +416,6 @@ class Project extends Model
     }
 
     /**
-     * Kontingente hängen über Ebene und Kennung an diesem Datensatz und nicht
-     * über einen Fremdschlüssel ({@see Quota}) — hinter einer Löschung räumt
-     * deshalb dieser Haken auf. Ohne ihn läge eine Grenze für eine Kennung
-     * herum, die es nicht mehr gibt.
-     */
-    protected static function booted(): void
-    {
-        self::deleted(static fn (self $model) => Quota::forget(QuotaScope::Project, $model->id));
-    }
-
-    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -395,6 +424,7 @@ class Project extends Model
             'platform' => Platform::class,
             'resolution_behavior' => ResolutionBehavior::class,
             'retention_days' => 'integer',
+            'attachment_retention_days' => 'integer',
             'replay_retention_days' => 'integer',
             'digest_window_minutes' => 'integer',
             'digest_min_events' => 'integer',

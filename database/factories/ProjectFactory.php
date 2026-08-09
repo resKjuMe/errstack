@@ -33,6 +33,7 @@ class ProjectFactory extends Factory
             'default_environment' => 'production',
             'resolution_behavior' => ResolutionBehavior::Manual,
             'retention_days' => 30,
+            'attachment_retention_days' => 7,
         ];
     }
 
