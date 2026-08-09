@@ -33,6 +33,12 @@ import ProjectsCrons from './shell/pages/projects/Crons.jsx';
 import ProjectsUptime from './shell/pages/projects/Uptime.jsx';
 import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
 import ProjectsFilters from './shell/pages/projects/Filters.jsx';
+// Eine Seite für beide Ebenen: die Kontingente eines Projekts und die einer
+// Organisation unterscheiden sich im Gegenstand, nicht im Aufbau. Beide
+// Seitennamen brauchen trotzdem ihre eigene Datei — `ensure_pages_exist` prüft
+// serverseitig, dass es sie gibt.
+import ProjectsQuotas from './shell/pages/projects/Quotas.jsx';
+import OrganizationsQuotas from './shell/pages/organizations/Quotas.jsx';
 import ProjectsDigest from './shell/pages/projects/Digest.jsx';
 import ProjectsSampling from './shell/pages/projects/Sampling.jsx';
 import ProjectsSpikes from './shell/pages/projects/Spikes.jsx';
@@ -110,6 +116,8 @@ const pages = {
     'projects/Uptime': ProjectsUptime,
     'projects/Grouping': ProjectsGrouping,
     'projects/Filters': ProjectsFilters,
+    'projects/Quotas': ProjectsQuotas,
+    'organizations/Quotas': OrganizationsQuotas,
     'projects/Digest': ProjectsDigest,
     'projects/Sampling': ProjectsSampling,
     // Der Ausschlag-Schutz (A7): Zustand, Verlauf und Einstellungen auf einer

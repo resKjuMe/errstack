@@ -147,6 +147,11 @@ final class ProjectData
                 // Verzögerung kam — und das fragt sich der, der auf sie
                 // gewartet hat.
                 'digestHref' => route('projects.digest.index', [$organization, $project]),
+                // Die Kontingente (O1) ebenfalls ohne Bedingung, und hier am
+                // dringendsten: ein aufgebrauchtes Kontingent ist die
+                // häufigste Erklärung dafür, dass eine Anwendung plötzlich
+                // stumm ist.
+                'quotasHref' => route('projects.quotas.index', [$organization, $project]),
                 // Und ebenso die Eingangsfilter: wer eine Meldung vermisst, muss
                 // nachsehen können, ob ein Filter sie genommen hat.
                 'filtersHref' => route('projects.filters.index', [$organization, $project]),

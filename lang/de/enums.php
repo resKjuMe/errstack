@@ -171,6 +171,22 @@ return [
         'discarded' => 'gelöschter Fehler, künftig verworfen',
         'throttled' => 'vom Ausschlag-Schutz gedrosselt',
         'orphaned' => 'ohne zugehörige Meldung',
+        'rate_limited' => 'Rate-Limit',
+        'quota_exceeded' => 'Kontingent aufgebraucht',
+    ],
+
+    'quota_category' => [
+        'errors' => 'Fehler',
+        'transactions' => 'Transaktionen',
+        'replays' => 'Aufzeichnungen',
+        'attachments' => 'Anhänge',
+        'monitors' => 'Cronjob-Lebenszeichen',
+    ],
+
+    'quota_scope' => [
+        'organization' => 'Organisation',
+        'project' => 'Projekt',
+        'key' => 'Client-Schlüssel',
     ],
 
     'inbound_filter_kind' => [

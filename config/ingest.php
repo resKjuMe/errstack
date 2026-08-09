@@ -246,6 +246,39 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Kontingente
+    |--------------------------------------------------------------------------
+    |
+    | Wie viel eine Organisation, ein Projekt oder ein Schlüssel aufnehmen darf,
+    | steht **nicht** hier, sondern in der Datenbank (Tabelle `quotas` und
+    | `project_keys.rate_limit_per_minute`): das sind Entscheidungen derer, die
+    | die Daten ansehen und bezahlen, und sie fallen je Projekt verschieden aus.
+    | Hier steht nur die grobe Bremse davor.
+    |
+    |   requests_per_minute — wie viele Anfragen eine Herkunft (Absender-Adresse
+    |                         und mitgeschickter Schlüssel) je Minute an die
+    |                         Aufnahme richten darf. Sie greift **vor** der
+    |                         Anmeldung und ist damit die einzige Grenze, die
+    |                         auch für Anfragen ohne gültigen Schlüssel gilt —
+    |                         ohne sie wäre das Durchprobieren von Schlüsseln
+    |                         unbegrenzt.
+    |
+    | Der Wert ist bewusst hoch: hier soll niemand gebremst werden, der
+    | berechtigt meldet — eine Anwendung unter Last schickt in der Minute
+    | tausende Meldungen, und was ein Projekt davon behalten darf, entscheidet
+    | sein Kontingent eine Stufe später. Null schaltet die Stufe ab, für
+    | Installationen hinter einem vorgelagerten Wächter, der dasselbe besser kann.
+    |
+    */
+
+    'quotas' => [
+
+        'requests_per_minute' => (int) env('INGEST_MAX_REQUESTS_PER_MINUTE', 5000),
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Stichproben
     |--------------------------------------------------------------------------
     |

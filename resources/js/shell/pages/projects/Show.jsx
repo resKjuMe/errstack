@@ -94,6 +94,7 @@ export default function Show({
                 <Privacy project={project} />
 
                 <InboundFilters project={project} />
+                <Quotas project={project} />
                 <SpikeProtection project={project} />
 
                 {permissions.delete && <DeleteProject project={project} />}
@@ -625,6 +626,22 @@ function Digest({ project }) {
         <Card title={t('projects.digest.title')} description={t('projects.digest.description')}>
             <Link href={project.digestHref}>
                 <SecondaryButton type="button">{t('projects.digest.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zu den Kontingenten. Ohne Bedingung wie die Eingangsfilter und aus einem
+// noch handfesteren Grund: ein aufgebrauchtes Kontingent ist die häufigste
+// Erklärung dafür, dass eine Anwendung plötzlich stumm ist — und wer das sucht,
+// ist selten die Verwaltung.
+function Quotas({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.quotas.title')} description={t('projects.quotas.description')}>
+            <Link href={project.quotasHref}>
+                <SecondaryButton type="button">{t('projects.quotas.manage')}</SecondaryButton>
             </Link>
         </Card>
     );

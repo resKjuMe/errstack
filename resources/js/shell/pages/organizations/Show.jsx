@@ -24,6 +24,7 @@ export default function Show({
     invitableRoles,
     auditLogHref,
     privacyHref,
+    quotasHref,
     repositoriesHref,
 }) {
     const { shell } = usePage().props;
@@ -54,6 +55,12 @@ export default function Show({
                             className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                         >
                             {t('organizations.show.privacy')}
+                        </Link>
+                        <Link
+                            href={quotasHref}
+                            className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                        >
+                            {t('organizations.show.quotas')}
                         </Link>
                         <Link
                             href={repositoriesHref}

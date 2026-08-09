@@ -72,6 +72,11 @@ final class SettingsNav
                         'activePattern' => 'organizations.repositories.*',
                     ],
                     [
+                        'label' => __('nav.settings.links.organization_quotas'),
+                        'route' => 'organizations.quotas.index',
+                        'activePattern' => 'organizations.quotas.*',
+                    ],
+                    [
                         'label' => __('nav.settings.links.organizations'),
                         'route' => 'organizations.index',
                         'activePattern' => 'organizations.index',
@@ -102,6 +107,7 @@ final class SettingsNav
                         ['project_crons', 'projects.crons.index', 'projects.crons.*'],
                         ['project_uptime', 'projects.uptime.index', 'projects.uptime.*'],
                         ['project_performance', 'projects.performance.index', 'projects.performance.*'],
+                        ['project_quotas', 'projects.quotas.index', 'projects.quotas.*'],
                     ]),
                 ],
             ],

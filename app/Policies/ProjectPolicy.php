@@ -103,6 +103,21 @@ class ProjectPolicy
     }
 
     /**
+     * Kontingente eines Projekts setzen (O1).
+     *
+     * Dasselbe Recht wie für die übrigen Einstellungen — und hier ist es das
+     * schärfste von allen: ein zu klein gesetztes Kontingent schaltet die
+     * Aufnahme ab dem Erreichen ab, und was in dieser Zeit passiert ist, kommt
+     * nicht nachträglich herein. Ansehen darf die Seite dagegen jedes Mitglied,
+     * aus demselben Grund wie bei den Eingangsfiltern: sie ist die Antwort auf
+     * „warum fehlen seit gestern Mittag alle Meldungen?".
+     */
+    public function manageQuotas(User $user, Project $project): bool
+    {
+        return $user->can('manageProjects', $project->organization);
+    }
+
+    /**
      * Schwellwert-Alarme anlegen, ändern, abschalten und löschen.
      *
      * Getrennt vom Ansehen: welche Alarme scharf sind, soll jedes Mitglied

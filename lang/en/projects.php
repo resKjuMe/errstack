@@ -129,6 +129,12 @@ return [
         'manage' => 'View rules',
     ],
 
+    'quotas' => [
+        'title' => 'Quotas',
+        'description' => 'How much may come in per data type: monthly quota and rate per minute, plus the usage of this month and the count of what was rejected.',
+        'manage' => 'View quotas',
+    ],
+
     'filters' => [
         'title' => 'Inbound filters',
         'description' => 'Known noise — browser extensions, crawlers, local development — is discarded on arrival and only counted.',

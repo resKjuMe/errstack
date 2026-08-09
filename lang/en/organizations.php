@@ -27,6 +27,7 @@ return [
         'own_role' => 'Your role:',
         'audit_log' => 'Audit log',
         'privacy' => 'Privacy',
+        'quotas' => 'Quotas',
         'repositories' => 'Repositories',
         'all_organizations' => 'All organizations',
     ],
