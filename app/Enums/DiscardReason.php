@@ -3,6 +3,7 @@
 namespace App\Enums;
 
 use App\Models\IngestDiscard;
+use App\Support\Ingest\Spikes\SpikeSweep;
 
 /**
  * Warum die Aufnahme ein Element verworfen hat.
@@ -116,6 +117,24 @@ enum DiscardReason: string
      * oder das Kontingent anheben muss.
      */
     case QuotaExceeded = 'quota_exceeded';
+
+    /**
+     * Der Ausschlag-Schutz drosselt gerade (A7).
+     *
+     * Ein eigener Grund und nicht `filtered`, obwohl beide auf einer Einstellung
+     * des Projekts beruhen: der Eingangsfilter nimmt eine bestimmte Art von
+     * Meldung und lässt alles andere durch, hier trifft es die nächste Meldung
+     * ohne Ansehen ihres Inhalts. Wer die Zahlen ansieht, muss „diese Meldung
+     * wollten wir nicht" von „diese Meldung kam zur falschen Minute"
+     * unterscheiden können — die eine Zahl beschreibt eine Regel, die andere
+     * einen Vorfall.
+     *
+     * Gezählt wird auch hier vollständig: die Drosselung wirft weg, aber nie
+     * unbemerkt. Weil in genau diesem Moment sehr viel wegzuwerfen ist, kommt
+     * die Zahl gesammelt je Minute aus dem Zwischenspeicher und nicht Meldung
+     * für Meldung ({@see SpikeSweep}).
+     */
+    case Throttled = 'throttled';
 
     public function label(): string
     {

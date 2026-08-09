@@ -123,7 +123,7 @@ drei, in dieser Priorität: **`ingest`** (eingehende Fehlermeldungen) vor
 Reihenfolge steht in `App\Enums\QueueName` und gehört in jeden Worker-Aufruf:
 
 ```bash
-php artisan queue:work --queue=ingest,notifications,performance,symbolication,default --tries=3
+php artisan queue:work --queue=ingest,notifications,performance,symbolication,uptime,default --tries=3
 ```
 
 | Befehl | Zweck |

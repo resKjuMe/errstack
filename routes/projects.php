@@ -30,9 +30,11 @@ use App\Http\Controllers\ProjectPerformanceController;
 use App\Http\Controllers\ProjectPrivacyController;
 use App\Http\Controllers\ProjectQuotaController;
 use App\Http\Controllers\ProjectSetupController;
+use App\Http\Controllers\ProjectSpikeController;
 use App\Http\Controllers\ProjectTeamController;
 use App\Http\Controllers\SamplingRuleController;
 use App\Http\Controllers\ScrubRuleController;
+use App\Http\Controllers\UptimeMonitorController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -103,6 +105,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('projects.crons.toggle');
             Route::delete('{project}/cronjobs/{cron_monitor}', [CronMonitorController::class, 'destroy'])
                 ->name('projects.crons.destroy');
+
+            // Überwachte Ziele der Erreichbarkeits-Prüfung. Der Parametername
+            // ist `uptime_monitor` und nicht `ziel`, weil `scopeBindings`
+            // daraus die Beziehung am Projekt ableitet (`uptimeMonitors()`) —
+            // mit einem freieren Namen fände es sie nicht, und ein Monitor wäre
+            // über jedes Projekt erreichbar.
+            //
+            // Ansehen darf jedes Mitglied: „ist die Anwendung gerade
+            // erreichbar?" ist während einer Störung die erste Frage, und sie
+            // stellt nicht nur die Verwaltung.
+            Route::get('{project}/erreichbarkeit', [UptimeMonitorController::class, 'index'])
+                ->name('projects.uptime.index');
+            Route::post('{project}/erreichbarkeit', [UptimeMonitorController::class, 'store'])
+                ->name('projects.uptime.store');
+            Route::patch('{project}/erreichbarkeit/{uptime_monitor}', [UptimeMonitorController::class, 'update'])
+                ->name('projects.uptime.update');
+            Route::post('{project}/erreichbarkeit/{uptime_monitor}/zustand', [UptimeMonitorController::class, 'toggle'])
+                ->name('projects.uptime.toggle');
+            Route::delete('{project}/erreichbarkeit/{uptime_monitor}', [UptimeMonitorController::class, 'destroy'])
+                ->name('projects.uptime.destroy');
 
             // Fingerprint-Regeln der Gruppierung. Der Parametername ist
             // `fingerprint_rule` und nicht `regel`, weil `scopeBindings` daraus
@@ -239,6 +261,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('projects.sampling.toggle');
             Route::delete('{project}/stichproben/{sampling_rule}', [SamplingRuleController::class, 'destroy'])
                 ->name('projects.sampling.destroy');
+
+            // Der Ausschlag-Schutz (A7). Ansehen darf jedes Mitglied, aus
+            // demselben Grund wie bei Filtern und Stichproben: die Seite
+            // beantwortet „warum fehlen mir Meldungen?", und diese Frage stellt
+            // gerade der, der die Einstellung nicht ändern darf.
+            //
+            // Das Aufheben ist eine eigene Adresse und kein Sonderfall der
+            // Einstellungen: der Schalter gilt für die Zukunft, das Aufheben für
+            // genau den laufenden Vorfall.
+            Route::get('{project}/ausschlagschutz', [ProjectSpikeController::class, 'index'])
+                ->name('projects.spikes.index');
+            Route::patch('{project}/ausschlagschutz', [ProjectSpikeController::class, 'update'])
+                ->name('projects.spikes.update');
+            Route::post('{project}/ausschlagschutz/aufhebung', [ProjectSpikeController::class, 'release'])
+                ->name('projects.spikes.release');
 
             // Zuständigkeits-Regeln (R6). Der Parametername ist
             // `ownership_rule` — aus demselben Grund wie bei den übrigen

@@ -12,6 +12,7 @@ use App\Models\ProjectKey;
 use App\Support\Crons\CheckInIntake;
 use App\Support\Crons\CheckInPayload;
 use App\Support\Ingest\Quotas\QuotaGuard;
+use App\Support\Ingest\Spikes\SpikeGuard;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -45,6 +46,7 @@ final class EnvelopeIntake
      * @param  int  $maxAttachmentBytes  Obergrenze für Anhänge und Aufzeichnungen.
      * @param  CheckInIntake  $checkIns  Verarbeitung der Cronjob-Lebenszeichen.
      * @param  QuotaGuard  $quotas  Kontingente je Datenart (O1).
+     * @param  SpikeGuard  $spikes  Der Ausschlag-Schutz (A7).
      */
     public function __construct(
         private readonly int $maxItems,
@@ -52,6 +54,7 @@ final class EnvelopeIntake
         private readonly int $maxAttachmentBytes,
         private readonly CheckInIntake $checkIns,
         private readonly QuotaGuard $quotas,
+        private readonly SpikeGuard $spikes,
     ) {}
 
     public static function fromConfig(): self
@@ -62,6 +65,7 @@ final class EnvelopeIntake
             maxAttachmentBytes: (int) config('ingest.envelope.max_attachment_bytes'),
             checkIns: app(CheckInIntake::class),
             quotas: app(QuotaGuard::class),
+            spikes: app(SpikeGuard::class),
         );
     }
 
@@ -139,11 +143,17 @@ final class EnvelopeIntake
             return;
         }
 
-        // Das Kontingent zuletzt und erst hier: geprüft wird je Element und
+        // Das Kontingent zuerst und erst hier: geprüft wird je Element und
         // nicht je Envelope, damit ein aufgebrauchtes Kontingent der einen
         // Datenart die anderen in derselben Anfrage nicht mitnimmt. Genau das
         // ist die Zusage, dass ein überzogenes Transaktions-Kontingent
         // Fehlermeldungen nicht härter trifft als eingestellt.
+        //
+        // Vor dem Ausschlag-Schutz, weil es dieselbe Reihenfolge ist wie auf dem
+        // klassischen Weg: dort steht die Prüfung als Middleware am Eingang und
+        // der Schutz im Controller dahinter. Was das kostet, steht in
+        // {@see QuotaGuard::consume()} — gezählt wird, was ankommt, nicht, was
+        // am Ende gespeichert wurde.
         $verdict = $this->quotas->admit($key, QuotaCategory::forIngestType($type));
 
         if ($verdict->denied()) {
@@ -152,6 +162,15 @@ final class EnvelopeIntake
                 'wartezeit' => $verdict->retryAfter,
             ]);
 
+            return;
+        }
+
+        // Der Ausschlag-Schutz (A7). Je Element und nicht je Envelope: was in
+        // einer Anfrage zusammensteckt, ist inhaltlich unabhängig, und er trifft
+        // ohnehin nur die Elemente, die als Ereignis zählen — ein Lebenszeichen,
+        // eine Verworfen-Meldung des SDK und ein Anhang gehen weiter durch. Die
+        // Auskunft darüber wegzuwerfen, während wir wegwerfen, wäre widersinnig.
+        if (! $this->spikes->allows($key, $type)) {
             return;
         }
 

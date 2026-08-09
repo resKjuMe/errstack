@@ -30,6 +30,7 @@ import ProjectsIssueAlerts from './shell/pages/projects/IssueAlerts.jsx';
 import ProjectsAlertOverview from './shell/pages/projects/AlertOverview.jsx';
 import ProjectsAlertDetail from './shell/pages/projects/AlertDetail.jsx';
 import ProjectsCrons from './shell/pages/projects/Crons.jsx';
+import ProjectsUptime from './shell/pages/projects/Uptime.jsx';
 import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
 import ProjectsFilters from './shell/pages/projects/Filters.jsx';
 // Eine Seite für beide Ebenen: die Kontingente eines Projekts und die einer
@@ -37,6 +38,7 @@ import ProjectsFilters from './shell/pages/projects/Filters.jsx';
 import Quotas from './shell/pages/quotas/Quotas.jsx';
 import ProjectsDigest from './shell/pages/projects/Digest.jsx';
 import ProjectsSampling from './shell/pages/projects/Sampling.jsx';
+import ProjectsSpikes from './shell/pages/projects/Spikes.jsx';
 import ProjectsPerformance from './shell/pages/projects/Performance.jsx';
 import ProjectsOwnership from './shell/pages/projects/Ownership.jsx';
 import PerformanceIssues from './shell/pages/performance/Issues.jsx';
@@ -107,12 +109,17 @@ const pages = {
     'projects/AlertOverview': ProjectsAlertOverview,
     'projects/AlertDetail': ProjectsAlertDetail,
     'projects/Crons': ProjectsCrons,
+    'projects/Uptime': ProjectsUptime,
     'projects/Grouping': ProjectsGrouping,
     'projects/Filters': ProjectsFilters,
     'projects/Quotas': Quotas,
     'organizations/Quotas': Quotas,
     'projects/Digest': ProjectsDigest,
     'projects/Sampling': ProjectsSampling,
+    // Der Ausschlag-Schutz (A7): Zustand, Verlauf und Einstellungen auf einer
+    // Seite — wer in einer Flut hierherkommt, soll nicht zwischen zwei
+    // Bildschirmen suchen.
+    'projects/Spikes': ProjectsSpikes,
     'projects/Performance': ProjectsPerformance,
     'projects/Ownership': ProjectsOwnership,
     'performance/Issues': PerformanceIssues,

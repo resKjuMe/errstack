@@ -84,27 +84,35 @@ enum IngestType: string
     }
 
     /**
-     * Zählt eine Meldung dieser Art gegen ein Kontingent des Projekts?
+     * Zählt eine Meldung dieser Art als Ereignis — als eine der Meldungen also,
+     * deren Menge das Aufkommen eines Projekts ausmacht?
      *
-     * Die Zusage stammt aus M6 und ist seit O1 keine Zusage mehr, sondern eine
-     * Ableitung: **welches** Kontingent gilt, steht in
-     * {@see QuotaCategory::forIngestType()}, und diese Frage ist nur die
-     * kürzere Form derselben Auskunft. Zwei Aufzählungen nebeneinander wären
-     * zwei, die beim nächsten Element-Typ auseinanderlaufen — und eine davon
-     * entscheidet über Geld.
+     * Die Frage stellen zwei Stellen mit zwei verschiedenen Absichten, und
+     * beide bekommen dieselbe Antwort: der Ausschlag-Schutz (A7) entscheidet
+     * daran, was er bei einer Flut wegdrosselt, und die Rückmeldungen (M6)
+     * begründen daran, warum sie nichts kosten. Eine Rückmeldung ist die
+     * Beschreibung eines Menschen zu einem Ereignis, das bereits gezählt wurde;
+     * sie ein zweites Mal zu zählen hieße, das Nachfragen bei den Betroffenen zu
+     * bepreisen. Ebenso wenig zählen die Buchhaltungs-Elemente: ein
+     * Lebenszeichen, eine Verworfen-Meldung des SDK und ein Anhang sind keine
+     * Ereignisse, sondern Angaben über welche.
      *
-     * Unverändert gilt, was der Grund der Frage war: eine Rückmeldung ist die
-     * Beschreibung eines Menschen zu einem Ereignis, das bereits gezählt wurde.
-     * Sie ein zweites Mal zu zählen hieße, das Nachfragen bei den Betroffenen zu
-     * bepreisen. Ebenso wenig zählt eine Verworfen-Meldung des SDK: sie ist
-     * keine Meldung, sondern eine Angabe über welche. Sitzungen zählen aus einem
-     * dritten Grund nicht — sie sind die Rechengrundlage der
-     * Release-Gesundheit, und ein Kontingent darauf machte eine Kennzahl
-     * falsch, statt Daten zu sparen.
+     * **Nicht zu verwechseln mit den Kontingenten (O1).** Die begrenzen je
+     * Datenart und fragen deshalb etwas anderes: gegen *welches* Kontingent
+     * zählt dieser Typ ({@see QuotaCategory::forIngestType()})? Dort zählen ein
+     * Anhang und ein Lebenszeichen sehr wohl — sie haben ein eigenes
+     * Kontingent —, und eine Sitzung zählt nicht, weil ein Kontingent auf sie
+     * die Release-Gesundheit verfälschen würde statt Daten zu sparen. Die
+     * beiden Aufzählungen sind deshalb absichtlich verschieden und keine
+     * Doppelung.
      */
     public function countsTowardEventQuota(): bool
     {
-        return QuotaCategory::forIngestType($this) !== null;
+        return match ($this) {
+            self::Event, self::Transaction, self::Session, self::Sessions,
+            self::ReplayEvent, self::ReplayRecording, self::Profile => true,
+            default => false,
+        };
     }
 
     /**

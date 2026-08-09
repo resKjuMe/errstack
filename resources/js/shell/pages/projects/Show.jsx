@@ -84,6 +84,7 @@ export default function Show({
                 <Digest project={project} />
 
                 <CronMonitors project={project} />
+                <UptimeMonitors project={project} />
 
                 <Grouping project={project} />
                 <Ownership project={project} />
@@ -94,6 +95,7 @@ export default function Show({
 
                 <InboundFilters project={project} />
                 <Quotas project={project} />
+                <SpikeProtection project={project} />
 
                 {permissions.delete && <DeleteProject project={project} />}
             </div>
@@ -433,6 +435,21 @@ function CronMonitors({ project }) {
     );
 }
 
+// Weg zur Erreichbarkeits-Überwachung. Aus demselben Grund ohne Bedingung wie
+// die Cronjobs — und mit dem stärksten von allen: „ist es gerade da?" ist die
+// Frage, die während einer Störung jeder stellt.
+function UptimeMonitors({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.uptime.title')} description={t('projects.uptime.description')}>
+            <Link href={project.uptimeHref}>
+                <SecondaryButton type="button">{t('projects.uptime.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
 // Weg zu den Schwellwert-Alarmen. Ohne Bedingung: welche Alarme scharf sind,
 // ist die erste Frage, wenn etwas **nicht** gemeldet wurde — und die stellt
 // nicht nur die Verwaltung.
@@ -579,6 +596,21 @@ function InboundFilters({ project }) {
         <Card title={t('projects.filters.title')} description={t('projects.filters.description')}>
             <Link href={project.filtersHref}>
                 <SecondaryButton type="button">{t('projects.filters.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zum Ausschlag-Schutz. Aus demselben Grund ohne Bedingung wie die
+// Eingangsfilter, nur dringlicher: eine Drosselung wirft Meldungen weg, und
+// weggeworfene Meldungen fehlen in der Liste, ohne eine Lücke zu hinterlassen.
+function SpikeProtection({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.spikes.title')} description={t('projects.spikes.description')}>
+            <Link href={project.spikesHref}>
+                <SecondaryButton type="button">{t('projects.spikes.manage')}</SecondaryButton>
             </Link>
         </Card>
     );

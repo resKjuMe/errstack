@@ -53,6 +53,19 @@ final class AlertReference
     }
 
     /**
+     * Eine Auslösung des Ausschlag-Schutzes (A7): eine Kennung je Vorfall.
+     *
+     * Je Vorfall und nicht je Projekt, aus demselben Grund wie beim Trendbruch:
+     * die Drosselung von heute Nacht und die von morgen früh sind zwei
+     * Vorgänge. Trügen sie dieselbe Kennung, stünde die Entwarnung des einen im
+     * Kanal unter dem Auslösen des anderen.
+     */
+    public static function forSpikeProtection(int $stateId): string
+    {
+        return 'SPIKE-'.$stateId;
+    }
+
+    /**
      * Der gemeinsame Anfang aller Meldungen einer Fehler-Regel — der Weg, ihre
      * Zustellungen über alle Fehler hinweg zu finden.
      *

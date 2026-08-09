@@ -39,6 +39,7 @@ return [
         'fallback' => 'Titel und Fehlerstelle',
         'empty' => 'Ohne unterscheidbaren Inhalt',
         'performance' => 'Leistungserkennung',
+        'uptime' => 'Erreichbarkeits-Überwachung',
     ],
 
     'api_scope' => [
@@ -129,6 +130,22 @@ return [
         'disabled' => 'abgeschaltet',
     ],
 
+    'uptime_status' => [
+        'unknown' => 'noch nicht geprüft',
+        'up' => 'erreichbar',
+        'degraded' => 'auffällig',
+        'down' => 'ausgefallen',
+        'disabled' => 'abgeschaltet',
+    ],
+
+    'uptime_check_outcome' => [
+        'up' => 'erreichbar',
+        'connection_failed' => 'nicht erreichbar',
+        'timeout' => 'Zeitüberschreitung',
+        'status_mismatch' => 'unerwarteter Statuscode',
+        'content_mismatch' => 'erwarteter Text fehlt',
+    ],
+
     'delivery_status' => [
         'pending' => 'unterwegs',
         'sent' => 'zugestellt',
@@ -150,6 +167,7 @@ return [
         'scrubbed' => 'aus Datenschutzgründen nicht gespeichert',
         'filtered' => 'vom Eingangsfilter aussortiert',
         'discarded' => 'gelöschter Fehler, künftig verworfen',
+        'throttled' => 'vom Ausschlag-Schutz gedrosselt',
         'orphaned' => 'ohne zugehörige Meldung',
         'rate_limited' => 'Rate-Limit',
         'quota_exceeded' => 'Kontingent aufgebraucht',
@@ -512,6 +530,27 @@ return [
         'good' => 'Gut',
         'needs_improvement' => 'Mäßig',
         'poor' => 'Schlecht',
+    ],
+    'discover_dataset' => [
+        'errors' => 'Fehlermeldungen',
+        'transactions' => 'Aufrufe (Einzelmessungen)',
+        'transaction_windows' => 'Aufrufe (Minuten-Fenster)',
+        'user_reports' => 'Rückmeldungen',
+    ],
+
+    'discover_aggregate' => [
+        'count' => 'Anzahl',
+        'count_unique' => 'Verschiedene Werte',
+        'sum' => 'Summe',
+        'avg' => 'Mittelwert',
+        'min' => 'Kleinster Wert',
+        'max' => 'Größter Wert',
+        'p50' => 'p50',
+        'p75' => 'p75',
+        'p95' => 'p95',
+        'p99' => 'p99',
+        'apdex' => 'Zufriedenheit (Apdex)',
+        'failure_rate' => 'Fehlerquote',
     ],
 
 ];

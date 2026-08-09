@@ -81,6 +81,12 @@ return [
         'manage' => 'Cronjobs ansehen',
     ],
 
+    'uptime' => [
+        'title' => 'Erreichbarkeit',
+        'description' => 'Regelmäßige Prüfungen von außen erkennen einen Totalausfall — den einzigen Fall, den keine Fehlermeldung melden kann, weil dann nichts mehr läuft.',
+        'manage' => 'Erreichbarkeit ansehen',
+    ],
+
     'alerts' => [
         'title' => 'Alarme',
         'description' => 'Schwellwert-Alarme auf Kennzahlen: Fehleranzahl, Fehlerquote, Durchsatz und Antwortzeiten. Sie melden sich, wenn eine Kennzahl aus dem Rahmen fällt — und wieder, wenn sie sich normalisiert hat.',
@@ -133,6 +139,12 @@ return [
         'title' => 'Eingangsfilter',
         'description' => 'Bekanntes Rauschen — Browser-Erweiterungen, Crawler, lokale Entwicklung — wird beim Eingang verworfen und nur noch gezählt.',
         'manage' => 'Filter einstellen',
+    ],
+
+    'spikes' => [
+        'title' => 'Ausschlag-Schutz',
+        'description' => 'Ungewöhnliche Fehlerfluten werden am Verlauf dieses Projekts erkannt, die Aufnahme wird gedrosselt und das Team benachrichtigt. Verworfenes wird gezählt und ausgewiesen.',
+        'manage' => 'Schutz ansehen',
     ],
 
     'digest' => [
