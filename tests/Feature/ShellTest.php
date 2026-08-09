@@ -99,11 +99,14 @@ class ShellTest extends TestCase
                     $groups[$group['label']] = array_column($group['links'], 'label');
                 }
 
+                // Seit U6 steht in der Hauptnavigation nur noch, wozu man
+                // Daten ansieht: „Projekte" und „Organisationen" sind in den
+                // Einstellungsbereich gewandert, und mit ihnen fiel die Gruppe
+                // „Verwalten" weg.
                 $this->assertSame([
                     'Überwachen' => ['Fehler', 'Rückmeldungen', 'Merkmale'],
                     'Untersuchen' => ['Auswertung', 'Leistung', 'Leistungsprobleme', 'Ladeerlebnis', 'Profile'],
                     'Ausliefern' => ['Versionen'],
-                    'Verwalten' => ['Projekte', 'Organisationen', 'Bausteine'],
                 ], $groups);
             });
     }
@@ -132,7 +135,6 @@ class ShellTest extends TestCase
         // man gerade ist, gibt es nicht in doppelter Ausführung.
         $expectations = [
             route('dashboard') => 'Übersicht',
-            route('components') => 'Bausteine',
             // Die Merkmal-Übersicht markiert sich selbst über ihr Muster
             // `tags.*` und nicht über die Adresse.
             route('tags.index') => 'Merkmale',
@@ -164,7 +166,14 @@ class ShellTest extends TestCase
 
     public function test_the_shell_knows_the_signed_in_user_and_the_account_menu(): void
     {
-        $user = $this->signIn();
+        // Ausdrücklich als Mitglied und nicht über signIn(): dessen Konto ist
+        // Besitzer und damit zugleich Betreiber dieser Installation — im Menü
+        // stünde dann „Betrieb", und der Test prüfte die Rechte des Gates statt
+        // der Einträge, um die es hier geht.
+        $user = User::factory()->create();
+        $user->switchOrganization(Organization::factory()->withMember($user, OrganizationRole::Member)->create());
+
+        $this->actingAs($user);
 
         $this->get(route('dashboard'))
             ->assertInertia(fn (AssertableInertia $page) => $page
@@ -172,8 +181,9 @@ class ShellTest extends TestCase
                 ->where('shell.user.email', $user->email)
                 ->where('shell.logoutHref', route('logout'))
                 // Die Benachrichtigungen stehen seit U2 als Anker im Fuß und
-                // nicht mehr im Nutzer-Menü.
-                ->where('shell.menu', fn (Collection $menu) => $menu->pluck('label')->all() === ['Profil', 'Zugriffstoken', 'Bausteine'])
+                // nicht mehr im Nutzer-Menü; die Zugriffstoken seit U6 im
+                // Einstellungsbereich.
+                ->where('shell.menu', fn (Collection $menu) => $menu->pluck('label')->all() === ['Profil', 'Bausteine'])
             );
     }
 

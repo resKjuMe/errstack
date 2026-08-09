@@ -12,6 +12,9 @@ import useGlobalFilter from '../filters/useGlobalFilter.js';
 //
 // Sie hat keine Schaltfläche „Filtern": jede Änderung ist sofort ein Aufruf mit
 // neuer Adresse. Der Zeitraum darunter zeigt, was der Server daraus gemacht hat.
+//
+// Im Einstellungsbereich (U6) gibt es sie nicht — dort zeichnet die AppShell sie
+// gar nicht erst.
 export default function FilterBar({ filter }) {
     const { form, apply, reset, toggleProject } = useGlobalFilter(filter);
     const { labels } = filter;

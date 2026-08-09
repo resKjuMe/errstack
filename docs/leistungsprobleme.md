@@ -116,7 +116,7 @@ Abfrage aus dem Beleg.
 Welche Muster es gibt, entscheidet der Code (`PerformanceProblem`) — zu jedem
 gehört ein Erkenner, und ein Eintrag ohne diesen Code wäre eine Zeile, die
 nichts findet. Einstellbar ist, **ab wann** sie anschlagen, und ob sie laufen:
-`/organisationen/{org}/projekte/{projekt}/leistungserkennung`.
+`/einstellungen/organisationen/{org}/projekte/{projekt}/leistungserkennung`.
 
 Gespeichert wird nur, **was abweicht**. Ein Muster auf seinen Vorgabewerten
 bekommt keine Zeile in `performance_settings`, und eine bestehende verschwindet,

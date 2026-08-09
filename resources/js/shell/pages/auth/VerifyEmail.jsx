@@ -35,7 +35,7 @@ export default function VerifyEmail({ status = null }) {
                 </form>
 
                 <div className="flex flex-col items-end gap-1">
-                    <Link href="/profile" className={formLinkClass}>
+                    <Link href="/einstellungen/konto/profil" className={formLinkClass}>
                         {t('auth_ui.verify.change_address')}
                     </Link>
                     <Link

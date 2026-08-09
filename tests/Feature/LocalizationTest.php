@@ -31,7 +31,7 @@ class LocalizationTest extends TestCase
         $user = User::factory()->create(['locale' => 'de']);
 
         $this->actingAs($user)
-            ->from('/profile')
+            ->from('/einstellungen/konto/profil')
             ->put('/password', [])
             ->assertSessionHasErrors([
                 'current_password' => 'Das aktuelle Passwort ist erforderlich.',
@@ -45,8 +45,8 @@ class LocalizationTest extends TestCase
         $organization = Organization::factory()->withMember($user)->create();
 
         $this->actingAs($user)
-            ->from("/organisationen/{$organization->slug}")
-            ->post("/organisationen/{$organization->slug}/einladungen", [
+            ->from("/einstellungen/organisationen/{$organization->slug}")
+            ->post("/einstellungen/organisationen/{$organization->slug}/einladungen", [
                 'email' => 'GROSS@example.com',
                 'role' => 'chef',
             ])
@@ -63,12 +63,12 @@ class LocalizationTest extends TestCase
 
         // Kein Zugriff: die Meldung stammt aus der Autorisierung selbst.
         $this->actingAs($user)
-            ->get("/organisationen/{$foreign->slug}")
+            ->get("/einstellungen/organisationen/{$foreign->slug}")
             ->assertForbidden()
             ->assertSee('Dazu fehlt die Berechtigung.');
 
         $this->actingAs($user)
-            ->get('/organisationen/gibt-es-nicht')
+            ->get('/einstellungen/organisationen/gibt-es-nicht')
             ->assertNotFound()
             ->assertSee('Nicht gefunden');
     }

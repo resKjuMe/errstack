@@ -28,12 +28,50 @@ return [
         'notifications' => 'Notifications',
     ],
 
+    // Sub-navigation of the settings area (app/Support/SettingsNav).
+    'settings' => [
+        'groups' => [
+            'organization' => 'Organization',
+            'projects' => 'Projects',
+            'privacy' => 'Privacy and ingestion',
+            'notifications' => 'Notifications',
+            'account' => 'Account',
+        ],
+
+        'links' => [
+            'organization' => 'General',
+            'organizations' => 'All organizations',
+            'audit_log' => 'Audit log',
+            'repositories' => 'Repositories',
+            'projects' => 'All projects',
+            'project' => 'General',
+            'project_setup' => 'Setup',
+            'project_keys' => 'Keys and DSN',
+            'project_ownership' => 'Ownership',
+            'project_grouping' => 'Grouping',
+            'project_alerts' => 'Metric alerts',
+            'project_issue_alerts' => 'Issue alerts',
+            'project_crons' => 'Cron monitors',
+            'project_uptime' => 'Uptime monitors',
+            'project_performance' => 'Performance detection',
+            'organization_privacy' => 'Organization privacy',
+            'project_privacy' => 'Project privacy',
+            'project_filters' => 'Inbound filters',
+            'project_sampling' => 'Sampling',
+            'project_spikes' => 'Spike protection',
+            'notification_channels' => 'Organization channels',
+            'notification_preferences' => 'My notifications',
+            'project_digest' => 'Digests',
+            'profile' => 'Profile',
+            'api_tokens' => 'Access tokens',
+        ],
+    ],
+
     // Headings of the navigation groups in the sidebar.
     'groups' => [
         'monitor' => 'Monitor',
         'investigate' => 'Investigate',
         'ship' => 'Ship',
-        'manage' => 'Manage',
     ],
 
     'links' => [
@@ -47,14 +85,10 @@ return [
         'performance_issues' => 'Performance issues',
         'web_vitals' => 'Web Vitals',
         'profiling' => 'Profiles',
-        'projects' => 'Projects',
-        'organizations' => 'Organizations',
-        'components' => 'Components',
     ],
 
     'menu_items' => [
         'profile' => 'Profile',
-        'api_tokens' => 'Access tokens',
         'operations' => 'Operations',
         'components' => 'Components',
     ],

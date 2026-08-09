@@ -77,7 +77,7 @@ function NewChannel({ organization, catalog }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(`/organisationen/${organization.slug}/benachrichtigungen`, {
+        post(`/einstellungen/organisationen/${organization.slug}/benachrichtigungen`, {
             preserveScroll: true,
             onSuccess: () => reset(),
         });

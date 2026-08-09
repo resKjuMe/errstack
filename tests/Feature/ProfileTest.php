@@ -15,7 +15,7 @@ class ProfileTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->actingAs($user)->get('/profile')
+        $this->actingAs($user)->get('/einstellungen/konto/profil')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Profile')
@@ -30,7 +30,7 @@ class ProfileTest extends TestCase
         // Sonst käme man aus einem Tippfehler in der E-Mail-Adresse nicht heraus.
         $user = User::factory()->unverified()->create();
 
-        $this->actingAs($user)->get('/profile')
+        $this->actingAs($user)->get('/einstellungen/konto/profil')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page->where('user.isUnverified', true));
     }
@@ -41,14 +41,14 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile', [
+            ->patch('/einstellungen/konto/profil', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
             ]);
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
+            ->assertRedirect('/einstellungen/konto/profil');
 
         $user->refresh();
 
@@ -63,14 +63,14 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile', [
+            ->patch('/einstellungen/konto/profil', [
                 'name' => 'Test User',
                 'email' => $user->email,
             ]);
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
+            ->assertRedirect('/einstellungen/konto/profil');
 
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
@@ -81,7 +81,7 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->delete('/profile', [
+            ->delete('/einstellungen/konto/profil', [
                 'password' => 'password',
             ]);
 
@@ -99,14 +99,14 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->from('/profile')
-            ->delete('/profile', [
+            ->from('/einstellungen/konto/profil')
+            ->delete('/einstellungen/konto/profil', [
                 'password' => 'wrong-password',
             ]);
 
         $response
             ->assertSessionHasErrorsIn('userDeletion', 'password')
-            ->assertRedirect('/profile');
+            ->assertRedirect('/einstellungen/konto/profil');
 
         $this->assertNotNull($user->fresh());
     }

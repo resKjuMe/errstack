@@ -5,6 +5,7 @@ import MobileHeader from './components/MobileHeader.jsx';
 import MobileMenu from './components/MobileMenu.jsx';
 import Flash from './components/Flash.jsx';
 import FilterBar from './components/FilterBar.jsx';
+import SettingsNav, { SettingsNavCompact } from './components/SettingsNav.jsx';
 import { ToastProvider } from './components/Toast.jsx';
 import useFilter from './filters/useFilter.js';
 
@@ -15,6 +16,11 @@ import useFilter from './filters/useFilter.js';
 //
 // Die Navigation steht links in einer festen Leiste; auf schmalen Viewports ist
 // sie ausgeblendet und über die Kopfzeile erreichbar.
+//
+// Die Einstellungsseiten bekommen darin einen zweiten Rahmen: eine eigene
+// Unter-Navigation und — anders als die Auswertungsseiten — keine globale
+// Filterleiste. Woran die Hülle sie erkennt, steht in der Nutzlast (`settings`)
+// und nicht hier: der Server weiß es aus der Routen-Gruppe.
 
 // Ein-/ausgeklappt liegt in localStorage, gelesen beim ersten Rendern —
 // dieselbe Konvention wie beim Design (ThemeToggle). Ein Anti-Flash-Script wie
@@ -78,14 +84,44 @@ export default function AppShell({ children }) {
                                 undo={flash?.undo}
                                 undoHref={shell?.undoHref}
                             />
-                            {/* Die globale Filterleiste steht hier und nicht in
-                                der Seite: dadurch sitzt sie auf jeder
-                                Auswertungsseite an derselben Stelle, und eine
-                                neue bekommt sie, ohne sie einzubinden. `null`
-                                heißt „hier gibt es nichts zu filtern" — dann
-                                fehlt sie ganz. */}
-                            {filter && <FilterBar filter={filter} />}
-                            {children}
+
+                            {/* Der Einstellungsbereich (U6): derselbe Rahmen wie
+                                überall, nur mit einer zweiten Leiste davor —
+                                und ohne die Filterleiste. Dort wird nichts
+                                ausgewertet, sondern eingerichtet; ein Zeitraum
+                                über einer Liste von Schaltern wäre eine Auswahl
+                                ohne Wirkung.
+
+                                Ob eine Seite dazugehört, sagt der Server. Hier
+                                steht keine Liste von Seitennamen, die beim
+                                nächsten Einstellungsformular jemand nachtragen
+                                müsste. */}
+                            {shell?.settings ? (
+                                <div className="flex gap-8">
+                                    <SettingsNav settings={shell.settings} />
+
+                                    {/* min-w-0: wie in der Spalte darüber —
+                                        eine breite Tabelle soll in sich
+                                        scrollen und nicht die Leiste
+                                        wegdrücken. */}
+                                    <div className="min-w-0 flex-1">
+                                        <SettingsNavCompact settings={shell.settings} />
+                                        {children}
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    {/* Die globale Filterleiste steht hier und
+                                        nicht in der Seite: dadurch sitzt sie auf
+                                        jeder Auswertungsseite an derselben
+                                        Stelle, und eine neue bekommt sie, ohne
+                                        sie einzubinden. `null` heißt „hier gibt
+                                        es nichts zu filtern" — dann fehlt sie
+                                        ganz. */}
+                                    {filter && <FilterBar filter={filter} />}
+                                    {children}
+                                </>
+                            )}
                         </main>
                     </div>
                 </div>

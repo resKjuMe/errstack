@@ -84,7 +84,7 @@ class EnvironmentTest extends TestCase
     {
         [$user, $organization, $project] = $this->project();
         $environment = Environment::factory()->for($project)->create(['name' => 'staging']);
-        $path = "/organisationen/{$organization->slug}/projekte/{$project->slug}/umgebungen/{$environment->id}";
+        $path = "/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}/umgebungen/{$environment->id}";
 
         $this->actingAs($user)->patch($path, ['hidden' => true])->assertSessionHasNoErrors();
         $this->assertTrue($environment->refresh()->is_hidden);
@@ -99,7 +99,7 @@ class EnvironmentTest extends TestCase
         $environment = Environment::factory()->for($project)->create(['name' => 'staging']);
 
         $this->actingAs($user)
-            ->patch("/organisationen/{$organization->slug}/projekte/{$project->slug}/umgebungen/{$environment->id}", ['hidden' => true])
+            ->patch("/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}/umgebungen/{$environment->id}", ['hidden' => true])
             ->assertForbidden();
 
         $this->assertFalse($environment->refresh()->is_hidden);
@@ -112,7 +112,7 @@ class EnvironmentTest extends TestCase
         $environment = Environment::factory()->for($other)->create(['name' => 'staging']);
 
         $this->actingAs($user)
-            ->patch("/organisationen/{$organization->slug}/projekte/{$project->slug}/umgebungen/{$environment->id}", ['hidden' => true])
+            ->patch("/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}/umgebungen/{$environment->id}", ['hidden' => true])
             ->assertNotFound();
     }
 
@@ -122,7 +122,7 @@ class EnvironmentTest extends TestCase
         Environment::factory()->for($project)->create(['name' => 'staging']);
 
         $this->actingAs($user)
-            ->get("/organisationen/{$organization->slug}/projekte/{$project->slug}")
+            ->get("/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}")
             ->assertOk()
             ->assertSee('staging');
     }

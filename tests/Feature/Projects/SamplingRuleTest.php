@@ -40,7 +40,7 @@ class SamplingRuleTest extends TestCase
 
     private function path(Organization $organization, Project $project): string
     {
-        return "/organisationen/{$organization->slug}/projekte/{$project->slug}/stichproben";
+        return "/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}/stichproben";
     }
 
     /**
