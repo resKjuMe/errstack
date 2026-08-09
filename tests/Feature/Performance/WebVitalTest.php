@@ -372,10 +372,14 @@ class WebVitalTest extends TestCase
             }
         }
 
-        $this->assertContains(
-            route('web-vitals.index'),
+        // Die Links der Auswertungsseiten tragen seit U4 den Filter mit
+        // (ShellData::filtered) — hier zählt allein das Ziel.
+        $targets = array_map(
+            fn (mixed $href): string => explode('?', (string) $href)[0],
             array_column($links, 'href'),
         );
+
+        $this->assertContains(route('web-vitals.index'), $targets);
     }
 
     /**

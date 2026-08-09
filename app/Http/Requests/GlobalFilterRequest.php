@@ -4,9 +4,13 @@ namespace App\Http\Requests;
 
 use App\Enums\FilterPeriod;
 use App\Models\Environment;
+use App\Models\Organization;
+use App\Models\User;
 use App\Support\CurrentOrganization;
 use App\Support\Filters\CurrentFilter;
+use App\Support\Filters\FilterQuery;
 use App\Support\Filters\GlobalFilter;
+use App\Support\Filters\RememberedFilter;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -15,6 +19,11 @@ use Illuminate\Validation\Rule;
  * Die globale Filterleiste als Eingabe: dieselben Felder für jede
  * Auswertungsseite. Der Zustand steht vollständig in der Adresszeile, damit ein
  * Neuladen ihn behält und ein geteilter Link dieselbe Auswahl zeigt.
+ *
+ * Fehlt sie dort — beim ersten Aufruf, nach dem Anmelden, über einen Link ohne
+ * Parameter —, tritt der zuletzt benutzte Stand ein ({@see RememberedFilter}).
+ * Die Adresse bleibt damit die Wahrheit; der gemerkte Stand füllt nur die Lücke,
+ * die sie lässt.
  *
  * Geprüft wird nur die Form; welche Projekte und Umgebungen es gibt, entscheidet
  * {@see GlobalFilter} — ein Link auf ein gelöschtes Projekt soll die Seite nicht
@@ -58,22 +67,62 @@ class GlobalFilterRequest extends FormRequest
      * Rahmen zeichnet die Filterleiste daraus, ohne ihn ein zweites Mal
      * aufzulösen. Dass eine Seite ihn überhaupt anfordert, ist zugleich das
      * Kennzeichen, dass sie eine Auswertungsseite ist und die Leiste bekommt.
+     *
+     * Steht in der Adresse keine Auswahl, tritt der zuletzt benutzte Stand an
+     * ihre Stelle ({@see RememberedFilter}) — dadurch überlebt die Auswahl den
+     * Seitenwechsel und die Abmeldung. Steht dort eine, gewinnt sie; die
+     * Rangfolge und ihr Grund stehen bei {@see FilterQuery::isExplicit()}.
      */
     public function filter(): GlobalFilter
     {
         return CurrentFilter::remember(request(), function (): GlobalFilter {
             $user = $this->user();
-            $projects = $this->validated('projects');
+            $organization = CurrentOrganization::for($this);
 
-            return GlobalFilter::resolve(CurrentOrganization::for($this), $user, [
-                'projects' => is_array($projects) ? array_values($projects) : [],
-                'environment' => $this->stringOrNull($this->validated('environment')),
-                'period' => $this->stringOrNull($this->validated('period')),
-                'from' => $this->stringOrNull($this->validated('from')),
-                'to' => $this->stringOrNull($this->validated('to')),
+            $filter = GlobalFilter::resolve($organization, $user, [
+                ...$this->selection($user, $organization),
+                // Die Zeitzone kommt immer aus der Adresse: sie sagt, in welcher
+                // Uhr gerechnet wird, und gehört damit zum Browser und nicht zur
+                // gemerkten Auswahl.
                 'tz' => $this->stringOrNull($this->validated('tz')),
             ]);
+
+            RememberedFilter::remember($user, $filter);
+
+            return $filter;
         });
+    }
+
+    /**
+     * Die Auswahl dieses Aufrufs: was in der Adresse steht — und wenn dort
+     * nichts steht, der gemerkte Stand.
+     *
+     * @return array{projects: list<string>, environment: string|null, period: string|null, from: string|null, to: string|null}
+     */
+    private function selection(User $user, ?Organization $organization): array
+    {
+        if (! FilterQuery::isExplicit($this)) {
+            return [
+                'projects' => [],
+                'environment' => null,
+                'period' => null,
+                'from' => null,
+                'to' => null,
+                ...RememberedFilter::for($user, $organization),
+            ];
+        }
+
+        $projects = $this->validated('projects');
+
+        return [
+            'projects' => is_array($projects)
+                ? array_values(array_map(fn (mixed $slug): string => (string) $slug, $projects))
+                : [],
+            'environment' => $this->stringOrNull($this->validated('environment')),
+            'period' => $this->stringOrNull($this->validated('period')),
+            'from' => $this->stringOrNull($this->validated('from')),
+            'to' => $this->stringOrNull($this->validated('to')),
+        ];
     }
 
     private function stringOrNull(mixed $value): ?string

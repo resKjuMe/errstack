@@ -44,18 +44,26 @@ export default function useGlobalFilter(filter) {
         visit(next);
     };
 
-    // Ohne Parameter setzt der Server seine Voreinstellungen ein; die Felder
-    // ziehen mit seiner Antwort nach. Zurückgesetzt wird die **Leiste** und
-    // nicht die Seite: eine gewählte Sortierung ist keine Einschränkung und
-    // bleibt deshalb stehen.
+    // Zurückgesetzt wird die **Leiste** und nicht die Seite: eine gewählte
+    // Sortierung ist keine Einschränkung und bleibt deshalb stehen.
+    //
+    // Die Voreinstellung wird ausdrücklich hingeschrieben und nicht durch
+    // Weglassen erreicht. Eine Adresse ohne Filter-Parameter heißt seit U4
+    // „nimm den zuletzt benutzten Stand" (App\Http\Requests\GlobalFilterRequest)
+    // — beim Zurücksetzen wäre das genau der Stand, den man loswerden will, und
+    // die Schaltfläche täte nichts.
     const reset = () => {
-        const query = withoutFilter().toString();
+        const next = {
+            projects: [],
+            environment: '',
+            period: filter.defaultPeriod,
+            from: '',
+            to: '',
+            tz: browserTimezone() || form.tz,
+        };
 
-        router.get(
-            query ? `${window.location.pathname}?${query}` : window.location.pathname,
-            {},
-            { preserveState: true, preserveScroll: true }
-        );
+        setForm(next);
+        visit(next);
     };
 
     return {

@@ -6,6 +6,9 @@ use App\Http\Middleware\SettingsArea;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
+use App\Support\Filters\CurrentFilter;
+use App\Support\Filters\FilterQuery;
+use App\Support\Filters\RememberedFilter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
@@ -46,8 +49,11 @@ final class ShellData
             ],
             // Ohne Organisation führt das Logo auf den Einstieg: der entscheidet
             // selbst, wohin es geht — auf die Übersicht einer Organisation oder
-            // in die Liste, wo sich eine anlegen lässt.
-            'logoHref' => self::hasOrganization() ? route('dashboard') : url('/'),
+            // in die Liste, wo sich eine anlegen lässt. Mit Organisation führt es
+            // auf eine Auswertungsseite und trägt den Filter deshalb mit — sonst
+            // wäre ausgerechnet der auffälligste Weg zur Übersicht der eine, der
+            // die Adresse leerräumt.
+            'logoHref' => self::hasOrganization() ? self::filtered(route('dashboard')) : url('/'),
             // Der Rückweg zur zuletzt ausgeführten Aktion (S6). Er steht in der
             // Hülle und nicht an der Seite, weil die Meldung samt Schaltfläche
             // in der Hülle erscheint — und weil eine Aktion aus der Liste auf
@@ -157,6 +163,7 @@ final class ShellData
                         'route' => 'dashboard',
                         'activePattern' => 'dashboard',
                         'icon' => 'dashboard',
+                        'filtered' => true,
                     ],
                 ],
             ],
@@ -168,18 +175,21 @@ final class ShellData
                         'route' => 'issues.index',
                         'activePattern' => 'issues.*',
                         'icon' => 'issues',
+                        'filtered' => true,
                     ],
                     [
                         'label' => __('nav.links.feedback'),
                         'route' => 'feedback.index',
                         'activePattern' => 'feedback.*',
                         'icon' => 'feedback',
+                        'filtered' => true,
                     ],
                     [
                         'label' => __('nav.links.tags'),
                         'route' => 'tags.index',
                         'activePattern' => 'tags.*',
                         'icon' => 'tags',
+                        'filtered' => true,
                     ],
                 ],
             ],
@@ -194,24 +204,28 @@ final class ShellData
                         // dann gleichzeitig hervorgehoben in der Leiste.
                         'activePattern' => 'performance.index',
                         'icon' => 'performance',
+                        'filtered' => true,
                     ],
                     [
                         'label' => __('nav.links.performance_issues'),
                         'route' => 'performance.issues.index',
                         'activePattern' => 'performance.issues.*',
                         'icon' => 'performance_issues',
+                        'filtered' => true,
                     ],
                     [
                         'label' => __('nav.links.web_vitals'),
                         'route' => 'web-vitals.index',
                         'activePattern' => 'web-vitals.*',
                         'icon' => 'web_vitals',
+                        'filtered' => true,
                     ],
                     [
                         'label' => __('nav.links.profiling'),
                         'route' => 'profiling.index',
                         'activePattern' => 'profiling.*',
                         'icon' => 'profiling',
+                        'filtered' => true,
                     ],
                 ],
             ],
@@ -223,6 +237,7 @@ final class ShellData
                         'route' => 'releases.index',
                         'activePattern' => 'releases.*',
                         'icon' => 'releases',
+                        'filtered' => true,
                     ],
                 ],
             ],
@@ -410,11 +425,47 @@ final class ShellData
      * benutzt ({@see SettingsNav}) — beide Leisten sollen bei einer fehlenden
      * Route dasselbe tun, nämlich schweigen.
      *
-     * @param  list<array{label: string, route: string, activePattern: string|list<string>, params?: array<array-key, mixed>, icon?: string}>  $entries
+     * `filtered` markiert die Auswertungsseiten: ihre Links tragen den Filter
+     * dieses Aufrufs mit, damit die Auswahl den Seitenwechsel übersteht. Der
+     * Grund, warum das nicht dem gemerkten Stand allein überlassen bleibt, steht
+     * bei {@see self::filtered()}. Die Unter-Navigation der Einstellungen kennt
+     * das Kennzeichen nicht — dort gibt es nichts zu filtern.
+     *
+     * @param  list<array{label: string, route: string, activePattern: string|list<string>, params?: array<array-key, mixed>, icon?: string, filtered?: bool}>  $entries
      * @return list<array{label: string, href: string, active: bool, icon?: string}>
      */
     private static function withExisting(array $entries): array
     {
-        return NavLinks::build($entries);
+        return NavLinks::build(
+            $entries,
+            fn (string $href, array $entry): string => ($entry['filtered'] ?? false)
+                ? self::filtered($href)
+                : $href,
+        );
+    }
+
+    /**
+     * Ein Link auf eine Auswertungsseite, mit dem Filter dieses Aufrufs.
+     *
+     * **Warum die Links ihn überhaupt mittragen.** Der gemerkte Stand allein
+     * würde am Ziel dasselbe zeigen ({@see RememberedFilter}),
+     * aber die Adresse dort bliebe nackt — und eine Adresse, die den gezeigten
+     * Ausschnitt nicht nennt, ist nicht mehr teilbar, nicht mehr als Lesezeichen
+     * zu gebrauchen und im Verlauf von jeder anderen nicht zu unterscheiden. Der
+     * Filter steht in der Adresszeile, also gehört er auch in die Links, die
+     * dorthin führen.
+     *
+     * Genommen wird der bereits aufgelöste Filter der laufenden Anfrage: er ist
+     * ohnehin da, wenn die Seite eine Auswertungsseite ist, und er ist um
+     * gelöschte Projekte und Umgebungen schon bereinigt. Ist keiner da — auf
+     * Einstellungen, Profil und Verwaltung —, bleiben die Links ohne Parameter;
+     * dort greift am Ziel der gemerkte Stand.
+     */
+    private static function filtered(string $href): string
+    {
+        $filter = CurrentFilter::of(request());
+        $query = $filter === null ? '' : FilterQuery::build($filter);
+
+        return $query === '' ? $href : $href.'?'.$query;
     }
 }

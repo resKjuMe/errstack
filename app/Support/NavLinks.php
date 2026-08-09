@@ -26,10 +26,18 @@ final class NavLinks
      * `params` braucht nur, wer auf eine Route mit Platzhalter zeigt — etwa die
      * Stammdaten der aktiven Organisation.
      *
-     * @param  list<array{label: string, route: string, activePattern: string|list<string>, params?: array<array-key, mixed>, icon?: string}>  $entries
+     * `$decorate` bekommt die fertige Adresse und den Eintrag, aus dem sie
+     * entstanden ist, und darf sie ergänzen. Die Hauptnavigation hängt darüber
+     * den Filter dieses Aufrufs an die Auswertungsseiten ({@see ShellData}); die
+     * Unter-Navigation der Einstellungen lässt den Parameter weg, denn dort gibt
+     * es nichts zu filtern. Die Regel selbst steht damit bei dem, der sie
+     * braucht, und nicht in dieser Stelle, die beide bedient.
+     *
+     * @param  list<array{label: string, route: string, activePattern: string|list<string>, params?: array<array-key, mixed>, icon?: string, filtered?: bool}>  $entries
+     * @param  (\Closure(string, array<string, mixed>): string)|null  $decorate
      * @return list<array{label: string, href: string, active: bool, icon?: string}>
      */
-    public static function build(array $entries): array
+    public static function build(array $entries, ?\Closure $decorate = null): array
     {
         $links = [];
 
@@ -44,9 +52,11 @@ final class NavLinks
                 continue;
             }
 
+            $href = route($entry['route'], $entry['params'] ?? []);
+
             $link = [
                 'label' => $entry['label'],
-                'href' => route($entry['route'], $entry['params'] ?? []),
+                'href' => $decorate === null ? $href : $decorate($href, $entry),
                 'active' => request()->routeIs(...(array) $entry['activePattern']),
             ];
 
