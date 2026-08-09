@@ -267,6 +267,34 @@ class Release extends Model
     }
 
     /**
+     * Dieselbe Ordnung andersherum: die älteste Version zuerst.
+     *
+     * **Keine reine Umkehrung**, und das ist die eine Stelle, an der man
+     * hinsehen muss: die erste Stufe bleibt, wie sie ist. Eine Angabe ohne
+     * Rangfolge — ein Commit-Hash — steht auch hier hinten. Umgedreht stünde
+     * sie plötzlich vor `0.1.0`, und die Aussage „das war die erste Version"
+     * wäre erfunden; unzerlegbar heißt nicht „älter", sondern „nicht
+     * einzuordnen".
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function oldestFirst(Builder $query): void
+    {
+        $query
+            ->orderByRaw('case when sort_major is null then 1 else 0 end')
+            ->orderBy('sort_major')
+            ->orderBy('sort_minor')
+            ->orderBy('sort_patch')
+            // Und hier gilt die Umkehrung sehr wohl: `1.0.0-rc.1` kam vor
+            // `1.0.0`.
+            ->orderByRaw('case when sort_prerelease is null then 1 else 0 end')
+            ->orderBy('sort_prerelease')
+            ->orderBy('last_event_at')
+            ->orderBy('id');
+    }
+
+    /**
      * @return BelongsTo<Project, $this>
      */
     public function project(): BelongsTo

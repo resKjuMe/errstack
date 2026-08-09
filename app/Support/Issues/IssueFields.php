@@ -155,6 +155,8 @@ final class IssueFields implements FieldResolver
             'lastSeen',
             'release',
             'firstRelease',
+            'resolvedInRelease',
+            'regressedInRelease',
             'assigned',
             ...array_keys(self::USER_FIELDS),
             ...self::PENDING_FIELDS,
@@ -198,6 +200,13 @@ final class IssueFields implements FieldResolver
             'lastseen' => $this->moment($condition, 'last_seen'),
             'release' => $this->release($condition, ['firstRelease', 'lastRelease']),
             'firstrelease' => $this->release($condition, ['firstRelease']),
+            // Die beiden Gegenstücke zu `firstRelease:` — was eine Auslieferung
+            // erledigt und was sie zurückgeholt hat. Sie stehen hier, weil die
+            // Detailseite einer Version (R8) beide Zahlen zeigt und jede von
+            // ihnen weiterführen soll: eine Zahl auf einer Übersichtsseite,
+            // hinter der man nicht nachsehen kann, ist eine Behauptung.
+            'resolvedinrelease' => $this->release($condition, ['resolvedInRelease']),
+            'regressedinrelease' => $this->release($condition, ['regressedInRelease']),
             'assigned' => $this->assigned($condition),
             default => $this->tag($condition),
         };
@@ -473,11 +482,16 @@ final class IssueFields implements FieldResolver
     }
 
     /**
-     * `release:` und `firstRelease:`.
+     * Die Versions-Felder: `release:`, `firstRelease:`, `resolvedInRelease:`
+     * und `regressedInRelease:`.
      *
      * `release:` fragt die **erste oder letzte** bekannte Version ab — dieselbe
      * Auskunft mit derselben Grenze wie seit S1: erfasst sind genau diese
      * beiden, eine Version dazwischen kennt der Eintrag nicht.
+     *
+     * Die anderen drei fragen je einen einzelnen Vermerk ab und sind deshalb
+     * eindeutig: „mit dieser Version kam der Fehler", „in dieser wurde er
+     * erledigt", „mit dieser kam er zurück".
      *
      * @param  list<string>  $relations
      */

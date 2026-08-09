@@ -63,6 +63,32 @@ final class Formats
         return __('formats.duration_hours', ['value' => self::number($minutes / 60, 1)]);
     }
 
+    /**
+     * Eine Dateigröße in der Einheit, die zur Größenordnung passt.
+     *
+     * Dieselbe Überlegung wie bei der Laufzeit: eine Quellkarte hat vier
+     * Megabyte, die Datei daneben achthundert Byte, und beide stehen in
+     * derselben Spalte untereinander.
+     *
+     * Gerechnet wird in Tausenderschritten (kB, MB) und nicht in 1024er-Stufen:
+     * die Zahl steht neben einem Hochladen und wird mit dem verglichen, was ein
+     * Bauwerkzeug meldet — und das rechnet ebenso.
+     */
+    public static function bytes(int $bytes): string
+    {
+        if ($bytes < 1000) {
+            return __('formats.bytes', ['value' => self::number($bytes)]);
+        }
+
+        $kilobytes = $bytes / 1000;
+
+        if ($kilobytes < 1000) {
+            return __('formats.kilobytes', ['value' => self::number($kilobytes, $kilobytes < 10 ? 1 : 0)]);
+        }
+
+        return __('formats.megabytes', ['value' => self::number($kilobytes / 1000, 1)]);
+    }
+
     public static function number(int|float $value, int $decimals = 0): string
     {
         return number_format(

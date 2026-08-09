@@ -1,24 +1,45 @@
 import React from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
 import FilterBar from '../../components/FilterBar.jsx';
 import Pagination from '../../components/Pagination.jsx';
+import { InputLabel, SelectInput } from '../../components/Form.jsx';
 import { useT } from '../../i18n.js';
+import HealthValue from './HealthValue.jsx';
 
-// Die Versionsliste: welche Auslieferungen es gab und was mit ihnen
-// dazugekommen ist.
+// Die Versionsliste: welche Auslieferungen es gab, was mit ihnen dazugekommen
+// ist und wie sie ausgegangen sind.
 //
-// Sie beantwortet **eine** Frage — „ist mit dieser Version etwas
-// dazugekommen?" — und lässt alles weg, was danach kommt. Der Vergleich zur
-// Vorversion und die Detailseite sind R8, Gesundheit und Verbreitung sind R7.
-// Der Weg von hier aus führt über „neue Fehler" in die Fehlerliste, gefiltert
-// auf genau diese Version.
-export default function Index({ filter, releases, totalLabel, environmentIgnored }) {
+// Zwei Fragen stehen nebeneinander, und beide werden nach einer Auslieferung
+// gestellt: „ist etwas dazugekommen?" (die neuen Fehler, R1) und „ist etwas
+// kaputt?" (die Crash-Free-Rate, R7). Die zweite ist der Grund für die
+// Sortierung: unter fünfzig Versionen die schlechteste zu suchen ist keine
+// Antwort.
+export default function Index({
+    filter,
+    releases,
+    sort,
+    sortOptions,
+    totalLabel,
+    environmentPartial,
+}) {
     const { shell } = usePage().props;
     const t = useT();
 
     const showProject = filter.value.projects.length !== 1;
+
+    // Eine geänderte Sortierung ist eine andere Liste — und „Seite 7" darin ist
+    // eine andere Seite 7. Deshalb fällt die Seitenzahl weg, wie bei der
+    // Filterleiste.
+    const go = (patch) => {
+        const query = new URLSearchParams(window.location.search);
+
+        Object.entries(patch).forEach(([key, value]) => query.set(key, value));
+        query.delete('page');
+
+        router.get(`${window.location.pathname}?${query.toString()}`, {}, { preserveState: true });
+    };
 
     return (
         <>
@@ -30,16 +51,29 @@ export default function Index({ filter, releases, totalLabel, environmentIgnored
 
             <FilterBar filter={filter} />
 
-            {environmentIgnored && (
+            {environmentPartial && (
                 <p className="mb-4 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
-                    {t('releases.environment_ignored')}
+                    {t('releases.environment_partial')}
                 </p>
             )}
 
             <Card className="mb-4">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('releases.list.count', { count: totalLabel })}
-                </p>
+                <div className="flex flex-wrap items-end gap-4">
+                    <div>
+                        <InputLabel htmlFor="release_sort" value={t('releases.sort.label')} />
+                        <SelectInput
+                            id="release_sort"
+                            className="mt-1"
+                            value={sort}
+                            options={sortOptions}
+                            onChange={(e) => go({ sort: e.target.value })}
+                        />
+                    </div>
+
+                    <p className="ms-auto text-sm text-gray-500 dark:text-gray-400">
+                        {t('releases.list.count', { count: totalLabel })}
+                    </p>
+                </div>
             </Card>
 
             <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
@@ -52,6 +86,18 @@ export default function Index({ filter, releases, totalLabel, environmentIgnored
                     <>
                         <div className="flex items-center gap-4 border-b border-gray-100 px-4 py-2 text-xs font-medium uppercase text-gray-500 dark:border-gray-700 dark:text-gray-400">
                             <span className="min-w-0 flex-1">{t('releases.columns.version')}</span>
+                            <span
+                                className="w-24 text-right"
+                                title={t('releases.columns.crash_free_hint')}
+                            >
+                                {t('releases.columns.crash_free')}
+                            </span>
+                            <span
+                                className="hidden w-24 text-right sm:block"
+                                title={t('releases.columns.adoption_hint')}
+                            >
+                                {t('releases.columns.adoption')}
+                            </span>
                             <span className="w-20 text-right">{t('releases.columns.new')}</span>
                             <span className="w-20 text-right">
                                 {t('releases.columns.resolved')}
@@ -143,9 +189,21 @@ function ReleaseRow({ release, showProject, t }) {
                 </p>
             </div>
 
+            {/* Die Gesundheit (R7). Sie steht vor den Fehlerzahlen, weil sie die
+                Frage beantwortet, die nach einer Auslieferung zuerst gestellt
+                wird — und weil eine Version mit einer eingebrochenen
+                Crash-Free-Rate keine Zeile ist, die man überliest. */}
+            <div className="w-24 text-right">
+                <HealthValue value={release.health?.crashFreeSessions} tone="crash_free" t={t} />
+            </div>
+
+            <div className="hidden w-24 text-right sm:block">
+                <HealthValue value={release.health?.adoptionSessions} t={t} />
+            </div>
+
             {/* Die neuen Fehler sind die Zahl, wegen der diese Liste besteht —
-                deshalb führen sie als Einzige weiter, und zwar in die
-                Fehlerliste, gefiltert auf genau diese Version. */}
+                deshalb führen sie weiter, und zwar in die Fehlerliste,
+                gefiltert auf genau diese Version. */}
             <div className="w-20 text-right font-medium">
                 {release.newIssues > 0 ? (
                     <Link

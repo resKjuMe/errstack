@@ -23,4 +23,11 @@ return [
     'duration_minutes' => ':value min',
     'duration_hours' => ':value h',
 
+    // Dateigrößen (App\Support\Formats::bytes). In Tausenderschritten und nicht
+    // in 1024er-Stufen: die Zahl wird mit der verglichen, die ein Bauwerkzeug
+    // meldet.
+    'bytes' => ':value Byte',
+    'kilobytes' => ':value kB',
+    'megabytes' => ':value MB',
+
 ];

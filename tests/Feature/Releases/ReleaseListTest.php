@@ -3,11 +3,14 @@
 namespace Tests\Feature\Releases;
 
 use App\Enums\IssueStatus;
+use App\Models\Environment;
 use App\Models\Issue;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Release;
+use App\Models\ReleaseSessionCount;
 use App\Models\User;
+use App\Support\Releases\Health\SessionTally;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -197,5 +200,155 @@ class ReleaseListTest extends TestCase
     public function test_the_page_requires_a_login(): void
     {
         $this->get(route('releases.index'))->assertRedirect(route('login'));
+    }
+
+    /**
+     * Die Zahlen aus den Sitzungsdaten (R7) stehen in der Liste — und zwar
+     * gerechnet und nicht abgeschrieben: 8 von 10 Sitzungen heil sind 80 %.
+     */
+    public function test_the_list_shows_the_crash_free_rate_and_the_adoption_per_version(): void
+    {
+        [$user, , $project] = $this->context();
+
+        $one = $this->release($project, '1.0.0');
+        $two = $this->release($project, '1.1.0');
+
+        $this->sessions($one, 10, 2);
+        $this->sessions($two, 30, 0);
+
+        $this->actingAs($user)
+            ->get(route('releases.index'))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('releases.data.0.version', '1.1.0')
+                ->where('releases.data.0.health.crashFreeSessions.value', 100.0)
+                // 30 von 40 Sitzungen des Projekts.
+                ->where('releases.data.0.health.adoptionSessions.value', 75.0)
+                ->where('releases.data.1.version', '1.0.0')
+                ->where('releases.data.1.health.crashFreeSessions.value', 80.0)
+                ->where('releases.data.1.health.adoptionSessions.value', 25.0)
+            );
+    }
+
+    /**
+     * Die Zusage, an der die ganze Anzeige hängt: aus keiner einzigen Sitzung
+     * folgt **keine** Quote — und schon gar nicht „100 %".
+     */
+    public function test_a_version_without_sessions_has_no_rate_instead_of_a_hundred_percent(): void
+    {
+        [$user, , $project] = $this->context();
+
+        $this->release($project, '1.0.0');
+
+        $this->actingAs($user)
+            ->get(route('releases.index'))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('releases.data.0.health.hasData', false)
+                ->where('releases.data.0.health.crashFreeSessions', null)
+                ->where('releases.data.0.health.adoptionSessions', null)
+            );
+    }
+
+    /**
+     * Die Frage, wegen der es die Sortierung überhaupt gibt: **welche
+     * Auslieferung ist die schlechteste?**
+     */
+    public function test_sorting_by_health_puts_the_worst_version_first(): void
+    {
+        [$user, , $project] = $this->context();
+
+        $good = $this->release($project, '2.0.0');
+        $bad = $this->release($project, '1.0.0');
+
+        $this->sessions($good, 100, 1);
+        $this->sessions($bad, 100, 40);
+
+        $this->actingAs($user)
+            ->get(route('releases.index', ['sort' => 'crash_free']))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('sort', 'crash_free')
+                // Ohne die Sortierung stünde 2.0.0 oben — es ist die neuere.
+                ->where('releases.data.0.version', '1.0.0')
+                ->where('releases.data.1.version', '2.0.0')
+            );
+    }
+
+    /**
+     * Eine Version ohne Sitzungen ist nicht schlecht, sondern unbekannt — und
+     * steht damit nicht an der Spitze einer Liste der schlechtesten.
+     */
+    public function test_sorting_by_health_puts_versions_without_sessions_last(): void
+    {
+        [$user, , $project] = $this->context();
+
+        $this->release($project, '3.0.0');
+        $bad = $this->release($project, '1.0.0');
+
+        $this->sessions($bad, 10, 5);
+
+        $this->actingAs($user)
+            ->get(route('releases.index', ['sort' => 'crash_free']))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('releases.data.0.version', '1.0.0')
+                ->where('releases.data.1.version', '3.0.0')
+            );
+    }
+
+    public function test_sorting_the_other_way_round_leaves_unordered_versions_at_the_end(): void
+    {
+        [$user, , $project] = $this->context();
+
+        $this->release($project, '1.0.0');
+        $this->release($project, '2.0.0');
+        $this->release($project, 'a1b2c3d');
+
+        $this->actingAs($user)
+            ->get(route('releases.index', ['sort' => 'oldest']))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('releases.data.0.version', '1.0.0')
+                ->where('releases.data.1.version', '2.0.0')
+                // „Unzerlegbar" heißt nicht „älter", sondern „nicht
+                // einzuordnen" — auch andersherum sortiert.
+                ->where('releases.data.2.version', 'a1b2c3d')
+            );
+    }
+
+    /**
+     * Die Umgebung entscheidet nicht, welche Versionen dastehen — auf die
+     * Kennzahlen daneben wirkt sie sehr wohl.
+     */
+    public function test_the_environment_narrows_the_numbers_but_not_the_list(): void
+    {
+        [$user, , $project] = $this->context();
+
+        $release = $this->release($project, '1.0.0');
+
+        $this->sessions($release, 10, 5, 'staging');
+        $this->sessions($release, 10, 0, 'production');
+
+        $this->actingAs($user)
+            ->get(route('releases.index', ['environment' => 'production']))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('environmentPartial', true)
+                ->has('releases.data', 1)
+                ->where('releases.data.0.health.crashFreeSessions.value', 100.0)
+            );
+    }
+
+    /**
+     * Zählt Sitzungen auf eine Version — über denselben Weg, den die Aufnahme
+     * benutzt (R7), damit der Test nicht an einer eigenen Schreibweise hängt.
+     */
+    private function sessions(Release $release, int $sessions, int $crashed, string $environment = 'production'): void
+    {
+        // Die Filterleiste bietet nur Umgebungen an, die es gibt — eine
+        // unbekannte wird übergangen, und der Test prüfte dann nichts.
+        Environment::forName($release->project, $environment);
+
+        ReleaseSessionCount::apply([
+            'project_id' => $release->project_id,
+            'release_id' => $release->id,
+            'environment' => $environment,
+            'bucket_start' => ReleaseSessionCount::bucket(Carbon::now()->subMinutes(5)),
+        ], new SessionTally(sessions: $sessions, crashed: $crashed));
     }
 }
