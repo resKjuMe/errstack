@@ -101,7 +101,7 @@ class ShellTest extends TestCase
 
                 $this->assertSame([
                     'Überwachen' => ['Fehler', 'Rückmeldungen', 'Merkmale'],
-                    'Untersuchen' => ['Leistung', 'Leistungsprobleme', 'Ladeerlebnis', 'Profile'],
+                    'Untersuchen' => ['Auswertung', 'Leistung', 'Leistungsprobleme', 'Ladeerlebnis', 'Profile'],
                     'Ausliefern' => ['Versionen'],
                     'Verwalten' => ['Projekte', 'Organisationen', 'Bausteine'],
                 ], $groups);

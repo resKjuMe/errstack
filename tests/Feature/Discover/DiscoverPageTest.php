@@ -92,7 +92,7 @@ class DiscoverPageTest extends TestCase
         $this->event($project, 'Chrome', '124');
         $this->event($project, 'Firefox', '126');
 
-        $this->actingAs($user)
+        $response = $this->actingAs($user)
             ->get($this->url(['projects' => [$project->slug], 'fields' => ['browser'], 'metrics' => ['count()']]))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
@@ -100,10 +100,17 @@ class DiscoverPageTest extends TestCase
                 ->where('columns.0.key', 'browser')
                 ->where('columns.1.key', 'count')
                 ->where('table.rows.0.groups.browser', 'Chrome 124')
-                ->where('table.rows.0.values.count', 2.0)
                 ->where('table.rows.1.groups.browser', 'Firefox 126')
-                ->where('table.rows.1.values.count', 1.0)
             );
+
+        // Die Zahlen aus den Eigenschaften und nicht über `where()`: der Weg
+        // dorthin führt durch JSON, und ob eine 2 danach als Ganzzahl oder als
+        // Kommazahl dasteht, ist eine Frage der Kodierung und nicht der
+        // Auswertung. Ein Test, der daran hängt, prüft die falsche Sache.
+        $rows = $response->viewData('page')['props']['table']['rows'];
+
+        $this->assertSame(2.0, $rows[0]['values']['count']);
+        $this->assertSame(1.0, $rows[1]['values']['count']);
     }
 
     /**
@@ -194,14 +201,15 @@ class DiscoverPageTest extends TestCase
             'contexts' => ['browser' => ['name' => 'Chrome', 'version' => '124']],
         ]);
 
-        $this->actingAs($user)
+        $response = $this->actingAs($user)
             ->get($this->url([
                 'projects' => [$project->slug],
                 'environment' => 'production',
                 'metrics' => ['count()'],
             ]))
-            ->assertOk()
-            ->assertInertia(fn (AssertableInertia $page) => $page->where('table.rows.0.values.count', 1.0));
+            ->assertOk();
+
+        $this->assertSame(1.0, $response->viewData('page')['props']['table']['rows'][0]['values']['count']);
     }
 
     /**
@@ -226,8 +234,8 @@ class DiscoverPageTest extends TestCase
         $href = $response->viewData('page')['props']['table']['rows'][0]['href'];
 
         $this->assertNotNull($href);
-        $this->assertStringContainsString(urlencode('level:error browser:"Chrome 124"'), $href);
-        $this->assertStringContainsString(urlencode($project->slug), $href);
+        $this->assertStringContainsString(rawurlencode('level:error browser:"Chrome 124"'), $href);
+        $this->assertStringContainsString($project->slug, $href);
     }
 
     /**
@@ -317,7 +325,10 @@ class DiscoverPageTest extends TestCase
 
         $lines = array_values(array_filter(explode("\n", str_replace(["\xEF\xBB\xBF", "\r"], '', $csv))));
 
-        $this->assertSame(['browser;Anzahl', 'Chrome 124;2', 'Firefox 126;1'], $lines);
+        // In Anführungszeichen, weil die Werte ein Leerzeichen enthalten — so
+        // schreibt PHP eine CSV-Zeile, und so liest sie jedes Tabellenprogramm
+        // wieder ein.
+        $this->assertSame(['browser;Anzahl', '"Chrome 124";2', '"Firefox 126";1'], $lines);
     }
 
     /**

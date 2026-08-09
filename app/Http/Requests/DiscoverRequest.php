@@ -170,12 +170,16 @@ class DiscoverRequest extends GlobalFilterRequest
      * Die Schrittweite des Diagramms — die gewählte, sonst die zum Zeitraum
      * passende.
      *
+     * Nicht `interval()`: so heißt am Request bereits das Zeitfenster einer
+     * Eingabe, und eine abweichende Unterschrift darunter ist ein Fehler beim
+     * Laden der Klasse — dieselbe Falle wie bei `query()`.
+     *
      * Vorgeschlagen wird die **feinste**, die den Zeitraum in höchstens
      * {@see self::TARGET_POINTS} Stützstellen zerlegt. Andersherum — die
      * gröbste, die noch unter der Grenze bleibt — käme bei „letzte Stunde" auf
      * eine Woche je Balken.
      */
-    public function interval(GlobalFilter $filter): Interval
+    public function chartInterval(GlobalFilter $filter): Interval
     {
         $chosen = $this->validated('interval');
 
@@ -257,7 +261,7 @@ class DiscoverRequest extends GlobalFilterRequest
             'q' => $this->searchInput(),
             'sort' => $this->sortInput(),
             'limit' => $this->limit($limits),
-            'interval' => $this->interval($filter)->key,
+            'interval' => $this->chartInterval($filter)->key,
         ];
     }
 

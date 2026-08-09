@@ -97,7 +97,7 @@ class DiscoverController extends Controller
         $series = null;
 
         try {
-            $series = $this->engine->series($query->every($request->interval($filter)));
+            $series = $this->engine->series($query->every($request->chartInterval($filter)));
         } catch (DiscoverException $exception) {
             $seriesError = $exception->toArray();
         }
