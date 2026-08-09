@@ -15,6 +15,7 @@ use App\Support\Issues\IssueActivityFeed;
 use App\Support\Issues\IssueHeader;
 use App\Support\Releases\SuspectCommitData;
 use App\Support\Releases\SuspectCommits;
+use App\Support\Replays\ReplayData;
 use App\Support\SourceMaps\Symbolicator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -83,6 +84,14 @@ class IssueDetailController extends Controller
             // Repository kommt eine leere Liste heraus — dann fehlt der Bereich,
             // statt leer dazustehen.
             'suspects' => SuspectCommitData::present(SuspectCommits::forEvent($issue, $event)),
+            // Die Sitzungs-Aufzeichnungen zu **dieser** Meldung (M3) — die
+            // Antwort auf „wie ist er überhaupt dorthin gekommen", die weder
+            // Stacktrace noch Breadcrumbs geben. Berechnet und nicht
+            // gespeichert, aus demselben Grund wie der verdächtige Commit
+            // darüber: der Bezug hängt an der angezeigten Meldung, und die
+            // wechselt beim Blättern. Ohne Aufzeichnung kommt eine leere Liste
+            // heraus — dann fehlt der Bereich, statt leer dazustehen.
+            'replays' => $event === null ? [] : ReplayData::forEvent($event),
             // Was mit diesem Fehler geschehen ist (S6) und was dazu gesagt
             // wurde (S10). Der Verlauf steht auf der Detailseite und nicht im
             // Änderungsprotokoll der Organisation: die Frage „warum ist der

@@ -46,6 +46,7 @@ return [
         'performance_issues' => 'Leistungsprobleme',
         'web_vitals' => 'Ladeerlebnis',
         'profiling' => 'Profile',
+        'replays' => 'Aufzeichnungen',
         'projects' => 'Projekte',
         'organizations' => 'Organisationen',
         'components' => 'Bausteine',

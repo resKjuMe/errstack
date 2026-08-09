@@ -8,10 +8,12 @@ use App\Support\Ingest\Processing\Steps\DetectRegression;
 use App\Support\Ingest\Processing\Steps\EvaluateIssueAlerts;
 use App\Support\Ingest\Processing\Steps\FilterEvent;
 use App\Support\Ingest\Processing\Steps\GroupEvent;
+use App\Support\Ingest\Processing\Steps\LinkEventReplay;
 use App\Support\Ingest\Processing\Steps\NormalizeEvent;
 use App\Support\Ingest\Processing\Steps\QueueSymbolication;
 use App\Support\Ingest\Processing\Steps\RecordProfile;
 use App\Support\Ingest\Processing\Steps\RecordRelease;
+use App\Support\Ingest\Processing\Steps\RecordReplay;
 use App\Support\Ingest\Processing\Steps\RecordTransaction;
 use App\Support\Ingest\Processing\Steps\RecordUserReport;
 use App\Support\Ingest\Processing\Steps\SampleTransaction;
@@ -124,6 +126,7 @@ return [
     |   4. Stichprobe    — Sampling für Performance-Daten (I9)
     |   5. Antwortzeiten — Transaktionen und ihre Schritte ablegen (PF1)
     |   6. Profile       — Sample-Profile an ihrer Transaktion ablegen (M4)
+    |   6a. Aufzeichnung — Sitzungs-Replays ablegen und mit Fehlern verknüpfen (M3)
     |   7. Leistungssuche — den abgelegten Ablauf zur Erkennung einreihen (PF6)
     |   8. Normalisierung — Sentry-Schema in unser Modell (I4)
     |   9. Grouping      — Fingerabdruck und Gruppe bestimmen (I5)
@@ -184,6 +187,14 @@ return [
             SampleTransaction::class,
             RecordTransaction::class,
             RecordProfile::class,
+            // Die Aufzeichnungen (M3) unmittelbar dahinter, und zwar als Paar:
+            // erst die Ablage der Sitzung selbst, dann die Verknüpfung eines
+            // Fehlers mit ihr. Die Reihenfolge der beiden ist gleichgültig — sie
+            // fassen verschiedene Element-Typen an —, ihre Stelle in der Kette
+            // dagegen nicht: sie schreiben, und alles, was schreibt, steht hinter
+            // dem Scrubbing.
+            RecordReplay::class,
+            LinkEventReplay::class,
             ScanPerformance::class,
             NormalizeEvent::class,
             GroupEvent::class,

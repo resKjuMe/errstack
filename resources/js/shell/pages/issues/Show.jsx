@@ -7,6 +7,7 @@ import Activity from './detail/Activity.jsx';
 import Breadcrumbs from './detail/Breadcrumbs.jsx';
 import EventNav from './detail/EventNav.jsx';
 import RawData from './detail/RawData.jsx';
+import Replays from './detail/Replays.jsx';
 import StackTrace from './detail/StackTrace.jsx';
 import SuspectCommits from './detail/SuspectCommits.jsx';
 import { hasContent, KeyValues, Section } from './detail/Sections.jsx';
@@ -30,6 +31,7 @@ export default function Show({
     navigation,
     rawHref,
     suspects,
+    replays,
     activity,
     comments,
     actions,
@@ -88,6 +90,23 @@ export default function Show({
                         when={suspects.length > 0}
                     >
                         <SuspectCommits suspects={suspects} t={t} />
+                    </Section>
+
+                    {/* Und gleich danach die Aufzeichnungen (M3). Der
+                        verdächtige Commit beantwortet „was haben wir
+                        geändert", die Aufzeichnung „was hat der Nutzer
+                        getan" — zwei Wege aus demselben Stacktrace heraus,
+                        und beide gehören dorthin, wo man auf ihn schaut.
+                        Ohne Aufzeichnung fehlt der Abschnitt, statt leer
+                        dazustehen: aufgenommen wird nur ein Teil der
+                        Sitzungen, und ein dauerhaft leerer Kasten erklärt
+                        das niemandem. */}
+                    <Section
+                        title={t('replays.issue.heading')}
+                        description={t('replays.issue.hint')}
+                        when={replays.length > 0}
+                    >
+                        <Replays replays={replays} t={t} />
                     </Section>
 
                     <Section

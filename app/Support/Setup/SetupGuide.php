@@ -132,8 +132,24 @@ enum SetupGuide: string
                     Sentry.init({
                         dsn: '{$dsn}',
                         environment: 'production',
-                        integrations: [Sentry.browserTracingIntegration()],
+                        integrations: [
+                            Sentry.browserTracingIntegration(),
+                            // Sitzungs-Aufzeichnung. Maskierung ausdruecklich
+                            // eingeschaltet: sie ersetzt Texte und Eingaben
+                            // **im Browser**, bevor etwas gesendet wird. Wer sie
+                            // abschaltet, schickt Bildschirminhalte seiner
+                            // Nutzer im Klartext.
+                            Sentry.replayIntegration({
+                                maskAllText: true,
+                                maskAllInputs: true,
+                                blockAllMedia: true,
+                            }),
+                        ],
                         tracesSampleRate: 1.0,
+                        // Nicht jede Sitzung aufzeichnen, aber jede mit Fehler:
+                        // die zweite Quote ist die, die zaehlt.
+                        replaysSessionSampleRate: 0.1,
+                        replaysOnErrorSampleRate: 1.0,
                     });
                     TEXT,
                 'verify' => <<<'TEXT'
@@ -149,8 +165,20 @@ enum SetupGuide: string
                     Sentry.init({
                         dsn: '{$dsn}',
                         environment: 'production',
-                        integrations: [Sentry.browserTracingIntegration()],
+                        integrations: [
+                            Sentry.browserTracingIntegration(),
+                            // Wie beim Browser-SDK: die Maskierung steht hier,
+                            // damit sie beim Kopieren mitkommt und nicht beim
+                            // Nachlesen vergessen wird.
+                            Sentry.replayIntegration({
+                                maskAllText: true,
+                                maskAllInputs: true,
+                                blockAllMedia: true,
+                            }),
+                        ],
                         tracesSampleRate: 1.0,
+                        replaysSessionSampleRate: 0.1,
+                        replaysOnErrorSampleRate: 1.0,
                     });
                     TEXT,
                 'verify' => <<<'TEXT'

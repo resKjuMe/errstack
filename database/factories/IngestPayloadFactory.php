@@ -70,6 +70,38 @@ class IngestPayloadFactory extends Factory
     }
 
     /**
+     * Meldung mit beliebigen Bytes statt eines Feld-Baums.
+     *
+     * Für die Element-Typen, deren Rumpf kein JSON ist: ein Anhang, eine
+     * Sitzungs-Aufzeichnung. Die Verpackung übernimmt {@see IngestPayload::accept()}
+     * im Betrieb; hier wird sie nachgebaut, weil eine Factory keinen Endpunkt
+     * durchläuft — ohne sie stünden Nullbytes und ungültiges UTF-8 roh in der
+     * Textspalte, und was danach herauskäme, wäre nicht mehr das, was
+     * hineinging.
+     *
+     * Der Name ist `bytes()` und nicht `raw()`: `raw()` gehört der Factory-Basis
+     * und bedeutet dort etwas anderes (die Attribute ohne Modell).
+     *
+     * @param  array<string, mixed>|null  $itemHeaders  Kopf des Envelope-Elements.
+     */
+    public function bytes(string $bytes, IngestType $type, ?string $eventId = null, ?array $itemHeaders = null): static
+    {
+        return $this->state(function () use ($bytes, $type, $eventId, $itemHeaders): array {
+            $isText = $bytes === ''
+                || (mb_check_encoding($bytes, 'UTF-8') && ! str_contains($bytes, "\0"));
+
+            return [
+                'event_id' => IngestPayload::normalizeEventId($eventId) ?? IngestPayload::freshEventId(),
+                'type' => $type,
+                'item_headers' => $itemHeaders,
+                'payload' => $isText ? $bytes : base64_encode($bytes),
+                'payload_encoding' => $isText ? null : IngestPayload::ENCODING_BASE64,
+                'size_bytes' => strlen($bytes),
+            ];
+        });
+    }
+
+    /**
      * Meldung, die über einen bestimmten Schlüssel hereinkam — wie im Betrieb,
      * wo jede Meldung ihre DSN mitbringt.
      */

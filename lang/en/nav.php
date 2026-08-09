@@ -46,6 +46,7 @@ return [
         'performance_issues' => 'Performance issues',
         'web_vitals' => 'Web Vitals',
         'profiling' => 'Profiles',
+        'replays' => 'Replays',
         'projects' => 'Projects',
         'organizations' => 'Organizations',
         'components' => 'Components',

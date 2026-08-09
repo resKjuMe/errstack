@@ -3,6 +3,7 @@
 namespace App\Support\Ingest\Processing\Steps;
 
 use App\Enums\DiscardReason;
+use App\Enums\IngestType;
 use App\Models\IngestPayload;
 use App\Support\Ingest\Processing\ProcessingContext;
 use App\Support\Ingest\Processing\ProcessingStep;
@@ -80,7 +81,16 @@ final class ScrubEvent implements ProcessingStep
             // Ein Anhang ist kein Feld-Baum; an ihm gibt es nichts zu schwärzen.
             // Entweder er darf gespeichert werden oder nicht — ein Screenshot
             // eines Formulars ist entweder harmlos oder ganz und gar nicht.
-            if ($settings->scrubAttachments) {
+            //
+            // Die Aufzeichnung einer Sitzung ist ebenfalls binär und fällt
+            // trotzdem **nicht** unter diesen Schalter. Sie ist kein Anhang zu
+            // einer Meldung, sondern ein eigener Bestand mit eigenem
+            // Datenschutzweg: maskiert wird im Browser, gespeichert wird getrennt,
+            // aufbewahrt wird nach einer eigenen Frist (M3). Beides über einen
+            // Schalter zu entscheiden hieße, einem Projekt mit „keine Anhänge"
+            // wortlos auch die Aufzeichnungen abzuschalten — und niemandem zu
+            // sagen, warum die Abspielseite leer bleibt.
+            if ($settings->scrubAttachments && $payload->type === IngestType::Attachment) {
                 $context->drop(DiscardReason::Scrubbed, $payload->type->value);
 
                 return;
