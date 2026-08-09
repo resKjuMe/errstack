@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\GlobalFilterRequest;
 use App\Models\Issue;
-use App\Support\FilterData;
 use App\Support\Formats;
 use App\Support\Tags\TagAggregates;
 use App\Support\Tags\TagFacets;
@@ -42,7 +41,6 @@ class IssueTagController extends Controller
         $filter = $request->filter();
 
         return Inertia::render('issues/Tags', [
-            'filter' => FilterData::bar($filter),
             'issue' => self::issue($issue),
             'facets' => TagLinks::decorate(
                 TagFacets::forIssue($issue),
@@ -74,7 +72,6 @@ class IssueTagController extends Controller
         }
 
         return Inertia::render('issues/Tags', [
-            'filter' => FilterData::bar($filter),
             'issue' => self::issue($issue),
             'facets' => [],
             'detail' => TagLinks::decorateOne($detail, $filter),

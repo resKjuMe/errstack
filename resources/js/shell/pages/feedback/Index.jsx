@@ -2,9 +2,9 @@ import React from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
-import FilterBar from '../../components/FilterBar.jsx';
 import Pagination from '../../components/Pagination.jsx';
 import { InputLabel, SelectInput } from '../../components/Form.jsx';
+import useFilter from '../../filters/useFilter.js';
 import { useT } from '../../i18n.js';
 
 // Die Rückmeldungen betroffener Personen — die einzige Liste dieser Anwendung,
@@ -16,7 +16,6 @@ import { useT } from '../../i18n.js';
 //
 // Wie überall steht der ganze Zustand in der Adresszeile.
 export default function Index({
-    filter,
     reports,
     list,
     filterStatusOptions,
@@ -27,6 +26,7 @@ export default function Index({
     environmentIgnored,
 }) {
     const { shell } = usePage().props;
+    const filter = useFilter();
     const t = useT();
 
     const showProject = filter.value.projects.length !== 1;
@@ -52,8 +52,6 @@ export default function Index({
                 appName={shell.appName}
                 help={t('feedback.help')}
             />
-
-            <FilterBar filter={filter} />
 
             {environmentIgnored && (
                 <p className="mb-4 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">

@@ -3,16 +3,16 @@ import { usePage } from '@inertiajs/react';
 import PageHead from '../components/PageHead.jsx';
 import Card from '../components/Card.jsx';
 import LiveDemo from '../components/LiveDemo.jsx';
-import FilterBar from '../components/FilterBar.jsx';
 import { useT } from '../i18n.js';
 
 // Beispielseite des Grundgerüsts: zeigt, dass eine Seite nichts weiter tun muss,
-// als ihren Inhalt zu liefern — Rahmen, Navigation und Theme kommen von der
-// AppShell. Wird von den Fachseiten der nächsten Phasen abgelöst.
+// als ihren Inhalt zu liefern — Rahmen, Navigation, Theme und die globale
+// Filterleiste kommen von der AppShell. Wird von den Fachseiten der nächsten
+// Phasen abgelöst.
 //
-// Zugleich die erste Seite mit der globalen Filterleiste: die kommenden
-// Auswertungsseiten binden sie genauso ein und lesen dieselbe Nutzlast.
-export default function Dashboard({ filter, selection }) {
+// Sie zeigt hier nur, worauf der Filter gerade zeigt: die Auswahl kommt vom
+// Server, die Leiste selbst steht im Rahmen.
+export default function Dashboard({ selection }) {
     const { shell } = usePage().props;
     const t = useT();
 
@@ -29,8 +29,6 @@ export default function Dashboard({ filter, selection }) {
                     </ul>
                 }
             />
-
-            <FilterBar filter={filter} />
 
             <Card
                 title={t('dashboard.selection.title')}

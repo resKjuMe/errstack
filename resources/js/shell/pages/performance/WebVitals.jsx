@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
-import FilterBar from '../../components/FilterBar.jsx';
 import { InputLabel, PrimaryButton, SecondaryButton, TextInput } from '../../components/Form.jsx';
+import useFilter from '../../filters/useFilter.js';
 import { filterQuery } from '../../filters/useGlobalFilter.js';
 import { formatNumber, useTranslations } from '../../i18n.js';
 import { Missing } from './format.jsx';
@@ -20,8 +20,9 @@ import { DistributionBar, RatingBadge, vitalValue } from './vitals.jsx';
 // Ihr Zustand steht trotzdem vollständig in der Adresszeile — Filter, Suche und
 // Seite —, nach demselben Muster wie überall: ein Neuladen behält ihn, und ein
 // geteilter Link zeigt beim Empfänger dieselbe Liste.
-export default function WebVitals({ filter, rows, vitals, q, pagination, truncated, groupLimit }) {
+export default function WebVitals({ rows, vitals, q, pagination, truncated, groupLimit }) {
     const { shell } = usePage().props;
+    const filter = useFilter();
     const { t, formats } = useTranslations();
 
     // Die Sucheingabe ist der einzige Zustand, der **nicht** sofort in die
@@ -73,8 +74,6 @@ export default function WebVitals({ filter, rows, vitals, q, pagination, truncat
                     </ul>
                 }
             />
-
-            <FilterBar filter={filter} />
 
             <Card>
                 <form onSubmit={submitSearch} className="mb-4 flex flex-wrap items-end gap-2">

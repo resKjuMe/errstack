@@ -9,7 +9,6 @@ use App\Enums\PerformanceProblem;
 use App\Http\Requests\GlobalFilterRequest;
 use App\Http\Requests\PerformanceIssueListRequest;
 use App\Models\Issue;
-use App\Support\FilterData;
 use App\Support\Formats;
 use App\Support\Issues\IssueSeries;
 use App\Support\Performance\Detection\PerformanceIssueList;
@@ -44,7 +43,6 @@ class PerformanceIssueController extends Controller
         );
 
         return Inertia::render('performance/Issues', [
-            'filter' => FilterData::bar($filter),
             'issues' => $issues,
             'list' => $request->listValues(),
             'totalLabel' => Formats::number($issues->total()),
@@ -82,7 +80,6 @@ class PerformanceIssueController extends Controller
         $problem = PerformanceProblem::tryFrom((string) $issue->type);
 
         return Inertia::render('performance/IssueDetail', [
-            'filter' => FilterData::bar($filter),
             'issue' => [
                 'id' => $issue->id,
                 'title' => $issue->title ?? __('performance_issues.list.untitled'),

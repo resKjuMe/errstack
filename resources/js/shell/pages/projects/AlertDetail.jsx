@@ -24,7 +24,7 @@ import {
 export default function AlertDetail({
     project,
     organization,
-    filter,
+    alertFilter,
     alert,
     history,
     chart,
@@ -136,7 +136,7 @@ export default function AlertDetail({
                     </div>
                 </Card>
 
-                <AlertFilterBar filter={filter} href={alert.detailHref} />
+                <AlertFilterBar filter={alertFilter} href={alert.detailHref} />
 
                 <Card title={t('alert_overview.chart.title')}>
                     <AlertHistoryChart chart={chart} t={t} />

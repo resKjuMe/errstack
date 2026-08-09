@@ -3,9 +3,12 @@ import Card from './Card.jsx';
 import { InputLabel, SecondaryButton, SelectInput, TextInput } from './Form.jsx';
 import useGlobalFilter from '../filters/useGlobalFilter.js';
 
-// Die globale Filterleiste: Projekt (auch mehrere), Umgebung und Zeitraum. Sie
-// steht auf jeder Auswertungsseite oben und verhält sich überall gleich, weil
-// Nutzlast (App\Support\FilterData) und Zustand (useGlobalFilter) geteilt sind.
+// Die globale Filterleiste: Projekt (auch mehrere), Umgebung und Zeitraum.
+//
+// Gezeichnet wird sie genau einmal, von der AppShell — sie gehört zum Rahmen und
+// nicht zur Seite. Dadurch steht sie auf jeder Auswertungsseite an derselben
+// Stelle, und eine neue bekommt sie, ohne sie einzubinden. Nutzlast
+// (App\Support\FilterData) und Zustand (useGlobalFilter) sind ohnehin geteilt.
 //
 // Sie hat keine Schaltfläche „Filtern": jede Änderung ist sofort ein Aufruf mit
 // neuer Adresse. Der Zeitraum darunter zeigt, was der Server daraus gemacht hat.

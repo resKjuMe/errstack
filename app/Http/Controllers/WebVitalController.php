@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Enums\WebVital;
 use App\Http\Requests\WebVitalDetailRequest;
 use App\Http\Requests\WebVitalOverviewRequest;
-use App\Support\FilterData;
 use App\Support\Performance\Vitals\WebVitalDetail;
 use App\Support\Performance\Vitals\WebVitalOverview;
 use App\Support\Performance\Vitals\WebVitalPageRow;
@@ -35,7 +34,6 @@ class WebVitalController extends Controller
         $result = (new WebVitalOverview($filter, $request->search()))->page($request->page());
 
         return Inertia::render('performance/WebVitals', [
-            'filter' => FilterData::bar($filter),
             'rows' => array_map(
                 static fn (WebVitalPageRow $row): array => $row->toArray(),
                 $result->rows,
@@ -60,7 +58,6 @@ class WebVitalController extends Controller
         $detail = (new WebVitalDetail($filter, $request->name(), $request->vital()))->result();
 
         return Inertia::render('performance/WebVital', [
-            'filter' => FilterData::bar($filter),
             'detail' => $detail->toArray(),
             'vitals' => self::columns(),
             // Der Weg zurück in die Übersicht, mit derselben Projektauswahl und

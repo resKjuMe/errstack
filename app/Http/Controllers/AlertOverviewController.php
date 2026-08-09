@@ -70,7 +70,7 @@ class AlertOverviewController extends Controller
 
         return Inertia::render('projects/AlertOverview', [
             ...$this->shell($organization, $project),
-            'filter' => $filter->toArray(),
+            'alertFilter' => $filter->toArray(),
             'rows' => $this->rows($request, $organization, $project, $filter),
             'history' => $history->forProject($filter->from, $filter->state),
             'chart' => $history->counts($filter->from, $filter->to, $filter->state),
@@ -103,7 +103,7 @@ class AlertOverviewController extends Controller
 
         return Inertia::render('projects/AlertDetail', [
             ...$this->shell($organization, $project),
-            'filter' => $filter->toArray(),
+            'alertFilter' => $filter->toArray(),
             'alert' => [
                 ...$this->metricRow(
                     $organization,
@@ -148,7 +148,7 @@ class AlertOverviewController extends Controller
 
         return Inertia::render('projects/AlertDetail', [
             ...$this->shell($organization, $project),
-            'filter' => $filter->toArray(),
+            'alertFilter' => $filter->toArray(),
             'alert' => [
                 ...$this->issueRow(
                     $organization,

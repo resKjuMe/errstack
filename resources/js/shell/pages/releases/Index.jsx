@@ -2,8 +2,8 @@ import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
-import FilterBar from '../../components/FilterBar.jsx';
 import Pagination from '../../components/Pagination.jsx';
+import useFilter from '../../filters/useFilter.js';
 import { useT } from '../../i18n.js';
 
 // Die Versionsliste: welche Auslieferungen es gab und was mit ihnen
@@ -14,8 +14,9 @@ import { useT } from '../../i18n.js';
 // Vorversion und die Detailseite sind R8, Gesundheit und Verbreitung sind R7.
 // Der Weg von hier aus führt über „neue Fehler" in die Fehlerliste, gefiltert
 // auf genau diese Version.
-export default function Index({ filter, releases, totalLabel, environmentIgnored }) {
+export default function Index({ releases, totalLabel, environmentIgnored }) {
     const { shell } = usePage().props;
+    const filter = useFilter();
     const t = useT();
 
     const showProject = filter.value.projects.length !== 1;
@@ -27,8 +28,6 @@ export default function Index({ filter, releases, totalLabel, environmentIgnored
                 appName={shell.appName}
                 help={t('releases.help')}
             />
-
-            <FilterBar filter={filter} />
 
             {environmentIgnored && (
                 <p className="mb-4 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
