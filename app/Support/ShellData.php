@@ -165,6 +165,20 @@ final class ShellData
                         'icon' => 'dashboard',
                         'filtered' => true,
                     ],
+                    [
+                        // Die eigenen Sammlungen stehen direkt unter der
+                        // Übersicht: sie beantworten dieselbe Frage („wie steht
+                        // es gerade"), nur selbst zusammengestellt.
+                        //
+                        // `dashboards.*` und nicht `dashboard*`: der Eintrag
+                        // darüber heißt `dashboard`, und ein Muster, das beide
+                        // trifft, hebt beide gleichzeitig hervor.
+                        'label' => __('nav.links.dashboards'),
+                        'route' => 'dashboards.index',
+                        'activePattern' => 'dashboards.*',
+                        'icon' => 'dashboards',
+                        'filtered' => true,
+                    ],
                 ],
             ],
             [

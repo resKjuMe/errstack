@@ -571,4 +571,13 @@ return [
         'failure_rate' => 'Fehlerquote',
     ],
 
+    'widget_type' => [
+        'line' => 'Linie',
+        'area' => 'Fläche',
+        'bar' => 'Balken',
+        'table' => 'Tabelle',
+        'big_number' => 'Große Zahl',
+        'world_map' => 'Weltkarte',
+    ],
+
 ];

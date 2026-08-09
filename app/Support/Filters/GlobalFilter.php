@@ -78,7 +78,7 @@ final class GlobalFilter
 
         $environments = self::availableEnvironments($available);
         $environment = Environment::normalizeName($input['environment'] ?? null);
-        [$start, $end] = self::range($period, $from, $to, $timezone);
+        [$start, $end] = self::resolveRange($period, $from, $to, $timezone);
 
         return new self(
             organization: $organization,
@@ -252,9 +252,18 @@ final class GlobalFilter
     }
 
     /**
+     * Ein Zeitraum-Kürzel in wirkliche Grenzen — in der Zeitzone des
+     * Betrachters, damit „letzte 7 Tage" die Tagesgrenzen seiner Uhr trifft.
+     *
+     * Öffentlich, weil es nicht nur die Leiste gibt: eine Dashboard-Kachel darf
+     * den Zeitraum für sich überschreiben ({@see App\Support\Dashboards\WidgetOverrides})
+     * und muss dafür dieselbe Rechnung anstellen. Eine zweite Auflösung daneben
+     * hieße, dass „letzte 24 Stunden" an zwei Stellen etwas leicht anderes
+     * bedeuten kann.
+     *
      * @return array{CarbonImmutable, CarbonImmutable}
      */
-    private static function range(FilterPeriod $period, ?string $from, ?string $to, string $timezone): array
+    public static function resolveRange(FilterPeriod $period, ?string $from, ?string $to, string $timezone): array
     {
         $now = CarbonImmutable::now($timezone);
         $hours = $period->hours();
@@ -267,7 +276,7 @@ final class GlobalFilter
         // wählt, will den 5. dabeihaben. Fehlt eine Grenze, tritt der
         // Standard-Zeitraum an ihre Stelle, damit die Seite nicht leer bleibt.
         if ($from === null || $to === null) {
-            return self::range(FilterPeriod::default(), null, null, $timezone);
+            return self::resolveRange(FilterPeriod::default(), null, null, $timezone);
         }
 
         $start = CarbonImmutable::parse($from, $timezone)->startOfDay();

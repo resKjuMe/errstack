@@ -104,6 +104,18 @@ final class ErrorFields extends AbstractDatasetFields
             $fields[] = $this->text($name, 'events.user->'.$key);
         }
 
+        // Woher der Betroffene kam. Die Aufnahme legt es unter `user.geo` ab
+        // (I2); hier steht es als eigenes Feld, weil danach gefragt wird, ohne
+        // dass jemand an den Nutzer denkt — „welches Land trifft es".
+        //
+        // `geo.country` ist das **Länderkürzel** und nicht der ausgeschriebene
+        // Name: es ist das, was die SDKs mitschicken, und es ist der Schlüssel,
+        // über den die Weltkarte einfärbt. Ein ausgeschriebener Name wäre in
+        // jeder Sprache ein anderer Gruppenwert.
+        foreach (['geo.country' => 'country_code', 'geo.region' => 'region', 'geo.city' => 'city'] as $name => $key) {
+            $fields[] = $this->text($name, 'events.user->geo->'.$key);
+        }
+
         $fields[] = $this->timestamp('occurred_at', 'events.occurred_at');
         $fields[] = $this->timestamp('received_at', 'events.received_at');
 

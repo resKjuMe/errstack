@@ -272,6 +272,16 @@ const MENU_ICONS = {
             <circle cx="7" cy="7" r="1.2" />
         </>
     ),
+    // Dashboards: vier Kacheln unterschiedlicher Größe — das Raster selbst und
+    // nicht eine der Darstellungsarten darin.
+    dashboards: (
+        <>
+            <rect x="3" y="3" width="8" height="7" rx="1" />
+            <rect x="13" y="3" width="8" height="4" rx="1" />
+            <rect x="3" y="12" width="8" height="9" rx="1" />
+            <rect x="13" y="9" width="8" height="12" rx="1" />
+        </>
+    ),
     // Freie Auswertung: die Lupe über einem Balkendiagramm — selbst
     // zusammengestellte Zahlen, nicht eine fertige Ansicht.
     discover: (

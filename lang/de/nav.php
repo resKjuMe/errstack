@@ -78,6 +78,7 @@ return [
 
     'links' => [
         'dashboard' => 'Übersicht',
+        'dashboards' => 'Dashboards',
         'issues' => 'Fehler',
         'tags' => 'Merkmale',
         'feedback' => 'Rückmeldungen',

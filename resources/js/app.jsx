@@ -50,6 +50,8 @@ import PerformanceTrends from './shell/pages/performance/Trends.jsx';
 import WebVitalsIndex from './shell/pages/performance/WebVitals.jsx';
 import WebVitalShow from './shell/pages/performance/WebVital.jsx';
 import DiscoverIndex from './shell/pages/discover/Index.jsx';
+import DashboardsIndex from './shell/pages/dashboards/Index.jsx';
+import DashboardsShow from './shell/pages/dashboards/Show.jsx';
 import ProfilingIndex from './shell/pages/profiling/Index.jsx';
 import ProfilingShow from './shell/pages/profiling/Show.jsx';
 import ReplaysIndex from './shell/pages/replays/Index.jsx';
@@ -138,6 +140,12 @@ const pages = {
     // Die freie Auswertung. Eine Seite und nicht zwei: Tabelle und Diagramm
     // sind dieselbe Abfrage, einmal mit und einmal ohne Schrittweite.
     'discover/Index': DiscoverIndex,
+    // Die frei zusammengestellten Sammlungen. Liste und einzelnes Dashboard sind
+    // zwei Seiten: die Liste zeigt, was es gibt, das Dashboard genau eines — und
+    // eine Seite mit einer Weiche wäre an jeder zweiten Stelle die Abfrage
+    // „welcher Fall ist das gerade".
+    'dashboards/Index': DashboardsIndex,
+    'dashboards/Show': DashboardsShow,
     // Übersicht und Einzelprofil sind zwei Seiten und nicht eine: die Übersicht
     // legt viele Profile übereinander, das Einzelprofil zeigt genau einen
     // Aufruf. Dieselbe Seite mit einer Weiche wäre an jeder zweiten Stelle eine

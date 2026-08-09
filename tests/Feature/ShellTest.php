@@ -89,9 +89,11 @@ class ShellTest extends TestCase
                 $nav = $page->toArray()['props']['shell']['nav'];
 
                 // Die Übersicht ist der Einstieg und steht ohne Überschrift
-                // über den Gruppen.
+                // über den Gruppen — seit D4 zusammen mit den Dashboards, die
+                // dieselbe Frage beantworten und deshalb keine eigene Gruppe
+                // bekommen.
                 $this->assertNull($nav[0]['label']);
-                $this->assertSame(['Übersicht'], array_column($nav[0]['links'], 'label'));
+                $this->assertSame(['Übersicht', 'Dashboards'], array_column($nav[0]['links'], 'label'));
 
                 $groups = [];
 
