@@ -410,13 +410,17 @@ class DiscoverPageTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('dashboard'))->assertOk();
 
-        $links = collect($response->viewData('page')['props']['shell']['nav'])
-            ->flatMap(fn (array $group): array => $group['links'])
-            ->pluck('href')
-            ->all();
+        $hrefs = [];
 
-        $this->assertTrue(
-            collect($links)->contains(fn (string $href): bool => str_contains($href, 'auswertung')),
+        foreach ($response->viewData('page')['props']['shell']['nav'] as $group) {
+            foreach ($group['links'] as $link) {
+                $hrefs[] = (string) $link['href'];
+            }
+        }
+
+        $this->assertNotSame(
+            [],
+            array_filter($hrefs, static fn (string $href): bool => str_contains($href, 'auswertung')),
             'Die freie Auswertung fehlt in der Navigation.',
         );
     }

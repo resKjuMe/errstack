@@ -109,9 +109,10 @@ final class DiscoverData
      */
     public static function series(DiscoverSeries $series, string $totalLabel): array
     {
+        $first = $series->first();
         $at = [];
 
-        foreach ($series->first()?->points ?? [] as $point) {
+        foreach ($first === null ? [] : $first->points as $point) {
             $at[] = $point->at->toIso8601ZuluString();
         }
 
