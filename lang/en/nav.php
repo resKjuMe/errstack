@@ -43,6 +43,7 @@ return [
             'organizations' => 'All organizations',
             'audit_log' => 'Audit log',
             'repositories' => 'Repositories',
+            'integrations' => 'Integrations',
             'organization_quotas' => 'Quotas',
             'projects' => 'All projects',
             'project' => 'General',

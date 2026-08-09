@@ -114,6 +114,22 @@ class OrganizationPolicy
     }
 
     /**
+     * Anbindungen verbinden und lösen (X1).
+     *
+     * Ab der Verwaltung, und hier wiegt der Grund schwerer als bei den
+     * Repositories: wer verbindet, hinterlegt ein Token, mit dem diese
+     * Anwendung im Namen der Organisation bei GitHub schreiben kann — Tickets
+     * anlegen, Webhooks einrichten. Ansehen darf die Seite trotzdem jedes
+     * Mitglied: „ist die Anbindung kaputt?" ist die Frage, die aufkommt, wenn
+     * an einer Auslieferung die Commits fehlen, und sie soll nicht an einer
+     * Rechteprüfung scheitern.
+     */
+    public function manageIntegrations(User $user, Organization $organization): bool
+    {
+        return $this->atLeast($user, $organization, OrganizationRole::Admin);
+    }
+
+    /**
      * Das Änderungsprotokoll einsehen und ausgeben. Es zeigt, wer wann was
      * getan hat, samt IP-Adresse — das geht nur die Verwaltung etwas an, nicht
      * jedes Mitglied.

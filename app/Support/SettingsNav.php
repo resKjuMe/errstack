@@ -72,6 +72,11 @@ final class SettingsNav
                         'activePattern' => 'organizations.repositories.*',
                     ],
                     [
+                        'label' => __('nav.settings.links.integrations'),
+                        'route' => 'organizations.integrations.index',
+                        'activePattern' => 'organizations.integrations.*',
+                    ],
+                    [
                         'label' => __('nav.settings.links.organization_quotas'),
                         'route' => 'organizations.quotas.index',
                         'activePattern' => 'organizations.quotas.*',

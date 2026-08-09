@@ -299,6 +299,9 @@ return [
         'unsubscribed' => 'Unsubscribed',
         'deleted' => 'Deleted',
         'discarded' => 'Deleted; reports of the same kind will be discarded from now on',
+        'external_linked' => 'Linked to :reference',
+        'external_unlinked' => 'Link to :reference removed',
+        'external_resolved' => 'Resolved: :reference was closed',
     ],
 
     // The derived priority (S11, App\Support\Issues\IssuePriorityScore). The

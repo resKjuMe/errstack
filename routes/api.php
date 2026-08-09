@@ -18,6 +18,10 @@ Route::get('/ping', fn () => ['ok' => true])->name('api.ping');
 
 require __DIR__.'/api-v0.php';
 
+// Die eingehenden Meldungen der Anbieter (X1). Vor der Aufnahme, damit
+// `hooks/github` nicht in deren `{project}`-Muster gerät.
+require __DIR__.'/webhooks.php';
+
 // Nach der Schnittstelle eingebunden: die Aufnahme liegt unter `{project}/…`,
 // und die erste passende Route gewinnt.
 require __DIR__.'/ingest.php';

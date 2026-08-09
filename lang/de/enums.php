@@ -424,6 +424,9 @@ return [
         'unsubscribed' => 'Abbestellt',
         'discarded' => 'Gelöscht und verworfen',
         'deleted' => 'Gelöscht',
+        'external_linked' => 'Mit Ticket verknüpft',
+        'external_unlinked' => 'Verknüpfung gelöst',
+        'external_resolved' => 'Erledigt durch geschlossenes Ticket',
     ],
 
     'count_period' => [
@@ -484,6 +487,21 @@ return [
         'min_total_ms' => 'Mindestsumme in ms',
         'min_duration_ms' => 'Mindestdauer in ms',
         'min_size_kb' => 'Mindestgröße in KB',
+    ],
+
+    // Anbindungen (X1).
+    'integration_provider' => [
+        'github' => 'GitHub',
+    ],
+
+    'integration_status' => [
+        'connected' => 'Verbunden',
+        'disconnected' => 'Verbindung verloren',
+    ],
+
+    'external_issue_state' => [
+        'open' => 'Offen',
+        'closed' => 'Geschlossen',
     ],
 
     'commit_file_change' => [

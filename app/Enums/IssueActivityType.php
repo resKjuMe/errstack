@@ -4,6 +4,7 @@ namespace App\Enums;
 
 use App\Models\AuditLogEntry;
 use App\Models\IssueActivity;
+use App\Models\IssueLink;
 
 /**
  * Was an einem Fehler-Eintrag geschehen ist.
@@ -136,6 +137,36 @@ enum IssueActivityType: string
 
     /** Gelöscht, ohne künftige Meldungen zu verwerfen. */
     case Deleted = 'deleted';
+
+    /**
+     * Mit einem Ticket beim Anbieter verknüpft (X1) — neu angelegt oder ein
+     * vorhandenes aufgegriffen.
+     *
+     * **Ein Fall für beides**, obwohl das Anlegen mehr tut: für den, der den
+     * Verlauf liest, ist das Ergebnis dasselbe — dieser Fehler hängt jetzt an
+     * `acme/webshop#42`. Wo das Ticket herkam, steht am Verweis selbst
+     * ({@see IssueLink::$created_remotely}) und ist eine Frage,
+     * die niemand an den Verlauf stellt.
+     *
+     * Die Kennung steht als **Text** in `data` und nicht als Verweis auf die
+     * Verknüpfung — dieselbe Entscheidung wie beim Namen des Zuständigen: eine
+     * gelöste Verknüpfung darf den Vermerk nicht leerräumen.
+     */
+    case ExternalLinked = 'external_linked';
+
+    /** Die Verknüpfung wurde wieder gelöst. Das Ticket drüben bleibt. */
+    case ExternalUnlinked = 'external_unlinked';
+
+    /**
+     * Erledigt, weil das verknüpfte Ticket geschlossen wurde.
+     *
+     * Ein eigener Fall neben {@see self::Resolved} und aus demselben Grund wie
+     * bei {@see self::Deployed}: erledigt hat dort jemand von Hand, hier ist es
+     * geschehen — und zwar in einer anderen Anwendung. Wer den Verlauf liest,
+     * soll sehen, dass hier niemand geklickt hat, sondern dass ein Ticket
+     * zugemacht wurde.
+     */
+    case ExternalResolved = 'external_resolved';
 
     public function label(): string
     {

@@ -35,4 +35,36 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | GitHub (X1)
+    |--------------------------------------------------------------------------
+    |
+    | Die Zugangsdaten der OAuth-App dieser Installation — nicht die einer
+    | Organisation. Was einer Organisation gehört, ist ihr Zugriffstoken, und
+    | das steht verschlüsselt an ihrer Anbindung (App\Models\Integration).
+    |
+    | Ohne `client_id`/`client_secret` bietet die Oberfläche das Verbinden gar
+    | nicht erst an: ein Knopf, der bei GitHub in einer Fehlerseite endet, ist
+    | schlechter als der Hinweis, dass die Installation dafür nicht eingerichtet
+    | ist.
+    |
+    | `webhook_secret` unterschreibt die eingehenden Ereignisse. Es gilt für die
+    | Installation und nicht je Anbindung: geprüft wird damit die Herkunft der
+    | Anfrage, nicht die Zugehörigkeit — zu welcher Organisation ein Ereignis
+    | gehört, sagt das Repository darin.
+    |
+    | `url` und `api_url` stehen getrennt, damit dieselbe Anbindung auch gegen
+    | ein selbst betriebenes GitHub Enterprise läuft: dort liegt die
+    | Schnittstelle unter `<host>/api/v3` und nicht auf einem eigenen Namen.
+    */
+    'github' => [
+        'client_id' => env('GITHUB_CLIENT_ID'),
+        'client_secret' => env('GITHUB_CLIENT_SECRET'),
+        'webhook_secret' => env('GITHUB_WEBHOOK_SECRET'),
+        'url' => env('GITHUB_URL', 'https://github.com'),
+        'api_url' => env('GITHUB_API_URL', 'https://api.github.com'),
+        'timeout' => (int) env('GITHUB_TIMEOUT', 10),
+    ],
+
 ];

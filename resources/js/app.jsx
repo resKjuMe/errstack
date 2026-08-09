@@ -61,6 +61,7 @@ import ReplaysShow from './shell/pages/replays/Show.jsx';
 import ReleasesIndex from './shell/pages/releases/Index.jsx';
 import ReleasesShow from './shell/pages/releases/Show.jsx';
 import RepositoriesIndex from './shell/pages/repositories/Index.jsx';
+import IntegrationsIndex from './shell/pages/integrations/Index.jsx';
 import PrivacyIndex from './shell/pages/privacy/Index.jsx';
 import InvitationsAccept from './shell/pages/invitations/Accept.jsx';
 import ApiTokensIndex from './shell/pages/api-tokens/Index.jsx';
@@ -165,6 +166,7 @@ const pages = {
     'releases/Index': ReleasesIndex,
     'releases/Show': ReleasesShow,
     'repositories/Index': RepositoriesIndex,
+    'integrations/Index': IntegrationsIndex,
     // Eine Seite für beide Ebenen — Projekt und Organisation liefern dieselbe
     // Nutzlast mit unterschiedlichem `scope`.
     'privacy/Index': PrivacyIndex,

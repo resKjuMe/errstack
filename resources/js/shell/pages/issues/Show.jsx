@@ -7,6 +7,7 @@ import Activity from './detail/Activity.jsx';
 import Attachments from './detail/Attachments.jsx';
 import Breadcrumbs from './detail/Breadcrumbs.jsx';
 import EventNav from './detail/EventNav.jsx';
+import ExternalIssues from './detail/ExternalIssues.jsx';
 import RawData from './detail/RawData.jsx';
 import Replays from './detail/Replays.jsx';
 import StackTrace from './detail/StackTrace.jsx';
@@ -33,6 +34,7 @@ export default function Show({
     rawHref,
     suspects,
     attachments,
+    links,
     replays,
     activity,
     comments,
@@ -92,6 +94,21 @@ export default function Show({
                         when={suspects.length > 0}
                     >
                         <SuspectCommits suspects={suspects} t={t} />
+                    </Section>
+
+                    {/* Und direkt daneben die Frage, die als nächste kommt:
+                        kümmert sich schon jemand darum? Die verknüpften
+                        Tickets (X1) stehen deshalb bei den verdächtigen
+                        Commits und nicht unten beim Verlauf — „was war die
+                        Änderung" und „wer behebt es" gehören an dieselbe
+                        Stelle. Ohne Anbindung und ohne Verknüpfung fehlt der
+                        Bereich ganz. */}
+                    <Section
+                        title={t('integrations.issue.title')}
+                        description={t('integrations.issue.description')}
+                        when={links !== null}
+                    >
+                        {links !== null && <ExternalIssues links={links} t={t} />}
                     </Section>
 
                     {/* Und gleich danach die Aufzeichnungen (M3). Der

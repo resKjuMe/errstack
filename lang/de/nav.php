@@ -43,6 +43,7 @@ return [
             'organizations' => 'Alle Organisationen',
             'audit_log' => 'Änderungsprotokoll',
             'repositories' => 'Repositories',
+            'integrations' => 'Anbindungen',
             'organization_quotas' => 'Kontingente',
             'projects' => 'Alle Projekte',
             'project' => 'Stammdaten',

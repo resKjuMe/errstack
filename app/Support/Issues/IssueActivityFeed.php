@@ -295,6 +295,9 @@ final class IssueActivityFeed
             // nicht leerräumen — dieselbe Wahl wie beim Namen des Handelnden.
             'release' => (string) ($data['release'] ?? ''),
             'environment' => (string) ($data['environment'] ?? ''),
+            // Das verknüpfte Ticket (X1), ebenfalls als Text im Vermerk: eine
+            // gelöste Verknüpfung darf den Verlauf nicht leerräumen.
+            'reference' => (string) ($data['reference'] ?? ''),
         ]);
     }
 

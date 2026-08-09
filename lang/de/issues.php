@@ -333,6 +333,9 @@ return [
         'unsubscribed' => 'Abbestellt',
         'deleted' => 'Gelöscht',
         'discarded' => 'Gelöscht; gleichartige Meldungen werden künftig verworfen',
+        'external_linked' => 'Mit :reference verknüpft',
+        'external_unlinked' => 'Verknüpfung mit :reference gelöst',
+        'external_resolved' => 'Erledigt: :reference wurde geschlossen',
     ],
 
     // Die Kommentare an einem Fehler (App\Support\Issues\IssueComments,
