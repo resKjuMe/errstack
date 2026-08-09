@@ -155,6 +155,28 @@ final class GlobalFilter
     ): Builder {
         $query->whereIn($projectColumn, $this->projectIds());
 
+        return $this->applyOverlap($query, $startColumn, $endColumn);
+    }
+
+    /**
+     * Nur die Zeitbedingung aus {@see overlapping()} — ohne die Projektauswahl.
+     *
+     * Für Seiten, die ihre Projekte selbst kennen und gerade **nicht** die
+     * Auswahl der Leiste meinen: die Übersicht eines Projekts zeigt ihr
+     * Projekt, die eines Teams dessen Projekte. Sie brauchen dieselbe Frage
+     * („ist das in diesem Zeitraum aufgetreten") und eine andere Menge — und
+     * ohne diese Methode schriebe jede von ihnen die Bedingung selbst hin.
+     *
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
+    public function applyOverlap(
+        Builder $query,
+        string $startColumn = 'first_seen',
+        string $endColumn = 'last_seen',
+    ): Builder {
         return $query
             ->where($endColumn, '>=', $this->fromUtc())
             ->where($startColumn, '<=', $this->toUtc());

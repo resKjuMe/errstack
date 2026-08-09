@@ -67,13 +67,25 @@ final class FilterQuery
      * Leere Felder bleiben weg, damit dort nicht `?environment=&from=` steht;
      * die Datumsfelder nur beim eigenen Zeitraum, sonst löst der Server den
      * relativen selbst auf.
+     *
+     * `$projects` richtet die Adresse auf **genau** diese Projekte, statt die
+     * Auswahl der Leiste zu übernehmen. **Eine leere Liste ist dabei keine
+     * Einschränkung, sondern deren Gegenteil**: ohne `projects[]` in der
+     * Adresse gelten beim Empfänger wieder alle Projekte der Organisation — die
+     * Adresszeile kann „keine Projekte" nicht ausdrücken. Wer eine leere Menge
+     * meint, baut deshalb keinen Link. Gebraucht von den Übersichtsseiten
+     * (D5): eine Zeile „Projekt X: 412 Fehler" führt in die Fehlerliste dieses
+     * einen Projekts — mit unverändertem Zeitraum und unveränderter Umgebung,
+     * denn die Zahl daneben gilt für genau diesen Ausschnitt.
+     *
+     * @param  list<string>|null  $projects
      */
-    public static function build(GlobalFilter $filter): string
+    public static function build(GlobalFilter $filter, ?array $projects = null): string
     {
         $values = $filter->formValues();
         $parts = [];
 
-        foreach ($values['projects'] as $slug) {
+        foreach ($projects ?? $values['projects'] as $slug) {
             $parts[] = rawurlencode('projects[]').'='.rawurlencode($slug);
         }
 

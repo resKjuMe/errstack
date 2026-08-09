@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Jobs\ProcessDemoIngest;
 use Illuminate\Http\Request;
@@ -23,13 +22,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // trotzdem irgendwohin führen muss.
     Route::get('/', HomeController::class)->name('home');
 
-    // Die Übersicht ist die erste Seite mit der globalen Filterleiste; ihr
-    // Zustand steht in der Adresszeile und wird serverseitig aufgelöst. Sie
-    // liegt unter `uebersicht` und nicht direkt unter der Organisation: dort
-    // steht schon deren Stammdatenseite (`organizations.show`).
-    Route::get('organisationen/{organization}/uebersicht', DashboardController::class)
-        ->name('dashboard');
-
     Route::get('/bausteine', fn () => Inertia::render('Components'))->name('components');
 });
 
@@ -45,6 +37,9 @@ Route::post('/demo/ingest', function (Request $request) {
 
 require __DIR__.'/auth.php';
 require __DIR__.'/organizations.php';
+// Die drei Einstiegsseiten (Organisation, Projekt, Team). Sie stehen vorn, weil
+// alles andere auf sie verlinkt.
+require __DIR__.'/overviews.php';
 require __DIR__.'/notifications.php';
 require __DIR__.'/projects.php';
 require __DIR__.'/issues.php';

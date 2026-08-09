@@ -4,6 +4,8 @@
 // App\Http\Controllers\TeamController and TeamMemberController.
 return [
 
+    'overview' => 'Team view',
+
     'help' => 'Teams group members inside an organization. Permissions still hang on the role in the organization, not on the team.',
 
     'settings' => [

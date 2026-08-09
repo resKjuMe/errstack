@@ -24,12 +24,22 @@ export default function Show({ team, organization, permissions, members, candida
                 appName={shell.appName}
                 help={t('teams.help')}
                 meta={
-                    <Link
-                        href={organization.href}
-                        className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-                    >
-                        {organization.name}
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <Link
+                            href={organization.href}
+                            className="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                        >
+                            {organization.name}
+                        </Link>
+                        {/* Hier wird das Team verwaltet; die Sicht daneben
+                            zeigt, was auf es wartet. */}
+                        <Link
+                            href={team.overviewHref}
+                            className="text-sm font-medium text-rose-600 hover:text-rose-500 dark:text-rose-400"
+                        >
+                            {t('teams.overview')}
+                        </Link>
+                    </div>
                 }
             />
 

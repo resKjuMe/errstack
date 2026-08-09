@@ -112,10 +112,7 @@ final class QuotaData
             'updateHref' => $updateHref,
             'periodLabel' => Carbon::now()->translatedFormat('F Y'),
             'windowDays' => self::WINDOW_DAYS,
-            'categories' => array_map(
-                fn (QuotaCategory $category): array => self::category($category, $scope, $scopeId, $limits, $counter),
-                QuotaCategory::cases(),
-            ),
+            'categories' => self::categories($scope, $scopeId, $limits, $counter),
             'inherited' => $scope === QuotaScope::Project
                 ? self::inherited($organization, $counter)
                 : [],
@@ -123,6 +120,34 @@ final class QuotaData
             'discards' => self::discards($projectIds),
             'permissions' => ['manage' => $mayManage],
         ];
+    }
+
+    /**
+     * Alle Datenarten mit ihren Grenzen und dem Verbrauch dieses Monats.
+     *
+     * Öffentlich, weil es nicht nur die Kontingent-Seite gibt: die
+     * Organisations-Übersicht (D5) zeigt denselben Verbrauch in einer Kachel
+     * und braucht davon nur diesen Teil. Sie über die volle Seiten-Nutzlast zu
+     * bedienen hieße, Schlüssel-Raten und Verwerfungen mitzurechnen und
+     * wegzuwerfen — und eine zweite Rechnung daneben hieße, zwei Antworten auf
+     * „wie viel ist noch übrig" zu haben.
+     *
+     * @param  array<string, array{id: int, month: int|null, minute: int|null}>|null  $limits
+     * @return list<array<string, mixed>>
+     */
+    public static function categories(
+        QuotaScope $scope,
+        int $scopeId,
+        ?array $limits = null,
+        ?QuotaCounter $counter = null,
+    ): array {
+        $limits ??= QuotaLimits::forScope($scope, $scopeId);
+        $counter ??= new QuotaCounter;
+
+        return array_map(
+            fn (QuotaCategory $category): array => self::category($category, $scope, $scopeId, $limits, $counter),
+            QuotaCategory::cases(),
+        );
     }
 
     /**

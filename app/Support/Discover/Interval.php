@@ -65,6 +65,35 @@ final class Interval
     }
 
     /**
+     * Die feinste Schrittweite, die den Zeitraum in höchstens so viele
+     * Stützstellen zerlegt.
+     *
+     * Die Rechnung steht hier und nicht bei den Aufrufern, weil sie überall
+     * dieselbe ist und sich nur im Ziel unterscheidet: die freie Auswertung hat
+     * eine ganze Seite für ihr Diagramm, eine Kachel einen Ausschnitt davon.
+     * Dreimal dieselbe Schleife nebeneinander liefe irgendwann auseinander —
+     * und dann zeigte dieselbe Frage je nach Bildschirm ein anderes Raster.
+     *
+     * Reicht keine aus (ein Zeitraum, der auch in Wochenschritten zu lang ist),
+     * bleibt die gröbste: mehr Punkte sind unschön, ein Fehler wäre hier keine
+     * Antwort.
+     */
+    public static function fitting(TimeRange $range, int $targetPoints): self
+    {
+        $coarsest = self::parse((string) array_key_last(self::UNITS));
+
+        foreach (self::UNITS as $key => $seconds) {
+            $interval = new self($key, $seconds);
+
+            if ($interval->points($range) <= $targetPoints) {
+                return $interval;
+            }
+        }
+
+        return $coarsest;
+    }
+
+    /**
      * Wie viele Stützstellen ein Zeitraum bei dieser Schrittweite hat.
      */
     public function points(TimeRange $range): int

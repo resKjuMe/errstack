@@ -84,6 +84,16 @@ export default function Index({ organization, permissions, projects, platformOpt
                                             {project.teams.length > 0 &&
                                                 ` · ${project.teams.join(', ')}`}
                                         </p>
+                                        {/* Der Name führt zu den Stammdaten,
+                                            dieser Link zur Übersicht: „wie ist
+                                            es eingestellt" und „wie steht es"
+                                            sind zwei Fragen. */}
+                                        <Link
+                                            href={project.overviewHref}
+                                            className="mt-1 inline-block text-xs font-medium text-rose-600 hover:text-rose-500 dark:text-rose-400"
+                                        >
+                                            {t('projects.list.overview')}
+                                        </Link>
                                     </div>
                                 </div>
                             </Card>

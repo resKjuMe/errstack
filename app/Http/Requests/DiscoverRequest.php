@@ -187,17 +187,7 @@ class DiscoverRequest extends GlobalFilterRequest
             return Interval::parse($chosen);
         }
 
-        $range = $this->range($filter);
-
-        foreach (Interval::options() as $key) {
-            $interval = Interval::parse($key);
-
-            if ($interval->points($range) <= self::TARGET_POINTS) {
-                return $interval;
-            }
-        }
-
-        return Interval::parse('7d');
+        return Interval::fitting($this->range($filter), self::TARGET_POINTS);
     }
 
     /**
