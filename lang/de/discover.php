@@ -81,4 +81,50 @@ return [
         'current' => 'Ausgewertet wird :project.',
     ],
 
+    // Gespeicherte Auswertungen: benennen, beschreiben, freigeben, duplizieren,
+    // löschen — und als Dashboard-Kachel übernehmen.
+    'saved' => [
+        'title' => 'Gespeichert',
+        'empty' => 'Noch keine Auswertung gespeichert.',
+        'save' => 'Auswertung speichern',
+        'save_hint' => 'Gespeichert wird, was gerade eingestellt ist: Quelle, Gruppierung, Kennzahlen, Suchbedingung, Sortierung, Zeilenzahl und Schrittweite — dazu Zeitraum, Umgebung und Projekt.',
+        'manage' => 'Verwalten',
+        'name' => 'Name',
+        'name_placeholder' => 'z. B. Fehler nach Browser',
+        'description' => 'Beschreibung',
+        'description_placeholder' => 'Wozu ist diese Auswertung da?',
+        'shared' => 'Für die Organisation freigeben',
+        'shared_hint' => 'Freigegeben heißt: alle in dieser Organisation sehen die Auswertung. Ändern und löschen darf sie weiterhin nur, wer sie angelegt hat — wer sie als Ausgangspunkt braucht, dupliziert sie.',
+        'shared_by' => 'Freigegeben von :name',
+        'submit' => 'Speichern',
+        'cancel' => 'Abbrechen',
+        'delete' => 'Löschen',
+        'duplicate' => 'Duplizieren',
+        'confirm_delete' => 'Diese gespeicherte Auswertung löschen?',
+        'copy_name' => ':name (Kopie)',
+        'restores_period' => 'Öffnet mit dem gespeicherten Zeitraum — an der Filterleiste danach umstellbar.',
+
+        // Übernehmen als Kachel.
+        'widget' => [
+            'action' => 'Als Kachel übernehmen',
+            'dashboard' => 'Dashboard',
+            'type' => 'Darstellung',
+            'submit' => 'Übernehmen',
+            'none' => 'Sie haben noch kein eigenes Dashboard. Legen Sie eines an, dann lässt sich diese Auswertung dorthin übernehmen.',
+            'hint' => 'Die Kachel bekommt eine Kopie der Frage. Der gespeicherte Zeitraum geht nicht mit: auf einem Dashboard gilt dessen Filterleiste.',
+        ],
+
+        'errors' => [
+            'too_many' => 'Mehr als :limit gespeicherte Auswertungen je Organisation gehen nicht. Löschen Sie eine, die Sie nicht mehr brauchen.',
+        ],
+
+        'flash' => [
+            'created' => 'Auswertung gespeichert.',
+            'updated' => 'Auswertung geändert.',
+            'duplicated' => 'Auswertung dupliziert.',
+            'deleted' => 'Auswertung gelöscht.',
+            'widget_created' => 'Als Kachel auf „:dashboard" übernommen.',
+        ],
+    ],
+
 ];

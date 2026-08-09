@@ -9,6 +9,7 @@ use App\Support\Discover\DiscoverEngine;
 use App\Support\Discover\DiscoverException;
 use App\Support\Discover\DiscoverLimits;
 use App\Support\Discover\DiscoverRow;
+use App\Support\Discover\SavedQueryData;
 use App\Support\Filters\GlobalFilter;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -54,6 +55,10 @@ class DiscoverController extends Controller
             'catalog' => DiscoverData::catalog($filter->timezone, $limits),
             'project' => $project === null ? null : ['slug' => $project->slug, 'name' => $project->name],
             'projectOptions' => self::projectOptions($filter),
+            // Die gespeicherten Auswertungen hängen an **jedem** Aufruf, auch am
+            // Aufruf ohne Projekt: eine davon zu öffnen ist der Weg, überhaupt
+            // eines zu bekommen — sie bringt ihres mit.
+            'saved' => SavedQueryData::bar($filter, $request->user()),
         ];
 
         if ($project === null) {
