@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\OrganizationRole;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -163,7 +164,9 @@ class ShellTest extends TestCase
                 ->where('shell.user.name', $user->name)
                 ->where('shell.user.email', $user->email)
                 ->where('shell.logoutHref', route('logout'))
-                ->where('shell.menu', fn (Collection $menu) => $menu->pluck('label')->all() === ['Profil', 'Benachrichtigungen', 'Zugriffstoken', 'Bausteine'])
+                // Die Benachrichtigungen stehen seit U2 als Anker im Fuß und
+                // nicht mehr im Nutzer-Menü.
+                ->where('shell.menu', fn (Collection $menu) => $menu->pluck('label')->all() === ['Profil', 'Zugriffstoken', 'Bausteine'])
             );
     }
 
@@ -174,6 +177,123 @@ class ShellTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('shell.user', null)
                 ->where('shell.loginHref', route('login'))
+                // Ohne Konto gibt es keine Organisation — und damit keinen
+                // Umschalter, der eine anzeigen könnte.
+                ->where('shell.org', null)
+            );
+    }
+
+    public function test_the_shell_names_the_current_organization_and_offers_the_others(): void
+    {
+        $user = User::factory()->create();
+        $current = Organization::factory()->withMember($user, OrganizationRole::Owner)->create(['name' => 'Anker AG']);
+        $other = Organization::factory()->withMember($user, OrganizationRole::Member)->create(['name' => 'Zeppelin GmbH']);
+
+        $user->switchOrganization($current);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('shell.org.current.name', 'Anker AG')
+                ->where('shell.org.current.slug', $current->slug)
+                // Zwei Wörter, zwei Anfangsbuchstaben.
+                ->where('shell.org.current.initials', 'AA')
+                // Die aktive Organisation steht nicht im Menü: dort führt sie
+                // nur auf sich selbst.
+                ->where('shell.org.options', fn (Collection $options) => $options->pluck('name')->all() === ['Zeppelin GmbH']
+                    && $options->pluck('switchHref')->all() === [route('organizations.switch', $other)]
+                )
+                ->where('shell.org.createHref', route('organizations.index'))
+            );
+    }
+
+    public function test_a_single_organization_leaves_only_the_create_entry(): void
+    {
+        $user = User::factory()->create();
+        $organization = Organization::factory()->withMember($user, OrganizationRole::Owner)->create(['name' => 'Solo']);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('shell.org.current.name', 'Solo')
+                // Ein einzelnes Wort gibt zwei Buchstaben her.
+                ->where('shell.org.current.initials', 'SO')
+                ->where('shell.org.options', [])
+                ->where('shell.org.createHref', route('organizations.index'))
+            );
+
+        $this->assertSame($organization->id, $user->refresh()->current_organization_id);
+    }
+
+    public function test_the_chosen_organization_survives_a_page_change(): void
+    {
+        $user = User::factory()->create();
+        $current = Organization::factory()->withMember($user, OrganizationRole::Owner)->create(['name' => 'Anker AG']);
+        $other = Organization::factory()->withMember($user, OrganizationRole::Member)->create(['name' => 'Zeppelin GmbH']);
+
+        $user->switchOrganization($current);
+
+        // Genau der Weg, den der Umschalter geht: POST auf organizations.switch.
+        // Seit U5 steht die Organisation in der Adresse — der Wechsel führt
+        // deshalb auf dieselbe Seite unter dem neuen Slug und nicht zurück auf
+        // die Adresse der alten.
+        $this->actingAs($user)
+            ->from(route('issues.index', $current))
+            ->post(route('organizations.switch', $other))
+            ->assertRedirect(route('issues.index', $other));
+
+        // Anschließend auf einer anderen Seite: die Wahl ist der Adresse
+        // gefolgt und steckt am Konto, nicht in der Sitzung einer einzelnen
+        // Ansicht.
+        $this->get(route('dashboard', $other))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('shell.org.current.name', 'Zeppelin GmbH')
+                ->where('shell.org.options', fn (Collection $options) => $options->pluck('name')->all() === ['Anker AG'])
+            );
+    }
+
+    public function test_the_footer_anchors_lead_to_settings_and_notifications(): void
+    {
+        $user = User::factory()->create();
+        $organization = Organization::factory()->withMember($user, OrganizationRole::Owner)->create();
+
+        $user->switchOrganization($organization);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertInertia(function (AssertableInertia $page) use ($organization) {
+                $footer = $page->toArray()['props']['shell']['footer'];
+
+                $this->assertSame(
+                    ['Einstellungen', 'Benachrichtigungen'],
+                    array_column($footer, 'label'),
+                );
+
+                // Die Einstellungen zeigen auf die aktive Organisation.
+                $this->assertSame(route('organizations.show', $organization), $footer[0]['href']);
+                $this->assertSame(route('notifications.preferences'), $footer[1]['href']);
+
+                // Eingeklappt zeigt die Leiste nur Symbole — wie in der
+                // Navigation braucht jeder Anker eines.
+                foreach ($footer as $link) {
+                    $this->assertArrayHasKey('icon', $link, "Ohne Icon: {$link['label']}");
+                }
+            });
+    }
+
+    public function test_the_settings_anchor_falls_back_to_the_overview_without_an_organization(): void
+    {
+        // Ein frisch registriertes Konto gehört noch keiner Organisation an. Der
+        // Anker führt dann zur Übersicht — von dort entsteht die erste. Sie ist
+        // hier auch die aufgerufene Seite: die Fachseiten liegen seit U5 unter
+        // einer Organisation und gibt es für dieses Konto noch nicht.
+        $this->actingAs(User::factory()->create());
+
+        $this->get(route('organizations.index'))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('shell.org.current', null)
+                ->where('shell.org.options', [])
+                ->where('shell.footer.0.href', route('organizations.index'))
             );
     }
 

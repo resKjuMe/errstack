@@ -328,6 +328,28 @@ const MENU_ICONS = {
             <path d="M9 15h2" />
         </>
     ),
+    // Einstellungen: das Zahnrad im Fuß der Leiste. Sechs Zähne als Speichen um
+    // die Nabe — als geschlossener Umriss gezeichnet wäre der Pfad ein Vielfaches
+    // so lang und bei 20 px nicht besser zu erkennen.
+    settings: (
+        <>
+            <circle cx="12" cy="12" r="3.2" />
+            <circle cx="12" cy="12" r="8" />
+            <path d="M12 4v2.5" />
+            <path d="M12 17.5V20" />
+            <path d="m4.9 8 2.2 1.3" />
+            <path d="m16.9 14.7 2.2 1.3" />
+            <path d="m4.9 16 2.2-1.3" />
+            <path d="m16.9 9.3 2.2-1.3" />
+        </>
+    ),
+    // Anlegen: das Pluszeichen im Menü des Umschalters.
+    plus: (
+        <>
+            <path d="M12 5v14" />
+            <path d="M5 12h14" />
+        </>
+    ),
 };
 
 export function MenuIcon({ name, className = '' }) {

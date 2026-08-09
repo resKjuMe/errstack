@@ -14,6 +14,20 @@ return [
         'expand' => 'Leiste ausklappen',
     ],
 
+    // Umschalter für die Organisation am Kopf der Seitenleiste.
+    'org' => [
+        'label' => 'Organisation',
+        'switch' => 'Organisation wechseln',
+        'create' => 'Organisation anlegen',
+        'none' => 'Keine Organisation',
+    ],
+
+    // Feste Anker im Fuß der Seitenleiste.
+    'footer' => [
+        'settings' => 'Einstellungen',
+        'notifications' => 'Benachrichtigungen',
+    ],
+
     // Überschriften der Navigationsgruppen in der Seitenleiste.
     'groups' => [
         'monitor' => 'Überwachen',
@@ -39,7 +53,6 @@ return [
 
     'menu_items' => [
         'profile' => 'Profil',
-        'notifications' => 'Benachrichtigungen',
         'api_tokens' => 'Zugriffstoken',
         'operations' => 'Betrieb',
         'components' => 'Bausteine',
