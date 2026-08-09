@@ -71,7 +71,7 @@ class WarnAboutQuota implements ShouldQueue
             return;
         }
 
-        $subject = $project?->name ?? $organization->name;
+        $subject = $project->name ?? $organization->name;
 
         $dispatcher->sendToUsers(
             $recipients,

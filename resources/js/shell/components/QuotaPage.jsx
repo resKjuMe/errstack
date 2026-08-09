@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link, useForm, usePage } from '@inertiajs/react';
-import PageHead from '../../components/PageHead.jsx';
-import Card from '../../components/Card.jsx';
-import { InputError, PrimaryButton, TextInput } from '../../components/Form.jsx';
-import { useT } from '../../i18n.js';
+import PageHead from './PageHead.jsx';
+import Card from './Card.jsx';
+import { InputError, PrimaryButton, TextInput } from './Form.jsx';
+import { useT } from '../i18n.js';
 
 // Die Kontingent-Seite — dieselbe für ein Projekt und für eine Organisation.
+// Sie steht bei den Bausteinen und nicht bei den Seiten, weil sie keiner der
+// beiden Ebenen gehört: unter `pages/` liegen die beiden Seitennamen, unter
+// denen der Server sie anfordert, und die bestehen aus je einer Zeile.
 // Was sich unterscheidet, steht in den Props: der Gegenstand, die geerbten
 // Grenzen der Organisation und die Liste der Schlüssel gibt es nur beim
 // Projekt. Zwei Seiten wären zwei Stellen, an denen eine neue Datenart

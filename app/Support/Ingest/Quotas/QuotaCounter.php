@@ -146,6 +146,6 @@ final class QuotaCounter
 
     private function key(string $window, QuotaScope $scope, int $scopeId, ?QuotaCategory $category): string
     {
-        return 'quota:'.$window.':'.$scope->value.':'.$scopeId.':'.($category?->value ?? 'all');
+        return 'quota:'.$window.':'.$scope->value.':'.$scopeId.':'.($category->value ?? 'all');
     }
 }

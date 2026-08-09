@@ -9,6 +9,7 @@ use App\Enums\NotificationEventType;
 use App\Enums\OrganizationRole;
 use App\Enums\QuotaCategory;
 use App\Enums\QuotaScope;
+use App\Jobs\DeliverPersonalNotification;
 use App\Jobs\WarnAboutQuota;
 use App\Models\IngestDiscard;
 use App\Models\IngestPayload;
@@ -281,9 +282,15 @@ class QuotaEnforcementTest extends TestCase
      * Die Warnung erreicht die Verwaltung der Organisation — und nur sie: wer
      * kein Kontingent ändern darf, bekommt eine Nachricht über eine Rechnung,
      * mit der er nichts anfangen kann.
+     *
+     * Geprüft wird am eingereihten Zustellauftrag und nicht an einem Doppel des
+     * Verteilers: der Weg über die persönlichen Einstellungen ist Teil der
+     * Zusage, und ein Doppel würde ihn gerade überspringen.
      */
     public function test_the_warning_reaches_the_administrators(): void
     {
+        Queue::fake();
+
         $project = Project::factory()->create();
         /** @var Organization $organization */
         $organization = $project->organization;
@@ -297,24 +304,19 @@ class QuotaEnforcementTest extends TestCase
         $quota = Quota::set(QuotaScope::Project, $project->id, QuotaCategory::Errors, 100, null);
         $this->assertNotNull($quota);
 
-        $recipients = [];
+        (new WarnAboutQuota($quota->id, 80, 80, 100))->handle(app(NotificationDispatcher::class));
 
-        $dispatcher = $this->mock(NotificationDispatcher::class);
-        $dispatcher->shouldReceive('sendToUsers')
-            ->once()
-            ->andReturnUsing(function ($users, $message, $event) use (&$recipients): array {
-                $recipients = collect($users)->pluck('id')->all();
+        Queue::assertPushed(
+            DeliverPersonalNotification::class,
+            fn (DeliverPersonalNotification $job): bool => $job->user->id === $admin->id
+                && $job->event === NotificationEventType::QuotaWarning
+                && str_contains($job->message->title, '80'),
+        );
 
-                $this->assertSame(NotificationEventType::QuotaWarning, $event);
-                $this->assertStringContainsString('80', $message->title);
-
-                return [];
-            });
-
-        (new WarnAboutQuota($quota->id, 80, 80, 100))->handle($dispatcher);
-
-        $this->assertContains($admin->id, $recipients);
-        $this->assertNotContains($member->id, $recipients);
+        Queue::assertNotPushed(
+            DeliverPersonalNotification::class,
+            fn (DeliverPersonalNotification $job): bool => $job->user->id === $member->id,
+        );
     }
 
     /**
