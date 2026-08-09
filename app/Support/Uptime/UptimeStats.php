@@ -86,8 +86,10 @@ final class UptimeStats
             ->selectRaw('sum(case when outcome = ? then 1 else 0 end) as up', [UptimeCheckOutcome::Up->value])
             ->first();
 
-        $total = (int) ($row?->total ?? 0);
-        $up = (int) ($row?->up ?? 0);
+        // `sum` liefert bei null Zeilen `null`, `count` immer eine Zahl — die
+        // Umwandlung fängt beides ab.
+        $total = (int) $row->total;
+        $up = (int) $row->up;
 
         return [
             'hours' => $hours,

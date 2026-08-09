@@ -114,12 +114,20 @@ class UptimeProbeTest extends TestCase
      * „die Gegenstelle ist weg" und „sie steht" sind zwei verschiedene
      * Auskünfte, und die erste Rückfrage nach einer Meldung ist genau die.
      */
-    public function test_a_timeout_is_told_apart_from_a_dead_host(): void
+    public function test_a_timeout_is_recorded_as_such(): void
     {
         Http::fake(fn () => throw new ConnectionException('cURL error 28: Operation timed out'));
 
         $this->assertSame(UptimeCheckOutcome::Timeout, $this->probe()->run($this->monitor())->outcome);
+    }
 
+    /**
+     * Zweiter Test statt einer zweiten Zusicherung im ersten: `Http::fake()`
+     * **ergänzt** seine Stubs, statt sie zu ersetzen — der erste bliebe stehen
+     * und würde weiter zuerst greifen.
+     */
+    public function test_a_dead_host_is_told_apart_from_a_timeout(): void
+    {
         Http::fake(fn () => throw new ConnectionException('cURL error 6: Could not resolve host'));
 
         $this->assertSame(UptimeCheckOutcome::ConnectionFailed, $this->probe()->run($this->monitor())->outcome);

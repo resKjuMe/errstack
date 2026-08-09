@@ -150,8 +150,8 @@ final class UptimeProbe
     private function contentType(UptimeMonitor $monitor): string
     {
         foreach ($monitor->headers ?? [] as $header) {
-            if (isset($header['name']) && strcasecmp((string) $header['name'], 'content-type') === 0) {
-                return (string) ($header['value'] ?? 'application/json');
+            if (strcasecmp($header['name'], 'content-type') === 0) {
+                return $header['value'];
             }
         }
 
@@ -172,13 +172,16 @@ final class UptimeProbe
         $headers = [];
 
         foreach ($monitor->headers ?? [] as $header) {
-            $name = trim((string) ($header['name'] ?? ''));
+            $name = trim($header['name']);
 
+            // Eine Kopfzeile ohne Namen wirft der Client zurück. Die
+            // Eingabeprüfung lässt sie gar nicht erst durch; hier steht nur, dass
+            // ein von Hand geänderter Datensatz die Prüfung nicht anhält.
             if ($name === '') {
                 continue;
             }
 
-            $headers[$name][] = (string) ($header['value'] ?? '');
+            $headers[$name][] = $header['value'];
         }
 
         return $headers;

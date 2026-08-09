@@ -52,15 +52,21 @@ class UptimeOutage extends Model
      */
     public static function open(UptimeMonitor $monitor, ProbeResult $result, Carbon $at): self
     {
-        return self::query()->create([
-            'uptime_monitor_id' => $monitor->id,
-            'project_id' => $monitor->project_id,
-            'outcome' => $result->outcome,
-            'http_status' => $result->httpStatus,
-            'error' => $result->error === null ? null : Str::limit($result->error, UptimeCheck::ERROR_LIMIT, ''),
-            'started_at' => $at,
-            'failed_checks' => 1,
-        ]);
+        // Kein `Fillable`, wie im Verlauf: ein Vorfall entsteht aus einer
+        // Messung, nie aus einer Anfrage.
+        $outage = new self;
+
+        $outage->uptime_monitor_id = $monitor->id;
+        $outage->project_id = $monitor->project_id;
+        $outage->outcome = $result->outcome;
+        $outage->http_status = $result->httpStatus;
+        $outage->error = $result->error === null ? null : Str::limit($result->error, UptimeCheck::ERROR_LIMIT, '');
+        $outage->started_at = $at;
+        $outage->failed_checks = 1;
+
+        $outage->save();
+
+        return $outage;
     }
 
     /**

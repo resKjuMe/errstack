@@ -20,7 +20,7 @@ class QueueAndBroadcastTest extends TestCase
 
     public function test_ingest_runs_before_notifications(): void
     {
-        $this->assertSame('ingest,notifications,performance,symbolication,default', QueueName::priority());
+        $this->assertSame('ingest,notifications,performance,symbolication,uptime,default', QueueName::priority());
     }
 
     public function test_the_worker_call_in_the_dev_script_uses_that_order(): void

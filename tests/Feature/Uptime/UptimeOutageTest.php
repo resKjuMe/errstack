@@ -15,6 +15,7 @@ use App\Models\UptimeMonitor;
 use App\Models\UptimeOutage;
 use App\Support\Uptime\UptimeStats;
 use App\Support\Uptime\UptimeSweep;
+use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
@@ -41,6 +42,14 @@ class UptimeOutageTest extends TestCase
         // Die Zustellung der Meldungen läuft über Aufträge; geprüft wird hier,
         // dass sie entstehen, nicht dass ein Webhook antwortet.
         Queue::fake();
+
+        Http::fake(function (): PromiseInterface {
+            [$body, $status] = count($this->answers) > 1
+                ? array_shift($this->answers)
+                : $this->answers[0];
+
+            return Http::response($body, $status);
+        });
     }
 
     /**
@@ -87,14 +96,36 @@ class UptimeOutageTest extends TestCase
         ];
     }
 
+    /**
+     * Was das Ziel als Nächstes antwortet, als Warteschlange: das letzte
+     * Element bleibt stehen und beantwortet alle weiteren Anfragen.
+     *
+     * **Ein einziger Stub für den ganzen Test**, und das ist kein Geschmack:
+     * `Http::fake()` **ergänzt** seine Stubs, statt sie zu ersetzen, und der
+     * zuerst registrierte greift. Ein zweiter Aufruf mitten im Test änderte
+     * deshalb gar nichts — das Ziel bliebe erreichbar, und der Test prüfte
+     * einen Ausfall, den es nie gab.
+     *
+     * @var list<array{0: string, 1: int}>
+     */
+    private array $answers = [['ok', 200]];
+
+    /**
+     * @param  array{0: string, 1: int}  ...$answers
+     */
+    private function answers(array ...$answers): void
+    {
+        $this->answers = array_values($answers);
+    }
+
     private function up(): void
     {
-        Http::fake(['ziel.test/*' => Http::response('ok', 200)]);
+        $this->answers(['ok', 200]);
     }
 
     private function down(): void
     {
-        Http::fake(['ziel.test/*' => Http::response('weg', 503)]);
+        $this->answers(['weg', 503]);
     }
 
     /**
@@ -165,9 +196,8 @@ class UptimeOutageTest extends TestCase
     {
         $monitor = $this->monitor(['confirmation_retries' => 1, 'confirmation_delay_seconds' => 0]);
 
-        Http::fakeSequence('ziel.test/*')
-            ->push('', 503)
-            ->push('ok', 200);
+        // Ein Aussetzer, danach wieder in Ordnung.
+        $this->answers(['', 503], ['ok', 200]);
 
         $this->check($monitor);
 

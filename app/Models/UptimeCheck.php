@@ -52,16 +52,24 @@ class UptimeCheck extends Model
      */
     public static function record(UptimeMonitor $monitor, ProbeResult $result, Carbon $at): self
     {
-        return self::query()->create([
-            'uptime_monitor_id' => $monitor->id,
-            'project_id' => $monitor->project_id,
-            'outcome' => $result->outcome,
-            'http_status' => $result->httpStatus,
-            'response_time_ms' => $result->responseTimeMs,
-            'error' => $result->error === null ? null : Str::limit($result->error, self::ERROR_LIMIT, ''),
-            'attempts' => $result->attempts,
-            'checked_at' => $at,
-        ]);
+        // Kein `Fillable`, wie beim Cronjob-Verlauf: die Angaben kommen aus der
+        // Messung und nie aus einer Anfrage. Eine Zuweisungsliste wäre hier eine
+        // Erlaubnis für etwas, das gar nicht vorkommt — geschrieben wird Feld
+        // für Feld.
+        $check = new self;
+
+        $check->uptime_monitor_id = $monitor->id;
+        $check->project_id = $monitor->project_id;
+        $check->outcome = $result->outcome;
+        $check->http_status = $result->httpStatus;
+        $check->response_time_ms = $result->responseTimeMs;
+        $check->error = $result->error === null ? null : Str::limit($result->error, self::ERROR_LIMIT, '');
+        $check->attempts = $result->attempts;
+        $check->checked_at = $at;
+
+        $check->save();
+
+        return $check;
     }
 
     /**
