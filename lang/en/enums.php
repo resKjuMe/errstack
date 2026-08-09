@@ -495,5 +495,26 @@ return [
         'needs_improvement' => 'Needs improvement',
         'poor' => 'Poor',
     ],
+    'discover_dataset' => [
+        'errors' => 'Errors',
+        'transactions' => 'Transactions (single measurements)',
+        'transaction_windows' => 'Transactions (minute windows)',
+        'user_reports' => 'User reports',
+    ],
+
+    'discover_aggregate' => [
+        'count' => 'Count',
+        'count_unique' => 'Distinct values',
+        'sum' => 'Sum',
+        'avg' => 'Average',
+        'min' => 'Minimum',
+        'max' => 'Maximum',
+        'p50' => 'p50',
+        'p75' => 'p75',
+        'p95' => 'p95',
+        'p99' => 'p99',
+        'apdex' => 'Apdex',
+        'failure_rate' => 'Failure rate',
+    ],
 
 ];
