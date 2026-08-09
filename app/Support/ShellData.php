@@ -186,6 +186,17 @@ final class ShellData
                 'label' => __('nav.groups.investigate'),
                 'entries' => [
                     [
+                        // Die freie Auswertung steht vor den fest gebauten
+                        // Seiten der Gruppe: sie beantwortet die Fragen, die
+                        // dort nicht vorgesehen sind, und ist damit der
+                        // Einstieg und nicht der Nachtrag.
+                        'label' => __('nav.links.discover'),
+                        'route' => 'discover.index',
+                        'activePattern' => 'discover.*',
+                        'icon' => 'discover',
+                        'filtered' => true,
+                    ],
+                    [
                         'label' => __('nav.links.performance'),
                         'route' => 'performance.index',
                         // Nicht `performance.*`: darunter läge auch die

@@ -42,6 +42,7 @@ return [
         'tags' => 'Merkmale',
         'feedback' => 'Rückmeldungen',
         'releases' => 'Versionen',
+        'discover' => 'Auswertung',
         'performance' => 'Leistung',
         'performance_issues' => 'Leistungsprobleme',
         'web_vitals' => 'Ladeerlebnis',
