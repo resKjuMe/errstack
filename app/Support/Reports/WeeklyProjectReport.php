@@ -75,7 +75,7 @@ final readonly class WeeklyProjectReport
                 ->count(),
             events: array_sum($counts),
             previousEvents: array_sum(self::countsPerIssue($issueIds, $previousStart, $start)),
-            topIssues: self::topIssues($counts, $topCount),
+            topIssues: self::topIssues($project, $counts, $topCount),
             topAreas: self::topAreas($counts, $topCount),
         );
     }
@@ -152,10 +152,14 @@ final readonly class WeeklyProjectReport
     }
 
     /**
+     * Das Projekt steht dabei, weil der Link es braucht: die Adresse eines
+     * Fehlers trägt die Organisation, und dieser Bericht entsteht in einem
+     * geplanten Lauf — dort gibt es keine Anfrage, aus der sie sich ergäbe.
+     *
      * @param  array<int, int>  $counts
      * @return list<array{title: string, url: string, count: int}>
      */
-    private static function topIssues(array $counts, int $limit): array
+    private static function topIssues(Project $project, array $counts, int $limit): array
     {
         $top = self::highest($counts, $limit);
 
@@ -175,7 +179,7 @@ final readonly class WeeklyProjectReport
 
             $result[] = [
                 'title' => $issue->title ?? __('reports.weekly.untitled'),
-                'url' => route('issues.show', $issue),
+                'url' => route('issues.show', ['organization' => $project->organization, 'issue' => $issue]),
                 'count' => $count,
             ];
         }

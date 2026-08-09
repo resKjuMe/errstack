@@ -1,22 +1,34 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
 use App\Jobs\ProcessDemoIngest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
-// Beispielseiten des Oberflächen-Grundgerüsts: „Übersicht" zeigt den Rahmen im
-// Einsatz, „Bausteine" ist die Musterseite aller wiederverwendbaren Bausteine.
-// Fachseiten kommen mit den folgenden Phasen und ersetzen diese Routen.
+// Die Fachseiten liegen unter `/organisationen/{organisation}/…` (U5): jeder Link
+// trägt die Organisation bei sich und zeigt beim Empfänger dasselbe. Welche
+// Organisation gemeint ist, löst App\Http\Middleware\ResolveOrganization aus der
+// Adresse auf — nicht mehr die zuletzt gewählte.
 //
 // Die Anwendung ist nicht öffentlich: ohne Anmeldung (und ohne bestätigte
 // E-Mail-Adresse) führt jeder Aufruf zur Anmeldung bzw. zum Bestätigungshinweis.
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Der Einstieg ohne Organisation. Er zeigt keine Seite, sondern schickt
+    // weiter — auf die Übersicht der aktiven Organisation, und ohne
+    // Mitgliedschaft auf die Organisationsliste. Die Adresse bleibt, weil ein
+    // frisch angelegtes Konto noch keine Organisation hat und die Anmeldung
+    // trotzdem irgendwohin führen muss.
+    Route::get('/', HomeController::class)->name('home');
+
     // Die Übersicht ist die erste Seite mit der globalen Filterleiste; ihr
-    // Zustand steht in der Adresszeile und wird serverseitig aufgelöst.
-    Route::get('/', DashboardController::class)->name('dashboard');
+    // Zustand steht in der Adresszeile und wird serverseitig aufgelöst. Sie
+    // liegt unter `uebersicht` und nicht direkt unter der Organisation: dort
+    // steht schon deren Stammdatenseite (`organizations.show`).
+    Route::get('organisationen/{organization}/uebersicht', DashboardController::class)
+        ->name('dashboard');
 
     Route::get('/bausteine', fn () => Inertia::render('Components'))->name('components');
 });
@@ -43,3 +55,8 @@ require __DIR__.'/profiling.php';
 require __DIR__.'/traces.php';
 require __DIR__.'/api-tokens.php';
 require __DIR__.'/operations.php';
+
+// Zum Schluss: die alten, organisationslosen Adressen der Fachseiten. Sie
+// stehen hinter allem anderen, damit sie nur greifen, wo keine echte Route mehr
+// liegt.
+require __DIR__.'/legacy.php';

@@ -4,7 +4,9 @@ import Sidebar from './components/Sidebar.jsx';
 import MobileHeader from './components/MobileHeader.jsx';
 import MobileMenu from './components/MobileMenu.jsx';
 import Flash from './components/Flash.jsx';
+import FilterBar from './components/FilterBar.jsx';
 import { ToastProvider } from './components/Toast.jsx';
+import useFilter from './filters/useFilter.js';
 
 // Persistentes React-Grundgerüst: Wrapper, Navigation, Flash-Meldungen und die
 // Toast-Ausgabe. Bleibt über Inertia-Navigationen hinweg gemountet (die Leiste
@@ -30,6 +32,7 @@ function initialCollapsed() {
 export default function AppShell({ children }) {
     const { props, url } = usePage();
     const { shell, flash, errors } = props;
+    const filter = useFilter();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(initialCollapsed);
 
@@ -75,6 +78,13 @@ export default function AppShell({ children }) {
                                 undo={flash?.undo}
                                 undoHref={shell?.undoHref}
                             />
+                            {/* Die globale Filterleiste steht hier und nicht in
+                                der Seite: dadurch sitzt sie auf jeder
+                                Auswertungsseite an derselben Stelle, und eine
+                                neue bekommt sie, ohne sie einzubinden. `null`
+                                heißt „hier gibt es nichts zu filtern" — dann
+                                fehlt sie ganz. */}
+                            {filter && <FilterBar filter={filter} />}
                             {children}
                         </main>
                     </div>

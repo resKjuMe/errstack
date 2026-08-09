@@ -14,6 +14,20 @@ return [
         'expand' => 'Expand sidebar',
     ],
 
+    // Organization switcher at the top of the sidebar.
+    'org' => [
+        'label' => 'Organization',
+        'switch' => 'Switch organization',
+        'create' => 'Create organization',
+        'none' => 'No organization',
+    ],
+
+    // Permanent anchors at the bottom of the sidebar.
+    'footer' => [
+        'settings' => 'Settings',
+        'notifications' => 'Notifications',
+    ],
+
     // Headings of the navigation groups in the sidebar.
     'groups' => [
         'monitor' => 'Monitor',
@@ -39,7 +53,6 @@ return [
 
     'menu_items' => [
         'profile' => 'Profile',
-        'notifications' => 'Notifications',
         'api_tokens' => 'Access tokens',
         'operations' => 'Operations',
         'components' => 'Components',

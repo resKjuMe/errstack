@@ -76,7 +76,7 @@ final class DeployNotifier
                     'commits' => Formats::number($commits),
                 ]),
                 level: NotificationLevel::Info,
-                url: route('releases.show', $release),
+                url: route('releases.show', ['organization' => $project->organization, 'release' => $release]),
                 context: [
                     __('releases.deploys.notification.context_project') => $project->name,
                     __('releases.deploys.notification.context_environment') => $environment->name,

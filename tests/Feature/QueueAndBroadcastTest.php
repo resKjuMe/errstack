@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\QueueName;
 use App\Events\DemoIngestProcessed;
 use App\Jobs\ProcessDemoIngest;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
@@ -19,7 +20,7 @@ class QueueAndBroadcastTest extends TestCase
 
     public function test_ingest_runs_before_notifications(): void
     {
-        $this->assertSame('ingest,notifications,performance,symbolication,default', QueueName::priority());
+        $this->assertSame('ingest,notifications,performance,symbolication,uptime,default', QueueName::priority());
     }
 
     public function test_the_worker_call_in_the_dev_script_uses_that_order(): void
@@ -81,17 +82,21 @@ class QueueAndBroadcastTest extends TestCase
 
     public function test_the_shell_only_offers_live_updates_when_broadcasting_is_configured(): void
     {
-        // Die Übersicht ist seit der Anmeldung (F3) nur angemeldet zu erreichen.
-        $this->actingAs(User::factory()->create());
+        // Die Übersicht ist seit der Anmeldung (F3) nur angemeldet zu erreichen
+        // und liegt seit U5 unter der Adresse ihrer Organisation.
+        $user = User::factory()->create();
+        $user->switchOrganization(Organization::factory()->withMember($user)->create());
+
+        $this->actingAs($user);
 
         config()->set('broadcasting.default', 'null');
 
-        $this->get('/')->assertInertia(fn ($page) => $page->where('shell.broadcast.enabled', false));
+        $this->get(route('dashboard'))->assertInertia(fn ($page) => $page->where('shell.broadcast.enabled', false));
 
         config()->set('broadcasting.default', 'reverb');
         config()->set('broadcasting.connections.reverb.key', 'test-key');
 
-        $this->get('/')->assertInertia(fn ($page) => $page
+        $this->get(route('dashboard'))->assertInertia(fn ($page) => $page
             ->where('shell.broadcast.enabled', true)
             ->where('shell.broadcast.key', 'test-key')
             ->where('shell.broadcast.channel', 'demo')

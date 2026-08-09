@@ -7,7 +7,6 @@ use App\Enums\TrendListSort;
 use App\Http\Requests\GlobalFilterRequest;
 use App\Http\Requests\TrendListRequest;
 use App\Models\TransactionTrendDetection;
-use App\Support\FilterData;
 use App\Support\Formats;
 use App\Support\Performance\Trends\BreakpointScan;
 use App\Support\Performance\Trends\TrendList;
@@ -49,7 +48,6 @@ class PerformanceTrendController extends Controller
         );
 
         return Inertia::render('performance/Trends', [
-            'filter' => FilterData::bar($filter),
             'trends' => $trends,
             'list' => $request->listValues(),
             'totalLabel' => Formats::number($trends->total()),

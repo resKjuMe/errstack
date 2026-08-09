@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
-import FilterBar from '../../components/FilterBar.jsx';
+import useFilter from '../../filters/useFilter.js';
 import { filterQuery } from '../../filters/useGlobalFilter.js';
 import { formatDateTime, formatNumber, useTranslations } from '../../i18n.js';
 import Flamegraph from './Flamegraph.jsx';
@@ -18,7 +18,6 @@ import { duration, percent } from './format.jsx';
 // bei der ersten — eine Zusammenfassung über verschiedene Transaktionen hinweg
 // wäre der Durchschnitt aus Anmeldeseite und nächtlichem Import.
 export default function ProfilingIndex({
-    filter,
     profiles,
     listLimit,
     transactionName,
@@ -29,6 +28,7 @@ export default function ProfilingIndex({
     comparison,
 }) {
     const { shell } = usePage().props;
+    const filter = useFilter();
     const { t, formats } = useTranslations();
 
     // Der ganze Zustand steht in der Adresszeile: ein Neuladen behält ihn, und
@@ -69,8 +69,6 @@ export default function ProfilingIndex({
                     </ul>
                 }
             />
-
-            <FilterBar filter={filter} />
 
             {aggregate && (
                 <Card

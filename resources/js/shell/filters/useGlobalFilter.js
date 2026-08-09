@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { router } from '@inertiajs/react';
 
-// Der gemeinsame Zugang zur globalen Filterleiste. Jede Auswertungsseite bekommt
-// vom Server die Nutzlast `filter` (App\Support\FilterData::bar) und ruft damit
-// diesen Hook auf; die Leiste selbst zeichnet FilterBar.jsx.
+// Der gemeinsame Zugang zur globalen Filterleiste. Die Nutzlast `filter`
+// (App\Support\FilterData::bar) kommt als geteilte Eigenschaft vom Server
+// ({@see useFilter.js}); damit ruft FilterBar.jsx diesen Hook auf.
 //
 // Der Zustand lebt in der Adresszeile, nicht in React: eine Änderung ist ein
 // Seitenaufruf mit neuen Parametern. Damit übersteht die Auswahl das Neuladen,
@@ -44,18 +44,26 @@ export default function useGlobalFilter(filter) {
         visit(next);
     };
 
-    // Ohne Parameter setzt der Server seine Voreinstellungen ein; die Felder
-    // ziehen mit seiner Antwort nach. Zurückgesetzt wird die **Leiste** und
-    // nicht die Seite: eine gewählte Sortierung ist keine Einschränkung und
-    // bleibt deshalb stehen.
+    // Zurückgesetzt wird die **Leiste** und nicht die Seite: eine gewählte
+    // Sortierung ist keine Einschränkung und bleibt deshalb stehen.
+    //
+    // Die Voreinstellung wird ausdrücklich hingeschrieben und nicht durch
+    // Weglassen erreicht. Eine Adresse ohne Filter-Parameter heißt seit U4
+    // „nimm den zuletzt benutzten Stand" (App\Http\Requests\GlobalFilterRequest)
+    // — beim Zurücksetzen wäre das genau der Stand, den man loswerden will, und
+    // die Schaltfläche täte nichts.
     const reset = () => {
-        const query = withoutFilter().toString();
+        const next = {
+            projects: [],
+            environment: '',
+            period: filter.defaultPeriod,
+            from: '',
+            to: '',
+            tz: browserTimezone() || form.tz,
+        };
 
-        router.get(
-            query ? `${window.location.pathname}?${query}` : window.location.pathname,
-            {},
-            { preserveState: true, preserveScroll: true }
-        );
+        setForm(next);
+        visit(next);
     };
 
     return {

@@ -8,13 +8,19 @@ use App\Http\Requests\OrganizationRequest;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Support\AuditLog;
+use App\Support\Filters\FilterQuery;
 use App\Support\OrganizationData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route as RoutingRoute;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Organisationen anlegen, ansehen, umbenennen und löschen. Jede Prüfung läuft
@@ -129,6 +135,19 @@ class OrganizationController extends Controller
 
     /**
      * Zwischen den eigenen Organisationen wechseln.
+     *
+     * Der Wechsel führt dorthin, wo man gerade war — nur in der neuen
+     * Organisation. Seit die Fachseiten die Organisation in der Adresse tragen
+     * (U5), wäre ein schlichtes `back()` das Gegenteil davon: es führte auf die
+     * Adresse der **alten** Organisation zurück, und die schaltet dort prompt
+     * wieder um. Wer auf der Fehlerliste wechselt, will die Fehler der neuen
+     * Organisation sehen und nicht wieder bei null anfangen.
+     *
+     * Die Projektauswahl bleibt dabei zurück: Projekte gehören zu einer
+     * Organisation, und die der alten hat in der neuen nichts mehr zu suchen.
+     * Der Zeitraum und die übrigen Parameter der Seite bleiben stehen; man
+     * wechselt die Organisation, um denselben Ausschnitt woanders zu sehen
+     * ({@see FilterQuery}).
      */
     public function switch(Request $request, Organization $organization): RedirectResponse
     {
@@ -136,6 +155,85 @@ class OrganizationController extends Controller
 
         $request->user()->switchOrganization($organization);
 
-        return back()->with('status', __('organizations.flash.switched', ['name' => $organization->name]));
+        return redirect()
+            ->to($this->samePageIn($organization, FilterQuery::withoutProjectSelection(url()->previous())))
+            ->with('status', __('organizations.flash.switched', ['name' => $organization->name]));
+    }
+
+    /**
+     * Dieselbe Seite in der angegebenen Organisation.
+     *
+     * Die vorige Adresse wird gegen die Routen gehalten, statt sie zu zerlegen:
+     * nur die Route weiß, welcher Abschnitt die Organisation ist. Drei Fälle,
+     * und der Reihe nach:
+     *
+     * 1. Die vorige Seite gehört zu keiner Organisation (Organisationsliste,
+     *    Zugriffstoken) — dann bleibt es bei ihr. Sie zeigt nach dem Wechsel
+     *    ohnehin die neue.
+     * 2. Sie hängt allein an der Organisation (Fehlerliste, Versionen, …) — dann
+     *    dieselbe Seite mit dem neuen Slug, samt Abfrage-Parametern: der Zeitraum
+     *    der Filterleiste soll den Wechsel überleben. Projekte, die es in der
+     *    neuen Organisation nicht gibt, übergeht der Filter von selbst.
+     * 3. Sie hängt an einer Kennung (ein einzelner Fehler, eine Version) — die
+     *    gibt es in der neuen Organisation nicht, und ein Link darauf endete in
+     *    einer Zugriffs-Fehlermeldung. Dann in die Liste desselben Bereichs, und
+     *    erst wenn es die nicht gibt, auf die Übersicht.
+     */
+    private function samePageIn(Organization $organization, string $previous): string
+    {
+        $route = $this->routeFor($previous);
+        $name = $route?->getName();
+
+        if ($route === null || $name === null || ! array_key_exists('organization', $route->parameters())) {
+            return $previous;
+        }
+
+        if (Arr::except($route->parameters(), ['organization']) !== []) {
+            $name = $this->listFor($name);
+        }
+
+        $target = route($name, ['organization' => $organization]);
+        $query = parse_url($previous, PHP_URL_QUERY);
+
+        return is_string($query) && $query !== '' ? $target.'?'.$query : $target;
+    }
+
+    /**
+     * Die Liste zu einer Detailseite: erst die des engsten Bereichs
+     * (`performance.issues.show` → `performance.issues.index`), dann die des
+     * Oberbereichs (`issues.tags.show` → `issues.index`), zuletzt die Übersicht.
+     *
+     * Genommen wird nur, was allein an der Organisation hängt — eine „Liste",
+     * die selbst eine Kennung braucht, wäre dasselbe Problem eine Ebene höher.
+     */
+    private function listFor(string $name): string
+    {
+        $candidates = [
+            Str::beforeLast($name, '.').'.index',
+            Str::before($name, '.').'.index',
+        ];
+
+        foreach ($candidates as $candidate) {
+            $route = Route::getRoutes()->getByName($candidate);
+
+            if ($route !== null && $route->parameterNames() === ['organization']) {
+                return $candidate;
+            }
+        }
+
+        return 'dashboard';
+    }
+
+    /**
+     * Die Route hinter einer Adresse — oder null, wenn keine passt (eine fremde
+     * Adresse im Referrer, eine inzwischen abgeschaffte Seite).
+     */
+    private function routeFor(string $url): ?RoutingRoute
+    {
+        try {
+            return Route::getRoutes()->match(Request::create($url));
+        } catch (HttpException) {
+            return null;
+        }
     }
 }

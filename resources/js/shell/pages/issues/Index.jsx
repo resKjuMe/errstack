@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
-import FilterBar from '../../components/FilterBar.jsx';
 import Pagination from '../../components/Pagination.jsx';
 import { Checkbox, InputLabel, SecondaryButton, SelectInput } from '../../components/Form.jsx';
 import { TableSkeleton } from '../../components/Skeleton.jsx';
+import useFilter from '../../filters/useFilter.js';
 import { useT } from '../../i18n.js';
 import IssueActions from './IssueActions.jsx';
 import IssueRow from './IssueRow.jsx';
@@ -23,7 +23,6 @@ import useLiveIssues from './useLiveIssues.js';
 // Verlauf vor und zurück funktioniert, und ein Link auf „die häufigsten offenen
 // Fehler der letzten 24 Stunden" ist ein Link.
 export default function Index({
-    filter,
     issues,
     list,
     sortOptions,
@@ -41,6 +40,7 @@ export default function Index({
     savedSearches,
 }) {
     const { shell } = usePage().props;
+    const filter = useFilter();
     const t = useT();
 
     const ids = issues.data.map((issue) => issue.id);
@@ -89,8 +89,6 @@ export default function Index({
     return (
         <>
             <PageHead title={t('issues.title')} appName={shell.appName} help={t('issues.help')} />
-
-            <FilterBar filter={filter} />
 
             {environmentIgnored && (
                 <p className="mb-4 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">

@@ -88,7 +88,7 @@ class PerformanceOverviewTest extends TestCase
      */
     private function url(array $query = []): string
     {
-        return '/leistung?'.http_build_query($query + ['tz' => 'UTC']);
+        return route('performance.index', $query + ['tz' => 'UTC']);
     }
 
     /**

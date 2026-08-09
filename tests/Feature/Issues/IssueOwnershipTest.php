@@ -230,7 +230,7 @@ class IssueOwnershipTest extends TestCase
         $issue = Issue::query()->sole();
 
         $this->actingAs($user)
-            ->getJson('/fehler/zustaendigkeit/vorschlaege?issue='.$issue->id)
+            ->getJson(route('issues.assignment.suggest', ['issue' => $issue->id]))
             ->assertOk()
             ->assertJsonPath('suggestions.0.kind', 'ownership')
             ->assertJsonPath('suggestions.0.value', '#Kasse');
@@ -251,7 +251,7 @@ class IssueOwnershipTest extends TestCase
         $this->ingest($project, $this->crash());
 
         $response = $this->actingAs($user)
-            ->getJson('/fehler/zustaendigkeit/vorschlaege')
+            ->getJson(route('issues.assignment.suggest'))
             ->assertOk();
 
         foreach ($response->json('suggestions') as $suggestion) {

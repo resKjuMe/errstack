@@ -53,9 +53,10 @@ sein eigener Eintrag und aus der Erkennung würde ein Protokoll.
 
 **Getrennt bleibt die Ansicht.** Jede Liste filtert ausdrücklich nach einer
 Kategorie (`Issue::scopeOfCategory()`); es gibt keinen Bildschirm, der beide
-ungetrennt zeigt. Die Fehlerliste liegt unter `/fehler`, die Leistungsprobleme
-unter `/leistungsprobleme`, und die Detailseite eines Fehlers ist unter der
-Adresse eines Leistungsproblems nicht zu haben.
+ungetrennt zeigt. Die Fehlerliste liegt unter `/organisationen/{org}/fehler`, die
+Leistungsprobleme unter `/organisationen/{org}/leistungsprobleme`, und die
+Detailseite eines Fehlers ist unter der Adresse eines Leistungsproblems nicht zu
+haben.
 
 ## Die acht Muster
 

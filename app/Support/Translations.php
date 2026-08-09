@@ -56,6 +56,7 @@ final class Translations
         'tags',
         'teams',
         'traces',
+        'uptime',
         'web_vitals',
     ];
 

@@ -230,10 +230,10 @@ class GlobalFilterTest extends TestCase
 
     public function test_the_dashboard_ships_the_filter_and_keeps_the_selection_after_a_reload(): void
     {
-        [$user, , $project] = $this->context();
+        [$user, $organization, $project] = $this->context();
         Environment::factory()->for($project)->create(['name' => 'production']);
 
-        $url = '/?projects[]=webshop&environment=production&period=7d&tz=Europe%2FBerlin';
+        $url = route('dashboard', $organization).'?projects[]=webshop&environment=production&period=7d&tz=Europe%2FBerlin';
 
         $this->actingAs($user)->get($url)
             ->assertOk()
@@ -259,10 +259,10 @@ class GlobalFilterTest extends TestCase
 
     public function test_the_dashboard_rejects_a_reversed_own_period(): void
     {
-        [$user] = $this->context();
+        [$user, $organization] = $this->context();
 
         $this->actingAs($user)
-            ->get('/?period=custom&from=2026-08-05&to=2026-08-01')
+            ->get(route('dashboard', $organization).'?period=custom&from=2026-08-05&to=2026-08-01')
             ->assertSessionHasErrors('to');
     }
 
@@ -275,6 +275,48 @@ class GlobalFilterTest extends TestCase
         $this->assertCount(0, $filter->availableProjects);
         $this->assertSame([], $filter->projectIds());
         $this->assertSame(0, $filter->apply(Environment::query(), 'last_seen_at')->count());
+    }
+
+    /**
+     * Die Nutzlast der Leiste kommt vom Rahmen und nicht von der Seite: sie liegt
+     * an jeder Auswertungsseite an, ohne dass deren Controller sie mitgibt.
+     */
+    public function test_every_analysis_page_carries_the_filter_payload(): void
+    {
+        [$user, $organization, $project] = $this->context();
+        Environment::factory()->for($project)->create(['name' => 'production']);
+
+        // Über die Routen-Namen und nicht über die alten Wurzelpfade: die
+        // Fachseiten liegen seit U5 unter `/organisationen/{organisation}/…`,
+        // und `/versionen` beantwortet eine Weiterleitung statt der Seite.
+        $names = ['releases.index', 'tags.index', 'performance.index', 'feedback.index'];
+
+        foreach ($names as $name) {
+            $this->actingAs($user)
+                ->get(route($name, $organization).'?projects[]=webshop&environment=production&period=7d')
+                ->assertOk()
+                ->assertInertia(fn (AssertableInertia $page) => $page
+                    ->where('filter.value.projects', ['webshop'])
+                    ->where('filter.value.environment', 'production')
+                    ->where('filter.value.period', '7d')
+                );
+        }
+    }
+
+    /**
+     * Umgekehrt: wo es nichts auszuwerten gibt, gibt es auch keine Leiste. Das
+     * `null` ist das Zeichen, an dem der Rahmen sie weglässt.
+     */
+    public function test_pages_without_an_analysis_carry_no_filter(): void
+    {
+        [$user] = $this->context();
+
+        foreach (['/bausteine', '/profile'] as $path) {
+            $this->actingAs($user)
+                ->get($path)
+                ->assertOk()
+                ->assertInertia(fn (AssertableInertia $page) => $page->where('filter', null));
+        }
     }
 
     protected function tearDown(): void

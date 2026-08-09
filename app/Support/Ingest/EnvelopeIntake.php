@@ -10,6 +10,7 @@ use App\Models\IngestPayload;
 use App\Models\ProjectKey;
 use App\Support\Crons\CheckInIntake;
 use App\Support\Crons\CheckInPayload;
+use App\Support\Ingest\Spikes\SpikeGuard;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -42,12 +43,14 @@ final class EnvelopeIntake
      * @param  int  $maxItemBytes  Obergrenze für ein JSON-Element.
      * @param  int  $maxAttachmentBytes  Obergrenze für Anhänge und Aufzeichnungen.
      * @param  CheckInIntake  $checkIns  Verarbeitung der Cronjob-Lebenszeichen.
+     * @param  SpikeGuard  $spikes  Der Ausschlag-Schutz (A7).
      */
     public function __construct(
         private readonly int $maxItems,
         private readonly int $maxItemBytes,
         private readonly int $maxAttachmentBytes,
         private readonly CheckInIntake $checkIns,
+        private readonly SpikeGuard $spikes,
     ) {}
 
     public static function fromConfig(): self
@@ -57,6 +60,7 @@ final class EnvelopeIntake
             maxItemBytes: (int) config('ingest.envelope.max_item_bytes'),
             maxAttachmentBytes: (int) config('ingest.envelope.max_attachment_bytes'),
             checkIns: app(CheckInIntake::class),
+            spikes: app(SpikeGuard::class),
         );
     }
 
@@ -131,6 +135,15 @@ final class EnvelopeIntake
                 'meldung' => 'Nutzdaten des Elements sind kein JSON-Objekt.',
             ]);
 
+            return;
+        }
+
+        // Der Ausschlag-Schutz (A7). Je Element und nicht je Envelope: was in
+        // einer Anfrage zusammensteckt, ist inhaltlich unabhängig, und er trifft
+        // ohnehin nur die Elemente, die als Ereignis zählen — ein Lebenszeichen,
+        // eine Verworfen-Meldung des SDK und ein Anhang gehen weiter durch. Die
+        // Auskunft darüber wegzuwerfen, während wir wegwerfen, wäre widersinnig.
+        if (! $this->spikes->allows($key, $type)) {
             return;
         }
 

@@ -8,6 +8,7 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Team;
 use App\Models\User;
+use App\Support\CurrentOrganization;
 use App\Support\Issues\EventNavigation;
 use App\Support\Issues\IssueAssignee;
 use App\Support\Ownership\OwnershipAssignment;
@@ -66,11 +67,11 @@ class IssueAssignmentController extends Controller
     {
         $viewer = $request->user();
 
-        // Die aktive Organisation des Betrachters und **nicht** die Projekte der
+        // Die Organisation aus der Adresse und **nicht** die Projekte der
         // Filterleiste: zuständig wird man in einer Organisation, und eine
         // Auswahlliste, die sich mit der Projektauswahl ändert, wäre bei einer
         // Sammelaktion über mehrere Projekte nicht mehr zu beantworten.
-        $organization = $viewer?->resolveCurrentOrganization();
+        $organization = CurrentOrganization::for($request);
 
         if (! $organization instanceof Organization) {
             return response()->json(['suggestions' => []]);

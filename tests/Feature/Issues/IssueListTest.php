@@ -315,6 +315,8 @@ class IssueListTest extends TestCase
 
     public function test_the_list_needs_a_signed_in_viewer(): void
     {
-        $this->get(route('issues.index'))->assertRedirect(route('login'));
+        [, $organization] = $this->context();
+
+        $this->get(route('issues.index', $organization))->assertRedirect(route('login'));
     }
 }
