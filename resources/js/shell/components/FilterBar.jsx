@@ -15,32 +15,43 @@ import useGlobalFilter from '../filters/useGlobalFilter.js';
 //
 // Im Einstellungsbereich (U6) gibt es sie nicht — dort zeichnet die AppShell sie
 // gar nicht erst.
+//
+// Die Projektauswahl fehlt dort, wo das Projekt bereits feststeht — auf der
+// Detailseite einer Version etwa sagt die Adresse, welches gemeint ist. Das
+// entscheidet der Server (`showProjects`, App\Support\FilterData::bar) und nicht
+// die Seite: eine Auswahl, die dort ohne Wirkung bliebe, wäre schlimmer als
+// keine.
 export default function FilterBar({ filter }) {
     const { form, apply, reset, toggleProject } = useGlobalFilter(filter);
     const { labels } = filter;
 
+    const showProjects = filter.showProjects !== false;
     const custom = form.period === 'custom';
     const filtered =
-        form.projects.length > 0 || form.environment !== '' || form.period !== filter.defaultPeriod;
+        (showProjects && form.projects.length > 0) ||
+        form.environment !== '' ||
+        form.period !== filter.defaultPeriod;
 
     return (
         <Card className="mb-4">
             <div className="flex flex-wrap items-end gap-4">
-                <div className="min-w-48">
-                    <InputLabel value={labels.projects} />
-                    {filter.projectOptions.length === 0 ? (
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            {labels.noProjects}
-                        </p>
-                    ) : (
-                        <ProjectPicker
-                            options={filter.projectOptions}
-                            selected={form.projects}
-                            onToggle={toggleProject}
-                            allLabel={labels.allProjects}
-                        />
-                    )}
-                </div>
+                {showProjects && (
+                    <div className="min-w-48">
+                        <InputLabel value={labels.projects} />
+                        {filter.projectOptions.length === 0 ? (
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                {labels.noProjects}
+                            </p>
+                        ) : (
+                            <ProjectPicker
+                                options={filter.projectOptions}
+                                selected={form.projects}
+                                onToggle={toggleProject}
+                                allLabel={labels.allProjects}
+                            />
+                        )}
+                    </div>
+                )}
 
                 <div>
                     <InputLabel htmlFor="filter_environment" value={labels.environment} />

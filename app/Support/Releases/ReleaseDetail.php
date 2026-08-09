@@ -5,8 +5,15 @@ namespace App\Support\Releases;
 use App\Models\Commit;
 use App\Models\CommitFile;
 use App\Models\Deploy;
+use App\Models\Issue;
 use App\Models\Release;
+use App\Models\ReleaseArtifact;
+use App\Support\Filters\GlobalFilter;
 use App\Support\Formats;
+use App\Support\Releases\Health\ReleaseAdoptionSeries;
+use App\Support\Releases\Health\ReleaseHealth;
+use App\Support\Releases\Health\ReleaseHealthData;
+use App\Support\Releases\Health\SessionWindow;
 use App\Support\Search\SearchQuery;
 
 /**
@@ -17,10 +24,13 @@ use App\Support\Search\SearchQuery;
  * Version gibt und wie viele Fehler mit ihr dazugekommen sind; hier stehen die
  * Änderungen selbst.
  *
- * **Noch nicht hier: der Vergleich zur Vorversion** samt Übersichtszahlen — das
- * ist R8 und braucht die Ordnung zwischen zwei Auslieferungen, nicht den Inhalt
- * einer. Und die Gesundheit (abgestürzte Sitzungen) ist R7. Diese Seite kommt
- * mit dem aus, was in der Auslieferung selbst steht.
+ * **Und wie sie ausgegangen ist** (R8): Gesundheit, Verbreitung und der
+ * Vergleich zur Vorversion. Der Vergleich ist dabei nicht das Beiwerk, sondern
+ * der Zweck — „99,2 % absturzfrei" allein sagt niemandem, ob die Auslieferung
+ * gut war, und erst „vorher waren es 99,8 %" macht daraus eine Aussage.
+ *
+ * Alle Zahlen hängen an der globalen Filterleiste (F7): Zeitraum und Umgebung
+ * kommen von dort. Das Projekt nicht — es steht durch die Version fest.
  */
 final class ReleaseDetail
 {
@@ -40,6 +50,16 @@ final class ReleaseDetail
     public const MAX_COMMITS = 250;
 
     /**
+     * Höchstens so viele Bauartefakte stehen auf der Seite.
+     *
+     * Ein Bundle je Einstiegspunkt und eine Quellkarte dazu — der Regelfall sind
+     * ein paar Dutzend. Ein Bauvorgang, der jede Datei einzeln hochlädt, bringt
+     * Tausende, und die Seite wäre eine Dateiliste mit einer Auslieferung
+     * darüber. Wie bei den Commits wird sichtbar gekürzt.
+     */
+    public const MAX_ARTIFACTS = 50;
+
+    /**
      * Die Auslieferung samt ihrer Commits, fertig für die Oberfläche.
      *
      * Alles in **einem** Satz Abfragen: die Commits mit ihrem Repository, ihren
@@ -49,9 +69,19 @@ final class ReleaseDetail
      *
      * @return array<string, mixed>
      */
-    public static function present(Release $release): array
+    public static function present(Release $release, GlobalFilter $filter): array
     {
         $release->loadMissing('project.organization');
+
+        // Der Ausschnitt für alle Kennzahlen dieser Seite: Zeitraum und Umgebung
+        // aus der Filterleiste, das Projekt aus der Version. Ein Ausschnitt für
+        // alles, damit die Übersichtszahl, der Vergleich und die Kurve
+        // dieselbe Frage beantworten — drei Zahlen aus drei Zeiträumen sähen
+        // nebeneinander aus wie ein Widerspruch.
+        $window = SessionWindow::fromFilter($filter, [$release->project_id]);
+
+        $health = new ReleaseHealth;
+        $comparison = $health->compare($release, $window->from, $window->to, $window->environment);
 
         // Die Auslieferungen dieser Version (R3). Sie stehen auf derselben
         // Seite wie ihr Inhalt, weil dort die Frage entsteht, für die es sie
@@ -66,7 +96,26 @@ final class ReleaseDetail
             ->limit(self::MAX_COMMITS)
             ->get();
 
+        $artifactCount = $release->artifacts()->count();
+
+        $artifacts = $release->artifacts()->orderBy('name')->limit(self::MAX_ARTIFACTS)->get();
+
         return [
+            // Gesundheit und Verbreitung (R7) samt Vergleich zur Vorversion —
+            // die Zahlen, wegen derer jemand nach einer Auslieferung überhaupt
+            // hierherkommt. Deshalb stehen sie im Rückgabewert vorn und auf der
+            // Seite oben.
+            'health' => ReleaseHealthData::summary($comparison['current']),
+            'comparison' => ReleaseHealthData::comparison($comparison['current'], $comparison['previous']),
+            'previousHref' => $comparison['previous'] === null
+                ? null
+                : route('releases.show', $comparison['previous']->release),
+            'adoption' => ReleaseAdoptionSeries::present($release, $window),
+            'issues' => self::issues($release),
+            'artifacts' => $artifacts->map(fn (ReleaseArtifact $artifact): array => self::artifact($artifact))->all(),
+            'artifactsLabel' => Formats::number($artifactCount),
+            'artifactsTruncated' => $artifactCount > $artifacts->count(),
+            'artifactsShownLabel' => Formats::number($artifacts->count()),
             'release' => [
                 'id' => $release->id,
                 'version' => $release->version,
@@ -98,6 +147,75 @@ final class ReleaseDetail
             'commitsLabel' => Formats::number($total),
             'commitsTruncated' => $total > $commits->count(),
             'commitsShownLabel' => Formats::number($commits->count()),
+        ];
+    }
+
+    /**
+     * Was diese Auslieferung an Fehlern gebracht, erledigt und zurückgeholt hat.
+     *
+     * Drei Zahlen, die drei verschiedene Dinge über dieselbe Auslieferung sagen
+     * — und jede führt in die Fehlerliste, gefiltert auf genau diese Menge. Eine
+     * Zahl auf einer Übersichtsseite, hinter der man nicht nachsehen kann, ist
+     * eine Behauptung.
+     *
+     * **Drei Abfragen und nicht eine mit `or`.** Jede der drei hängt an einer
+     * anderen Spalte; zusammengefasst wäre es eine Bedingung, die keinen der
+     * drei Indizes mehr benutzen kann — und drei gezählte Zeilen sind billig.
+     *
+     * Der Zeitraum der Filterleiste wirkt hier **nicht**: „mit dieser Version
+     * kam dieser Fehler" ist eine Aussage über die Auslieferung und nicht über
+     * die letzten 24 Stunden. Eingeschränkt sähe die Seite je nach Zeitraum so
+     * aus, als hätte die Version verschieden viele Fehler gebracht.
+     *
+     * @return array<string, mixed>
+     */
+    private static function issues(Release $release): array
+    {
+        $id = $release->getKey();
+
+        $new = Issue::query()->where('first_release_id', $id)->count();
+        $resolved = Issue::query()->where('resolved_in_release_id', $id)->count();
+        $regressed = Issue::query()->where('regressed_in_release_id', $id)->count();
+
+        return [
+            'new' => self::issueGroup($new, SearchQuery::term('firstRelease', $release->version)),
+            'resolved' => self::issueGroup($resolved, SearchQuery::term('resolvedInRelease', $release->version)),
+            'regressed' => self::issueGroup($regressed, SearchQuery::term('regressedInRelease', $release->version)),
+        ];
+    }
+
+    /**
+     * @return array{count: int, label: string, href: string}
+     */
+    private static function issueGroup(int $count, string $query): array
+    {
+        return [
+            'count' => $count,
+            'label' => Formats::number($count),
+            'href' => route('issues.index', ['q' => $query]),
+        ];
+    }
+
+    /**
+     * Ein hochgeladenes Bauartefakt (R5).
+     *
+     * Die Debug-Kennung steht dabei nur als „ja/nein" da und nicht als
+     * Zeichenkette: sie ist sechsunddreißig Zeichen lang und interessiert an
+     * dieser Stelle nur in einer Hinsicht — ob die Zuordnung ohne den Pfad
+     * auskommt.
+     *
+     * @return array<string, mixed>
+     */
+    private static function artifact(ReleaseArtifact $artifact): array
+    {
+        return [
+            'id' => $artifact->id,
+            'name' => $artifact->name,
+            'kind' => $artifact->kind->value,
+            'kindLabel' => $artifact->kind->label(),
+            'sizeLabel' => Formats::bytes($artifact->size),
+            'hasDebugId' => $artifact->debug_id !== null,
+            'sourceMap' => $artifact->sourceMapName(),
         ];
     }
 

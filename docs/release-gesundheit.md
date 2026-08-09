@@ -127,5 +127,6 @@ ihrer ersten Meldung fest; spätere Meldungen ändern nur noch den Ausgang. Eine
 Sitzung gehört zu der Version, in der sie **begonnen** hat — sonst stünde in
 einem Zeitfenster ein Absturz mehr, als es dort Sitzungen gibt.
 
-**Keine Darstellung.** Die Übersicht und die Detailseite mit Verlauf und
-Vergleich sind R8; hier stehen die Zahlen, aus denen sie gebaut wird.
+**Keine Darstellung.** Hier stehen nur die Zahlen. Wo sie auftauchen — in der
+Versionsliste, auf der Detailseite einer Version, im Verlauf und im Vergleich zur
+Vorversion — steht in [versionen.md](versionen.md).

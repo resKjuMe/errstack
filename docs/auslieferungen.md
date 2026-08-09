@@ -120,7 +120,8 @@ tausend Striche und damit eine graue Fläche.
 
 ## Was hier nicht steht
 
-- **Der Vergleich zweier Auslieferungen** samt Übersichtszahlen — R8.
+- **Der Vergleich zweier Auslieferungen** samt Übersichtszahlen steht in
+  [versionen.md](versionen.md) — R8.
 - **Gesundheit** einer Version (abgestürzte Sitzungen) — R7.
 - **Anbindung an GitHub oder GitLab**, die Commits und Deploys von selbst
   abholt — X1/X2. Bis dahin ist die Schnittstelle der Weg hinein, und für eine

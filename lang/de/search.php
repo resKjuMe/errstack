@@ -59,6 +59,8 @@ return [
         'lastseen' => 'Zuletzt gesehen: 2026-03-01 oder -24h',
         'release' => 'Version, in der er zuerst oder zuletzt auftrat',
         'firstrelease' => 'Version, in der er zum ersten Mal auftrat',
+        'resolvedinrelease' => 'Version, in der er erledigt wurde',
+        'regressedinrelease' => 'Version, mit der er zurückkam',
         'assigned' => 'Zuständig: me, none, eine E-Mail-Adresse oder #Team',
         'bookmarks' => 'Gemerkte Fehler (kommt mit einer späteren Aufgabe)',
         'user' => [

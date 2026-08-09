@@ -17,13 +17,19 @@ use App\Support\Filters\GlobalFilter;
 final class FilterData
 {
     /**
+     * @param  bool  $projects  Ob die Projektauswahl angeboten wird. Sie fehlt
+     *                          dort, wo das Projekt bereits feststeht — auf der
+     *                          Detailseite einer Version etwa sagt die Adresse,
+     *                          welches gemeint ist. Eine Auswahl, die dort ohne
+     *                          Wirkung bliebe, wäre schlimmer als keine.
      * @return array<string, mixed>
      */
-    public static function bar(GlobalFilter $filter): array
+    public static function bar(GlobalFilter $filter, bool $projects = true): array
     {
         return [
             'value' => $filter->formValues(),
-            'projectOptions' => $filter->availableProjects
+            'showProjects' => $projects,
+            'projectOptions' => $projects === false ? [] : $filter->availableProjects
                 ->map(fn (Project $project): array => [
                     'value' => $project->slug,
                     'label' => $project->name,

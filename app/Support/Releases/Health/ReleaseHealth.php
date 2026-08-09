@@ -4,9 +4,9 @@ namespace App\Support\Releases\Health;
 
 use App\Models\Release;
 use App\Models\ReleaseSessionCount;
-use App\Models\ReleaseSessionUser;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Collection;
+use stdClass;
 
 /**
  * Die Leseseite der Release-Gesundheit: aus den Zählern werden Kennzahlen.
@@ -44,6 +44,58 @@ final class ReleaseHealth
         [$projectSessions, $projectUsers] = $this->projectTotals($release->project_id, $from, $to, $environment);
 
         return $this->summary($release, $from, $to, $environment, $projectSessions, $projectUsers);
+    }
+
+    /**
+     * Die Kennzahlen vieler Auslieferungen auf einmal — für die Versionsliste.
+     *
+     * **Vier Abfragen für die ganze Seite, nicht drei je Zeile.** Über
+     * {@see summarize()} gerechnet wären fünfzig Versionen hundertfünfzig
+     * Abfragen, und die Versionsliste ist die Seite, die nach jeder
+     * Auslieferung aufgeschlagen wird.
+     *
+     * Die Vergleichszahlen des Projekts kommen dabei je Projekt und nicht
+     * einmal für alle: die Liste zeigt mehrere Projekte nebeneinander, und die
+     * Verbreitung einer Version misst sich an **ihrem** Projekt. Über alle
+     * gerechnet stünde bei einem kleinen Projekt neben einem großen dauerhaft
+     * „2 %", obwohl es seine eigene Version vollständig ausgerollt hat.
+     *
+     * @param  Collection<int, Release>  $releases
+     * @return array<int, ReleaseHealthSummary> je Kennung der Auslieferung
+     */
+    public function summarizeMany(Collection $releases, SessionWindow $window): array
+    {
+        if ($releases->isEmpty()) {
+            return [];
+        }
+
+        $releaseIds = $releases->map(fn (Release $release): int => $release->id)->values()->all();
+
+        $sessions = $this->keyBy($window->sessionsByRelease()->whereIn('release_id', $releaseIds)->get(), 'release_id');
+        $users = $this->keyBy($window->usersByRelease()->whereIn('release_id', $releaseIds)->get(), 'release_id');
+        $projectSessions = $this->keyBy($window->sessionsByProject()->get(), 'project_id');
+        $projectUsers = $this->keyBy($window->usersByProject()->get(), 'project_id');
+
+        $summaries = [];
+
+        foreach ($releases as $release) {
+            $id = $release->id;
+            $project = $release->project_id;
+
+            $affected = $users[$id] ?? [];
+
+            $summaries[$id] = new ReleaseHealthSummary(
+                $release,
+                ReleaseSessionCount::tallyFromRow($sessions[$id] ?? []),
+                (int) ($affected['users'] ?? 0),
+                (int) ($affected['crashed_users'] ?? 0),
+                (int) ($affected['unhealthy_users'] ?? 0),
+                (int) (($projectSessions[$project] ?? [])['session_count'] ?? 0),
+                (int) (($projectUsers[$project] ?? [])['users'] ?? 0),
+            );
+        }
+
+        return $summaries;
     }
 
     /**
@@ -132,19 +184,15 @@ final class ReleaseHealth
         int $projectSessions,
         int $projectUsers,
     ): ReleaseHealthSummary {
-        $row = $this->window(ReleaseSessionCount::query()->toBase(), $release->project_id, $from, $to, $environment)
+        $window = new SessionWindow([$release->project_id], $from, $to, $environment);
+
+        $row = $window->counts()
             ->where('release_id', $release->getKey())
             ->selectRaw(implode(', ', ReleaseSessionCount::sumExpressions()))
             ->first();
 
-        $users = $this->window(ReleaseSessionUser::query()->toBase(), $release->project_id, $from, $to, $environment)
+        $users = $window->usersByRelease()
             ->where('release_id', $release->getKey())
-            ->selectRaw(implode(', ', [
-                'count(distinct user_key) as users',
-                'count(distinct case when crashed_count > 0 then user_key end) as crashed_users',
-                'count(distinct case when errored_count > 0 or crashed_count > 0 or abnormal_count > 0'
-                    .' then user_key end) as unhealthy_users',
-            ]))
             ->first();
 
         /** @var array<string, mixed> $counts */
@@ -172,39 +220,32 @@ final class ReleaseHealth
      */
     private function projectTotals(int $projectId, CarbonImmutable $from, CarbonImmutable $to, ?string $environment): array
     {
-        $sessions = $this->window(ReleaseSessionCount::query()->toBase(), $projectId, $from, $to, $environment)
-            ->sum('session_count');
+        $window = new SessionWindow([$projectId], $from, $to, $environment);
 
-        $users = $this->window(ReleaseSessionUser::query()->toBase(), $projectId, $from, $to, $environment)
-            ->distinct()
-            ->count('user_key');
+        $sessions = $window->counts()->sum('session_count');
+
+        $users = $window->users()->distinct()->count('user_key');
 
         return [(int) $sessions, $users];
     }
 
     /**
-     * Projekt, Zeitraum und Umgebung — die Einschränkung, die jede Abfrage hier
-     * teilt.
+     * Zeilen einer Unterabfrage, nach einer Spalte greifbar gemacht.
      *
-     * Oben offen (`from <= t < to`), wie bei den Alarm-Fenstern: sonst zählte
-     * das Fenster an der Grenze in zwei aufeinanderfolgenden Zeiträumen mit.
+     * @param  Collection<int, stdClass>  $rows  wie sie der Query Builder liefert
+     * @return array<int, array<string, mixed>>
      */
-    private function window(
-        Builder $query,
-        int $projectId,
-        CarbonImmutable $from,
-        CarbonImmutable $to,
-        ?string $environment,
-    ): Builder {
-        $query
-            ->where('project_id', $projectId)
-            ->where('bucket_start', '>=', $from->utc())
-            ->where('bucket_start', '<', $to->utc());
+    private function keyBy(Collection $rows, string $column): array
+    {
+        $keyed = [];
 
-        if ($environment !== null) {
-            $query->where('environment', $environment);
+        foreach ($rows as $row) {
+            /** @var array<string, mixed> $values */
+            $values = (array) $row;
+
+            $keyed[(int) $values[$column]] = $values;
         }
 
-        return $query;
+        return $keyed;
     }
 }

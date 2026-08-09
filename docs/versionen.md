@@ -115,9 +115,77 @@ für sie zählt der Zeitpunkt der Auslieferung, ersatzweise der ihrer Ankündigu
 Ohne diesen zweiten Zweig wäre sie ausgerechnet am Tag der Auslieferung nicht in
 der Liste.
 
-Die gewählte **Umgebung wirkt nicht**: eine Version wird als Ganzes ausgeliefert
-und gehört nicht zu einer Umgebung. Die Seite sagt das, statt die Auswahl still
-zu übergehen.
+Die gewählte **Umgebung entscheidet nicht, welche Versionen dastehen**: eine
+Version wird als Ganzes ausgeliefert und gehört nicht zu einer Umgebung. Auf die
+Kennzahlen daneben wirkt sie sehr wohl — Sitzungen gehören zu einer Umgebung. Die
+Seite sagt genau das, statt die Auswahl still halb zu übergehen.
+
+Neben den Fehlerzahlen stehen **Crash-Free-Rate und Verbreitung** je Version
+(siehe [release-gesundheit.md](release-gesundheit.md)). Sie werden für die ganze
+Seite in einem Rutsch gerechnet — vier Abfragen, nicht drei je Zeile.
+
+### Sortierung
+
+Bis R7 hatte die Liste genau eine sinnvolle Ordnung. Mit der Gesundheit kommt
+eine zweite Frage dazu, die sich nur über die Reihenfolge beantworten lässt:
+**welche Auslieferung ist die schlechteste?**
+
+| Wert | Ordnung |
+|---|---|
+| `newest` (Voreinstellung) | die neueste Version zuerst |
+| `oldest` | die älteste zuerst |
+| `new_issues` | die meisten neuen Fehler zuerst |
+| `crash_free` | die schlechteste Crash-Free-Rate zuerst |
+| `adoption` | die höchste Verbreitung zuerst |
+
+Sortiert wird **in der Datenbank** und nicht auf der fertigen Seite: eine
+Sortierung, die nur die 50 gerade geholten Zeilen umstellt, hätte die schlechteste
+Version auf Seite vier und behauptete, es sei die auf Seite eins. Die Summen
+kommen dafür als Unterabfrage aus demselben Ausschnitt, aus dem auch die
+angezeigten Zahlen stammen (`App\Support\Releases\Health\SessionWindow`).
+
+Eine Version **ohne Sitzungen** landet bei `crash_free` und `adoption` am Ende:
+sie ist nicht gesund, sondern unbekannt. Bei `oldest` bleiben Angaben ohne
+Rangfolge — ein Commit-Hash — trotzdem hinten: unzerlegbar heißt nicht „älter",
+sondern „nicht einzuordnen".
+
+`adoption` sortiert über **Sitzungen** und nicht über Menschen, obwohl die
+Anzeige beide kennt: die Zahl über Menschen braucht eine Nutzerkennung in den
+Meldungen, und eine danach sortierte Liste stellte „schickt keine Kennung" und
+„hat kaum Nutzer" ununterscheidbar nebeneinander.
+
+## Die Detailseite einer Version
+
+`/versionen/{id}` beantwortet zwei Fragen: **was ist ausgeliefert worden** und
+**wie ist es gelaufen**.
+
+- **Gesundheit und Verbreitung** samt Vergleich zur Vorversion. Der Vergleich ist
+  nicht das Beiwerk, sondern der Zweck — „99,2 % absturzfrei" allein sagt
+  niemandem, ob die Auslieferung gut war. Verglichen wird mit der Version, die in
+  der Liste eine Zeile weiter unten steht, im selben Zeitraum und derselben
+  Umgebung; der Abstand steht in **Prozentpunkten**.
+- **Die Verbreitung im Zeitverlauf.** Die eine Zahl beantwortet nicht, ob das
+  Ausrollen noch steigt oder steht. Gezeigt wird der Anteil an allen Sitzungen
+  des Projekts und nicht die nackte Sitzungszahl — die schwankt mit der
+  Tageszeit, und eine nachts einbrechende Kurve sähe aus wie ein zurückgenommenes
+  Ausrollen. Abschnitte ohne Sitzungen des Projekts **unterbrechen die Linie**:
+  in einer stillen Nacht ist die Verbreitung nicht auf null gefallen, sie ist
+  unbekannt.
+- **Neue, erledigte und zurückgekommene Fehler**, jeder mit dem Weg in die
+  gefilterte Fehlerliste. Diese drei Zahlen hängen an der Auslieferung und nicht
+  am Zeitraum: „mit dieser Version kam dieser Fehler" ist keine Aussage über die
+  letzten 24 Stunden.
+- **Commits und Autoren** (R2), **Auslieferungen** (R3) und die hochgeladenen
+  **Bauartefakte** (R5). Letztere stehen hier, weil „für diese Version wurde
+  nichts hochgeladen" sonst erst vor einem unlesbaren Stacktrace auffällt.
+
+Die Filterleiste steht auf der Seite, aber **ohne Projektauswahl**: welches
+Projekt gemeint ist, sagt die Version. Zeitraum und Umgebung gelten für jede
+Kennzahl der Seite.
+
+Die erste erfasste Auslieferung eines Projekts hat keine Vorversion — dann steht
+dort kein Vergleich und nicht ein Vergleich mit null. Der Unterschied ist der
+zwischen „nichts verändert" und „nichts zu vergleichen".
 
 ## Suchen
 
@@ -127,6 +195,13 @@ In der Fehlerliste wirken zwei Begriffe:
 |---|---|
 | `firstRelease:1.0.0` | zum ersten Mal in dieser Version gesehen |
 | `release:1.0.0` | in dieser Version gesehen (erste **oder** letzte) |
+| `resolvedInRelease:1.0.0` | in dieser Version erledigt |
+| `regressedInRelease:1.0.0` | mit dieser Version zurückgekommen |
+
+Die letzten beiden sind die Gegenstücke zu `firstRelease:` und stehen hinter den
+Zahlen der Detailseite: eine Zahl auf einer Übersichtsseite, hinter der man nicht
+nachsehen kann, ist eine Behauptung. Anders als `release:` sind sie eindeutig —
+jede fragt genau einen Vermerk am Fehler ab.
 
 Mehrere Werte desselben Begriffs sind ein Oder, verschiedene Begriffe ein Und.
 Werte mit Leerzeichen stehen in Anführungszeichen. Der Schlüssel wird ohne
@@ -158,4 +233,3 @@ Liste genannt — sonst sähe sie aus, als hätte sie den Begriff ausgewertet.
 - **Wann eine Version wohin ausgeliefert wurde** steht in
   [auslieferungen.md](auslieferungen.md) — R3. `released_at` hier ist die eine
   angekündigte Zeit; eine Version geht nacheinander in mehrere Umgebungen.
-- **Detailseite und Vergleich zur Vorversion** — R8.

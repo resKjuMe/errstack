@@ -58,6 +58,8 @@ return [
         'lastseen' => 'Last seen: 2026-03-01 or -24h',
         'release' => 'Release it was first or last seen in',
         'firstrelease' => 'Release it was first seen in',
+        'resolvedinrelease' => 'Release it was resolved in',
+        'regressedinrelease' => 'Release it came back with',
         'assigned' => 'Assignee: me, none, an e-mail address or #Team',
         'bookmarks' => 'Bookmarked issues (arrives with a later task)',
         'user' => [
