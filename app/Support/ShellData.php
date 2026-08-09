@@ -238,6 +238,18 @@ final class ShellData
                         'icon' => 'profiling',
                         'filtered' => true,
                     ],
+                    // Die Aufzeichnungen stehen unter „Untersuchen" und nicht
+                    // unter „Überwachen": sie melden nichts und lösen nichts
+                    // aus. Man kommt zu ihnen, weil man eine Frage hat — und im
+                    // Regelfall nicht über diesen Eintrag, sondern von einem
+                    // Fehler aus (M3).
+                    [
+                        'label' => __('nav.links.replays'),
+                        'route' => 'replays.index',
+                        'activePattern' => 'replays.*',
+                        'icon' => 'replays',
+                        'filtered' => true,
+                    ],
                 ],
             ],
             [

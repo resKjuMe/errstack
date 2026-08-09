@@ -316,6 +316,14 @@ const MENU_ICONS = {
             <rect x="3" y="16" width="7" height="4" rx="1" />
         </>
     ),
+    // Aufzeichnungen: der Bildschirm mit dem Abspielzeichen darauf.
+    replays: (
+        <>
+            <rect x="2" y="4" width="20" height="14" rx="2" />
+            <path d="M10 9.5v3l3-1.5z" />
+            <path d="M8 21h8" />
+        </>
+    ),
     // Versionen: das ausgelieferte Paket.
     releases: (
         <>

@@ -87,6 +87,7 @@ return [
         'performance_issues' => 'Performance issues',
         'web_vitals' => 'Web Vitals',
         'profiling' => 'Profiles',
+        'replays' => 'Replays',
     ],
 
     'menu_items' => [

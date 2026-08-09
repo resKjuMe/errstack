@@ -135,3 +135,16 @@ Schedule::command('spikes:sweep')->everyMinute()->withoutOverlapping();
 // gelesen wird er am Anfang der Woche. Berichtet wird die abgeschlossene
 // Vorwoche ({@see App\Console\Commands\SendWeeklyReportsCommand}).
 Schedule::command('reports:weekly')->weeklyOn(1, '08:00');
+
+// Abgelaufene Sitzungs-Aufzeichnungen wegräumen (M3).
+//
+// Stündlich und nicht täglich, obwohl die Frist in Tagen gerechnet wird: eine
+// Aufzeichnung ist der Bildschirm eines Menschen, und „einen Tag zu lange" ist
+// hier eine andere Aussage als bei einer Kennzahl. Der Durchlauf fasst je
+// Projekt höchstens einen Stapel an ({@see App\Console\Commands\SweepReplaysCommand}) —
+// stündlich heißt damit auch: der Rückstand nach einer Betriebspause ist
+// innerhalb eines Tages abgearbeitet statt in Wochen.
+//
+// `withoutOverlapping`, weil jede gelöschte Aufzeichnung ein Ordner auf der
+// Platte ist: zwei gleichzeitige Läufe würden um dieselben Dateien ringen.
+Schedule::command('replays:sweep')->hourly()->withoutOverlapping();

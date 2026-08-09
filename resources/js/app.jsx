@@ -52,6 +52,8 @@ import WebVitalShow from './shell/pages/performance/WebVital.jsx';
 import DiscoverIndex from './shell/pages/discover/Index.jsx';
 import ProfilingIndex from './shell/pages/profiling/Index.jsx';
 import ProfilingShow from './shell/pages/profiling/Show.jsx';
+import ReplaysIndex from './shell/pages/replays/Index.jsx';
+import ReplaysShow from './shell/pages/replays/Show.jsx';
 import ReleasesIndex from './shell/pages/releases/Index.jsx';
 import ReleasesShow from './shell/pages/releases/Show.jsx';
 import RepositoriesIndex from './shell/pages/repositories/Index.jsx';
@@ -142,6 +144,8 @@ const pages = {
     // Abfrage „welcher Fall ist das gerade".
     'profiling/Index': ProfilingIndex,
     'profiling/Show': ProfilingShow,
+    'replays/Index': ReplaysIndex,
+    'replays/Show': ReplaysShow,
     'releases/Index': ReleasesIndex,
     'releases/Show': ReleasesShow,
     'repositories/Index': RepositoriesIndex,

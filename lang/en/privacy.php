@@ -21,7 +21,11 @@ return [
         'user' => 'Do not store user data',
         'user_hint' => 'Removes the whole section about the affected person — including whatever the SDK adds on top.',
         'attachments' => 'Do not store attachments',
-        'attachments_hint' => 'Discards screenshots, log files and replays on arrival. There is nothing to redact in a file: it is either harmless or not at all.',
+        'attachments_hint' => 'Discards screenshots and log files on arrival. There is nothing to redact in a file: it is either harmless or not at all. Session replays are not covered — they have their own retention below.',
+        'replay_retention' => 'Keep replays (days)',
+        'replay_retention_hint' => 'Session replays are stored separately from event data and deleted after this period — independent of how long errors are kept. Empty means the operator default (:default days). Zero means no recording at all.',
+        'replay_retention_placeholder' => 'Default (:default)',
+        'replay_retention_off' => 'At 0 nothing is recorded: incoming segments are discarded rather than stored and swept later.',
         'submit' => 'Save',
     ],
 

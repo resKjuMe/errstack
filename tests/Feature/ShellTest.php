@@ -105,7 +105,7 @@ class ShellTest extends TestCase
                 // „Verwalten" weg.
                 $this->assertSame([
                     'Überwachen' => ['Fehler', 'Rückmeldungen', 'Merkmale'],
-                    'Untersuchen' => ['Auswertung', 'Leistung', 'Leistungsprobleme', 'Ladeerlebnis', 'Profile'],
+                    'Untersuchen' => ['Auswertung', 'Leistung', 'Leistungsprobleme', 'Ladeerlebnis', 'Profile', 'Aufzeichnungen'],
                     'Ausliefern' => ['Versionen'],
                 ], $groups);
             });
@@ -150,6 +150,7 @@ class ShellTest extends TestCase
             // ihrem eigenen Muster `profiling.*`: die Adresse allein würde hier
             // zwei Einträge gleichzeitig markieren.
             route('profiling.index') => 'Profile',
+            route('replays.index') => 'Aufzeichnungen',
             route('releases.index') => 'Versionen',
             route('feedback.index') => 'Rückmeldungen',
         ];

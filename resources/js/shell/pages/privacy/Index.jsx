@@ -28,6 +28,7 @@ export default function Index({
     organization,
     permissions,
     options,
+    replays,
     rules,
     inheritedRules,
     typeOptions,
@@ -71,7 +72,12 @@ export default function Index({
 
             <div className="space-y-4">
                 {isProject && (
-                    <Options project={project} options={options} canManage={permissions.manage} />
+                    <Options
+                        project={project}
+                        options={options}
+                        replays={replays}
+                        canManage={permissions.manage}
+                    />
                 )}
 
                 <Rules
@@ -97,13 +103,31 @@ export default function Index({
 // Die drei Schalter. Ein Formular für alle drei: sie beschreiben eine
 // gemeinsame Haltung zum Speichern, und wer einen umlegt, sieht dabei die
 // anderen beiden.
-function Options({ project, options, canManage }) {
+function Options({ project, options, replays, canManage }) {
     const t = useT();
-    const { data, setData, patch, processing, errors } = useForm({
+    const { data, setData, patch, processing, errors, transform } = useForm({
         scrub_ip_addresses: options.scrub_ip_addresses,
         scrub_user_data: options.scrub_user_data,
         scrub_attachments: options.scrub_attachments,
+        // Leer heißt „Vorgabe des Betreibers". Deshalb der leere Text und
+        // nicht die Vorgabezahl im Feld: eine eingetragene 30 wäre eine
+        // Festlegung, und sie bliebe stehen, wenn der Betreiber seine Vorgabe
+        // ändert.
+        replay_retention_days: options.replay_retention_days ?? '',
     });
+
+    // Das leere Feld geht als `null` hinaus und nicht als leerer Text: es
+    // bedeutet „keine eigene Frist", und das ist etwas anderes als „null Tage" —
+    // die Null schaltet die Aufzeichnung ab.
+    //
+    // Über `transform` und nicht über ein `setData` im Absenden: `setData`
+    // wirkt erst im nächsten Durchlauf, und abgeschickt würde der Stand von
+    // vorher.
+    transform((values) => ({
+        ...values,
+        replay_retention_days:
+            values.replay_retention_days === '' ? null : values.replay_retention_days,
+    }));
 
     const submit = (e) => {
         e.preventDefault();
@@ -146,6 +170,47 @@ function Options({ project, options, canManage }) {
                         <InputError message={errors[field]} className="mt-2" />
                     </div>
                 ))}
+
+                {/* Die Aufbewahrungsfrist der Aufzeichnungen steht bei den
+                    Schaltern und nicht bei den übrigen Projekteinstellungen:
+                    sie beantwortet dieselbe Art von Frage — nicht „wie lange
+                    brauchen wir die Daten", sondern „wie lange dürfen wir sie
+                    haben" (M3). */}
+                <div>
+                    <label
+                        htmlFor="replay_retention_days"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                        {t('privacy.options.replay_retention')}
+                    </label>
+                    <input
+                        id="replay_retention_days"
+                        type="number"
+                        min="0"
+                        max={replays.maxRetentionDays}
+                        value={data.replay_retention_days ?? ''}
+                        disabled={!canManage}
+                        placeholder={t('privacy.options.replay_retention_placeholder', {
+                            default: replays.defaultRetentionDays,
+                        })}
+                        onChange={(e) =>
+                            setData(
+                                'replay_retention_days',
+                                e.target.value === '' ? '' : Number(e.target.value)
+                            )
+                        }
+                        className="mt-1 w-32 rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {t('privacy.options.replay_retention_hint', {
+                            default: replays.defaultRetentionDays,
+                        })}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {t('privacy.options.replay_retention_off')}
+                    </p>
+                    <InputError message={errors.replay_retention_days} className="mt-2" />
+                </div>
 
                 {canManage && (
                     <PrimaryButton type="submit" disabled={processing}>

@@ -27,6 +27,7 @@ use Illuminate\Support\Str;
  * @property string $default_environment
  * @property ResolutionBehavior $resolution_behavior
  * @property int $retention_days
+ * @property int|null $replay_retention_days
  * @property int $digest_window_minutes
  * @property int $digest_min_events
  * @property int $digest_max_events
@@ -53,6 +54,7 @@ use Illuminate\Support\Str;
     'default_environment',
     'resolution_behavior',
     'retention_days',
+    'replay_retention_days',
     'digest_window_minutes',
     'digest_min_events',
     'digest_max_events',
@@ -393,6 +395,7 @@ class Project extends Model
             'platform' => Platform::class,
             'resolution_behavior' => ResolutionBehavior::class,
             'retention_days' => 'integer',
+            'replay_retention_days' => 'integer',
             'digest_window_minutes' => 'integer',
             'digest_min_events' => 'integer',
             'digest_max_events' => 'integer',
