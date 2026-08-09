@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Platform;
+use App\Enums\QuotaScope;
 use App\Enums\ResolutionBehavior;
 use App\Support\Attachments\AttachmentStore;
 use Database\Factories\ProjectFactory;
@@ -28,9 +29,14 @@ use Illuminate\Support\Str;
  * @property ResolutionBehavior $resolution_behavior
  * @property int $retention_days
  * @property int $attachment_retention_days
+ * @property int|null $replay_retention_days
  * @property int $digest_window_minutes
  * @property int $digest_min_events
  * @property int $digest_max_events
+ * @property bool $spike_protection_enabled
+ * @property float $spike_threshold_factor
+ * @property int $spike_minimum_events
+ * @property int $spike_release_minutes
  * @property bool $auto_assign_suspect_commits
  * @property bool $scrub_ip_addresses
  * @property bool $scrub_user_data
@@ -51,9 +57,14 @@ use Illuminate\Support\Str;
     'resolution_behavior',
     'retention_days',
     'attachment_retention_days',
+    'replay_retention_days',
     'digest_window_minutes',
     'digest_min_events',
     'digest_max_events',
+    'spike_protection_enabled',
+    'spike_threshold_factor',
+    'spike_minimum_events',
+    'spike_release_minutes',
     'auto_assign_suspect_commits',
     'scrub_ip_addresses',
     'scrub_user_data',
@@ -93,11 +104,18 @@ class Project extends Model
      * nicht auf ({@see AttachmentStore::forgetProject()}) — ein Projekt, das laut
      * Datenbank weg ist, aber laut Oberfläche nicht gelöscht werden konnte, wäre
      * die schlechtere Antwort.
+     *
+     * Aus demselben Grund hängt hier das Vergessen der Kontingente: sie hängen
+     * über Ebene und Kennung an diesem Datensatz und nicht über einen
+     * Fremdschlüssel ({@see Quota}). Ohne den Haken läge eine Grenze für eine
+     * Kennung herum, die es nicht mehr gibt.
      */
     protected static function booted(): void
     {
         static::deleted(function (self $project): void {
             app(AttachmentStore::class)->forgetProject($project->id);
+
+            Quota::forget(QuotaScope::Project, $project->id);
         });
     }
 
@@ -204,6 +222,17 @@ class Project extends Model
     }
 
     /**
+     * Überwachte Ziele dieses Projekts — die Erreichbarkeits-Prüfungen von
+     * außen (M2).
+     *
+     * @return HasMany<UptimeMonitor, $this>
+     */
+    public function uptimeMonitors(): HasMany
+    {
+        return $this->hasMany(UptimeMonitor::class);
+    }
+
+    /**
      * Gemessene Antwortzeiten dieses Projekts.
      *
      * Ausdrücklich getrennt von den Fehlermeldungen: eine Transaktion ist keine,
@@ -278,6 +307,28 @@ class Project extends Model
     public function samplingRules(): HasMany
     {
         return $this->hasMany(SamplingRule::class);
+    }
+
+    /**
+     * Die Auslösungen des Ausschlag-Schutzes (A7) — jede eine Drosselung mit
+     * Anfang, Ende und der Menge, die sie verworfen hat.
+     *
+     * @return HasMany<SpikeProtectionState, $this>
+     */
+    public function spikeProtectionStates(): HasMany
+    {
+        return $this->hasMany(SpikeProtectionState::class);
+    }
+
+    /**
+     * Die Aufnahmemenge je Minute (A7) — der Verlauf, an dem eine Spitze
+     * überhaupt erst als Spitze erkennbar ist.
+     *
+     * @return HasMany<IngestVolume, $this>
+     */
+    public function ingestVolumes(): HasMany
+    {
+        return $this->hasMany(IngestVolume::class);
     }
 
     /**
@@ -374,9 +425,14 @@ class Project extends Model
             'resolution_behavior' => ResolutionBehavior::class,
             'retention_days' => 'integer',
             'attachment_retention_days' => 'integer',
+            'replay_retention_days' => 'integer',
             'digest_window_minutes' => 'integer',
             'digest_min_events' => 'integer',
             'digest_max_events' => 'integer',
+            'spike_protection_enabled' => 'boolean',
+            'spike_threshold_factor' => 'float',
+            'spike_minimum_events' => 'integer',
+            'spike_release_minutes' => 'integer',
             'auto_assign_suspect_commits' => 'boolean',
             'scrub_ip_addresses' => 'boolean',
             'scrub_user_data' => 'boolean',

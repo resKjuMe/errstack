@@ -28,6 +28,8 @@ return [
         'transaction_duration_p50' => 'Antwortzeit (p50)',
         'transaction_duration_p95' => 'Antwortzeit (p95)',
         'transaction_duration_p99' => 'Antwortzeit (p99)',
+        'crash_free_sessions' => 'Absturzfreie Sitzungen',
+        'crash_free_users' => 'Absturzfreie Nutzer',
     ],
 
     'grouping_source' => [
@@ -39,6 +41,7 @@ return [
         'fallback' => 'Titel und Fehlerstelle',
         'empty' => 'Ohne unterscheidbaren Inhalt',
         'performance' => 'Leistungserkennung',
+        'uptime' => 'Erreichbarkeits-Überwachung',
     ],
 
     'api_scope' => [
@@ -129,6 +132,22 @@ return [
         'disabled' => 'abgeschaltet',
     ],
 
+    'uptime_status' => [
+        'unknown' => 'noch nicht geprüft',
+        'up' => 'erreichbar',
+        'degraded' => 'auffällig',
+        'down' => 'ausgefallen',
+        'disabled' => 'abgeschaltet',
+    ],
+
+    'uptime_check_outcome' => [
+        'up' => 'erreichbar',
+        'connection_failed' => 'nicht erreichbar',
+        'timeout' => 'Zeitüberschreitung',
+        'status_mismatch' => 'unerwarteter Statuscode',
+        'content_mismatch' => 'erwarteter Text fehlt',
+    ],
+
     'delivery_status' => [
         'pending' => 'unterwegs',
         'sent' => 'zugestellt',
@@ -150,7 +169,24 @@ return [
         'scrubbed' => 'aus Datenschutzgründen nicht gespeichert',
         'filtered' => 'vom Eingangsfilter aussortiert',
         'discarded' => 'gelöschter Fehler, künftig verworfen',
+        'throttled' => 'vom Ausschlag-Schutz gedrosselt',
         'orphaned' => 'ohne zugehörige Meldung',
+        'rate_limited' => 'Rate-Limit',
+        'quota_exceeded' => 'Kontingent aufgebraucht',
+    ],
+
+    'quota_category' => [
+        'errors' => 'Fehler',
+        'transactions' => 'Transaktionen',
+        'replays' => 'Aufzeichnungen',
+        'attachments' => 'Anhänge',
+        'monitors' => 'Cronjob-Lebenszeichen',
+    ],
+
+    'quota_scope' => [
+        'organization' => 'Organisation',
+        'project' => 'Projekt',
+        'key' => 'Client-Schlüssel',
     ],
 
     'inbound_filter_kind' => [
@@ -201,6 +237,14 @@ return [
         'client_report' => 'Verworfen-Meldung des SDK',
         'user_report' => 'Nutzer-Rückmeldung',
         'feedback' => 'Nutzer-Rückmeldung (neue Form)',
+    ],
+
+    'session_status' => [
+        'ok' => 'läuft',
+        'exited' => 'beendet',
+        'errored' => 'mit Fehlern beendet',
+        'crashed' => 'abgestürzt',
+        'abnormal' => 'abgebrochen',
     ],
 
     'user_report_status' => [
@@ -504,6 +548,27 @@ return [
         'good' => 'Gut',
         'needs_improvement' => 'Mäßig',
         'poor' => 'Schlecht',
+    ],
+    'discover_dataset' => [
+        'errors' => 'Fehlermeldungen',
+        'transactions' => 'Aufrufe (Einzelmessungen)',
+        'transaction_windows' => 'Aufrufe (Minuten-Fenster)',
+        'user_reports' => 'Rückmeldungen',
+    ],
+
+    'discover_aggregate' => [
+        'count' => 'Anzahl',
+        'count_unique' => 'Verschiedene Werte',
+        'sum' => 'Summe',
+        'avg' => 'Mittelwert',
+        'min' => 'Kleinster Wert',
+        'max' => 'Größter Wert',
+        'p50' => 'p50',
+        'p75' => 'p75',
+        'p95' => 'p95',
+        'p99' => 'p99',
+        'apdex' => 'Zufriedenheit (Apdex)',
+        'failure_rate' => 'Fehlerquote',
     ],
 
 ];

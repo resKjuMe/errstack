@@ -259,7 +259,7 @@ class AttachmentPagesTest extends TestCase
         $event = $this->event($issue);
         $payload = IngestPayload::factory()
             ->for($this->project)
-            ->bytes('geheim', IngestType::Attachment, ['filename' => 'a.txt', 'content_type' => 'text/plain'])
+            ->bytes('geheim', IngestType::Attachment, itemHeaders: ['filename' => 'a.txt', 'content_type' => 'text/plain'])
             ->create();
 
         $attachment = $this->attachment($event, 'geheim');

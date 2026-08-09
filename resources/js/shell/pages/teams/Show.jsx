@@ -63,7 +63,7 @@ export default function Show({ team, organization, permissions, members, candida
                                         type="button"
                                         onClick={() =>
                                             router.delete(
-                                                `/teams/${team.id}/mitglieder/${member.id}`,
+                                                `/einstellungen/teams/${team.id}/mitglieder/${member.id}`,
                                                 { preserveScroll: true }
                                             )
                                         }
@@ -90,7 +90,7 @@ function TeamSettings({ team }) {
 
     const submit = (e) => {
         e.preventDefault();
-        patch(`/teams/${team.id}`, { preserveScroll: true });
+        patch(`/einstellungen/teams/${team.id}`, { preserveScroll: true });
     };
 
     return (
@@ -134,7 +134,7 @@ function AddMember({ team, candidates }) {
 
         if (userId) {
             router.post(
-                `/teams/${team.id}/mitglieder`,
+                `/einstellungen/teams/${team.id}/mitglieder`,
                 { user_id: userId },
                 { preserveScroll: true, onSuccess: () => setUserId('') }
             );
@@ -176,7 +176,7 @@ function DeleteTeam({ team }) {
             <DangerButton
                 type="button"
                 disabled={processing}
-                onClick={() => destroy(`/teams/${team.id}`)}
+                onClick={() => destroy(`/einstellungen/teams/${team.id}`)}
             >
                 {t('teams.delete.submit')}
             </DangerButton>

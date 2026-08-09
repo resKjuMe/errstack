@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\OrganizationRole;
+use App\Enums\QuotaScope;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -210,5 +211,15 @@ class Organization extends Model
         $this->unsetRelation('memberships');
 
         return $membership;
+    }
+
+    /**
+     * Kontingente hängen über Ebene und Kennung an dieser Organisation und
+     * nicht über einen Fremdschlüssel ({@see Quota}) — hinter einer Löschung
+     * räumt deshalb dieser Haken auf.
+     */
+    protected static function booted(): void
+    {
+        self::deleted(static fn (self $organization) => Quota::forget(QuotaScope::Organization, $organization->id));
     }
 }

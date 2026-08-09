@@ -112,6 +112,10 @@ final class ProjectData
                 // Link steht deshalb ohne Bedingung da, anders als der zu den
                 // Schlüsseln.
                 'cronsHref' => route('projects.crons.index', [$organization, $project]),
+                // Die Erreichbarkeits-Überwachung aus demselben Grund ohne
+                // Bedingung — und mit dem stärksten von allen: „ist es gerade
+                // da?" ist die Frage, die während einer Störung jeder stellt.
+                'uptimeHref' => route('projects.uptime.index', [$organization, $project]),
                 // Die Gruppierung ebenfalls ohne Bedingung: die Regeln
                 // erklären, warum die Fehlerliste so aussieht, wie sie aussieht
                 // — und diese Frage stellt sich nicht nur die Verwaltung.
@@ -147,9 +151,19 @@ final class ProjectData
                 // Verzögerung kam — und das fragt sich der, der auf sie
                 // gewartet hat.
                 'digestHref' => route('projects.digest.index', [$organization, $project]),
+                // Die Kontingente (O1) ebenfalls ohne Bedingung, und hier am
+                // dringendsten: ein aufgebrauchtes Kontingent ist die
+                // häufigste Erklärung dafür, dass eine Anwendung plötzlich
+                // stumm ist.
+                'quotasHref' => route('projects.quotas.index', [$organization, $project]),
                 // Und ebenso die Eingangsfilter: wer eine Meldung vermisst, muss
                 // nachsehen können, ob ein Filter sie genommen hat.
                 'filtersHref' => route('projects.filters.index', [$organization, $project]),
+                // Der Ausschlag-Schutz (A7) aus demselben Grund und mit noch
+                // mehr Anlass: eine Drosselung nimmt Meldungen ohne Ansehen
+                // ihres Inhalts, und wer eine vermisst, findet die Zahl nur
+                // dort.
+                'spikesHref' => route('projects.spikes.index', [$organization, $project]),
                 // Und die Zuständigkeits-Regeln (R6) aus demselben Grund: sie
                 // beantworten „warum steht mein Name an diesem Fehler?", und
                 // diese Frage stellt gerade der, der die Regeln nicht ändern

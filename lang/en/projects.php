@@ -86,6 +86,12 @@ return [
         'manage' => 'View cron jobs',
     ],
 
+    'uptime' => [
+        'title' => 'Uptime',
+        'description' => 'Regular checks from the outside catch a total outage — the one case no error report can cover, because nothing is left running.',
+        'manage' => 'View uptime',
+    ],
+
     'alerts' => [
         'title' => 'Alerts',
         'description' => 'Threshold alerts on metrics: error count, failure rate, throughput and response times. They speak up when a metric leaves its range — and again once it is back.',
@@ -128,10 +134,22 @@ return [
         'manage' => 'View rules',
     ],
 
+    'quotas' => [
+        'title' => 'Quotas',
+        'description' => 'How much may come in per data type: monthly quota and rate per minute, plus the usage of this month and the count of what was rejected.',
+        'manage' => 'View quotas',
+    ],
+
     'filters' => [
         'title' => 'Inbound filters',
         'description' => 'Known noise — browser extensions, crawlers, local development — is discarded on arrival and only counted.',
         'manage' => 'Configure filters',
+    ],
+
+    'spikes' => [
+        'title' => 'Spike protection',
+        'description' => 'Unusual floods of events are detected from this project’s own history, ingestion is throttled and the team is notified. Whatever is dropped is counted and shown.',
+        'manage' => 'Open protection',
     ],
 
     'digest' => [

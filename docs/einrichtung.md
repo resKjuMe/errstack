@@ -4,7 +4,7 @@ Vom angelegten Projekt zum ersten Fehler — ohne dass jemand vorher wissen muss
 was eine DSN ist.
 
 Der Assistent liegt unter
-`/organisationen/{organisation}/projekte/{projekt}/einrichtung`. Dorthin
+`/einstellungen/organisationen/{organisation}/projekte/{projekt}/einrichtung`. Dorthin
 verweist das Anlegen eines Projekts unmittelbar, und in den Projekt-Einstellungen
 steht der Weg zurück: der Ablauf ist **jederzeit erneut** aufrufbar. Das ist kein
 Zugeständnis an Vergessliche — eine zweite Anwendung an dasselbe Projekt

@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Enums\ScrubRuleType;
+use App\Http\Requests\ProjectPrivacyRequest;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ScrubRule;
@@ -55,6 +56,15 @@ final class PrivacyData
                 'scrub_ip_addresses' => $project->scrub_ip_addresses,
                 'scrub_user_data' => $project->scrub_user_data,
                 'scrub_attachments' => $project->scrub_attachments,
+                'replay_retention_days' => $project->replay_retention_days,
+            ],
+            // Was gilt, wenn das Projekt nichts eigenes einstellt — und wo die
+            // Grenze liegt. Beides gehört auf die Seite: eine Eingabe, die
+            // „leer heißt 30 Tage" nicht dazusagt, lässt jeden raten, was
+            // passiert, wenn er nichts einträgt (M3).
+            'replays' => [
+                'defaultRetentionDays' => (int) config('replays.retention_days'),
+                'maxRetentionDays' => ProjectPrivacyRequest::MAX_REPLAY_RETENTION_DAYS,
             ],
             'permissions' => ['manage' => $mayManage],
             'rules' => $own
@@ -84,6 +94,11 @@ final class PrivacyData
             'scope' => 'organization',
             'project' => null,
             'options' => null,
+            // Die Aufbewahrungsfrist der Aufzeichnungen ist eine Einstellung des
+            // Projekts und nicht der Organisation: aufgezeichnet wird je
+            // Anwendung, und zwei Anwendungen desselben Hauses beantworten die
+            // Frage verschieden.
+            'replays' => null,
             'permissions' => ['manage' => $mayManage],
             'rules' => $organization->scrubRules()
                 ->orderBy('id')

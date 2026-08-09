@@ -131,7 +131,7 @@ class AttachmentRetentionTest extends TestCase
         $project = Project::factory()->create(['attachment_retention_days' => 7]);
         $payload = IngestPayload::factory()
             ->for($project)
-            ->bytes('geheim', IngestType::Attachment, ['filename' => 'a.txt', 'content_type' => 'text/plain'])
+            ->bytes('geheim', IngestType::Attachment, itemHeaders: ['filename' => 'a.txt', 'content_type' => 'text/plain'])
             ->create();
 
         $attachment = $this->attachment($project, 9, 'geheim');

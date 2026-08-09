@@ -30,7 +30,7 @@ class ProjectKeyTest extends TestCase
 
     private function path(Organization $organization, Project $project): string
     {
-        return "/organisationen/{$organization->slug}/projekte/{$project->slug}/schluessel";
+        return "/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}/schluessel";
     }
 
     public function test_a_new_project_comes_with_a_key_and_a_dsn(): void
@@ -112,7 +112,7 @@ class ProjectKeyTest extends TestCase
 
         // Auch die Projektseite verrät nichts — sie verweist nur, wenn man darf.
         $this->actingAs($member)
-            ->get("/organisationen/{$organization->slug}/projekte/{$project->slug}")
+            ->get("/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}")
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('project.keysHref', null)
@@ -275,7 +275,7 @@ class ProjectKeyTest extends TestCase
         [$owner, $organization, $project] = $this->project();
 
         $this->actingAs($owner)
-            ->delete("/organisationen/{$organization->slug}/projekte/{$project->slug}")
+            ->delete("/einstellungen/organisationen/{$organization->slug}/projekte/{$project->slug}")
             ->assertSessionHasNoErrors();
 
         $this->assertDatabaseCount('project_keys', 0);

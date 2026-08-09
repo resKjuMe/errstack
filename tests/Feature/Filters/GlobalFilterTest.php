@@ -311,7 +311,7 @@ class GlobalFilterTest extends TestCase
     {
         [$user] = $this->context();
 
-        foreach (['/bausteine', '/profile'] as $path) {
+        foreach (['/bausteine', '/einstellungen/konto/profil'] as $path) {
             $this->actingAs($user)
                 ->get($path)
                 ->assertOk()

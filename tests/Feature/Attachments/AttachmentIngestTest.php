@@ -53,7 +53,7 @@ class AttachmentIngestTest extends TestCase
     ): IngestPayload {
         $payload = IngestPayload::factory()
             ->viaKey($key)
-            ->bytes($content, IngestType::Attachment, $itemHeaders, $eventId)
+            ->bytes($content, IngestType::Attachment, $eventId, $itemHeaders)
             ->create();
 
         ProcessIngestPayload::dispatch($payload);
@@ -187,7 +187,7 @@ class AttachmentIngestTest extends TestCase
         $key = $this->key();
         $payload = IngestPayload::factory()
             ->viaKey($key)
-            ->bytes('einmal', IngestType::Attachment, ['filename' => 'a.txt', 'content_type' => 'text/plain'])
+            ->bytes('einmal', IngestType::Attachment, itemHeaders: ['filename' => 'a.txt', 'content_type' => 'text/plain'])
             ->create();
 
         ProcessIngestPayload::dispatch($payload);
@@ -278,7 +278,7 @@ class AttachmentIngestTest extends TestCase
         // 0-Byte-Anhang mit funktionierendem Download.
         $payload = IngestPayload::factory()
             ->viaKey($key)
-            ->bytes('egal', IngestType::Attachment, ['filename' => 'a.png', 'content_type' => 'image/png'])
+            ->bytes('egal', IngestType::Attachment, itemHeaders: ['filename' => 'a.png', 'content_type' => 'image/png'])
             ->create();
 
         $payload->forceFill([

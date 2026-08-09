@@ -21,7 +21,11 @@ return [
         'user' => 'Nutzerdaten nicht speichern',
         'user_hint' => 'Entfernt den ganzen Abschnitt zur betroffenen Person — auch Angaben, die das SDK zusätzlich mitgibt.',
         'attachments' => 'Anhänge nicht speichern',
-        'attachments_hint' => 'Verwirft Screenshots, Logdateien und Aufzeichnungen bei der Aufnahme. An einer Datei lässt sich nichts schwärzen: sie ist entweder unbedenklich oder gar nicht.',
+        'attachments_hint' => 'Verwirft Screenshots und Logdateien bei der Aufnahme. An einer Datei lässt sich nichts schwärzen: sie ist entweder unbedenklich oder gar nicht. Sitzungs-Aufzeichnungen fallen nicht darunter — für sie gilt die Frist weiter unten.',
+        'replay_retention' => 'Aufzeichnungen aufbewahren (Tage)',
+        'replay_retention_hint' => 'Sitzungs-Aufzeichnungen liegen getrennt von den Ereignisdaten und werden nach dieser Frist gelöscht — unabhängig davon, wie lange Fehler aufgehoben werden. Leer heißt: die Vorgabe des Betreibers (:default Tage). Null heißt: gar nicht aufzeichnen.',
+        'replay_retention_placeholder' => 'Vorgabe (:default)',
+        'replay_retention_off' => 'Bei 0 wird nichts aufgezeichnet: ankommende Abschnitte werden verworfen, statt abgelegt und später weggeräumt zu werden.',
         'submit' => 'Speichern',
     ],
 

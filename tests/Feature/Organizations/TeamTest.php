@@ -20,7 +20,7 @@ class TeamTest extends TestCase
         $organization = Organization::factory()->withMember($admin, OrganizationRole::Admin)->create();
 
         $this->actingAs($admin)
-            ->post("/organisationen/{$organization->slug}/teams", ['name' => 'Plattform'])
+            ->post("/einstellungen/organisationen/{$organization->slug}/teams", ['name' => 'Plattform'])
             ->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('teams', [
@@ -35,7 +35,7 @@ class TeamTest extends TestCase
         $organization = Organization::factory()->withMember($member, OrganizationRole::Member)->create();
 
         $this->actingAs($member)
-            ->post("/organisationen/{$organization->slug}/teams", ['name' => 'Heimlich'])
+            ->post("/einstellungen/organisationen/{$organization->slug}/teams", ['name' => 'Heimlich'])
             ->assertForbidden();
 
         $this->assertDatabaseCount('teams', 0);
@@ -48,14 +48,14 @@ class TeamTest extends TestCase
         Team::factory()->for($organization)->create(['name' => 'Plattform']);
 
         $this->actingAs($owner)
-            ->post("/organisationen/{$organization->slug}/teams", ['name' => 'Plattform'])
+            ->post("/einstellungen/organisationen/{$organization->slug}/teams", ['name' => 'Plattform'])
             ->assertSessionHasErrors('name');
 
         // In einer anderen Organisation darf derselbe Name wieder vorkommen.
         $other = Organization::factory()->withMember($owner)->create();
 
         $this->actingAs($owner)
-            ->post("/organisationen/{$other->slug}/teams", ['name' => 'Plattform'])
+            ->post("/einstellungen/organisationen/{$other->slug}/teams", ['name' => 'Plattform'])
             ->assertSessionHasNoErrors();
     }
 
@@ -66,7 +66,7 @@ class TeamTest extends TestCase
         $team = Team::factory()->for($organization)->create();
 
         $this->actingAs($viewer)
-            ->get("/teams/{$team->id}")
+            ->get("/einstellungen/teams/{$team->id}")
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('teams/Show')
@@ -80,7 +80,7 @@ class TeamTest extends TestCase
         $team = Team::factory()->create();
 
         $this->actingAs(User::factory()->create())
-            ->get("/teams/{$team->id}")
+            ->get("/einstellungen/teams/{$team->id}")
             ->assertForbidden();
     }
 
@@ -90,20 +90,20 @@ class TeamTest extends TestCase
         $organization = Organization::factory()->withMember($member, OrganizationRole::Member)->create();
         $team = Team::factory()->for($organization)->create(['name' => 'Alt']);
 
-        $this->actingAs($member)->patch("/teams/{$team->id}", ['name' => 'Neu'])->assertForbidden();
-        $this->actingAs($member)->delete("/teams/{$team->id}")->assertForbidden();
+        $this->actingAs($member)->patch("/einstellungen/teams/{$team->id}", ['name' => 'Neu'])->assertForbidden();
+        $this->actingAs($member)->delete("/einstellungen/teams/{$team->id}")->assertForbidden();
 
         $admin = User::factory()->create();
         $organization->setRole($admin, OrganizationRole::Admin);
 
         $this->actingAs($admin)
-            ->patch("/teams/{$team->id}", ['name' => 'Neu'])
+            ->patch("/einstellungen/teams/{$team->id}", ['name' => 'Neu'])
             ->assertSessionHasNoErrors();
         $this->assertSame('Neu', $team->refresh()->name);
 
         $this->actingAs($admin)
-            ->delete("/teams/{$team->id}")
-            ->assertRedirect("/organisationen/{$organization->slug}");
+            ->delete("/einstellungen/teams/{$team->id}")
+            ->assertRedirect("/einstellungen/organisationen/{$organization->slug}");
         $this->assertDatabaseMissing('teams', ['id' => $team->id]);
     }
 
@@ -116,18 +116,18 @@ class TeamTest extends TestCase
         $team = Team::factory()->for($organization)->create();
 
         $this->actingAs($owner)
-            ->from("/teams/{$team->id}")
-            ->post("/teams/{$team->id}/mitglieder", ['user_id' => $member->id])
-            ->assertRedirect("/teams/{$team->id}");
+            ->from("/einstellungen/teams/{$team->id}")
+            ->post("/einstellungen/teams/{$team->id}/mitglieder", ['user_id' => $member->id])
+            ->assertRedirect("/einstellungen/teams/{$team->id}");
 
         $this->assertDatabaseHas('team_user', ['team_id' => $team->id, 'user_id' => $member->id]);
 
         // Zweimal hinzufügen ändert nichts — die Zuordnung bleibt einmalig.
-        $this->actingAs($owner)->post("/teams/{$team->id}/mitglieder", ['user_id' => $member->id]);
+        $this->actingAs($owner)->post("/einstellungen/teams/{$team->id}/mitglieder", ['user_id' => $member->id]);
         $this->assertSame(1, $team->members()->count());
 
         $this->actingAs($owner)
-            ->delete("/teams/{$team->id}/mitglieder/{$member->id}")
+            ->delete("/einstellungen/teams/{$team->id}/mitglieder/{$member->id}")
             ->assertSessionHasNoErrors();
 
         $this->assertDatabaseMissing('team_user', ['team_id' => $team->id, 'user_id' => $member->id]);
@@ -141,7 +141,7 @@ class TeamTest extends TestCase
         $outsider = User::factory()->create();
 
         $this->actingAs($owner)
-            ->post("/teams/{$team->id}/mitglieder", ['user_id' => $outsider->id])
+            ->post("/einstellungen/teams/{$team->id}/mitglieder", ['user_id' => $outsider->id])
             ->assertForbidden();
 
         $this->assertDatabaseCount('team_user', 0);
@@ -158,7 +158,7 @@ class TeamTest extends TestCase
         User::factory()->create();
 
         $this->actingAs($owner)
-            ->get("/teams/{$team->id}")
+            ->get("/einstellungen/teams/{$team->id}")
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->has('members', 1)
                 ->has('candidates', 1)
