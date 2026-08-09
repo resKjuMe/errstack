@@ -84,25 +84,27 @@ enum IngestType: string
     }
 
     /**
-     * Zählt eine Meldung dieser Art gegen das Ereignis-Kontingent des Projekts?
+     * Zählt eine Meldung dieser Art gegen ein Kontingent des Projekts?
      *
-     * Die Abrechnung selbst ist O1 und gibt es noch nicht — die Zusage aber
-     * schon, und sie steht hier statt in einem Kommentar, damit sie prüfbar ist:
-     * eine Rückmeldung ist die Beschreibung eines Menschen zu einem Ereignis,
-     * das bereits gezählt wurde. Sie ein zweites Mal zu zählen hieße, das
-     * Nachfragen bei den Betroffenen zu bepreisen.
+     * Die Zusage stammt aus M6 und ist seit O1 keine Zusage mehr, sondern eine
+     * Ableitung: **welches** Kontingent gilt, steht in
+     * {@see QuotaCategory::forIngestType()}, und diese Frage ist nur die
+     * kürzere Form derselben Auskunft. Zwei Aufzählungen nebeneinander wären
+     * zwei, die beim nächsten Element-Typ auseinanderlaufen — und eine davon
+     * entscheidet über Geld.
      *
-     * Ebenso wenig zählen die Buchhaltungs-Elemente: ein Lebenszeichen, eine
-     * Verworfen-Meldung des SDK und ein Anhang sind keine Ereignisse, sondern
-     * Angaben über welche.
+     * Unverändert gilt, was der Grund der Frage war: eine Rückmeldung ist die
+     * Beschreibung eines Menschen zu einem Ereignis, das bereits gezählt wurde.
+     * Sie ein zweites Mal zu zählen hieße, das Nachfragen bei den Betroffenen zu
+     * bepreisen. Ebenso wenig zählt eine Verworfen-Meldung des SDK: sie ist
+     * keine Meldung, sondern eine Angabe über welche. Sitzungen zählen aus einem
+     * dritten Grund nicht — sie sind die Rechengrundlage der
+     * Release-Gesundheit, und ein Kontingent darauf machte eine Kennzahl
+     * falsch, statt Daten zu sparen.
      */
     public function countsTowardEventQuota(): bool
     {
-        return match ($this) {
-            self::Event, self::Transaction, self::Session, self::Sessions,
-            self::ReplayEvent, self::ReplayRecording, self::Profile => true,
-            default => false,
-        };
+        return QuotaCategory::forIngestType($this) !== null;
     }
 
     /**
