@@ -6,6 +6,7 @@ use App\Models\Release;
 use App\Models\ReleaseSessionCount;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use stdClass;
 
 /**
  * Die Leseseite der Release-Gesundheit: aus den Zählern werden Kennzahlen.
@@ -231,7 +232,7 @@ final class ReleaseHealth
     /**
      * Zeilen einer Unterabfrage, nach einer Spalte greifbar gemacht.
      *
-     * @param  Collection<int, object>  $rows
+     * @param  Collection<int, stdClass>  $rows  wie sie der Query Builder liefert
      * @return array<int, array<string, mixed>>
      */
     private function keyBy(Collection $rows, string $column): array

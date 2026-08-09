@@ -222,12 +222,14 @@ class ReleaseListTest extends TestCase
             ->get(route('releases.index'))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('releases.data.0.version', '1.1.0')
-                ->where('releases.data.0.health.crashFreeSessions.value', 100.0)
+                // Ganze Quoten kommen als ganze Zahl an: json_encode wirft die
+                // Null hinter dem Komma weg (100.0 wird zu 100).
+                ->where('releases.data.0.health.crashFreeSessions.value', 100)
                 // 30 von 40 Sitzungen des Projekts.
-                ->where('releases.data.0.health.adoptionSessions.value', 75.0)
+                ->where('releases.data.0.health.adoptionSessions.value', 75)
                 ->where('releases.data.1.version', '1.0.0')
-                ->where('releases.data.1.health.crashFreeSessions.value', 80.0)
-                ->where('releases.data.1.health.adoptionSessions.value', 25.0)
+                ->where('releases.data.1.health.crashFreeSessions.value', 80)
+                ->where('releases.data.1.health.adoptionSessions.value', 25)
             );
     }
 
@@ -332,7 +334,7 @@ class ReleaseListTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('environmentPartial', true)
                 ->has('releases.data', 1)
-                ->where('releases.data.0.health.crashFreeSessions.value', 100.0)
+                ->where('releases.data.0.health.crashFreeSessions.value', 100)
             );
     }
 

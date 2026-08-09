@@ -240,9 +240,11 @@ class ReleaseDetailTest extends TestCase
             ->get(route('releases.show', $release))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('releases/Show')
-                ->where('health.crashFreeSessions.value', 80.0)
+                // Ganze Quoten kommen als ganze Zahl an: json_encode wirft die
+                // Null hinter dem Komma weg (80.0 wird zu 80).
+                ->where('health.crashFreeSessions.value', 80)
                 ->where('comparison.version', '1.1.0')
-                ->where('comparison.crashFreeSessions.value', -10.0)
+                ->where('comparison.crashFreeSessions.value', -10)
                 ->where('comparison.crashFreeSessions.direction', 'down')
                 ->where('previousHref', route('releases.show', $previous))
             );
@@ -395,7 +397,7 @@ class ReleaseDetailTest extends TestCase
         $this->actingAs($user)
             ->get(route('releases.show', [$release, 'period' => '30d']))
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('health.crashFreeSessions.value', 50.0)
+                ->where('health.crashFreeSessions.value', 50)
             );
     }
 
