@@ -34,6 +34,7 @@ import ProjectsGrouping from './shell/pages/projects/Grouping.jsx';
 import ProjectsFilters from './shell/pages/projects/Filters.jsx';
 import ProjectsDigest from './shell/pages/projects/Digest.jsx';
 import ProjectsSampling from './shell/pages/projects/Sampling.jsx';
+import ProjectsSpikes from './shell/pages/projects/Spikes.jsx';
 import ProjectsPerformance from './shell/pages/projects/Performance.jsx';
 import ProjectsOwnership from './shell/pages/projects/Ownership.jsx';
 import PerformanceIssues from './shell/pages/performance/Issues.jsx';
@@ -108,6 +109,10 @@ const pages = {
     'projects/Filters': ProjectsFilters,
     'projects/Digest': ProjectsDigest,
     'projects/Sampling': ProjectsSampling,
+    // Der Ausschlag-Schutz (A7): Zustand, Verlauf und Einstellungen auf einer
+    // Seite — wer in einer Flut hierherkommt, soll nicht zwischen zwei
+    // Bildschirmen suchen.
+    'projects/Spikes': ProjectsSpikes,
     'projects/Performance': ProjectsPerformance,
     'projects/Ownership': ProjectsOwnership,
     'performance/Issues': PerformanceIssues,

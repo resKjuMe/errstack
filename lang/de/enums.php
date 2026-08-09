@@ -150,6 +150,7 @@ return [
         'scrubbed' => 'aus Datenschutzgründen nicht gespeichert',
         'filtered' => 'vom Eingangsfilter aussortiert',
         'discarded' => 'gelöschter Fehler, künftig verworfen',
+        'throttled' => 'vom Ausschlag-Schutz gedrosselt',
         'orphaned' => 'ohne zugehörige Meldung',
     ],
 

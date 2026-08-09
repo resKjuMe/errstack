@@ -129,6 +129,12 @@ return [
         'manage' => 'Filter einstellen',
     ],
 
+    'spikes' => [
+        'title' => 'Ausschlag-Schutz',
+        'description' => 'Ungewöhnliche Fehlerfluten werden am Verlauf dieses Projekts erkannt, die Aufnahme wird gedrosselt und das Team benachrichtigt. Verworfenes wird gezählt und ausgewiesen.',
+        'manage' => 'Schutz ansehen',
+    ],
+
     'digest' => [
         'title' => 'Meldungen bündeln',
         'description' => 'Bei einer Fehlerwelle kommen sonst dutzende Einzel-Mails. Ein Zeitfenster fasst sie zu einer Sammelnachricht zusammen; dringende Meldungen bleiben davon unberührt.',

@@ -150,6 +150,7 @@ return [
         'scrubbed' => 'not stored for privacy reasons',
         'filtered' => 'discarded by an inbound filter',
         'discarded' => 'deleted issue, discarded from now on',
+        'throttled' => 'throttled by spike protection',
         'orphaned' => 'no matching event',
     ],
 
