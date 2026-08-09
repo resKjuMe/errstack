@@ -171,6 +171,17 @@ class Project extends Model
     }
 
     /**
+     * Überwachte Ziele dieses Projekts — die Erreichbarkeits-Prüfungen von
+     * außen (M2).
+     *
+     * @return HasMany<UptimeMonitor, $this>
+     */
+    public function uptimeMonitors(): HasMany
+    {
+        return $this->hasMany(UptimeMonitor::class);
+    }
+
+    /**
      * Gemessene Antwortzeiten dieses Projekts.
      *
      * Ausdrücklich getrennt von den Fehlermeldungen: eine Transaktion ist keine,

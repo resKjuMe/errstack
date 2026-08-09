@@ -84,6 +84,7 @@ export default function Show({
                 <Digest project={project} />
 
                 <CronMonitors project={project} />
+                <UptimeMonitors project={project} />
 
                 <Grouping project={project} />
                 <Ownership project={project} />
@@ -427,6 +428,21 @@ function CronMonitors({ project }) {
         <Card title={t('projects.crons.title')} description={t('projects.crons.description')}>
             <Link href={project.cronsHref}>
                 <SecondaryButton type="button">{t('projects.crons.manage')}</SecondaryButton>
+            </Link>
+        </Card>
+    );
+}
+
+// Weg zur Erreichbarkeits-Überwachung. Aus demselben Grund ohne Bedingung wie
+// die Cronjobs — und mit dem stärksten von allen: „ist es gerade da?" ist die
+// Frage, die während einer Störung jeder stellt.
+function UptimeMonitors({ project }) {
+    const t = useT();
+
+    return (
+        <Card title={t('projects.uptime.title')} description={t('projects.uptime.description')}>
+            <Link href={project.uptimeHref}>
+                <SecondaryButton type="button">{t('projects.uptime.manage')}</SecondaryButton>
             </Link>
         </Card>
     );

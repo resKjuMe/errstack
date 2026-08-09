@@ -108,6 +108,10 @@ final class ProjectData
                 // Link steht deshalb ohne Bedingung da, anders als der zu den
                 // Schlüsseln.
                 'cronsHref' => route('projects.crons.index', [$organization, $project]),
+                // Die Erreichbarkeits-Überwachung aus demselben Grund ohne
+                // Bedingung — und mit dem stärksten von allen: „ist es gerade
+                // da?" ist die Frage, die während einer Störung jeder stellt.
+                'uptimeHref' => route('projects.uptime.index', [$organization, $project]),
                 // Die Gruppierung ebenfalls ohne Bedingung: die Regeln
                 // erklären, warum die Fehlerliste so aussieht, wie sie aussieht
                 // — und diese Frage stellt sich nicht nur die Verwaltung.

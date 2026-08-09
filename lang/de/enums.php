@@ -39,6 +39,7 @@ return [
         'fallback' => 'Titel und Fehlerstelle',
         'empty' => 'Ohne unterscheidbaren Inhalt',
         'performance' => 'Leistungserkennung',
+        'uptime' => 'Erreichbarkeits-Überwachung',
     ],
 
     'api_scope' => [
@@ -127,6 +128,22 @@ return [
         'timeout' => 'zu lange gelaufen',
         'error' => 'gescheitert',
         'disabled' => 'abgeschaltet',
+    ],
+
+    'uptime_status' => [
+        'unknown' => 'noch nicht geprüft',
+        'up' => 'erreichbar',
+        'degraded' => 'auffällig',
+        'down' => 'ausgefallen',
+        'disabled' => 'abgeschaltet',
+    ],
+
+    'uptime_check_outcome' => [
+        'up' => 'erreichbar',
+        'connection_failed' => 'nicht erreichbar',
+        'timeout' => 'Zeitüberschreitung',
+        'status_mismatch' => 'unerwarteter Statuscode',
+        'content_mismatch' => 'erwarteter Text fehlt',
     ],
 
     'delivery_status' => [
