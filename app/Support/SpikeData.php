@@ -151,6 +151,13 @@ final class SpikeData
         $running = app(SpikeCounter::class)->peek($project);
         $now = IngestVolume::bucket();
 
+        // Ein Projekt, das noch nie etwas gemeldet hat, bekommt keinen einzelnen
+        // Balken auf Null: das sähe aus wie eine Messung und ist keine. Die Seite
+        // sagt in dem Fall lieber, dass noch kein Verlauf da ist.
+        if ($rows === [] && $running['events'] === 0) {
+            return [];
+        }
+
         $rows[] = [
             'minute' => $now->toIso8601String(),
             'quantity' => $running['events'],
