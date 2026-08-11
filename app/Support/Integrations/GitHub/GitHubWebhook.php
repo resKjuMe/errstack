@@ -69,10 +69,6 @@ final class GitHubWebhook
     {
         $payload = $request->json()->all();
 
-        if (! is_array($payload)) {
-            $payload = [];
-        }
-
         $repository = data_get($payload, 'repository.full_name');
         $repository = is_string($repository) ? Repository::normalizeName($repository) : null;
 

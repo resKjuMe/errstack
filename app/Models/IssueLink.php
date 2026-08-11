@@ -85,6 +85,7 @@ class IssueLink extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'issue_id',
         'integration_id',
         'provider',
         'repository',

@@ -170,7 +170,7 @@ final class GitHubIssueLinks
     {
         $lines = [
             '**'.__('integrations.issue.body.culprit').':** '.($issue->culprit ?? '—'),
-            '**'.__('integrations.issue.body.project').':** '.($issue->project?->name ?? '—'),
+            '**'.__('integrations.issue.body.project').':** '.$issue->project->name,
             '**'.__('integrations.issue.body.times_seen').':** '.$issue->times_seen,
             '**'.__('integrations.issue.body.first_seen').':** '.$issue->first_seen->toIso8601String(),
             '',

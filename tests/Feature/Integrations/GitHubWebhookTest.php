@@ -21,6 +21,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Testing\TestResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 /**
@@ -42,6 +43,7 @@ class GitHubWebhookTest extends TestCase
 
     /**
      * @param  array<string, mixed>  $payload
+     * @return TestResponse<Response>
      */
     private function deliver(string $event, array $payload, string $delivery = 'd-1', ?string $secret = self::SECRET): TestResponse
     {
