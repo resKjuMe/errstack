@@ -26,12 +26,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * neben einem Link ist harmlos, eine Seite, die ohne GitHub nicht mehr lädt,
  * nicht.
  *
+ * **`repository` heißt bei den Ticket-Systemen Projekt bzw. Team** (X4): dort
+ * steht `OPS` oder `ENG`, nicht `acme/webshop`. Der Name der Spalte ist der von
+ * X1 geblieben, weil sie dieselbe Rolle trägt — der Behälter, in dem die Nummer
+ * gilt — und eine Wanderung, die eine Spalte umbenennt, zwei Auslieferungen
+ * braucht (Migrations-Job vor dem Slot-Wechsel), ohne dass danach irgendetwas
+ * anders wäre.
+ *
  * @property int $id
  * @property int $issue_id
  * @property int|null $integration_id
  * @property IntegrationProvider $provider
  * @property string $repository
  * @property int $number
+ * @property string|null $external_id
  * @property string|null $title
  * @property string $url
  * @property ExternalIssueState $state
@@ -71,14 +79,22 @@ class IssueLink extends Model
 
     /**
      * Wie das Ticket genannt wird, wenn man es kurz nennen muss:
-     * „acme/webshop#42".
+     * „acme/webshop#42" bei GitHub, „OPS-42" bei Jira und Linear.
      *
-     * Repository und Nummer und nicht nur die Nummer — `#42` gibt es in jedem
+     * Behälter und Nummer und nicht nur die Nummer — `#42` gibt es in jedem
      * Repository, und ein Fehler kann mit Tickets aus mehreren verknüpft sein.
+     *
+     * **Die Schreibweise ist die des Anbieters** (X4) und nicht eine eigene, die
+     * für alle gilt. Das ist keine Höflichkeit: `OPS-42` ist die Kennung, mit der
+     * ein Jira-Vorgang gesucht, verlinkt und im Gespräch genannt wird, und ein
+     * `OPS#42` wäre in jeder Suche drüben ein Fehlschlag. Wer die Kennung aus der
+     * Anzeige kopiert, soll damit arbeiten können.
      */
     public function reference(): string
     {
-        return $this->repository.'#'.$this->number;
+        return $this->provider->isTicketProvider()
+            ? $this->repository.'-'.$this->number
+            : $this->repository.'#'.$this->number;
     }
 
     /**
@@ -90,6 +106,7 @@ class IssueLink extends Model
         'provider',
         'repository',
         'number',
+        'external_id',
         'title',
         'url',
         'state',

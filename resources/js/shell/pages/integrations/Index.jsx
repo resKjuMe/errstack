@@ -9,26 +9,23 @@ import {
     SecondaryButton,
 } from '../../components/Form.jsx';
 import { useT } from '../../i18n.js';
+import TicketConnection from './TicketConnection.jsx';
 
-// Die Anbindung an einen Anbieter (X1).
+// Die Anbindungen einer Organisation (X1, X4).
 //
 // Die Seite beantwortet drei Fragen in der Reihenfolge, in der sie aufkommen:
-// Ist etwas verbunden? Trägt es noch? Welche Repositories versorgt es?
+// Ist etwas verbunden? Trägt es noch? Welche Repositories bzw. Projekte
+// versorgt es?
 //
 // Die zweite ist der Grund, dass es diese Seite gibt und nicht nur einen Knopf
 // auf der Repository-Seite. Ein zurückgezogenes Token macht sich sonst nirgends
 // bemerkbar — die Commits einer Auslieferung kommen einfach nicht mehr, und das
 // sieht aus wie „diese Version hatte keine".
-export default function Index({
-    organization,
-    canManage,
-    configured,
-    provider,
-    integration,
-    connectHref,
-    repositoriesHref,
-    availableRepositoriesHref,
-}) {
+//
+// Ein Abschnitt je Anbieter, alle untereinander. Eine Seite je Anbieter wäre die
+// ordentlichere Aufteilung und die schlechtere Antwort auf „was ist hier
+// eigentlich angebunden?" — das ist eine Frage über alle.
+export default function Index({ organization, canManage, github, tickets, repositoriesHref }) {
     const { shell } = usePage().props;
     const t = useT();
 
@@ -50,20 +47,20 @@ export default function Index({
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                 <div className="space-y-4 lg:col-span-2">
-                    {!configured ? (
+                    {!github.configured ? (
                         <Card
                             title={t('integrations.not_configured.title')}
                             description={t('integrations.not_configured.hint')}
                         />
-                    ) : integration === null ? (
-                        <Card title={provider.label} description={t('integrations.empty')}>
+                    ) : github.integration === null ? (
+                        <Card title={github.provider.label} description={t('integrations.empty')}>
                             {canManage && (
                                 // Ein normaler Link und kein Inertia-Besuch: das
                                 // Ziel liegt außerhalb dieser Anwendung, und ein
                                 // Inertia-Aufruf bekäme von GitHub eine HTML-Seite
                                 // zurück, mit der er nichts anfangen kann.
                                 <a
-                                    href={connectHref}
+                                    href={github.connectHref}
                                     className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase hover:bg-indigo-500"
                                 >
                                     {t('integrations.actions.connect')}
@@ -72,18 +69,27 @@ export default function Index({
                         </Card>
                     ) : (
                         <Connection
-                            integration={integration}
-                            provider={provider}
+                            integration={github.integration}
+                            provider={github.provider}
                             canManage={canManage}
-                            connectHref={connectHref}
+                            connectHref={github.connectHref}
                             repositoriesHref={repositoriesHref}
                             t={t}
                         />
                     )}
+
+                    {tickets.map((section) => (
+                        <TicketConnection
+                            key={section.provider.value}
+                            section={section}
+                            canManage={canManage}
+                            t={t}
+                        />
+                    ))}
                 </div>
 
-                {integration !== null && canManage && (
-                    <AddRepository href={availableRepositoriesHref} t={t} />
+                {github.integration !== null && canManage && (
+                    <AddRepository href={github.availableRepositoriesHref} t={t} />
                 )}
             </div>
         </>

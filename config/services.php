@@ -67,4 +67,36 @@ return [
         'timeout' => (int) env('GITHUB_TIMEOUT', 10),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Ticket-Systeme (X4)
+    |--------------------------------------------------------------------------
+    |
+    | Auffällig wenig, und das ist der Punkt: hier stehen **keine** Zugangsdaten
+    | einer App. Verbunden wird mit einem API-Token, das jemand in seinen
+    | Kontoeinstellungen erzeugt, und das gehört einer Organisation — es liegt
+    | verschlüsselt an ihrer Anbindung (App\Models\Integration). Anders als bei
+    | GitHub gibt es deshalb nichts, was eine Installation erst einrichten
+    | müsste: Jira und Linear stehen ab dem ersten Start zur Verfügung.
+    |
+    | Bei Jira gehört auch die **Adresse** der Anbindung und nicht der
+    | Installation: jede Organisation hat ihr eigenes `acme.atlassian.net`. Eine
+    | Einstellung hier könnte davon genau eine bedienen.
+    |
+    | `docs_url` ist die Seite, auf der der Anbieter erklärt, wo man das Token
+    | erzeugt. Sie steht als Einstellung, weil sie sich ändert, ohne dass sich
+    | hier etwas ändert — und weil ein Link, der ins Leere führt, in der
+    | Oberfläche schlechter ist als keiner.
+    */
+    'jira' => [
+        'timeout' => (int) env('JIRA_TIMEOUT', 10),
+        'docs_url' => env('JIRA_DOCS_URL', 'https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/'),
+    ],
+
+    'linear' => [
+        'api_url' => env('LINEAR_API_URL', 'https://api.linear.app/graphql'),
+        'timeout' => (int) env('LINEAR_TIMEOUT', 10),
+        'docs_url' => env('LINEAR_DOCS_URL', 'https://linear.app/settings/account/security'),
+    ],
+
 ];

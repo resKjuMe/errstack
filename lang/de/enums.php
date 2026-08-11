@@ -492,6 +492,8 @@ return [
     // Anbindungen (X1).
     'integration_provider' => [
         'github' => 'GitHub',
+        'jira' => 'Jira',
+        'linear' => 'Linear',
     ],
 
     'integration_status' => [

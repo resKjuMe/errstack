@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Enums\QueueName;
 use App\Models\IntegrationWebhookEvent;
 use App\Support\Integrations\GitHub\GitHubWebhookProcessor;
+use App\Support\Integrations\Tickets\TicketWebhookProcessor;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -46,6 +47,22 @@ class ProcessIntegrationWebhook implements ShouldQueue
             return;
         }
 
-        $event->markProcessed(GitHubWebhookProcessor::handle($event));
+        $event->markProcessed($this->result($event));
+    }
+
+    /**
+     * Wer diese Meldung auswertet.
+     *
+     * Die einzige Fallunterscheidung, die dieser Auftrag kennt — und sie sitzt
+     * hier und nicht im Eingang: dort wird angenommen und eingereiht, und was
+     * daraus wird, entscheidet die Warteschlange. GitHub hat seine eigene
+     * Auswertung, weil dort Commits mit hereinkommen und nicht nur Tickets (X1);
+     * Jira und Linear teilen eine (X4).
+     */
+    private function result(IntegrationWebhookEvent $event): string
+    {
+        return $event->provider->isTicketProvider()
+            ? TicketWebhookProcessor::handle($event)
+            : GitHubWebhookProcessor::handle($event);
     }
 }

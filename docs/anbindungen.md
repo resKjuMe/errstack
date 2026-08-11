@@ -1,7 +1,16 @@
 # Anbindungen
 
-Eine Anbindung verbindet eine Organisation mit dem Ort, an dem ihr Code liegt.
-Zurzeit gibt es eine: **GitHub**.
+Eine Anbindung verbindet eine Organisation mit einem Ort, an dem ihre Arbeit
+liegt. Es gibt zwei Sorten:
+
+* **GitHub** — dort liegt der Code. Commits kommen von selbst herein, und
+  nebenbei lassen sich Tickets anlegen.
+* **Jira** und **Linear** — dort liegen die Tickets. Sie hängen an einer
+  gemeinsamen Schnittstelle; alles, was unten über Tickets steht, gilt für beide
+  gleich.
+
+Ein Fehler kann mit **mehreren** Tickets verknüpft sein, auch mit welchen aus
+verschiedenen Systemen.
 
 Ohne sie funktioniert alles weiter — Auslieferungen entstehen aus Meldungen, und
 eine Bauumgebung übergibt ihre Commits über die Schnittstelle. Die Anbindung
@@ -111,3 +120,143 @@ oder schlicht auf einer Entscheidung. Ein Klick drüben soll die nicht
 Jede Zustellung wird genau einmal ausgewertet. GitHub wiederholt sie, wenn die
 Antwort ausbleibt, und auf Knopfdruck — die Kennung der Zustellung
 (`X-GitHub-Delivery`) entscheidet, wer die erste war.
+
+# Ticket-Systeme (Jira, Linear)
+
+Der Zweck ist derselbe wie bei GitHub, nur ohne Code: aus einem Fehler ein
+Ticket machen, ein vorhandenes verknüpfen, und den Zustand beider Seiten
+zusammenhalten.
+
+## Verbinden (einmal je Organisation)
+
+**Diese Anbindungen brauchen keine Einrichtung der Installation.** Kein Eintrag
+in der `.env`, keine registrierte App — verbunden wird mit einem **API-Token**,
+das jemand in seinen Kontoeinstellungen erzeugt. Es gehört der Organisation und
+liegt verschlüsselt an ihrer Anbindung.
+
+Unter *Einstellungen › Anbindungen*:
+
+| Anbieter | Felder |
+|---|---|
+| Jira | Adresse der Instanz (`https://acme.atlassian.net`), E-Mail-Adresse zum Token, API-Token |
+| Linear | API-Schlüssel |
+
+Jira Cloud verlangt E-Mail-Adresse **und** Token zusammen (Basic-Auth); ein
+`Bearer` gilt dort nur für Zugänge einer installierten App. Bei Linear steckt
+alles im Schlüssel.
+
+**Das Token wird geprüft, bevor es gespeichert wird.** Antwortet der Anbieter
+nicht, entsteht keine Anbindung — und eine vorhandene bleibt unverändert. Ein
+Tippfehler beim Erneuern ersetzt also nicht die funktionierende Anbindung.
+
+## Rückadresse eintragen (Pflicht für den eingehenden Abgleich)
+
+Ohne sie erfährt Errstack nichts davon, dass ein Ticket drüben geschlossen
+wurde. Die vollständige Adresse steht auf der Anbindungsseite; sie sieht so aus:
+
+```
+<APP_URL>/api/hooks/tickets/jira/<geheimnis>
+```
+
+**Sie enthält ein Geheimnis — behandeln Sie sie wie ein Passwort.** Das ist der
+Unterschied zu GitHub, und er ist nicht gewählt, sondern vorgefunden: Jira Cloud
+unterschreibt eine über die Schnittstelle eingetragene Rückadresse nicht, und
+Linears Unterschrift hängt an einem Geheimnis, das erst beim Einrichten des
+Webhooks drüben entsteht. Deshalb weist die Adresse den Anrufer aus.
+
+Wo sie einzutragen ist:
+
+| Anbieter | Ort | Ereignisse |
+|---|---|---|
+| Jira | *Systemeinstellungen › Webhooks* | *Issue: created, updated* |
+| Linear | *Settings › API › Webhooks* | *Issues* |
+
+Ist die Adresse einmal irgendwo gelandet — in einem Ticket, einem Chat, einem
+Zustellungsprotokoll —, ist sie kein Geheimnis mehr. **Adresse erneuern** setzt
+ein neues Geheimnis; die alte antwortet danach mit `401` und muss beim Anbieter
+ersetzt werden.
+
+## Statusabgleich
+
+Beide Richtungen sind **einzeln** abschaltbar:
+
+| Schalter | Wirkung |
+|---|---|
+| Ticket erledigt → Fehler erledigt | Ein Ticket, das drüben in einen erledigten Zustand wechselt, setzt den Fehler auf erledigt. |
+| Fehler erledigt → Ticket erledigt | Ein hier erledigter Fehler schließt sein Ticket; wird er wieder geöffnet, geht das Ticket denselben Weg zurück. |
+
+Die zweite steht getrennt, weil sie in einem fremden System **schreibt**. Es gibt
+Teams, die ihre Vorgänge ausschließlich drüben schließen wollen, weil dort eine
+Abnahme dranhängt.
+
+Ein **wieder geöffnetes** Ticket öffnet den Fehler bewusst *nicht* wieder — aus
+demselben Grund wie bei GitHub.
+
+### Was „erledigt" drüben heißt
+
+Weder Jira noch Linear kennen zwei Zustände; beide kennen so viele, wie jemand
+angelegt hat. Gelesen wird deshalb nicht der **Name** des Zustands, sondern seine
+Einordnung:
+
+| Anbieter | gilt hier als geschlossen |
+|---|---|
+| Jira | Zustandskategorie `done` (die Kategorie legt Atlassian fest, nicht das Projekt) |
+| Linear | Zustandsart `completed` oder `canceled` |
+
+Ein Projekt mit deutschem Arbeitsablauf („Abgenommen") funktioniert damit ohne
+Zutun. Auf die Namen zu sehen wäre die naheliegende Abkürzung und die Stelle, an
+der so ein Projekt nie mehr einen Fehler erledigt.
+
+### Wie geschlossen wird
+
+Bei Jira ist „schließen" kein Feld, das man setzt, sondern ein **Übergang** — und
+welche es gibt, entscheidet der Arbeitsablauf des Projekts. Errstack holt die
+möglichen Übergänge und nimmt den, der in die Kategorie `done` führt. Gibt es
+keinen (weil ein Pflichtfeld dranhängt oder aus diesem Zustand kein Weg
+herausführt), bleibt das Ticket stehen und der Fehler hier trotzdem erledigt: der
+Abgleich vermerkt es im Protokoll und hält die anderen Tickets nicht auf.
+
+Bei Linear wird ein Zustand der passenden Art gesetzt — der mit der niedrigsten
+Sortierposition, weil Teams oft mehrere haben („Erledigt", „Ausgeliefert").
+
+## Vorbelegung neuer Tickets
+
+Je Anbindung einstellbar: Projekt bzw. Team, Vorgangstyp (nur Jira, Standard
+`Task`), Priorität und Zuständigkeit. Leere Felder werden **nicht** mitgeschickt —
+ein leeres `assignee` ist bei Jira kein „niemand", sondern ein Prüffehler.
+
+Die Priorität schreibt sich je Anbieter anders: Jira nimmt den Namen (`High`),
+Linear eine Zahl (0–4). Die Zuständigkeit ist die Kennung des Kontos **beim
+Anbieter** — eine Zuordnung zwischen den Nutzerverwaltungen gibt es nicht, und
+eine über die E-Mail-Adresse geratene wäre genau die Art Vermutung, die im
+Betrieb einmal den Falschen benachrichtigt.
+
+Nichts davon wird beim Speichern gegen den Anbieter geprüft. Ein Projekt, das es
+nicht gibt, meldet sich beim ersten Anlegen mit seiner eigenen Meldung — und die
+ist aussagekräftiger als alles, was hier zu prüfen wäre.
+
+## Verknüpfen von Hand
+
+Im Formular auf der Fehlerseite darf die Kennung **ganz** stehen (`OPS-42`) oder
+nur die Nummer (`42`). Ein Schlüssel, der nicht zum ausgewählten Projekt passt,
+ist ein Eingabefehler und keine Nummer mit Vorsilbe: `ENG-42` im Projekt `OPS`
+ist ein anderes Ticket.
+
+## Fehler des Fremdsystems
+
+Sie werden **wörtlich** gezeigt und nicht durch einen freundlicheren Satz
+ersetzt: „Field 'priority' cannot be set" ist die Antwort auf „warum entsteht
+kein Ticket". Beim Anlegen und Verknüpfen erscheinen sie am Formularfeld, beim
+Abgleich in der Warteschlange im Protokoll.
+
+Ein abgelehnter **Zugang** (`401`/`403`, bei Linear auch ein
+`AUTHENTICATION_ERROR` mit Status 200) wird an der Anbindung festgehalten und auf
+der Seite angezeigt — wie bei GitHub, und aus demselben Grund: sonst bliebe es
+still.
+
+## Lösen
+
+Verknüpfte Tickets bleiben lesbar, wenn die Anbindung gelöst wird: die
+Verknüpfung trägt Kennung und Adresse bei sich. Sie wird nur nicht mehr
+abgeglichen. Das Ticket drüben bleibt ohnehin unberührt — auch beim Lösen einer
+einzelnen Verknüpfung wird es nicht geschlossen.
