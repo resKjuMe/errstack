@@ -4,8 +4,10 @@ import PageHead from '../../components/PageHead.jsx';
 import Card from '../../components/Card.jsx';
 import { InputLabel, SecondaryButton, SelectInput } from '../../components/Form.jsx';
 import { useTranslations } from '../../i18n.js';
+import useFilter from '../../filters/useFilter.js';
 import QueryBar from './QueryBar.jsx';
 import ResultTable from './ResultTable.jsx';
+import SavedQueries from './SavedQueries.jsx';
 import SeriesChart from './SeriesChart.jsx';
 
 // Die freie Auswertung: Frage zusammenstellen, Antwort als Tabelle und Diagramm.
@@ -21,6 +23,11 @@ import SeriesChart from './SeriesChart.jsx';
 // Linien sind die obersten Zeilen der Tabelle. Deshalb steht am Diagramm nur
 // eine Auswahl: **welche** Kennzahl gezeichnet wird. Alles andere daran zu
 // ändern, hieße eine zweite Auswertung neben der ersten zu führen.
+//
+// **Die gespeicherten Auswertungen stehen über allem und auch ohne Projekt.**
+// Eine davon zu öffnen ist der Weg, überhaupt eines zu bekommen: sie bringt ihr
+// Projekt und ihren Zeitraum mit. Sie erst hinter der Projektwahl zu zeigen,
+// hieße, die Abkürzung genau dort zu verstecken, wo man sie braucht.
 export default function DiscoverIndex({
     query,
     catalog,
@@ -31,10 +38,12 @@ export default function DiscoverIndex({
     seriesError,
     project,
     projectOptions,
+    saved,
     exportHref,
 }) {
     const { shell } = usePage().props;
     const { t, formats } = useTranslations();
+    const filter = useFilter();
 
     const metricColumns = columns.filter((column) => column.kind === 'metric');
     const [metric, setMetric] = useState(metricColumns[0]?.key ?? '');
@@ -55,6 +64,24 @@ export default function DiscoverIndex({
                         </a>
                     )
                 }
+            />
+
+            <SavedQueries
+                data={saved}
+                query={query}
+                // Was gespeichert wird, ist der Zustand der Leiste, wie der
+                // Server ihn aufgelöst hat — nicht das, was zufällig in der
+                // Adresse steht. Beim ersten Aufruf steht dort nämlich nichts,
+                // und gespeichert wäre dann „kein Zeitraum" statt des
+                // Zeitraums, den man vor sich sieht.
+                filter={{
+                    period: filter?.value.period ?? '',
+                    from: filter?.value.from ?? '',
+                    to: filter?.value.to ?? '',
+                    environment: filter?.value.environment ?? '',
+                    projects: filter?.value.projects ?? [],
+                }}
+                t={t}
             />
 
             {project === null ? (

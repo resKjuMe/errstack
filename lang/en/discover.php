@@ -76,4 +76,47 @@ return [
         'current' => 'Analysing :project.',
     ],
 
+    'saved' => [
+        'title' => 'Saved',
+        'empty' => 'No saved analysis yet.',
+        'save' => 'Save analysis',
+        'save_hint' => 'What gets saved is what is set right now: dataset, grouping, measures, search condition, sorting, row count and step size — plus period, environment and project.',
+        'manage' => 'Manage',
+        'name' => 'Name',
+        'name_placeholder' => 'e.g. Errors by browser',
+        'description' => 'Description',
+        'description_placeholder' => 'What is this analysis for?',
+        'shared' => 'Share with the organization',
+        'shared_hint' => 'Shared means everyone in this organization can see the analysis. Changing and deleting it is still up to whoever created it — anyone who needs it as a starting point duplicates it.',
+        'shared_by' => 'Shared by :name',
+        'submit' => 'Save',
+        'cancel' => 'Cancel',
+        'delete' => 'Delete',
+        'duplicate' => 'Duplicate',
+        'confirm_delete' => 'Delete this saved analysis?',
+        'copy_name' => ':name (copy)',
+        'restores_period' => 'Opens with the saved period — changeable in the filter bar afterwards.',
+
+        'widget' => [
+            'action' => 'Add as widget',
+            'dashboard' => 'Dashboard',
+            'type' => 'Display',
+            'submit' => 'Add',
+            'none' => 'You do not have a dashboard of your own yet. Create one, then this analysis can be added to it.',
+            'hint' => 'The widget gets a copy of the question. The saved period does not come along: on a dashboard its own filter bar applies.',
+        ],
+
+        'errors' => [
+            'too_many' => 'More than :limit saved analyses per organization is not possible. Delete one you no longer need.',
+        ],
+
+        'flash' => [
+            'created' => 'Analysis saved.',
+            'updated' => 'Analysis changed.',
+            'duplicated' => 'Analysis duplicated.',
+            'deleted' => 'Analysis deleted.',
+            'widget_created' => 'Added as a widget on “:dashboard”.',
+        ],
+    ],
+
 ];

@@ -87,6 +87,74 @@ oder das Feld gibt es im Ziel nicht —, bleibt die Zeile **ohne** Link. Ein Lin
 auf „ungefähr diese Zeilen" wäre der, nach dem hinterher niemand mehr weiß, warum
 die Zahlen nicht zusammenpassen.
 
+## Gespeicherte Auswertungen
+
+Wer eine Frage einmal zusammengestellt hat, soll sie nicht jedes Mal neu
+zusammenklicken. Eine gespeicherte Auswertung bekommt einen Namen, eine
+Beschreibung und wahlweise eine Freigabe für die Organisation; sie lässt sich
+umbenennen, duplizieren und löschen.
+
+```
+Seite (Adresszeile)
+        │  Frage: dataset, fields[], metrics[], q, sort, limit, interval
+        │  Ausschnitt: period, from, to, environment, projects[]
+        ▼
+saved_queries      query  ──► WidgetQuery      dieselbe Beschreibung wie an einer Kachel
+                   filters──► WidgetOverrides  dieselbe wie deren Sicht auf die Leiste
+        │
+        ├──► öffnen        SavedQueryData::href → Adresse der Auswertungsseite
+        └──► als Kachel    DashboardWidget mit `query`, ohne `overrides`
+```
+
+### Der Zeitraum gehört dazu
+
+Das ist der Unterschied zur gespeicherten Suche (S5), und er ist beabsichtigt.
+Eine Suche sagt, **welche** Fehler gemeint sind, und überlässt der Filterleiste,
+**wann** gesucht wird: „Kritische offene Fehler" ist dieselbe Ansicht über 24
+Stunden wie über 30 Tage. Eine Auswertung ist eine Frage **samt ihrem
+Ausschnitt** — „Fehler nach Browser" über eine Stunde und über 90 Tage sind zwei
+verschiedene Antworten, und wer die eine festhält, meint sie und nicht die
+andere.
+
+Beim Öffnen steht der gespeicherte Ausschnitt deshalb in der Adresse — und ist
+an der Filterleiste sofort umstellbar wie jeder andere auch. Was die Auswertung
+nicht gespeichert hat, bleibt stehen, wie es ist: eine ohne Umgebung reißt
+niemanden aus der Umgebung heraus, in der er gerade steckt.
+
+Die Leiste steht auch dann über der Seite, wenn noch kein Projekt gewählt ist.
+Eine gespeicherte Auswertung zu öffnen ist der kürzeste Weg zu einem — sie bringt
+ihres mit.
+
+### Freigeben heißt sehen, nicht ändern
+
+Wie bei der gespeicherten Suche und beim Dashboard: eine freigegebene Auswertung
+steht der ganzen Organisation zur Verfügung, ändern und löschen darf sie nur, wer
+sie angelegt hat — auch die Verwaltung nicht. Der Ausweg ist das Duplizieren:
+wer eine fremde Auswertung als Ausgangspunkt braucht, nimmt eine eigene Kopie
+(ohne Freigabe) und schraubt nicht am Original.
+
+Auf die Zahlen hat das keinen Einfluss. Eine Auswertung ist eine Frage; über
+welche Daten sie gestellt wird, entscheidet weiterhin die Projektauswahl des
+Betrachters. Eine freigegebene Auswertung über ein Projekt, in dem jemand nicht
+ist, liefert ihm schlicht nichts.
+
+### Als Kachel übernehmen
+
+Weil die gespeicherte Frage dieselbe Beschreibung ist wie die einer Kachel
+(`WidgetQuery`), ist das Übernehmen auf ein Dashboard keine Übersetzung, sondern
+eine Kopie. Die Kachel bekommt die Frage — und **keinen** Verweis auf die
+gespeicherte Auswertung: sonst änderte sich ein Dashboard, weil jemand anderes
+seine Auswertung nachgeschärft hat, und ginge kaputt, wenn er sie löscht.
+
+Der gespeicherte Ausschnitt geht dabei ausdrücklich **nicht** mit. Auf einem
+Dashboard gilt dessen Filterleiste; eine übernommene Kachel, die auf „letzte 24
+Stunden" festgenagelt wäre, würde sich beim Umstellen des Zeitraums als Einzige
+nicht rühren — bei zehn übernommenen Auswertungen wäre die Leiste dort
+wirkungslos.
+
+Zur Auswahl stehen nur **eigene** Dashboards: eine Kachel anzulegen ist eine
+Änderung am Dashboard, und die darf nur dessen Ersteller.
+
 ## Die Ausgabe als Datei
 
 `/organisationen/{org}/auswertung/csv` ist dieselbe Adresse mit denselben

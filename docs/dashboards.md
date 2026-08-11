@@ -44,6 +44,12 @@ und ein Feld kann fortgefallen sein. Eine Kachel, die sich deswegen nicht mehr
 öffnen lässt, wäre die schlechtere Antwort — unbekannte Angaben fallen heraus,
 und ob die Abfrage *rechenbar* ist, entscheidet weiterhin allein der Motor.
 
+Weil es dieselbe Beschreibung ist, lässt sich eine **gespeicherte Auswertung**
+(D3) mit einem Klick als Kachel übernehmen: sie bekommt eine Kopie der Frage,
+keinen Verweis. Ihr gespeicherter Zeitraum geht dabei nicht mit — hier gilt die
+Filterleiste des Dashboards (siehe unten). Die Einzelheiten stehen in
+[Freie Auswertung](auswertung.md).
+
 ## Zwanzig Kacheln, zwanzig Anfragen
 
 Die Aufgabe verlangt, dass ein Dashboard mit zwanzig Kacheln ohne merkliche
