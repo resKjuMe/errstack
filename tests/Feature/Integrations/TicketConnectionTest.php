@@ -258,8 +258,18 @@ class TicketConnectionTest extends TestCase
     {
         [$user, $organization] = $this->context();
 
+        // Die Adresse wird aus der Route gebildet und nicht von Hand
+        // zusammengesetzt: die Anbindungen liegen unter dem Prefix
+        // `einstellungen`, und ein selbst getippter Pfad prüft am Ende, dass
+        // irgendetwas anderes nicht antwortet.
+        $url = str_replace(
+            '/tickets/jira',
+            '/tickets/trello',
+            route('organizations.integrations.tickets.store', [$organization, 'jira']),
+        );
+
         $this->actingAs($user)
-            ->post('/organisationen/'.$organization->slug.'/anbindungen/tickets/trello', ['token' => 'x'])
+            ->post($url, ['token' => 'x'])
             ->assertNotFound();
     }
 }
