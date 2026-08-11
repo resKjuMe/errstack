@@ -21,6 +21,9 @@
 */
 
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\GitHubIntegrationController;
+use App\Http\Controllers\IntegrationController;
+use App\Http\Controllers\IntegrationRepositoryController;
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationInvitationController;
@@ -88,6 +91,32 @@ Route::post('organisationen/{organization}/repositories', [RepositoryController:
 // Repository weiß selbst, zu welcher Organisation es gehört.
 Route::delete('repositories/{repository}', [RepositoryController::class, 'destroy'])
     ->name('repositories.destroy');
+
+// Die Anbindungen an Anbieter (X1). Ansehen darf jedes Mitglied — „ist die
+// Anbindung kaputt?" ist die Frage, die aufkommt, wenn an einer Auslieferung
+// die Commits fehlen. Verbinden und lösen darf die Verwaltung; die Prüfung
+// steht in den Controllern.
+Route::get('organisationen/{organization}/anbindungen', [IntegrationController::class, 'index'])
+    ->name('organizations.integrations.index');
+Route::delete('organisationen/{organization}/anbindungen/{integration}', [IntegrationController::class, 'destroy'])
+    ->name('organizations.integrations.destroy');
+
+// Die Repository-Auswahl einer Anbindung. Sie liegt unter der Organisation und
+// nicht unter der Anbindung: es gibt je Anbieter genau eine, und ihre Kennung
+// in der Adresse wäre eine Angabe, die nichts unterscheidet.
+Route::get('organisationen/{organization}/anbindungen/github/repositories', [IntegrationRepositoryController::class, 'index'])
+    ->name('organizations.integrations.repositories.index');
+Route::post('organisationen/{organization}/anbindungen/github/repositories', [IntegrationRepositoryController::class, 'store'])
+    ->name('organizations.integrations.repositories.store');
+
+// Der Weg zu GitHub und zurück. Die Rückkehr trägt **keine** Organisation in
+// der Adresse: sie muss bei GitHub fest hinterlegt werden, und eine, die je
+// Organisation anders aussieht, ließe sich dort nicht eintragen. Welche gemeint
+// war, steht im `state`-Wert in der Sitzung.
+Route::get('organisationen/{organization}/anbindungen/github/anmelden', [GitHubIntegrationController::class, 'redirect'])
+    ->name('organizations.integrations.github.redirect');
+Route::get('anbindungen/github/rueckkehr', [GitHubIntegrationController::class, 'callback'])
+    ->name('integrations.github.callback');
 
 Route::post('organisationen/{organization}/einladungen', [OrganizationInvitationController::class, 'store'])
     ->name('organizations.invitations.store');

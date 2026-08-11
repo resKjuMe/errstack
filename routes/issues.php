@@ -32,6 +32,7 @@ use App\Http\Controllers\IssueAttachmentController;
 use App\Http\Controllers\IssueCommentController;
 use App\Http\Controllers\IssueController;
 use App\Http\Controllers\IssueDetailController;
+use App\Http\Controllers\IssueLinkController;
 use App\Http\Controllers\IssueMergeController;
 use App\Http\Controllers\IssueSearchController;
 use App\Http\Controllers\IssueTagController;
@@ -151,6 +152,18 @@ Route::middleware(['auth', 'verified'])
             ->name('issues.comments.update');
         Route::delete('fehler/{issue}/kommentare/{comment}', [IssueCommentController::class, 'destroy'])
             ->name('issues.comments.destroy');
+
+        // Die Verknüpfung mit einem Ticket beim Anbieter (X1). Sie hängt an
+        // **einem** Fehler und steht deshalb unter ihm — anders als die
+        // Zustandsaktionen, die auch eine ganze Auswahl meinen können. Ob ein
+        // neues Ticket entsteht oder ein vorhandenes aufgegriffen wird,
+        // entscheidet eine Angabe im Rumpf und nicht die Adresse: in der
+        // Oberfläche ist es ein Formular mit einem Feld, das man ausfüllen kann
+        // oder nicht.
+        Route::post('fehler/{issue}/verknuepfungen', [IssueLinkController::class, 'store'])
+            ->name('issues.links.store');
+        Route::delete('fehler/{issue}/verknuepfungen/{link}', [IssueLinkController::class, 'destroy'])
+            ->name('issues.links.destroy');
 
         // Die Merkmale eines Fehlers (S3). Sie hängen am Eintrag und stehen deshalb
         // unter ihm — anders als die Liste, die keinen einzelnen Eintrag meint.

@@ -25,6 +25,7 @@ use Illuminate\Support\Str;
  *
  * @property int $id
  * @property int $organization_id
+ * @property int|null $integration_id
  * @property string $name
  * @property string $provider
  * @property string|null $url
@@ -107,6 +108,17 @@ class Repository extends Model
     }
 
     /**
+     * Über welche Anbindung dieses Repository hereinkam (X1) — und keine bei
+     * den von Hand eingetragenen, die es weiterhin gibt.
+     *
+     * @return BelongsTo<Integration, $this>
+     */
+    public function integration(): BelongsTo
+    {
+        return $this->belongsTo(Integration::class);
+    }
+
+    /**
      * @return HasMany<Commit, $this>
      */
     public function commits(): HasMany
@@ -144,6 +156,7 @@ class Repository extends Model
     protected $fillable = [
         'organization_id',
         'name',
+        'integration_id',
         'provider',
         'url',
         'external_id',

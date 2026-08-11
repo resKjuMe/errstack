@@ -424,6 +424,9 @@ return [
         'unsubscribed' => 'Unsubscribed',
         'discarded' => 'Deleted and discarded',
         'deleted' => 'Deleted',
+        'external_linked' => 'Linked to a ticket',
+        'external_unlinked' => 'Link removed',
+        'external_resolved' => 'Resolved by a closed ticket',
     ],
 
     'count_period' => [
@@ -482,6 +485,21 @@ return [
         'min_total_ms' => 'Minimum total in ms',
         'min_duration_ms' => 'Minimum duration in ms',
         'min_size_kb' => 'Minimum size in KB',
+    ],
+
+    // Integrations (X1).
+    'integration_provider' => [
+        'github' => 'GitHub',
+    ],
+
+    'integration_status' => [
+        'connected' => 'Connected',
+        'disconnected' => 'Connection lost',
+    ],
+
+    'external_issue_state' => [
+        'open' => 'Open',
+        'closed' => 'Closed',
     ],
 
     'commit_file_change' => [

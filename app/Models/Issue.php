@@ -898,6 +898,20 @@ class Issue extends Model
     }
 
     /**
+     * Die verknüpften Tickets beim Anbieter (X1).
+     *
+     * Mehrzahl, und das ist keine Vorsorge: ein Fehler im gemeinsamen
+     * Client-SDK betrifft die Anwendung und die Bibliothek, und beide haben ihr
+     * eigenes Repository mit ihrem eigenen Ticket.
+     *
+     * @return HasMany<IssueLink, $this>
+     */
+    public function links(): HasMany
+    {
+        return $this->hasMany(IssueLink::class);
+    }
+
+    /**
      * Wer sich diesen Eintrag gemerkt hat.
      *
      * @return BelongsToMany<User, $this>

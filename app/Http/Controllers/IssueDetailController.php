@@ -9,6 +9,7 @@ use App\Models\EventSymbolication;
 use App\Models\Issue;
 use App\Models\IssueComment;
 use App\Support\Attachments\AttachmentData;
+use App\Support\Integrations\IssueLinkData;
 use App\Support\Issues\EventDetail;
 use App\Support\Issues\EventNavigation;
 use App\Support\Issues\IssueActionData;
@@ -115,6 +116,10 @@ class IssueDetailController extends Controller
                 'suggestHref' => route('issues.comments.suggest', $issue),
                 'limit' => IssueComment::BODY_LIMIT,
             ],
+            // Die verknüpften Tickets beim Anbieter (X1). `null`, solange
+            // nichts angebunden und nichts verknüpft ist — dann fehlt der
+            // Bereich, statt als leerer Kasten dazustehen.
+            'links' => IssueLinkData::forIssue($issue),
             'actions' => IssueActionData::forViewer($issue),
         ]);
     }

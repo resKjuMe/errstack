@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V0;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\FetchReleaseCommits;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Release;
@@ -116,6 +117,17 @@ class ReleaseController extends Controller
                 $validated['commits'],
                 is_string($validated['repository'] ?? null) ? $validated['repository'] : null,
             );
+        } elseif (trim((string) $release->ref) !== '') {
+            // Keine Liste dabei, aber ein Stand genannt: dann kann die
+            // Anbindung (X1) sie holen — der Vergleich mit der vorigen
+            // Auslieferung ist genau die Frage „was ist neu". Das läuft im
+            // Hintergrund und nicht hier: dieser Aufruf steht am Ende einer
+            // Auslieferung und wartet auf die Antwort, und die darf nicht davon
+            // abhängen, wie schnell GitHub heute ist.
+            //
+            // Ohne Anbindung tut der Auftrag nichts — er prüft das selbst, und
+            // ein `if` an dieser Stelle wäre dieselbe Frage doppelt gestellt.
+            FetchReleaseCommits::dispatch($release->id);
         }
 
         return ApiResponse::data(self::payload($release), $created ? 201 : 200);

@@ -111,6 +111,16 @@ class Organization extends Model
     }
 
     /**
+     * Die Anbindungen an Anbieter (X1) — höchstens eine je Anbieter.
+     *
+     * @return HasMany<Integration, $this>
+     */
+    public function integrations(): HasMany
+    {
+        return $this->hasMany(Integration::class);
+    }
+
+    /**
      * @return HasMany<OrganizationInvitation, $this>
      */
     public function invitations(): HasMany
