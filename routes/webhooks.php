@@ -39,6 +39,10 @@ Route::post('hooks/github', GitHubWebhookController::class)->name('webhooks.gith
 // das die Stelle, an der man nichts verwechseln kann — und sie verhindert, dass
 // eine Jira-Nutzlast über die Linear-Adresse hereinkommt und nach Feldern
 // gelesen wird, die es dort nicht gibt.
+//
+// Ohne `whereIn`-Aufzählung: welche Anbieter es gibt, steht im Enum, und ein
+// unbekannter wird im Controller wie ein falsches Geheimnis behandelt — mit `401`
+// und ohne Auskunft darüber, was nicht gepasst hat. Eine Bedingung hier machte
+// daraus ein `404` und damit genau die Unterscheidung, die niemand bekommen soll.
 Route::post('hooks/tickets/{provider}/{token}', TicketWebhookController::class)
-    ->whereIn('provider', ['jira', 'linear'])
     ->name('webhooks.tickets');

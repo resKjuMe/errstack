@@ -130,8 +130,14 @@ Route::get('anbindungen/github/rueckkehr', [GitHubIntegrationController::class, 
 // der Adresse und nicht den Anbieter: beide setzen voraus, dass es sie gibt, und
 // eine Kennung, die auf eine fremde Organisation zeigt, ist so schneller zu
 // erkennen als eine Aufzählung, die überall passt.
+//
+// **Keine `whereIn`-Aufzählung der Anbieter.** Welche es gibt, steht im Enum
+// (App\Enums\IntegrationProvider), und die Controller entscheiden es dort — eine
+// zweite Liste hier wäre nicht nur doppelt, sie antwortet auch falsch: ein
+// `POST …/tickets/trello`, das an der Bedingung vorbeigeht, fällt auf das
+// PATCH-Muster darunter und ergibt `405` („falsche Methode") statt `404` („gibt
+// es nicht").
 Route::post('organisationen/{organization}/anbindungen/tickets/{provider}', [TicketIntegrationController::class, 'store'])
-    ->whereIn('provider', ['jira', 'linear'])
     ->name('organizations.integrations.tickets.store');
 Route::patch('organisationen/{organization}/anbindungen/tickets/{integration}', [TicketIntegrationController::class, 'update'])
     ->name('organizations.integrations.tickets.update');
@@ -142,7 +148,6 @@ Route::post('organisationen/{organization}/anbindungen/tickets/{integration}/rue
 // Anforderung und als JSON, weil es ein Aufruf über das Netz ist: weder die
 // Einstellungs- noch die Fehlerseite soll sich deshalb verzögern.
 Route::get('organisationen/{organization}/anbindungen/tickets/{provider}/ziele', [TicketTargetController::class, 'index'])
-    ->whereIn('provider', ['jira', 'linear'])
     ->name('organizations.integrations.tickets.targets');
 
 Route::post('organisationen/{organization}/einladungen', [OrganizationInvitationController::class, 'store'])
