@@ -257,8 +257,10 @@ class GitHubConnectionTest extends TestCase
             ->get(route('organizations.integrations.index', $organization))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('integrations/Index')
-                ->where('integration.status', 'disconnected')
-                ->where('integration.lastError', 'Bad credentials'));
+                // Seit X4 stehen mehrere Anbieter auf der Seite, jeder in
+                // seinem Abschnitt — GitHub ist einer davon.
+                ->where('github.integration.status', 'disconnected')
+                ->where('github.integration.lastError', 'Bad credentials'));
     }
 
     public function test_disconnecting_keeps_the_repositories(): void

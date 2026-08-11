@@ -20,9 +20,25 @@
 | je Repository eingetragen werden und wäre sonst je Organisation eine andere.
 | Wozu ein Ereignis gehört, sagt das Repository darin.
 |
+| Die Ticket-Systeme (X4) gehen den umgekehrten Weg: dort steht ein Geheimnis in
+| der Adresse, und **es** sagt, wozu die Meldung gehört. Der Grund ist keine
+| Vorliebe — Jira Cloud unterschreibt eine über die Schnittstelle eingetragene
+| Rückadresse nicht, und Linears Unterschrift hängt an einem Geheimnis, das
+| drüben entsteht. Ohne das Geheimnis in der Adresse wäre der Eingang offen:
+| „Vorgang OPS-42 ist erledigt" setzt einen Fehler hier auf erledigt.
+|
 */
 
 use App\Http\Controllers\Webhooks\GitHubWebhookController;
+use App\Http\Controllers\Webhooks\TicketWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('hooks/github', GitHubWebhookController::class)->name('webhooks.github');
+
+// Eine Adresse je Anbieter, und der Anbieter steht im Pfad: beim Einrichten ist
+// das die Stelle, an der man nichts verwechseln kann — und sie verhindert, dass
+// eine Jira-Nutzlast über die Linear-Adresse hereinkommt und nach Feldern
+// gelesen wird, die es dort nicht gibt.
+Route::post('hooks/tickets/{provider}/{token}', TicketWebhookController::class)
+    ->whereIn('provider', ['jira', 'linear'])
+    ->name('webhooks.tickets');

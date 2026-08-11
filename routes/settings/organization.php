@@ -33,6 +33,8 @@ use App\Http\Controllers\RepositoryController;
 use App\Http\Controllers\ScrubRuleController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamMemberController;
+use App\Http\Controllers\TicketIntegrationController;
+use App\Http\Controllers\TicketTargetController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('organisationen', [OrganizationController::class, 'index'])
@@ -117,6 +119,31 @@ Route::get('organisationen/{organization}/anbindungen/github/anmelden', [GitHubI
     ->name('organizations.integrations.github.redirect');
 Route::get('anbindungen/github/rueckkehr', [GitHubIntegrationController::class, 'callback'])
     ->name('integrations.github.callback');
+
+// Die Ticket-Systeme (X4). Verbunden wird mit einem Formular und nicht über eine
+// Weiterleitung — ein API-Token braucht keine registrierte App, und bis es die
+// gibt, ist das der Weg, der sofort funktioniert. Der Anbieter steht im Pfad und
+// nicht in der Nutzlast: eine Adresse je Anbieter ist die Stelle, an der man beim
+// Einrichten nichts verwechseln kann.
+//
+// Das Ändern und das Erneuern der Rückadresse tragen dagegen die **Anbindung** in
+// der Adresse und nicht den Anbieter: beide setzen voraus, dass es sie gibt, und
+// eine Kennung, die auf eine fremde Organisation zeigt, ist so schneller zu
+// erkennen als eine Aufzählung, die überall passt.
+Route::post('organisationen/{organization}/anbindungen/tickets/{provider}', [TicketIntegrationController::class, 'store'])
+    ->whereIn('provider', ['jira', 'linear'])
+    ->name('organizations.integrations.tickets.store');
+Route::patch('organisationen/{organization}/anbindungen/tickets/{integration}', [TicketIntegrationController::class, 'update'])
+    ->name('organizations.integrations.tickets.update');
+Route::post('organisationen/{organization}/anbindungen/tickets/{integration}/rueckadresse', [TicketIntegrationController::class, 'rotate'])
+    ->name('organizations.integrations.tickets.rotate');
+
+// Wohin ein Ticket gelegt werden kann — Jira-Projekte, Linear-Teams. Auf
+// Anforderung und als JSON, weil es ein Aufruf über das Netz ist: weder die
+// Einstellungs- noch die Fehlerseite soll sich deshalb verzögern.
+Route::get('organisationen/{organization}/anbindungen/tickets/{provider}/ziele', [TicketTargetController::class, 'index'])
+    ->whereIn('provider', ['jira', 'linear'])
+    ->name('organizations.integrations.tickets.targets');
 
 Route::post('organisationen/{organization}/einladungen', [OrganizationInvitationController::class, 'store'])
     ->name('organizations.invitations.store');
