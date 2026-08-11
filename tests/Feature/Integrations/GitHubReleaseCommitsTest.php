@@ -29,6 +29,16 @@ class GitHubReleaseCommitsTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Ein Aufruf, den kein `Http::fake()` abdeckt, geht sonst **wirklich**
+        // hinaus — in der CI gegen api.github.com, und das Ergebnis ist ein
+        // `401` mitten in einem Test, der von GitHub nichts wissen will.
+        Http::preventStrayRequests();
+    }
+
     /**
      * @return array{Organization, Project, Integration}
      */
@@ -69,8 +79,8 @@ class GitHubReleaseCommitsTest extends TestCase
     {
         [, $project] = $this->context();
 
-        Release::factory()->for($project)->create(['version' => '1.0.0', 'ref' => 'aaa']);
-        $release = Release::factory()->for($project)->create(['version' => '1.1.0', 'ref' => 'bbb']);
+        Release::factory()->for($project)->version('1.0.0')->create(['ref' => 'aaa']);
+        $release = Release::factory()->for($project)->version('1.1.0')->create(['ref' => 'bbb']);
 
         Http::fake([
             'api.github.com/repos/acme/webshop/compare/*' => Http::response([
@@ -92,7 +102,7 @@ class GitHubReleaseCommitsTest extends TestCase
     {
         [, $project] = $this->context();
 
-        $release = Release::factory()->for($project)->create(['version' => '1.0.0', 'ref' => 'bbb']);
+        $release = Release::factory()->for($project)->version('1.0.0')->create(['ref' => 'bbb']);
 
         Http::fake([
             'api.github.com/repos/acme/webshop/commits*' => Http::response([self::commit('c1')]),
@@ -105,7 +115,7 @@ class GitHubReleaseCommitsTest extends TestCase
     {
         [, $project] = $this->context();
 
-        $release = Release::factory()->for($project)->create(['version' => '1.0.0', 'ref' => 'bbb']);
+        $release = Release::factory()->for($project)->version('1.0.0')->create(['ref' => 'bbb']);
 
         $repository = Repository::query()->sole();
         $commit = Commit::factory()->for($repository)->create();
@@ -126,7 +136,7 @@ class GitHubReleaseCommitsTest extends TestCase
 
         // Der Regelfall bei einer Version, die aus Meldungen entstanden ist
         // (R1): sie kennt ihre Nummer, nicht den Commit dahinter.
-        $release = Release::factory()->for($project)->create(['version' => '1.0.0', 'ref' => null]);
+        $release = Release::factory()->for($project)->version('1.0.0')->create(['ref' => null]);
 
         Http::fake();
 
@@ -139,7 +149,7 @@ class GitHubReleaseCommitsTest extends TestCase
     {
         [, $project, $integration] = $this->context();
 
-        $release = Release::factory()->for($project)->create(['version' => '1.0.0', 'ref' => 'bbb']);
+        $release = Release::factory()->for($project)->version('1.0.0')->create(['ref' => 'bbb']);
 
         Http::fake(['api.github.com/*' => Http::response(['message' => 'Bad credentials'], 401)]);
 

@@ -25,6 +25,16 @@ class GitHubIssueLinkTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Ein Aufruf, den kein `Http::fake()` abdeckt, geht sonst **wirklich**
+        // hinaus — in der CI gegen api.github.com, und das Ergebnis ist ein
+        // `401` mitten in einem Test, der von GitHub nichts wissen will.
+        Http::preventStrayRequests();
+    }
+
     /**
      * @return array{User, Organization, Issue, Integration}
      */

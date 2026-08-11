@@ -33,6 +33,11 @@ class GitHubConnectionTest extends TestCase
             'services.github.client_secret' => 'client-secret',
             'services.github.webhook_secret' => 'hook-secret',
         ]);
+
+        // Ein Aufruf, den kein `Http::fake()` abdeckt, geht sonst **wirklich**
+        // hinaus — in der CI gegen api.github.com, und das Ergebnis ist ein
+        // `401` mitten in einem Test, der von GitHub nichts wissen will.
+        Http::preventStrayRequests();
     }
 
     /**
