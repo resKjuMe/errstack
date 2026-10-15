@@ -8,6 +8,7 @@ use App\Enums\IssueIgnoreMode;
 use App\Enums\IssuePriority;
 use App\Enums\IssueResolveMode;
 use App\Enums\IssueStatus;
+use App\Jobs\SyncTicketState;
 use App\Models\Issue;
 use App\Models\IssueActivity;
 use App\Models\IssueDiscard;
@@ -602,6 +603,8 @@ final class IssueActions
 
                 $this->log($issues, $type, $data);
 
+                self::syncTickets($ids, $type);
+
                 if (count($undo) < self::UNDO_LIMIT) {
                     $undo = array_slice([...$undo, ...$ids], 0, self::UNDO_LIMIT);
                 }
@@ -611,6 +614,41 @@ final class IssueActions
         // erreicht. Eine Schaltfläche, die 200 von 12.480 zurücknimmt, wäre
         // schlimmer als keine: sie sieht aus, als hätte sie alles erledigt.
         return new IssueActionResult($count, $count <= self::UNDO_LIMIT ? $undo : []);
+    }
+
+    /**
+     * Verknüpfte Tickets nachziehen (X4) — die ausgehende Richtung des
+     * Abgleichs.
+     *
+     * **Hier und nicht in `resolve()`/`unresolve()`**, weil es an genau derselben
+     * Stelle hängt wie der Verlaufseintrag: eine Aktion, die einen Block
+     * fortschreibt und dabei einen Vermerk schreibt, soll auch das Ticket
+     * nachziehen. In den beiden Methoden stünde es zweimal, und die dritte Art,
+     * einen Eintrag zu erledigen (es wird eine kommen), hätte es wieder nicht.
+     *
+     * Nur diese beiden Arten von Vermerk, und das ist der ganze Filter:
+     * „erledigt" und „wieder geöffnet" sind die Zustände, die ein Ticket drüben
+     * kennt. Stummschalten, Zuweisen, Priorität — dafür gibt es kein Gegenstück,
+     * und eines zu erfinden hieße, Entscheidungen dieser Anwendung in ein System
+     * zu schreiben, das sie nicht kennt.
+     *
+     * Das Stummschalten ist der Grenzfall, und die Antwort ist bewusst „nein":
+     * es bedeutet „nicht jetzt" und nicht „behoben". Ein Ticket deswegen zu
+     * schließen wäre eine Falschaussage gegenüber allen, die drüben mitlesen.
+     *
+     * @param  list<int>  $ids
+     */
+    private static function syncTickets(array $ids, IssueActivityType $type): void
+    {
+        $resolved = match ($type) {
+            IssueActivityType::Resolved => true,
+            IssueActivityType::Unresolved => false,
+            default => null,
+        };
+
+        if ($resolved !== null) {
+            SyncTicketState::dispatchFor($ids, $resolved);
+        }
     }
 
     /**

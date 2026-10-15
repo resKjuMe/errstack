@@ -310,7 +310,9 @@ final readonly class GitHubClient
             // Zwischenstationen (Anmeldeseite eines Proxys, Wartungsseite).
             // Sie als leere Liste durchzureichen hieße, „das Repository hat
             // keine Commits" zu behaupten.
-            throw GitHubException::failed(__('integrations.errors.unexpected_response'));
+            throw GitHubException::failed(__('integrations.errors.unexpected_response', [
+                'provider' => __('enums.integration_provider.github'),
+            ]));
         }
 
         return $data;
@@ -369,7 +371,10 @@ final readonly class GitHubClient
 
         return is_string($message) && $message !== ''
             ? Str::limit($message, 200, '')
-            : __('integrations.errors.http_status', ['status' => $response->status()]);
+            : __('integrations.errors.http_status', [
+                'provider' => __('enums.integration_provider.github'),
+                'status' => $response->status(),
+            ]);
     }
 
     /**

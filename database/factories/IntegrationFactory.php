@@ -43,4 +43,46 @@ class IntegrationFactory extends Factory
             'last_error_at' => now(),
         ]);
     }
+
+    /**
+     * Eine Jira-Anbindung (X4).
+     *
+     * Sie braucht mehr als ein Token: die Adresse der Instanz (jede Organisation
+     * hat ihre eigene) und die E-Mail-Adresse, mit der das Token erzeugt wurde —
+     * Jira Cloud will beides zusammen als Basic-Auth.
+     */
+    public function jira(string $baseUrl = 'https://acme.atlassian.net'): static
+    {
+        return $this->ticket(IntegrationProvider::Jira, [
+            'base_url' => $baseUrl,
+            'email' => 'ops@acme.test',
+        ]);
+    }
+
+    public function linear(): static
+    {
+        return $this->ticket(IntegrationProvider::Linear);
+    }
+
+    /**
+     * Das Geheimnis der Rückadresse steht mit, samt seinem Hash: ohne ihn ist der
+     * Webhook-Eingang nicht erreichbar — und das ist die halbe Anbindung.
+     *
+     * @param  array<string, string>  $credentials
+     */
+    private function ticket(IntegrationProvider $provider, array $credentials = []): static
+    {
+        $webhookToken = 'wht_'.fake()->regexify('[A-Za-z0-9]{32}');
+
+        return $this->state([
+            'provider' => $provider,
+            'account' => 'Christian Mietze',
+            'credentials' => [
+                'token' => fake()->regexify('[A-Za-z0-9]{40}'),
+                'webhook_token' => $webhookToken,
+                ...$credentials,
+            ],
+            'webhook_token_hash' => Integration::hashWebhookToken($webhookToken),
+        ]);
+    }
 }

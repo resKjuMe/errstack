@@ -10,7 +10,7 @@ use App\Models\Issue;
 use App\Models\IssueActivity;
 use App\Models\IssueLink;
 use App\Models\User;
-use Illuminate\Support\Str;
+use App\Support\Integrations\Tickets\TicketContent;
 
 /**
  * Aus einem Fehler ein Ticket machen — oder ihn an ein vorhandenes hängen.
@@ -20,10 +20,10 @@ use Illuminate\Support\Str;
  * vorhandene der Weg von der anderen Seite („daran wird schon gearbeitet, das
  * ist derselbe Fall"). Was danach in der Datenbank steht, ist dieselbe Zeile.
  *
- * **Der Text des neuen Tickets steht hier und nicht in einer Vorlage.** Er ist
- * kurz mit Absicht: Überschrift, Fehlerstelle, wie oft und seit wann — und der
- * Link zurück. Alles Weitere steht in der Anwendung, und ein Ticket, das den
- * halben Stacktrace mitschleppt, ist beim zweiten Lesen veraltet.
+ * **Der Text des neuen Tickets steht in {@see TicketContent}** und ist derselbe
+ * wie bei Jira und Linear (X4): derselbe Fehler soll drüben nicht je nach
+ * Ticket-System anders aussehen. Er ist kurz mit Absicht — Überschrift,
+ * Fehlerstelle, wie oft und seit wann, und der Link zurück.
  */
 final class GitHubIssueLinks
 {
@@ -36,8 +36,8 @@ final class GitHubIssueLinks
     {
         $remote = (new GitHubClient($integration))->createIssue(
             $repository,
-            self::title($issue),
-            self::body($issue),
+            TicketContent::title($issue),
+            TicketContent::markdown($issue),
         );
 
         return self::store($issue, $integration, $repository, $remote, $actor, createdRemotely: true);
@@ -139,53 +139,5 @@ final class GitHubIssueLinks
             'type' => $type,
             'data' => ['reference' => $reference],
         ]);
-    }
-
-    /**
-     * Die Überschrift des neuen Tickets.
-     *
-     * Titel und Fehlerstelle, wie auf der Fehlerseite — und gekürzt, weil
-     * GitHub bei 256 Zeichen abschneidet und ein abgeschnittener Titel mitten
-     * im Wort schlechter aussieht als ein bewusst gekürzter.
-     */
-    private static function title(Issue $issue): string
-    {
-        $title = trim((string) ($issue->title ?? $issue->culprit ?? ''));
-
-        if ($title === '') {
-            $title = __('issues.list.untitled');
-        }
-
-        return Str::limit($title, 200);
-    }
-
-    /**
-     * Der Rumpf des neuen Tickets.
-     *
-     * Bewusst knapp: was zählt, ist der Link zurück. Alles, was hier als Text
-     * landet, ist eine Kopie — und Kopien altern, während die Seite dahinter
-     * aktuell bleibt.
-     */
-    private static function body(Issue $issue): string
-    {
-        $lines = [
-            '**'.__('integrations.issue.body.culprit').':** '.($issue->culprit ?? '—'),
-            '**'.__('integrations.issue.body.project').':** '.$issue->project->name,
-            '**'.__('integrations.issue.body.times_seen').':** '.$issue->times_seen,
-            '**'.__('integrations.issue.body.first_seen').':** '.$issue->first_seen->toIso8601String(),
-            '',
-            __('integrations.issue.body.link', ['url' => self::issueUrl($issue)]),
-        ];
-
-        return implode("\n", $lines);
-    }
-
-    private static function issueUrl(Issue $issue): string
-    {
-        $organization = $issue->project?->organization;
-
-        return $organization === null
-            ? url('/')
-            : route('issues.show', ['organization' => $organization, 'issue' => $issue]);
     }
 }

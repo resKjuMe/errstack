@@ -490,6 +490,8 @@ return [
     // Integrations (X1).
     'integration_provider' => [
         'github' => 'GitHub',
+        'jira' => 'Jira',
+        'linear' => 'Linear',
     ],
 
     'integration_status' => [
